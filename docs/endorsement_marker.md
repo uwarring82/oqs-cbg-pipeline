@@ -1,7 +1,7 @@
 # Endorsement Marker — `oqs-cbg-pipeline`
 
 **Layer:** Sail-internal repository
-**Anchor:** [Sail v0.4](../sail/sail-cbg-pipeline_v0.4.md), which itself anchors to [CL-2026-005 v0.4](../ledger/CL-2026-005_v0.4.md) (Council-cleared 2026-04-29, session CL-2026-005-DEL-001)
+**Anchor:** [Sail v0.5](../sail/sail-cbg-pipeline_v0.5.md), which itself anchors to [CL-2026-005 v0.4](../ledger/CL-2026-005_v0.4.md) (Council-cleared 2026-04-29, session CL-2026-005-DEL-001)
 **Steward:** U. Warring (Physikalisches Institut, Albert-Ludwigs-Universität Freiburg)
 
 ## What this repository is
@@ -42,7 +42,7 @@ This repository inherits, verbatim, two Council-ratified protective measures fro
 - **(G1)** The "Do not cite as" guard, expanded in [`do_not_cite_as.md`](do_not_cite_as.md).
 - **(G2)** Continued steward-conflict triple-flagging on Entry 6, operationalised here in [`stewardship_conflict.md`](stewardship_conflict.md).
 
-Code that runs without these three protective documents (`endorsement_marker.md`, `stewardship_conflict.md`, `do_not_cite_as.md`) being present at HEAD is structurally non-compliant with the Sail's discipline and must not be released, archived, or cited.
+Code that runs without all five protective documents (`endorsement_marker.md`, `stewardship_conflict.md`, `do_not_cite_as.md`, `validity_envelope.md`, `benchmark_protocol.md`) being present at HEAD is structurally non-compliant with the Sail's discipline and must not be released, archived, or cited. The first three are inherited from CL-2026-005 v0.4 (G1 + G2); the latter two are mandated by Sail v0.5 §11 as operational scaffolding.
 
 ## Scope
 

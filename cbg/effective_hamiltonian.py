@@ -12,7 +12,7 @@ and the recursive perturbative series
 
 with K_n given by Letter Eq. (16) (companion paper Eq. (45)).
 
-Output discipline (per Sail v0.4 §4):
+Output discipline (per Sail v0.5 §4):
     All outputs of this module are COORDINATE-DEPENDENT under the chosen
     gauge. They are not directly observable Hamiltonians. Any plot or
     table presenting K(t) must carry the coordinate-choice annotation

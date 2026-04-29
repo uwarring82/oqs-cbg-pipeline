@@ -7,7 +7,7 @@ Thank you for considering a contribution. This repository operates under specifi
 1. [`docs/endorsement_marker.md`](docs/endorsement_marker.md)
 2. [`docs/do_not_cite_as.md`](docs/do_not_cite_as.md)
 3. [`docs/stewardship_conflict.md`](docs/stewardship_conflict.md)
-4. [`sail/sail-cbg-pipeline_v0.4.md`](sail/sail-cbg-pipeline_v0.4.md), especially §§4, 9, 10, 11.
+4. [`sail/sail-cbg-pipeline_v0.5.md`](sail/sail-cbg-pipeline_v0.5.md), especially §§4, 9, 10, 11.
 5. [`docs/benchmark_protocol.md`](docs/benchmark_protocol.md).
 
 Contributions that violate the Sail's discipline will be requested to revise; not as criticism, but because the discipline is the load-bearing element that gives outputs their citation scope.
@@ -41,7 +41,7 @@ A pull request that claims to pass a Decision Gate must:
 1. Provide the benchmark cards or tests that constitute the evidence.
 2. Atomically update `docs/validity_envelope.md` in the same commit as the evidence.
 3. Add a logbook entry in `logbook/YYYY-MM-DD_<short-tag>.md` describing the gate, the evidence, and any caveats.
-4. For DG-3: explicitly state whether the claim is for *implementation readiness* or *failure-asymmetry clearance* (these are distinct per Sail v0.4 §9 DG-3 and `docs/benchmark_protocol.md` §3).
+4. For DG-3: explicitly state whether the claim is for *implementation readiness* or *failure-asymmetry clearance* (these are distinct per Sail v0.5 §9 DG-3 and `docs/benchmark_protocol.md` §3).
 5. For DG-4: include the cause label (one of the five in `cbg/diagnostics.py`).
 6. For DG-5: NOT a unilateral repository change. A DG-5 pass produces a *discriminant report* that is filed as input to a fresh Council deliberation; the repository pull request only adds the report as evidence and updates `docs/validity_envelope.md` to "DG-5 evidence filed; awaiting Council deliberation".
 

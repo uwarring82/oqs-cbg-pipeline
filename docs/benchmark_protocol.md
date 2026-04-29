@@ -1,12 +1,12 @@
 # Benchmark Protocol — `oqs-cbg-pipeline`
 
 **Layer:** Repository protective scaffolding
-**Anchor:** Sail v0.4 §11 (four explicit content requirements)
+**Anchor:** Sail v0.5 §11 (four explicit content requirements)
 **Last updated:** 2026-04-29 (repository initialisation)
 
 ---
 
-This document specifies, at minimum, four protocols required by Sail v0.4 §11:
+This document specifies, at minimum, four protocols required by Sail v0.5 §11:
 
 1. Coordinate-choice annotation template (Sail §4 output discipline).
 2. Failure-mode starter taxonomy for Tier 3 methods (Sail §5).
@@ -38,7 +38,7 @@ The annotation template itself is versioned. Future updates (e.g. when DG-5 outp
 
 ## 2. Failure-mode starter taxonomy
 
-The Tier 3 failure-asymmetry requirement (Sail v0.4 §5 Tier 3) requires that benchmark pairs draw from non-overlapping failure-mode classes. The following starter taxonomy is provided so that implementers do not have to reconstruct it from the literature:
+The Tier 3 failure-asymmetry requirement (Sail v0.5 §5 Tier 3) requires that benchmark pairs draw from non-overlapping failure-mode classes. The following starter taxonomy is provided so that implementers do not have to reconstruct it from the literature:
 
 | Method | Primary failure modes | Class | Notes |
 |---|---|---|---|
@@ -55,7 +55,7 @@ This taxonomy will be revised as the repository's experience with each method ma
 
 ## 3. DG-3 status tracking
 
-Per Sail v0.4 §9, two distinct properties must be tracked separately for any DG-3-relevant method pair:
+Per Sail v0.5 §9, two distinct properties must be tracked separately for any DG-3-relevant method pair:
 
 - **Implementation readiness**: the methods are implemented, callable, and produce output for the model under test.
 - **Failure-asymmetry clearance**: the pair satisfies the rule of §2 above.
@@ -70,7 +70,7 @@ DG-3 *implementation-ready pass* requires only the first column. DG-3 *failure-a
 
 ## 4. Parameter-freezing protocol (Risk #8 mitigation)
 
-Per Sail v0.4 §10 Risk #8, every parameter choice that affects Tier 1–3 outcomes must be set *before* benchmarking and recorded in the benchmark card. This document specifies the operational protocol:
+Per Sail v0.5 §10 Risk #8, every parameter choice that affects Tier 1–3 outcomes must be set *before* benchmarking and recorded in the benchmark card. This document specifies the operational protocol:
 
 ### 4.1. Parameters that must be frozen
 
@@ -99,4 +99,4 @@ A future steward (including a non-conflicted future steward) must be able to rec
 
 ---
 
-*This document is non-optional per Sail v0.4 §11. It must exist at HEAD before any benchmark card is committed.*
+*This document is non-optional per Sail v0.5 §11. It must exist at HEAD before any benchmark card is committed.*

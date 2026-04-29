@@ -1,7 +1,7 @@
 # Validity Envelope — `oqs-cbg-pipeline`
 
 **Layer:** Repository protective scaffolding (living document)
-**Anchor:** Sail v0.4 §9 (Decision Gates DG-1 through DG-5)
+**Anchor:** Sail v0.5 §9 (Decision Gates DG-1 through DG-5)
 **Last updated:** 2026-04-29 (repository initialisation)
 
 ---
@@ -22,13 +22,13 @@ This document is updated atomically with every change in DG status. Changes are 
 | DG-4 | Failure envelope (≥1 reproducible, cause-labelled failure regime) | NOT YET ATTEMPTED | — | No failure regime has been identified by the repository. |
 | DG-5 | Thermodynamic discriminant (≥1 distinguishable observable in solvable model) | NOT YET ATTEMPTED | — | CL-2026-005 v0.4 Entry 7 remains UNDERDETERMINED. The repository has not yet contributed evidence to the discriminant question. |
 
-## Failure-asymmetry-clearance status (per Sail v0.4 DG-3 distinction)
+## Failure-asymmetry-clearance status (per Sail v0.5 DG-3 distinction)
 
 | Pair | Implementation readiness | Failure-asymmetry clearance |
 |---|---|---|
 | `exact_finite_env.py` + `qutip_reference.py` | NOT YET IMPLEMENTED | NOT CLEARED (both methods may share finite-truncation/solver assumptions) |
 
-Full failure-asymmetry clearance per Sail v0.4 §5 Tier 3 requires at least one additional method family from a non-overlapping failure-mode class (HEOM, TEMPO, MCTDH, pseudomode/chain-mapping). The current scaffold *does not provide* such a method. Plans for adding one are tracked in the logbook.
+Full failure-asymmetry clearance per Sail v0.5 §5 Tier 3 requires at least one additional method family from a non-overlapping failure-mode class (HEOM, TEMPO, MCTDH, pseudomode/chain-mapping). The current scaffold *does not provide* such a method. Plans for adding one are tracked in the logbook.
 
 ## Stewardship-conflict-bound annotations
 
@@ -44,7 +44,7 @@ At the current status (2026-04-29, repository initialisation):
 
 **Authorised uses of repository outputs:**
 - None for scientific citation. The repository contains no scientific outputs at this version.
-- Demonstration of the architectural scaffold (this document, Sail v0.4, Ledger v0.4) for review purposes.
+- Demonstration of the architectural scaffold (this document, Sail v0.5 — superseding v0.4 — Ledger CL-2026-005 v0.4) for review purposes.
 
 **Not authorised:**
 - Citation of any K(t) computation (none exists yet).
@@ -55,7 +55,7 @@ This envelope expands as Decision Gates pass. The next milestone is DG-1, which 
 
 ## Update protocol
 
-1. A change in DG status is triggered by a benchmark card or test suite passing the DG-specific criteria documented in Sail v0.4 §9.
+1. A change in DG status is triggered by a benchmark card or test suite passing the DG-specific criteria documented in Sail v0.5 §9.
 2. The triggering card or test result is committed to the repository before this document is updated.
 3. This document is updated in the *same* commit as the status-change announcement in `logbook/`.
 4. The commit message includes the DG identifier (e.g. `DG-1: pass`) and the triggering card or test reference.
@@ -63,4 +63,4 @@ This envelope expands as Decision Gates pass. The next milestone is DG-1, which 
 
 ---
 
-*This document is non-optional per Sail v0.4 §11. It must exist at HEAD throughout the repository's lifetime and must be updated atomically with every DG-status change.*
+*This document is non-optional per Sail v0.5 §11. It must exist at HEAD throughout the repository's lifetime and must be updated atomically with every DG-status change.*

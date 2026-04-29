@@ -1,7 +1,7 @@
 """
 cbg.diagnostics — Convergence and structural diagnostics.
 
-Reports the diagnostics required by Sail v0.4 §7:
+Reports the diagnostics required by Sail v0.5 §7:
     - norm of successive perturbative orders;
     - distance to TCL non-invertibility (||Λ_t - id||);
     - trace preservation and Hermiticity preservation;
@@ -11,7 +11,7 @@ Reports the diagnostics required by Sail v0.4 §7:
     - comparison error against numerically exact methods;
     - gauge-dependence (DG-5 substrate, when alternative gauges available).
 
-Failure-mode labels (per Sail v0.4 §9 DG-4 cause-label discipline):
+Failure-mode labels (per Sail v0.5 §9 DG-4 cause-label discipline):
     - convergence_failure
     - tcl_singularity
     - projection_ambiguity

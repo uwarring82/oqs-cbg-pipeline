@@ -1,7 +1,7 @@
 # Stewardship Conflict — `oqs-cbg-pipeline`
 
 **Layer:** Repository protective scaffolding
-**Anchor:** Sail v0.4 §5 Tier 4; CL-2026-005 v0.4 Entry 6; Council ratification G2 (session CL-2026-005-DEL-001).
+**Anchor:** Sail v0.5 §5 Tier 4; CL-2026-005 v0.4 Entry 6; Council ratification G2 (session CL-2026-005-DEL-001).
 
 ## The conflict
 
@@ -60,4 +60,4 @@ The audit trail is part of the FAIR-Reusable layer of this repository: future st
 
 ---
 
-*This document is non-optional per Sail v0.4 §11. It must exist at HEAD before any code is committed to the repository.*
+*This document is non-optional per Sail v0.5 §11. It must exist at HEAD before any code is committed to the repository.*

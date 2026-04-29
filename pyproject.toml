@@ -39,7 +39,7 @@ docs = ["sphinx", "myst-parser", "sphinx-book-theme"]
 
 [project.urls]
 Repository = "https://github.com/uwarring82/oqs-cbg-pipeline"
-"Sail" = "sail/sail-cbg-pipeline_v0.4.md"
+"Sail" = "sail/sail-cbg-pipeline_v0.5.md"
 "Ledger anchor" = "ledger/CL-2026-005_v0.4.md"
 
 [tool.setuptools]

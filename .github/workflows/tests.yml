@@ -37,11 +37,13 @@ jobs:
           echo "PASS: vendored Ledger artefacts present."
       - name: Verify vendored Sail
         run: |
-          if [ ! -f "sail/sail-cbg-pipeline_v0.4.md" ]; then
-            echo "FAIL: vendored Sail v0.4 missing"
-            exit 1
-          fi
-          echo "PASS: vendored Sail v0.4 present."
+          for f in sail/sail-cbg-pipeline_v0.5.md sail/sail-cbg-pipeline_v0.4.md; do
+            if [ ! -f "$f" ]; then
+              echo "FAIL: vendored Sail artefact missing: $f"
+              exit 1
+            fi
+          done
+          echo "PASS: active Sail v0.5 present; superseded v0.4 retained."
 
   python-tests:
     name: Python smoke tests

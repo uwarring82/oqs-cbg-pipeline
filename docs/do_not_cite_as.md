@@ -1,7 +1,7 @@
 # Do Not Cite As — `oqs-cbg-pipeline`
 
 **Layer:** Repository protective scaffolding
-**Anchor:** Council ratification G1 (CL-2026-005 v0.4, session CL-2026-005-DEL-001), inherited verbatim from CL-2026-005 v0.4 §"Do not cite as" and Sail v0.4 §0.
+**Anchor:** Council ratification G1 (CL-2026-005 v0.4, session CL-2026-005-DEL-001), inherited verbatim from CL-2026-005 v0.4 §"Do not cite as" and Sail v0.5 §0.
 
 ---
 
@@ -17,7 +17,7 @@ That is the upper bound of what may be cited. Statements stronger than this are 
 
 ## Specific prohibitions
 
-The following uses are explicitly disallowed, by inheritance from CL-2026-005 v0.4 G1 and from Sail v0.4 §0:
+The following uses are explicitly disallowed, by inheritance from CL-2026-005 v0.4 G1 and from Sail v0.5 §0:
 
 1. **Reification.** Do not cite K(t) computed by this repository as "the physical Hamiltonian" of the open system. K(t) is a coordinate-dependent object under a chosen gauge.
 2. **Framework adjudication.** Do not cite agreement between this repository's K(t) and any specific experimental observation as evidence that the Hayden–Sorce gauge is preferable to the Hamiltonian of mean force, polaron-transformed, Mori-projector, or other gauges. Adjudication is the discriminant question for CL-2026-005 Entry 7 and proceeds only via fresh Council deliberation.
@@ -29,10 +29,10 @@ The following uses are explicitly disallowed, by inheritance from CL-2026-005 v0
 
 The following uses are appropriate:
 
-- **Method citation.** "Numerical implementation of the Colla–Breuer–Gasbarri recursive effective-Hamiltonian construction, as described in [Sail v0.4]." This cites the *implementation*, not a physical claim.
+- **Method citation.** "Numerical implementation of the Colla–Breuer–Gasbarri recursive effective-Hamiltonian construction, as described in [Sail v0.5]." This cites the *implementation*, not a physical claim.
 - **Algebraic results.** Tier 1 verifications (CL-2026-005 v0.4 Entries 1, 3, 4 reproduced numerically). These are theorem-level and well-supported.
 - **Constructive results within stated scope.** Tier 2 fourth-order recursion outputs, when cited with the structural-identity check that confirmed them and the convergence-diagnostic envelope.
-- **Cross-method comparison results.** Tier 3 benchmark cards, when cited with the failure-asymmetry-clearance status (per Sail v0.4 DG-3 distinction between *implementation readiness* and *failure-asymmetry clearance*).
+- **Cross-method comparison results.** Tier 3 benchmark cards, when cited with the failure-asymmetry-clearance status (per Sail v0.5 DG-3 distinction between *implementation readiness* and *failure-asymmetry clearance*).
 - **Failure-mode reports.** DG-4 failure-envelope identifications, with cause labels.
 - **Discriminant reports** (DG-5), explicitly framed as *input to* a Council deliberation, not as a deliberation outcome.
 
@@ -52,4 +52,4 @@ Citing without the validity-envelope reference and the Ledger anchor is a partia
 
 ---
 
-*This document is non-optional per Sail v0.4 §11. It must exist at HEAD before any code is committed to the repository.*
+*This document is non-optional per Sail v0.5 §11. It must exist at HEAD before any code is committed to the repository.*

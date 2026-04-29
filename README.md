@@ -3,7 +3,7 @@
 **Numerical pipeline for the Colla–Breuer–Gasbarri minimal-dissipation effective-Hamiltonian construction in non-Markovian open quantum systems.**
 
 [![Status](https://img.shields.io/badge/status-scaffold--v0.1.0-orange)](docs/validity_envelope.md)
-[![Sail](https://img.shields.io/badge/sail-v0.4-blue)](sail/sail-cbg-pipeline_v0.4.md)
+[![Sail](https://img.shields.io/badge/sail-v0.5-blue)](sail/sail-cbg-pipeline_v0.5.md)
 [![Ledger](https://img.shields.io/badge/ledger-CL--2026--005%20v0.4%20cleared-green)](ledger/CL-2026-005_v0.4.md)
 [![Code license](https://img.shields.io/badge/code%20license-MIT-blue)](LICENSE)
 [![Docs license](https://img.shields.io/badge/docs%20license-CC--BY--4.0-blue)](LICENSE-docs)
@@ -41,7 +41,7 @@ Two peer-reviewed papers (Phys. Rev. A 112, 2025)
 CL-2026-005 v0.4   (Council-cleared 2026-04-29, immutable)
         │
         ▼
-Sail v0.4          (programme-setting, local stewardship)
+Sail v0.5          (programme-setting, local stewardship)
         │
         ▼
 This repository    (numerical implementation, scaffold v0.1.0)
@@ -66,7 +66,7 @@ Live status: [`docs/validity_envelope.md`](docs/validity_envelope.md).
 1. [`docs/endorsement_marker.md`](docs/endorsement_marker.md) — what the repository is for.
 2. [`docs/do_not_cite_as.md`](docs/do_not_cite_as.md) — what may and may not be cited.
 3. [`docs/stewardship_conflict.md`](docs/stewardship_conflict.md) — why some Tier 4 results are flagged.
-4. [`sail/sail-cbg-pipeline_v0.4.md`](sail/sail-cbg-pipeline_v0.4.md) — the active programme.
+4. [`sail/sail-cbg-pipeline_v0.5.md`](sail/sail-cbg-pipeline_v0.5.md) — the active programme.
 5. [`ledger/CL-2026-005_v0.4.md`](ledger/CL-2026-005_v0.4.md) — the Council-cleared anchor.
 6. [`docs/validity_envelope.md`](docs/validity_envelope.md) — current DG status.
 7. [`docs/benchmark_protocol.md`](docs/benchmark_protocol.md) — coordinate annotations, failure-mode taxonomy, parameter freezing.
@@ -79,7 +79,7 @@ oqs-cbg-pipeline/
 ├── index.html        # static public landing page
 ├── docs/             # protective scaffolding (non-optional, gates code)
 ├── ledger/           # vendored CL-2026-005 v0.4 + briefing + deliberation log
-├── sail/             # active Sail v0.4
+├── sail/             # active Sail v0.5
 ├── cbg/              # CBG construction (basis, K, recursion, cumulants, bath, diag)
 ├── models/           # microscopic open-system models with declared structural constraints
 ├── numerical/        # time-grid integration; deliberately separate from cbg/bath_correlations
@@ -126,4 +126,4 @@ The steward holds a structural conflict on CL-2026-005 Entry 6 (co-authorship of
 
 ---
 
-*Repository version: v0.1.0. Initialised 2026-04-29. Sail v0.4. Ledger CL-2026-005 v0.4. No Decision Gate has yet been passed at this version.*
+*Repository version: v0.1.0. Initialised 2026-04-29. Sail v0.5. Ledger CL-2026-005 v0.4. No Decision Gate has yet been passed at this version.*

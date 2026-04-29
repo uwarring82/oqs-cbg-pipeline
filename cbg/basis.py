@@ -6,7 +6,7 @@ Provides bases {F_α}_{α=0}^{d²-1} satisfying Tr(F_α† F_β) = δ_αβ, used
     K = (1 / 2id) Σ_α [F_α†, L[F_α]]                       (Letter Eq. (6))
 
 The basis-independence of K under change of {F_α} is the universal default
-structural-identity check for DG-2 (Sail v0.4 §9).
+structural-identity check for DG-2 (Sail v0.5 §9).
 
 Implementations to be provided:
     - matrix_unit_basis(d):       {|j⟩⟨k|} basis, used in Letter Eq. (7).
@@ -33,7 +33,7 @@ def matrix_unit_basis(d: int) -> List[np.ndarray]:
     """
     raise NotImplementedError(
         "matrix_unit_basis: not implemented at v0.1.0 (pre-DG-1). "
-        "See Sail v0.4 §9 for the gating discipline."
+        "See Sail v0.5 §9 for the gating discipline."
     )
 
 

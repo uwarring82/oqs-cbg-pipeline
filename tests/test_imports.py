@@ -12,7 +12,7 @@ import os
 
 
 def test_protective_docs_exist():
-    """Sail v0.4 §11: three protective docs must be present at HEAD."""
+    """Sail v0.5 §11: five protective docs must be present at HEAD."""
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     for required in (
         "docs/endorsement_marker.md",
@@ -34,18 +34,21 @@ def test_ledger_vendored():
 
 
 def test_sail_vendored():
-    """The active Sail v0.4 must be vendored."""
+    """The active Sail v0.5 must be vendored. The previous v0.4 is also retained."""
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     assert os.path.isfile(
+        os.path.join(repo_root, "sail/sail-cbg-pipeline_v0.5.md")
+    ), "Vendored Sail v0.5 missing"
+    assert os.path.isfile(
         os.path.join(repo_root, "sail/sail-cbg-pipeline_v0.4.md")
-    ), "Vendored Sail v0.4 missing"
+    ), "Vendored Sail v0.4 missing (retained per supersedure discipline)"
 
 
 def test_cbg_imports():
     """The cbg package must import without error at v0.1.0."""
     import cbg
     assert cbg.__version__ == "0.1.0"
-    assert cbg.__sail_version__ == "0.4"
+    assert cbg.__sail_version__ == "0.5"
     assert cbg.__ledger_anchor__ == "CL-2026-005_v0.4"
 
 

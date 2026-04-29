@@ -61,6 +61,7 @@ This mirrors the Ledger's discipline at the repository layer.
 |---|---|---|---|
 | 2026-04-29 | `repo-init` | initialisation | Repository scaffold v0.1.0; Sail v0.4 active; CL-2026-005 v0.4 vendored |
 | 2026-04-29 | `public-site-added` | structural | Root `index.html` added as a static public landing page |
+| 2026-04-29 | `sail-v0.5-bump` | sail-bump | Cardinality-fix supersedure: Sail v0.5 names all five `docs/` files non-optional, aligning Sail wording with already-enforced behaviour; no Ledger impact |
 
 (This index is updated atomically when new entries are added.)
 

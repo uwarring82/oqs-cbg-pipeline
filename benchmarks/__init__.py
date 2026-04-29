@@ -1,7 +1,7 @@
 """
 benchmarks — Cross-method reference implementations.
 
-Per Sail v0.4 §9 DG-3, the mandatory baseline pair for v0.4 scaffold is:
+Per Sail v0.5 §9 DG-3, the mandatory baseline pair for the v0.1.0 scaffold is:
     - exact_finite_env.py
     - qutip_reference.py
 

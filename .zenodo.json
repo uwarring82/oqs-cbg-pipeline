@@ -36,5 +36,5 @@
       "scheme": "doi"
     }
   ],
-  "notes": "At v0.1.0, no Decision Gate (DG-1 through DG-5 per Sail v0.4 §9) has yet been passed. The repository is a scaffold; outputs at this version have demonstration value only. Live DG status: docs/validity_envelope.md."
+  "notes": "At v0.1.0, no Decision Gate (DG-1 through DG-5 per Sail v0.5 §9) has yet been passed. The repository is a scaffold; outputs at this version have demonstration value only. Live DG status: docs/validity_envelope.md."
 }
