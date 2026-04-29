@@ -1,0 +1,57 @@
+# Endorsement Marker — `oqs-cbg-pipeline`
+
+**Layer:** Sail-internal repository
+**Anchor:** [Sail v0.4](../sail/sail-cbg-pipeline_v0.4.md), which itself anchors to [CL-2026-005 v0.4](../ledger/CL-2026-005_v0.4.md) (Council-cleared 2026-04-29, session CL-2026-005-DEL-001)
+**Steward:** U. Warring (Physikalisches Institut, Albert-Ludwigs-Universität Freiburg)
+
+## What this repository is
+
+This repository implements the numerical pipeline scoped by the Sail "Towards a Decision-Forcing Numerical Pipeline for Non-Markovian Open Quantum Dynamics" (v0.4). It is a Sail-internal artefact. It is *not* a Ledger entry, *not* a coastline, and *not* a validation claim about the underlying Colla–Breuer–Gasbarri (CBG) framework.
+
+## What this repository is not
+
+- It is *not* an endorsement of the minimal-dissipation effective Hamiltonian K(t) as the unique physical Hamiltonian of a strongly-coupled open quantum system. K(t) is a coordinate-dependent object under a chosen gauge. See [`do_not_cite_as.md`](do_not_cite_as.md).
+- It is *not* an adjudication between competing strong-coupling thermodynamic frameworks (Hayden–Sorce minimal-dissipation, Hamiltonian of mean force, polaron, Mori). Adjudication is the discriminant question for CL-2026-005 Entry 7 and is *out of scope* for unilateral repository action.
+- It is *not* a substitute for fresh Council deliberation when its outputs bear on Ledger entries. See "Unidirectional consumption rule" below.
+
+## Unidirectional consumption rule
+
+The repository consumes [CL-2026-005 v0.4](../ledger/CL-2026-005_v0.4.md) as a stable input. Findings produced here that bear on the Ledger — notably any DG-5 outcomes affecting Entry 7's UNDERDETERMINED classification — are routed via fresh Council deliberation, not via repository revision.
+
+The relationship is:
+
+```
+Council-cleared Ledger  ──►  Sail  ──►  Repository
+                                          │
+                                          ▼
+                                   discriminant report
+                                          │
+                                          ▼
+                              fresh Council deliberation
+                                          │
+                                          ▼
+                              (possibly) revised Ledger
+```
+
+The repository never modifies the Ledger directly. The arrow is one-way at every layer except via Council deliberation.
+
+## Inherited protective measures
+
+This repository inherits, verbatim, two Council-ratified protective measures from CL-2026-005 v0.4 (session CL-2026-005-DEL-001):
+
+- **(G1)** The "Do not cite as" guard, expanded in [`do_not_cite_as.md`](do_not_cite_as.md).
+- **(G2)** Continued steward-conflict triple-flagging on Entry 6, operationalised here in [`stewardship_conflict.md`](stewardship_conflict.md).
+
+Code that runs without these three protective documents (`endorsement_marker.md`, `stewardship_conflict.md`, `do_not_cite_as.md`) being present at HEAD is structurally non-compliant with the Sail's discipline and must not be released, archived, or cited.
+
+## Scope
+
+The repository's scope is determined by the Sail's Decision Gates DG-1 through DG-5 (Sail §9). The repository's outputs at any given time are valid only within the validity envelope established by those gates' status, recorded in [`validity_envelope.md`](validity_envelope.md).
+
+## Citation
+
+If you use any output of this repository, cite the underlying papers (Colla, Breuer, Gasbarri, Phys. Rev. A **112**, L050203 (2025) and Phys. Rev. A **112**, 052222 (2025)) and the repository version. Do not cite the repository as evidence for any claim outside the validity envelope of the relevant Decision Gates' status. See [`do_not_cite_as.md`](do_not_cite_as.md) for the full guard.
+
+---
+
+*Repository version: v0.1.0 (scaffold initialised). Not production-ready. No DG has yet been passed. Outputs at this version have demonstration value only.*
