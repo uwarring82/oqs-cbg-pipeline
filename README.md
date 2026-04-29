@@ -24,6 +24,8 @@ A Sail-internal repository implementing the construction of:
 
 The pipeline computes the minimal-dissipation effective Hamiltonian K(t), its perturbative expansion K_n(t), and the canonical TCL generator at every order; benchmarks against independent open-system methods; and forces decisions about the validity envelope of the construction.
 
+A static public landing page for the repository is tracked at [`index.html`](index.html).
+
 ## What this is *not*
 
 - **Not** a claim that K(t) is the unique physical Hamiltonian of an open system. K(t) is a coordinate-dependent object under the Hayden–Sorce minimal-dissipation gauge. See [`docs/do_not_cite_as.md`](docs/do_not_cite_as.md).
@@ -74,6 +76,7 @@ Live status: [`docs/validity_envelope.md`](docs/validity_envelope.md).
 
 ```
 oqs-cbg-pipeline/
+├── index.html        # static public landing page
 ├── docs/             # protective scaffolding (non-optional, gates code)
 ├── ledger/           # vendored CL-2026-005 v0.4 + briefing + deliberation log
 ├── sail/             # active Sail v0.4

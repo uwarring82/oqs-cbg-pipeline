@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>oqs-cbg-pipeline — Open numerical companion to Colla–Breuer–Gasbarri (2025)</title>
+<meta name="description" content="Open-source numerical pipeline for the minimal-dissipation effective-Hamiltonian construction in non-Markovian open quantum systems. Companion to Colla, Breuer, Gasbarri, Phys. Rev. A 112 (2025).">
+<meta name="author" content="Ulrich Warring">
+<meta name="robots" content="index, follow">
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --sea: #2c5f7c;
+    --signal: #c0392b;
+    --stone: #6b6b6b;
+    --parchment: #f5f0e8;
+    --rule: #d8d2c4;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Crimson Pro", Georgia, "Times New Roman", serif;
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--ink);
+    background: var(--parchment);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 3.5rem 1.5rem 4rem; }
+  header { margin-bottom: 2.5rem; }
+  .eyebrow {
+    font-family: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sea);
+    margin-bottom: 0.75rem;
+  }
+  h1 {
+    font-size: 2.05rem;
+    line-height: 1.2;
+    margin: 0 0 0.6rem;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+  .subtitle {
+    color: var(--stone);
+    font-size: 1.1rem;
+    font-style: italic;
+    margin: 0 0 1.5rem;
+  }
+  .repo-line {
+    font-family: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 0.6rem 0.9rem;
+    background: #fff;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    display: inline-block;
+  }
+  .repo-line a { color: var(--sea); text-decoration: none; }
+  .repo-line a:hover { text-decoration: underline; }
+  h2 {
+    font-size: 1.3rem;
+    margin: 2.6rem 0 0.6rem;
+    font-weight: 600;
+    color: var(--ink);
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 0.3rem;
+  }
+  h3 {
+    font-size: 1rem;
+    margin: 1.4rem 0 0.4rem;
+    font-weight: 600;
+    color: var(--sea);
+    font-family: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+    letter-spacing: 0.01em;
+  }
+  p { margin: 0 0 1rem; }
+  a { color: var(--sea); }
+  a:hover { color: var(--signal); }
+  ul.refs {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0.5rem;
+  }
+  ul.refs li {
+    margin-bottom: 0.7rem;
+    padding-left: 1.1rem;
+    text-indent: -1.1rem;
+    font-size: 0.97rem;
+  }
+  ul.refs li::before {
+    content: "—";
+    color: var(--stone);
+    margin-right: 0.4rem;
+  }
+  .doi {
+    font-family: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.85rem;
+    color: var(--stone);
+  }
+  .disclosure {
+    background: #fff;
+    border-left: 3px solid var(--signal);
+    padding: 1rem 1.2rem;
+    margin: 1.5rem 0;
+    font-size: 0.97rem;
+  }
+  .disclosure strong { color: var(--signal); }
+  footer {
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+    font-size: 0.85rem;
+    color: var(--stone);
+    line-height: 1.5;
+  }
+  footer p { margin-bottom: 0.5rem; }
+  footer a { color: var(--stone); }
+  footer a:hover { color: var(--sea); }
+  .center-dot {
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    background: var(--sea);
+    border-radius: 50%;
+    margin: 0 0.4rem;
+    vertical-align: middle;
+  }
+  @media (max-width: 540px) {
+    body { font-size: 17px; }
+    h1 { font-size: 1.7rem; }
+    .wrap { padding: 2rem 1.2rem 3rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Open numerical companion</div>
+  <h1>oqs-cbg-pipeline</h1>
+  <p class="subtitle">A numerical implementation of the minimal-dissipation effective-Hamiltonian construction for non-Markovian open quantum systems.</p>
+  <div class="repo-line">
+    Code: <a href="https://github.com/uwarring82/oqs-cbg-pipeline">github.com/uwarring82/oqs-cbg-pipeline</a>
+  </div>
+</header>
+
+<section>
+<p>This site introduces an open-source numerical pipeline for the construction developed by <strong>Alessandra Colla, Heinz-Peter Breuer, and Giulio Gasbarri</strong> in two recent papers in <em>Physical Review A</em>. It is offered as an open companion to that work — not a competing claim, not an endorsement, but a benchmarked numerical implementation made available under FAIR principles. We welcome correspondence from the original authors and from the wider open-quantum-systems community, both theory and experiment.</p>
+</section>
+
+<section>
+<h2>What the pipeline does</h2>
+<p>Starting from a microscopic open-system model, the pipeline computes the effective Hamiltonian <em>K</em>(<em>t</em>) of the time-convolutionless master equation under the Hayden–Sorce minimal-dissipation gauge, together with its perturbative expansion order by order, and the canonical generalised-Lindblad form of the corresponding generator. It is built around the basis-independent operational expression and the recursive perturbative construction introduced in the seed papers below.</p>
+<p>The pipeline aims to expose the <em>scope of applicability</em> of the construction rather than to confirm it. Concretely, this means: side-by-side comparison against numerically exact and standard approximate methods, explicit identification of regimes where the perturbative hierarchy fails, structural-identity checks at every computed order, and tracking of the gauge dependence wherever competing effective-Hamiltonian descriptions are available.</p>
+<p>At present (version 0.1.0), the repository contains the architectural scaffold, vendored references, and protective documentation. No scientific verification milestone has yet been reached. The roadmap and current status are documented in the repository.</p>
+</section>
+
+<section>
+<h2>Why this companion exists</h2>
+<p>The Colla–Breuer–Gasbarri construction turns a long-standing ambiguity in non-Markovian open-system dynamics — the non-uniqueness of the coherent/dissipative split — into a concrete, calculable object once the minimal-dissipation gauge is chosen. We think the construction deserves an open, benchmarked numerical companion that lets practitioners test it transparently, including in regimes where it might fail, and that makes the gauge dependence visible at every step.</p>
+<p>We are explicit that <em>K</em>(<em>t</em>) is a coordinate-dependent object under the chosen gauge. Comparisons with alternative frameworks — Hamiltonian of mean force, polaron-transformed pictures, Mori-projector approaches — require explicit gauge alignment and are not adjudicated by this pipeline alone. Reports and plots from the pipeline carry the gauge annotation by default.</p>
+</section>
+
+<section>
+<h2>For the originating authors and the OQS community</h2>
+<p>If you are one of the originating authors, or if you work on related theory or experiment, this companion is an open invitation. We are interested in correspondence on at least three fronts: solvable-model test cases where the perturbative hierarchy can be cross-checked analytically; non-trapped-ion experimental platforms where the time-dependent <em>K</em>(<em>t</em>) signature could be tested independently of existing observations; and method comparisons against HEOM, TEMPO, MCTDH, pseudomode, and chain-mapping approaches that are likely to fail in regimes complementary to ours.</p>
+</section>
+
+<section>
+<h2>Seed papers</h2>
+<ul class="refs">
+  <li>A. Colla, H.-P. Breuer, G. Gasbarri, <em>Unveiling coherent dynamics in non-Markovian open quantum systems: Exact expression and recursive perturbation expansion</em>, Phys. Rev. A <strong>112</strong>, L050203 (2025). <a class="doi" href="https://doi.org/10.1103/n5nl-gn1y">doi:10.1103/n5nl-gn1y</a></li>
+  <li>A. Colla, H.-P. Breuer, G. Gasbarri, <em>Recursive perturbation approach to time-convolutionless master equations: Explicit construction of generalized Lindblad generators for arbitrary open systems</em>, Phys. Rev. A <strong>112</strong>, 052222 (2025). <a class="doi" href="https://doi.org/10.1103/9j8d-jxgd">doi:10.1103/9j8d-jxgd</a></li>
+</ul>
+</section>
+
+<section>
+<h2>Background and anchoring references</h2>
+
+<h3>Textbooks</h3>
+<ul class="refs">
+  <li>H.-P. Breuer and F. Petruccione, <em>The Theory of Open Quantum Systems</em> (Oxford University Press, 2007).</li>
+  <li>B. Vacchini, <em>Open Quantum Systems</em> (Springer, 2024).</li>
+</ul>
+
+<h3>Gauge fix and minimal dissipation</h3>
+<ul class="refs">
+  <li>P. Hayden and J. Sorce, <em>A canonical Hamiltonian for open quantum systems</em>, J. Phys. A: Math. Theor. <strong>55</strong>, 225302 (2022).</li>
+  <li>A. Colla and H.-P. Breuer, <em>Open-system approach to nonequilibrium quantum thermodynamics at arbitrary coupling</em>, Phys. Rev. A <strong>105</strong>, 052216 (2022). <span class="doi">— first exploration of the minimal-dissipation effective Hamiltonian in non-Markovian regimes.</span></li>
+</ul>
+
+<h3>Non-Markovianity: definitions and measures</h3>
+<ul class="refs">
+  <li>A. Rivas, S. F. Huelga, and M. B. Plenio, <em>Quantum non-Markovianity: characterization, quantification and detection</em>, Rep. Prog. Phys. <strong>77</strong>, 094001 (2014).</li>
+  <li>H.-P. Breuer, E.-M. Laine, J. Piilo, and B. Vacchini, <em>Colloquium: Non-Markovian dynamics in open quantum systems</em>, Rev. Mod. Phys. <strong>88</strong>, 021002 (2016).</li>
+  <li>D. Chruściński, <em>Dynamical maps beyond Markovian regime</em>, Phys. Rep. <strong>992</strong>, 1 (2022).</li>
+</ul>
+
+<h3>Strong-coupling thermodynamics (alternative gauges and frameworks)</h3>
+<ul class="refs">
+  <li>I. A. Picatoste, A. Colla, and H.-P. Breuer, <em>Dynamically emergent quantum thermodynamics: Non-Markovian Otto cycle</em>, Phys. Rev. Res. <strong>6</strong>, 013258 (2024). <span class="doi">— Fano–Anderson model under minimal dissipation; natural comparison venue.</span></li>
+  <li>A. Colla and H.-P. Breuer, <em>Thermodynamic roles of quantum environments: from heat baths to work reservoirs</em>, Quantum Sci. Technol. <strong>10</strong>, 015047 (2025).</li>
+</ul>
+
+<h3>Experimental fingerprints</h3>
+<ul class="refs">
+  <li>A. Colla, F. Hasse, D. Palani, T. Schaetz, H.-P. Breuer, U. Warring, <em>Observing time-dependent energy level renormalisation in an ultrastrongly coupled open system</em>, Nat. Commun. <strong>16</strong>, 2502 (2025). <span class="doi">— see disclosure below.</span></li>
+</ul>
+
+<h3>Cross-method references for benchmarking</h3>
+<ul class="refs">
+  <li>Y. Tanimura, <em>Numerically &lsquo;exact&rsquo; approach to open quantum dynamics: The hierarchical equations of motion (HEOM)</em>, J. Chem. Phys. <strong>153</strong>, 020901 (2020).</li>
+  <li>A. Strathearn et al., <em>Efficient non-Markovian quantum dynamics using time-evolving matrix product operators</em>, Nat. Commun. <strong>9</strong>, 3322 (2018).</li>
+  <li>D. Tamascelli, A. Smirne, S. F. Huelga, M. B. Plenio, <em>Nonperturbative treatment of non-Markovian dynamics of open quantum systems</em>, Phys. Rev. Lett. <strong>120</strong>, 030402 (2018).</li>
+  <li>J. R. Johansson, P. D. Nation, F. Nori, <em>QuTiP 2: A Python framework for the dynamics of open quantum systems</em>, Comp. Phys. Commun. <strong>184</strong>, 1234 (2013).</li>
+</ul>
+</section>
+
+<section>
+<h2>Disclosures</h2>
+<div class="disclosure">
+<p><strong>Conflict of interest.</strong> The maintainer of this repository (U. Warring) is a co-author of the trapped-ion experimental paper Colla, Hasse, Palani, Schaetz, Breuer, Warring, Nat. Commun. <strong>16</strong>, 2502 (2025), which is cited by the seed papers as providing experimental fingerprints supporting the minimal-dissipation Ansatz. To contain this conflict, the pipeline treats data from that experiment as a secondary cross-check only, never as primary evidence; primary experimental benchmarks must come from independent groups. Where no independent data exist, the corresponding model carries an explicit "awaiting independent replication" annotation. We actively welcome independent fingerprinting on other platforms.</p>
+</div>
+<p><strong>Scope of citation.</strong> This pipeline must not be cited as evidence that <em>K</em>(<em>t</em>) is the unique physical Hamiltonian of a strongly-coupled open quantum system. <em>K</em>(<em>t</em>) is coordinate-dependent under the Hayden–Sorce gauge; alternative gauges yield different effective Hamiltonians and different thermodynamic readings. Citation rules and the current scope of applicability are documented in the repository.</p>
+<p><strong>Status.</strong> Repository version 0.1.0. Architectural scaffold complete; no scientific verification milestone yet reached. Outputs at this version have demonstration value only.</p>
+</section>
+
+<section>
+<h2>How to engage</h2>
+<p>Clone the repository, open an issue, or get in touch by email. Three forms of engagement are particularly valuable to us at this stage: independent replication of the trapped-ion observation on a different experimental platform; analytic cross-checks on solvable models where the perturbative hierarchy can be evaluated to high order; and method comparisons against techniques whose failure modes do not overlap with finite-environment exact diagonalisation or QuTiP master-equation solvers.</p>
+</section>
+
+<footer>
+<p>Maintainer: Ulrich Warring, Physikalisches Institut, Albert-Ludwigs-Universität Freiburg <span class="center-dot"></span> ulrich.warring at physik.uni-freiburg.de</p>
+<p>Repository: code under MIT, documentation under CC-BY-4.0 <span class="center-dot"></span> citation file: <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/CITATION.cff">CITATION.cff</a></p>
+<p>Version 0.1.0 <span class="center-dot"></span> last updated 2026-04-29 <span class="center-dot"></span> a Zenodo DOI will be minted at the first scientific milestone</p>
+</footer>
+
+</div>
+</body>
+</html>
