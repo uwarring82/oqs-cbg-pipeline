@@ -1,0 +1,40 @@
+{
+  "title": "oqs-cbg-pipeline: Numerical implementation of the Colla–Breuer–Gasbarri minimal-dissipation effective-Hamiltonian framework",
+  "description": "<p>Sail-internal repository implementing the basis-independent operational expression and recursive perturbative expansion for the effective Hamiltonian K(t) of non-Markovian open quantum systems under the Hayden–Sorce minimal-dissipation gauge. Anchored to Council-cleared Breakwater Ledger entry CL-2026-005 v0.4.</p><p><strong>Outputs are coordinate-dependent under the chosen gauge.</strong> See docs/do_not_cite_as.md for citation prohibitions.</p>",
+  "creators": [
+    {
+      "name": "Warring, Ulrich",
+      "affiliation": "Physikalisches Institut, Albert-Ludwigs-Universität Freiburg"
+    }
+  ],
+  "upload_type": "software",
+  "license": "MIT",
+  "access_right": "open",
+  "keywords": [
+    "non-Markovian open quantum systems",
+    "time-convolutionless master equation",
+    "effective Hamiltonian",
+    "minimal dissipation",
+    "Hayden-Sorce gauge",
+    "Colla-Breuer-Gasbarri",
+    "quantum thermodynamics",
+    "FAIR",
+    "Open Science Harbour"
+  ],
+  "communities": [
+    {"identifier": "open-science-harbour"}
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "10.1103/n5nl-gn1y",
+      "relation": "isDocumentedBy",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.1103/9j8d-jxgd",
+      "relation": "isDocumentedBy",
+      "scheme": "doi"
+    }
+  ],
+  "notes": "At v0.1.0, no Decision Gate (DG-1 through DG-5 per Sail v0.4 §9) has yet been passed. The repository is a scaffold; outputs at this version have demonstration value only. Live DG status: docs/validity_envelope.md."
+}

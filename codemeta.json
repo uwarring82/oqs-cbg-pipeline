@@ -1,0 +1,67 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "name": "oqs-cbg-pipeline",
+  "description": "Numerical implementation of the Colla–Breuer–Gasbarri minimal-dissipation effective-Hamiltonian framework for non-Markovian open quantum systems. Anchored to Council-cleared Breakwater Ledger entry CL-2026-005 v0.4.",
+  "version": "0.1.0",
+  "datePublished": "2026-04-29",
+  "license": "https://spdx.org/licenses/MIT.html",
+  "applicationCategory": "Physics / Open Quantum Systems",
+  "programmingLanguage": "Python",
+  "operatingSystem": "Linux, macOS",
+  "author": [
+    {
+      "@type": "Person",
+      "givenName": "Ulrich",
+      "familyName": "Warring",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "Physikalisches Institut, Albert-Ludwigs-Universität Freiburg"
+      }
+    }
+  ],
+  "keywords": [
+    "non-Markovian open quantum systems",
+    "time-convolutionless master equation",
+    "effective Hamiltonian",
+    "minimal dissipation gauge",
+    "Hayden-Sorce",
+    "Colla-Breuer-Gasbarri",
+    "quantum thermodynamics",
+    "FAIR"
+  ],
+  "softwareRequirements": [
+    {
+      "@type": "SoftwareApplication",
+      "name": "Python",
+      "version": ">=3.10"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "NumPy"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "SciPy"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "QuTiP",
+      "version": ">=4.7"
+    }
+  ],
+  "developmentStatus": "wip",
+  "funding": "(to be specified)",
+  "referencePublication": [
+    {
+      "@type": "ScholarlyArticle",
+      "name": "Unveiling coherent dynamics in non-Markovian open quantum systems: Exact expression and recursive perturbation expansion",
+      "@id": "https://doi.org/10.1103/n5nl-gn1y"
+    },
+    {
+      "@type": "ScholarlyArticle",
+      "name": "Recursive perturbation approach to time-convolutionless master equations: Explicit construction of generalized Lindblad generators for arbitrary open systems",
+      "@id": "https://doi.org/10.1103/9j8d-jxgd"
+    }
+  ]
+}

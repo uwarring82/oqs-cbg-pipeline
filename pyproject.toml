@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "oqs-cbg-pipeline"
+version = "0.1.0"
+description = "Numerical implementation of the Colla–Breuer–Gasbarri minimal-dissipation effective-Hamiltonian framework for non-Markovian open quantum systems."
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Ulrich Warring", email = "ulrich.warring@physik.uni-freiburg.de"},
+]
+keywords = [
+    "non-Markovian", "open quantum systems", "TCL", "effective Hamiltonian",
+    "minimal dissipation", "Hayden-Sorce", "Colla-Breuer-Gasbarri",
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "qutip>=4.7",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "pytest-cov", "black", "ruff", "mypy"]
+docs = ["sphinx", "myst-parser", "sphinx-book-theme"]
+
+[project.urls]
+Repository = "https://github.com/_placeholder_/oqs-cbg-pipeline"
+"Sail" = "sail/sail-cbg-pipeline_v0.4.md"
+"Ledger anchor" = "ledger/CL-2026-005_v0.4.md"
+
+[tool.setuptools]
+packages = ["cbg", "models", "numerical", "benchmarks", "reporting"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

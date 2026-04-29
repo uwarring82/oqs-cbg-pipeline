@@ -1,0 +1,67 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below, and respect the citation prohibitions in docs/do_not_cite_as.md."
+title: "oqs-cbg-pipeline: Numerical implementation of the Colla–Breuer–Gasbarri minimal-dissipation effective-Hamiltonian framework"
+abstract: >-
+  Sail-internal repository implementing the basis-independent operational
+  expression and recursive perturbative expansion for the effective Hamiltonian
+  K(t) of non-Markovian open quantum systems under the Hayden–Sorce
+  minimal-dissipation gauge. Anchored to Council-cleared Breakwater Ledger
+  entry CL-2026-005 v0.4. Outputs are coordinate-dependent under the chosen
+  gauge; see docs/do_not_cite_as.md for citation prohibitions.
+type: software
+authors:
+  - family-names: Warring
+    given-names: Ulrich
+    affiliation: "Physikalisches Institut, Albert-Ludwigs-Universität Freiburg"
+    # ORCID to be added at first non-trivial release
+version: 0.1.0
+date-released: 2026-04-29
+license: MIT
+license-url: "https://opensource.org/licenses/MIT"
+repository-code: "https://github.com/_placeholder_/oqs-cbg-pipeline"
+keywords:
+  - non-Markovian open quantum systems
+  - time-convolutionless master equation
+  - effective Hamiltonian
+  - minimal dissipation
+  - Hayden-Sorce gauge
+  - Colla-Breuer-Gasbarri
+  - quantum thermodynamics
+  - trapped ions
+references:
+  - type: article
+    authors:
+      - family-names: Colla
+        given-names: Alessandra
+      - family-names: Breuer
+        given-names: Heinz-Peter
+      - family-names: Gasbarri
+        given-names: Giulio
+    title: "Unveiling coherent dynamics in non-Markovian open quantum systems: Exact expression and recursive perturbation expansion"
+    journal: "Physical Review A"
+    volume: 112
+    issue: 5
+    pages: L050203
+    year: 2025
+    doi: 10.1103/n5nl-gn1y
+  - type: article
+    authors:
+      - family-names: Colla
+        given-names: Alessandra
+      - family-names: Breuer
+        given-names: Heinz-Peter
+      - family-names: Gasbarri
+        given-names: Giulio
+    title: "Recursive perturbation approach to time-convolutionless master equations: Explicit construction of generalized Lindblad generators for arbitrary open systems"
+    journal: "Physical Review A"
+    volume: 112
+    issue: 5
+    pages: 052222
+    year: 2025
+    doi: 10.1103/9j8d-jxgd
+  - type: generic
+    title: "CL-2026-005 v0.4 — Claim Ledger on the Colla–Breuer–Gasbarri Minimal-Dissipation Effective-Hamiltonian Framework"
+    authors:
+      - name: "Open-Science Harbour Council-3"
+    year: 2026
+    notes: "Council-cleared Breakwater Ledger entry, session CL-2026-005-DEL-001, 2026-04-29. Vendored at ledger/CL-2026-005_v0.4.md."

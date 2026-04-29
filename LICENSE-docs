@@ -1,0 +1,27 @@
+CC-BY-4.0 — Creative Commons Attribution 4.0 International
+
+Copyright (c) 2026 U. Warring and the oqs-cbg-pipeline contributors
+
+This license applies to all DOCUMENTATION in this repository, including:
+    - everything in docs/
+    - everything in ledger/ (vendored from upstream Council-cleared sources;
+      original Ledger entries are themselves CC-BY-4.0 per CL-2026-005 v0.4)
+    - everything in sail/
+    - everything in logbook/
+    - benchmark card content (YAML files in benchmarks/benchmark_cards/)
+    - this README.md
+
+You are free to:
+    - Share — copy and redistribute the material in any medium or format
+    - Adapt — remix, transform, and build upon the material for any purpose,
+      even commercially.
+
+Under the following terms:
+    - Attribution — You must give appropriate credit, provide a link to the
+      license, and indicate if changes were made. You may do so in any
+      reasonable manner, but not in any way that suggests the licensor
+      endorses you or your use.
+
+Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
+
+For SOURCE CODE in this repository, see LICENSE (MIT).
