@@ -1,17 +1,22 @@
 # Benchmark-card template — `oqs-cbg-pipeline`
 #
 # Anchor: SCHEMA.md (this directory); docs/benchmark_protocol.md §1, §4
-# Schema version: v0.1.1
+# Schema version: v0.1.2
 # Status: template — copy and rename to <card_id>_<short-tag>_v<version>.yaml
 #         before editing. The leading underscore in this file's name marks it
 #         as not-a-card; the runner ignores files whose basename begins with `_`.
 #
-# This template shows the `dynamical` shape (the common case: system-bath
-# model with time-dependent K(t); Cards A3, A4 and DG-2+). For
-# `model_kind: algebraic_map` cards (Card A1: closed-form L → K verification
-# at a single instant), see SCHEMA.md §Algebraic-map cards — the model
-# block uses `test_cases:` instead of `system_hamiltonian`/`coupling_operator`/
-# `bath_type`, and `numerical.time_grid` is optional.
+# This template shows the `dynamical` SINGLE-TEST shape (the common case:
+# one system-bath model with time-dependent K(t); single bath state; one
+# acceptance check). Two variants documented in SCHEMA.md but not shown
+# inline:
+#   - model_kind: algebraic_map (Card A1: closed-form L → K verification
+#     at a single instant; test_cases REQUIRED; no time_grid). See
+#     SCHEMA.md §Algebraic-map cards.
+#   - model_kind: dynamical with test_cases (Cards A3, A4: parameter
+#     sweep over bath_state; same physical model with multiple bath
+#     states each verifying a different B-prediction). See SCHEMA.md
+#     §Test cases for dynamical cards.
 #
 # This file is the canonical machine-readable example of the card schema. Every
 # field defined in SCHEMA.md is present below with an inline comment explaining
@@ -35,7 +40,7 @@
 
 # ─── Top-level metadata ───────────────────────────────────────────────────────
 
-schema_version: "v0.1.1"        # the SCHEMA.md dialect this card claims to satisfy
+schema_version: "v0.1.2"        # the SCHEMA.md dialect this card claims to satisfy
 card_id: "TBD-CARD-ID"          # e.g. "A1", "A3", "A4". Pattern: ^[A-E][0-9]+$
 version: "v0.1.0"               # semver of THIS card; increments on supersedure
 date: "TBD-YYYY-MM-DD"          # ISO-8601, steward local timezone (Europe/Berlin)

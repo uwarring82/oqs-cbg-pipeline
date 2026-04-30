@@ -2,7 +2,7 @@
 
 **Layer:** Repository operational specification (co-located with cards)
 **Anchor:** Sail v0.5 §11 (parameter-freezing protocol mandate); [`docs/benchmark_protocol.md`](../../docs/benchmark_protocol.md) §1 (gauge annotation), §4 (parameter freezing); [DG-1 work plan v0.1.2](../../plans/dg-1-work-plan_v0.1.2.md) §4 Phase A
-**Schema version:** v0.1.1
+**Schema version:** v0.1.2
 **Last updated:** 2026-04-30
 
 ---
@@ -131,8 +131,8 @@ Hamiltonian coefficients, system–environment partition, coupling operators, ba
 | `coupling_operator` | string | conditional | Required when `model_kind == dynamical`. Symbolic expression (e.g. `sigma_z`, `sigma_x`). For `algebraic_map`, jump operators are per-test-case. |
 | `bath_type` | string | conditional | Required when `model_kind == dynamical`. One of `bosonic_linear`, `bosonic_displaced`, `fermionic`, `none`. For `algebraic_map`, omit (no dynamical bath). |
 | `bath_spectral_density` | mapping | conditional | Required when `bath_type ≠ none`. Sub-fields: `family` (e.g. `ohmic`, `drude_lorentz`), `cutoff_frequency`, `coupling_strength`. |
-| `bath_state` | mapping | conditional | Required when `bath_type ≠ none`. Sub-fields: `family` (e.g. `thermal`, `coherent_displaced`), `temperature` (kelvin or dimensionless `omega`-units; declare units explicitly), `displacement_amplitude` (if applicable). |
-| `test_cases` | list[mapping] | conditional | Required when `model_kind == algebraic_map`; absent otherwise. See §[Algebraic-map cards](#algebraic-map-cards) for the per-entry shape. |
+| `bath_state` | mapping | conditional | Required at model level when `bath_type ≠ none` AND no per-case `bath_state` is supplied in `test_cases`. When `test_cases` provides per-case `bath_state`, the per-case value takes precedence and the model-level field may be omitted. Sub-fields: `family` (e.g. `thermal`, `coherent_displaced`), `temperature` (kelvin or dimensionless `omega`-units; declare units explicitly), `displacement_amplitude` (if applicable). |
+| `test_cases` | list[mapping] | conditional | Required when `model_kind == algebraic_map`. Optional when `model_kind == dynamical` (used for parameter sweeps; see §[Test cases for dynamical cards](#test-cases-for-dynamical-cards)). Each entry has at minimum `name`, `description`, `expected_outcome`, `reference`; for dynamical cards, may carry per-case overrides of model-level fields (typically `bath_state`). |
 
 Cards may add model-specific fields beyond this minimum; the runner does not reject extra fields under `model`.
 
@@ -154,6 +154,19 @@ For algebraic-map cards:
 - `frozen_parameters.truncation.perturbative_order` is `0` for closed-form algebraic checks per [DG-1 work plan v0.1.2](../../plans/dg-1-work-plan_v0.1.2.md) §1.2.
 
 PASS for an algebraic-map card requires every `test_cases[i]` to satisfy the card-level error metric and threshold. The `acceptance_criterion.rationale` block enumerates the per-test-case PASS conditions and any conditional logic.
+
+##### Test cases for dynamical cards
+
+A `dynamical` card may also use `test_cases:` to encode a *parameter sweep* — running the same physical model under multiple variants of a swept parameter, with each variant testing a different B-prediction. Cards A3 and A4 use this pattern: `system_hamiltonian`, `coupling_operator`, `bath_type`, `bath_spectral_density`, `truncation`, `numerical`, and `comparison` are fixed at the model/card level; the bath state varies per test case (thermal vs. coherently displaced), and each case's `expected_outcome` describes which B-predictions hold under that bath state.
+
+For a dynamical card with `test_cases`:
+
+- Each `test_cases[i]` entry has the same minimum fields as in algebraic-map cards (`name`, `description`, `expected_outcome`, `reference`) and may carry per-case overrides for any model-level field. The most common override is `bath_state:`; in principle any of the model-block fields may be overridden.
+- Per-case fields take precedence over model-level when both are present; model-level fields apply when not overridden.
+- When a card provides per-case `bath_state` for every entry, the model-level `bath_state` may be omitted (relaxation of validation rule 14a).
+- Per-case acceptance metrics may differ from the card-level `comparison.error_metric` and `comparison.threshold` — for example, B.2 verifies a derived quantity is *zero* within tolerance, while B.3 verifies it is *nonzero* above a sensitivity threshold. The card-level `acceptance_criterion.rationale` enumerates the per-case PASS conditions in plain language; per-case structured fields (e.g. `expected_metric:`, `expected_threshold:`) are permitted as extras and resolved by the Phase C runner.
+
+PASS for a dynamical card with `test_cases` requires every entry to satisfy its per-case conditions as enumerated in `acceptance_criterion.rationale`. A dynamical card without `test_cases` is a single-test card; its acceptance is set entirely by the card-level `comparison` block and `acceptance_criterion`.
 
 #### `frozen_parameters.truncation`
 
@@ -298,8 +311,10 @@ These rules apply to **committed cards**. They do *not* apply to [`_template.yam
 11. **`license` field equals `CC-BY-4.0 (LICENSE-docs)`** (cards inherit documentation licensing).
 12. **`schema_version` matches a schema dialect the runner knows.** Cards under unknown schema versions are rejected with a clear error pointing at this section.
 13. **`frozen_parameters.model.model_kind` is one of `dynamical`, `algebraic_map`.**
-14. **`model_kind == dynamical` ⇒ `system_hamiltonian`, `coupling_operator`, `bath_type` are required; `numerical.time_grid` is required.**
-15. **`model_kind == algebraic_map` ⇒ `test_cases:` is a non-empty list; each entry has at minimum `name`, `description`, `expected_outcome`, `reference`. `system_hamiltonian`/`coupling_operator`/`bath_type` are absent or empty.**
+14. **`model_kind == dynamical` ⇒ `system_hamiltonian`, `coupling_operator`, `bath_type` are required at model level; `numerical.time_grid` is required.**
+14a. **When `bath_type ≠ none`, `bath_state` is required at model level OR in every entry of `test_cases`** (per-case `bath_state` takes precedence over model-level when both are present).
+15. **When `test_cases` is present (under any `model_kind`), each entry has at minimum `name`, `description`, `expected_outcome`, `reference`.**
+15a. **`model_kind == algebraic_map` ⇒ `test_cases` is required and non-empty; `system_hamiltonian`/`coupling_operator`/`bath_type` are absent or empty.**
 16. **`numerical.time_grid` is required when `model_kind == dynamical`** (this is the dynamical-side restatement of rule 14, reiterated under `numerical` for runner-implementation clarity).
 
 ## Card lifecycle
@@ -334,16 +349,17 @@ The `superseded_by:` annotation on the prior card and the corresponding `failure
 
 ## Schema versioning
 
-This schema is itself versioned. The current version is `v0.1.1` (drafted 2026-04-30, [DG-1 work plan v0.1.2](../../plans/dg-1-work-plan_v0.1.2.md) Phase A).
+This schema is itself versioned. The current version is `v0.1.2` (drafted 2026-04-30, [DG-1 work plan v0.1.2](../../plans/dg-1-work-plan_v0.1.2.md) Phase A/Phase B boundary).
 
-Subsequent revisions follow the same supersedure discipline as other repository documents: substantive changes increment `MINOR`; clarifications and typo fixes increment `PATCH`; structural reworks that break existing cards' validity increment `MAJOR`. The schema's *current* version is recorded in this file's front-matter (`Schema version:`); the version a *card* claims to satisfy is recorded in the card's machine-readable `schema_version:` field (see §[Top-level metadata](#top-level-metadata)). The two are independent: a card under schema `v0.1.1` continues to exist unchanged after the schema bumps to a future `v0.1.2` or `v0.2.0`.
+Subsequent revisions follow the same supersedure discipline as other repository documents: substantive changes increment `MINOR`; clarifications and typo fixes increment `PATCH`; structural reworks that break existing cards' validity increment `MAJOR`. The schema's *current* version is recorded in this file's front-matter (`Schema version:`); the version a *card* claims to satisfy is recorded in the card's machine-readable `schema_version:` field (see §[Top-level metadata](#top-level-metadata)). The two are independent: a card under schema `v0.1.2` continues to exist unchanged after the schema bumps to a future `v0.1.3` or `v0.2.0`.
 
 A schema bump never invalidates already-committed cards: cards retain the schema they were authored against, recorded in their `schema_version` field. The runner is responsible for accepting cards under any schema version it knows (validation rule 12); conflicts are resolved by re-issuing the card under the new schema (full supersedure under §[Supersedure](#supersedure), with a `failure_mode_log` entry citing the schema bump as the reason).
 
 ### Revision history
 
 - **v0.1.0 (2026-04-30, drafted, never committed).** Initial Phase A draft. Single `frozen_parameters.model` shape presuming a dynamical system–bath model with required `system_hamiltonian`, `coupling_operator`, `bath_type`; `numerical.time_grid` unconditionally required. Superseded by v0.1.1 within Phase A; never reached HEAD.
-- **v0.1.1 (2026-04-30, this revision).** Added `model_kind:` discriminator (`dynamical` vs `algebraic_map`). Under `algebraic_map`: `system_hamiltonian`/`coupling_operator`/`bath_type` and `numerical.time_grid` become optional, and a `test_cases:` list is recognized with at-minimum `name`/`description`/`expected_outcome`/`reference` per entry. Validation rules 13–16 added. Surfaced by Phase B preview drafting of Card A1: Letter Eqs. (6)–(7) define an algebraic-map check on multiple L specifications, not a dynamical evolution. MINOR bump (not PATCH) because new fields and validation rules are added; non-breaking because `model_kind: dynamical` matches the v0.1.0 shape exactly.
+- **v0.1.1 (2026-04-30, superseded by v0.1.2 within Phase A/B).** Added `model_kind:` discriminator (`dynamical` vs `algebraic_map`). Under `algebraic_map`: `system_hamiltonian`/`coupling_operator`/`bath_type` and `numerical.time_grid` become optional, and a `test_cases:` list is recognized with at-minimum `name`/`description`/`expected_outcome`/`reference` per entry. Validation rules 13–16 added. Surfaced by Phase B preview drafting of Card A1: Letter Eqs. (6)–(7) define an algebraic-map check on multiple L specifications, not a dynamical evolution. MINOR bump (not PATCH) because new fields and validation rules are added; non-breaking because `model_kind: dynamical` matches the v0.1.0 shape exactly. Reached HEAD; Card A1 was authored under v0.1.1.
+- **v0.1.2 (2026-04-30, this revision).** Generalized `test_cases:` to be optionally usable under `model_kind: dynamical` for parameter sweeps (a single physical model run under multiple variants of a swept parameter, typically `bath_state`, with each variant testing a different B-prediction). Relaxed `bath_state` requirement: when `test_cases` provides per-case `bath_state` for every entry, the model-level field may be omitted. Validation rules 14a, 15a added; rule 14 narrowed (model-level requirements) and rule 15 generalized (applies to test_cases under any `model_kind`). Added §Test cases for dynamical cards subsection. Surfaced by Phase B preview drafting of Card A3: Entry 3.B targets two distinct bath states (thermal vs. coherently displaced) under one card, exercising B.1 in both cases, B.2 in thermal, B.3 in displaced. MINOR bump because new fields, new subsection, and new validation rules are added; non-breaking because v0.1.1 cards (Card A1, `model_kind: algebraic_map` with `test_cases`) continue to validate unchanged under v0.1.2 (the test_cases generalization is additive). Same cards-first-surfaces-schema-issues pattern as v0.1.0 → v0.1.1.
 
 ## Worked example pointer
 
