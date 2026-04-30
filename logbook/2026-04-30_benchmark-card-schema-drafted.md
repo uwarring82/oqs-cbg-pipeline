@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-30
 **Type:** structural
-**Triggering commit:** (to be populated on commit)
+**Triggering commit:** 0b9590a6cae92eda7b377f16450bc978a86f156b
 **Triggering evidence:**
 - [`benchmarks/benchmark_cards/SCHEMA.md`](../benchmarks/benchmark_cards/SCHEMA.md) (new) — schema v0.1.1 (with v0.1.0 → v0.1.1 in-Phase-A iteration recorded under §Schema versioning §Revision history)
 - [`benchmarks/benchmark_cards/_template.yaml`](../benchmarks/benchmark_cards/_template.yaml) (new) — annotated machine-readable template under schema v0.1.1
