@@ -70,7 +70,8 @@ Live status: [`docs/validity_envelope.md`](docs/validity_envelope.md).
 5. [`ledger/CL-2026-005_v0.4.md`](ledger/CL-2026-005_v0.4.md) — the Council-cleared anchor.
 6. [`docs/validity_envelope.md`](docs/validity_envelope.md) — current DG status.
 7. [`docs/benchmark_protocol.md`](docs/benchmark_protocol.md) — coordinate annotations, failure-mode taxonomy, parameter freezing.
-8. Module docstrings in `cbg/`, `models/`, `benchmarks/`.
+8. [`plans/README.md`](plans/README.md) and the active DG plan (currently [`plans/dg-1-work-plan_v0.1.0.md`](plans/dg-1-work-plan_v0.1.0.md)) — operational decomposition of the next Decision Gate.
+9. Module docstrings in `cbg/`, `models/`, `numerical/`, `benchmarks/`, `reporting/`.
 
 ## Repository layout
 
@@ -85,6 +86,7 @@ oqs-cbg-pipeline/
 ├── numerical/        # time-grid integration; deliberately separate from cbg/bath_correlations
 ├── benchmarks/       # cross-method references; benchmark_cards/ holds YAML cards
 ├── reporting/        # benchmark-card I/O and validity-envelope reporting
+├── plans/            # steward-authored revisable work plans (DG-1 onwards)
 ├── tests/            # smoke tests (no scientific tests pre-DG-1)
 ├── logbook/          # immutable repository event log
 └── .github/          # CI workflows
@@ -120,7 +122,7 @@ The dual licensing reflects FAIR-Reusable practice: code that may be modified an
 
 ## Steward
 
-U. Warring, Physikalisches Institut, Albert-Ludwigs-Universität Freiburg ([ORCID](https://orcid.org)).
+U. Warring, Physikalisches Institut, Albert-Ludwigs-Universität Freiburg. ORCID to be added at first non-trivial release.
 
 The steward holds a structural conflict on CL-2026-005 Entry 6 (co-authorship of the cited experimental paper). The conflict is operationalised at the repository level in [`docs/stewardship_conflict.md`](docs/stewardship_conflict.md).
 

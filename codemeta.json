@@ -6,6 +6,7 @@
   "version": "0.1.0",
   "datePublished": "2026-04-29",
   "license": "https://spdx.org/licenses/MIT.html",
+  "codeRepository": "https://github.com/uwarring82/oqs-cbg-pipeline",
   "applicationCategory": "Physics / Open Quantum Systems",
   "programmingLanguage": "Python",
   "operatingSystem": "Linux, macOS",
@@ -50,7 +51,7 @@
       "version": ">=4.7"
     }
   ],
-  "developmentStatus": "wip",
+  "developmentStatus": "https://www.repostatus.org/#wip",
   "funding": "(to be specified)",
   "referencePublication": [
     {
