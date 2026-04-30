@@ -69,9 +69,10 @@ Both exceptions are bookkeeping completions of explicit gaps, not substantive re
 | 2026-04-29 | `sail-v0.5-bump` | sail-bump | Cardinality-fix supersedure: Sail v0.5 names all five `docs/` files non-optional, aligning Sail wording with already-enforced behaviour; no Ledger impact |
 | 2026-04-30 | `benchmark-card-schema-drafted` | structural | Phase A of DG-1 work plan v0.1.2: `benchmarks/benchmark_cards/SCHEMA.md` (schema v0.1.1) + `_template.yaml` drafted; v0.1.1 bump within Phase A added `model_kind` discriminator after Card A1 preview surfaced misfits; cards-first ordering remains intact |
 | 2026-04-30 | `dg-1-cards-frozen` | structural | Phase B of DG-1 work plan v0.1.2: Cards A1, A3, A4 committed with `status: frozen-awaiting-run`; cards-first / Risk #6/#8 mitigation now mechanically auditable via `git log --diff-filter=A`; schema bumped to v0.1.2 mid-Phase-B after A3 preview surfaced bath_state-sweep gap |
+| 2026-04-30 | `dg-1-pass` | dg-pass | DG-1 PASSED — Cards A1 v0.1.1, A3 v0.1.1, A4 v0.1.1 reproduce CL-2026-005 v0.4 Entries 1, 3, 4 (unambiguous sub-cases) at machine precision; Entries 1.B.3, 3.B.3, 4.B.2 deferred to DG-2 per plan v0.1.4 §1.1; validity envelope NOT YET ATTEMPTED → PASS; tag `v0.2.0` pending |
 
 (This index is updated atomically when new entries are added.)
 
 ---
 
-*Last updated: 2026-04-30. CC-BY-4.0 (see ../LICENSE-docs).*
+*Last updated: 2026-04-30 (DG-1 PASS). CC-BY-4.0 (see ../LICENSE-docs).*

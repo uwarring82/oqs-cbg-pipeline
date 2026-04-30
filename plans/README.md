@@ -50,7 +50,7 @@ This index is the canonical source of truth for *current* plan status. Updating 
 
 | Plan | Canonical version | Operational status | Phase | Anchor |
 |---|---|---|---|---|
-| [DG-1 Work Plan](dg-1-work-plan_v0.1.4.md) | v0.1.4 | active | Phase C (module implementation) | Sail v0.5 §9 (DG-1); CL-2026-005 v0.4 Entries 1, 3, 4 (1.B.3, 3.B.3, 4.B.2 deferred to DG-2 per v0.1.4 §1.1 operationalisability carve-out) |
+| [DG-1 Work Plan](dg-1-work-plan_v0.1.4.md) | v0.1.4 | verdict-reached | **Verdict: PASS** (2026-04-30; tag `v0.2.0` pending) | Sail v0.5 §9 (DG-1); CL-2026-005 v0.4 Entries 1, 3, 4 (1.B.3, 3.B.3, 4.B.2 deferred to DG-2 per v0.1.4 §1.1 operationalisability carve-out). See [logbook/2026-04-30_dg-1-pass.md](../logbook/2026-04-30_dg-1-pass.md). |
 
 ### Superseded plans (retained for audit)
 
