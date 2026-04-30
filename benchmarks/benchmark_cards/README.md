@@ -34,6 +34,6 @@ See [`SCHEMA.md`](SCHEMA.md) §Supersedure and
 |---|---|---|---|---|
 | A1 | DG-1 | CL-2026-005 v0.4 Entry 1 | frozen-awaiting-run | [A1_closed-form-K_v0.1.0.yaml](A1_closed-form-K_v0.1.0.yaml) |
 | A3 | DG-1 | CL-2026-005 v0.4 Entry 3 | frozen-awaiting-run | [A3_pure-dephasing_v0.1.0.yaml](A3_pure-dephasing_v0.1.0.yaml) |
+| A4 | DG-1 | CL-2026-005 v0.4 Entry 4 | frozen-awaiting-run | [A4_sigma-x-thermal_v0.1.0.yaml](A4_sigma-x-thermal_v0.1.0.yaml) |
 
-DG-1 work plan v0.1.2 §4 Phase B will add A4 next. The index is
-updated atomically when cards are committed.
+The three DG-1 cards are now frozen per [DG-1 work plan v0.1.2](../../plans/dg-1-work-plan_v0.1.2.md) §4 Phase B. Verdicts populate in Phase D. The index is updated atomically when cards are committed (or when their `status` field changes per [SCHEMA.md](SCHEMA.md) §Card lifecycle).

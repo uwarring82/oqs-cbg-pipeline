@@ -1,0 +1,251 @@
+# DG-1 Benchmark Card A4 — Unbiased-spin (A = sigma_x) thermal-bath result
+#
+# Anchor: CL-2026-005 v0.4 Entry 4; Letter Eqs. (D.4)-(D.6), Letter Eq. (22);
+#         SCHEMA.md v0.1.2
+# Phase: B (frozen-awaiting-run) per DG-1 work plan v0.1.2 §4 Phase B
+#
+# This card verifies that under a spin-boson model with orthogonal coupling
+# (H_S = (omega/2)*sigma_z, A = sigma_x, bosonic linear coupling), the
+# effective Hamiltonian K(t) computed by the TCL recursion at orders <= 2
+# satisfies Entry 4.B sub-claims:
+#   B.1: For a thermal bosonic bath, odd-order contributions to K(t) vanish
+#        and even orders contribute only diagonal terms, so K(t) ∝ sigma_z
+#        and the eigenbasis of H_S is NOT rotated by the interaction
+#        (energy-level shift is allowed; rotation is not).
+#   B.2: When odd-order bath cumulants are nonzero (coherent displacement,
+#        non-equilibrium preparation), the eigenbasis of K(t) rotates from
+#        the sigma_z basis: a non-zero transverse (sigma_x, sigma_y) component
+#        appears, manifesting as a measurable rotation angle theta(t).
+#
+# Entry 4 is structurally distinct from Entry 3: with A = sigma_x (orthogonal
+# to H_S), the naive expectation is eigenbasis rotation; the parity-class
+# theorem of Letter Eqs. (D.4)-(D.6) is what suppresses it for thermal baths.
+# Card A4 checks that suppression numerically and verifies that breaking
+# Fock-diagonal symmetry restores the rotation.
+#
+# model_kind: dynamical with test_cases (parameter sweep over bath_state).
+# perturbative_order: 2 per DG-1 work plan v0.1.2 §1.2 (the parity-class
+# result is a second-order statement; B.1/B.2 each manifest at order 2).
+
+# ─── Top-level metadata ───────────────────────────────────────────────────────
+
+schema_version: "v0.1.2"
+card_id: "A4"
+version: "v0.1.0"
+date: "2026-04-30"
+dg_target: "DG-1"
+ledger_entry: "CL-2026-005 v0.4 Entry 4"
+model: "spin_boson_sigma_x"
+status: "frozen-awaiting-run"
+license: "CC-BY-4.0 (LICENSE-docs)"
+
+# ─── Gauge block ──────────────────────────────────────────────────────────────
+
+gauge:
+  gauge: "hayden-sorce-minimal-dissipation"
+  coordinate_dependent: true
+  direct_observable: false
+  gauge_alignment_required_for_comparison:
+    - "hmf"
+    - "polaron"
+    - "mori"
+
+# ─── Frozen parameters ────────────────────────────────────────────────────────
+
+frozen_parameters:
+
+  model:
+    model_kind: "dynamical"
+    system_dimension: 2
+    system_hamiltonian: "(omega / 2) * sigma_z"
+    coupling_operator: "sigma_x"           # orthogonal to H_S — the structurally-distinguishing feature vs. Card A3
+    bath_type: "bosonic_linear"
+    bath_spectral_density:
+      family: "ohmic"
+      cutoff_frequency: 10.0               # omega-units (matched to A3 for cross-card consistency)
+      coupling_strength: 0.05              # ohmic dimensionless coupling alpha (matched to A3; weak coupling at order 2)
+    # bath_state omitted at model level: each test_case provides its own.
+    test_cases:
+
+      - name: "thermal_bath"
+        description: |
+          Bosonic bath in a thermal Fock-diagonal state at temperature
+          T = 0.5 (omega-units, k_B T / hbar omega = 0.5). Odd-order bath
+          cumulants vanish; the parity-class theorem (Letter Eqs.
+          (D.4)-(D.6)) applies and predicts B.1: K(t) ∝ sigma_z (no
+          eigenbasis rotation), even though the coupling A = sigma_x is
+          orthogonal to H_S.
+        bath_state:
+          family: "thermal"
+          temperature: 0.5                  # k_B T / hbar omega = 0.5 (matched to A3)
+        expected_outcome: |
+          K(t) ∝ sigma_z at every order 0 ≤ n ≤ N_card. Specifically,
+          the transverse components (sigma_x, sigma_y projections of K)
+          vanish to numerical tolerance: the eigenbasis of K(t) coincides
+          with the sigma_z basis (eigenbasis of H_S). An energy-level
+          shift (renormalisation of the sigma_z coefficient relative to
+          omega/2) IS allowed by Entry 4.B.1 and is not constrained by
+          this card; only the absence of rotation is gated.
+        verifies:
+          - "Entry 4.B.1 (no eigenbasis rotation in canonical thermal regime; parity-class theorem)"
+        reference: "Letter Eqs. (D.4)-(D.6); Letter Eq. (22); CL-2026-005 v0.4 Entry 4.B.1; Gatto, Colla, Breuer, Thoss, Phys. Rev. A 110, 032210 (2024) — prior numerical conjecture"
+
+      - name: "coherent_displaced_bath"
+        description: |
+          Bosonic bath in a coherently-displaced state with displacement
+          amplitude alpha_disp = 1.0 (one bath quantum in the
+          coherent-state parameter sense). The displacement breaks the
+          Fock-diagonal symmetry, introducing nonzero odd-order bath
+          cumulants. The parity-class theorem no longer suppresses
+          transverse contributions; B.2 predicts eigenbasis rotation
+          (theta(t) > 0) at order 2.
+        bath_state:
+          family: "coherent_displaced"
+          temperature: 0.0                  # vacuum baseline + displacement (matched to A3)
+          displacement_amplitude: 1.0       # alpha_disp = 1 (matched to A3)
+        expected_outcome: |
+          K(t) eigenbasis rotates from the sigma_z basis: at least one
+          of the sigma_x or sigma_y projections of K becomes nonzero at
+          order 2 (manifestation of the broken parity class). The
+          rotation angle theta(t) (defined in acceptance_criterion)
+          exceeds the sensitivity floor at some t in the time grid.
+          The sigma_z coefficient is not constrained by this card;
+          only the rotation signal is gated.
+        verifies:
+          - "Entry 4.B.2 (eigenbasis rotation when odd-order bath cumulants are nonzero)"
+        reference: "Letter Eqs. (D.4)-(D.6); CL-2026-005 v0.4 Entry 4.B.2"
+
+  truncation:
+    perturbative_order: 2                   # N_card per DG-1 work plan v0.1.2 §1.2
+    basis: "matrix_unit"                    # cross-basis verification is DG-2
+    bath_mode_cutoff: 1024                  # discretisation of the continuous ohmic spectral density (matched to A3)
+
+  numerical:
+    time_grid:
+      t_start: 0.0                          # 1/omega units
+      t_end: 20.0                           # matched to A3 for cross-card consistency
+      n_points: 200                         # dt = 0.1/omega ≈ 1/omega_c (matched to A3)
+      scheme: "uniform"
+    integration_tolerance:
+      relative: 1.0e-10
+      absolute: 1.0e-12
+    solver: "scipy_dop853"                  # adaptive RK 8(5,3); matched to A3
+
+  comparison:
+    reference: "Letter Eqs. (D.4)-(D.6); Letter Eq. (22); CL-2026-005 v0.4 Entry 4"
+    target_observable: "K(t)"
+    error_metric: "relative_frobenius"
+    threshold: 1.0e-8                       # primary tolerance for transverse component (B.1) at order 2
+
+# ─── Acceptance criterion ─────────────────────────────────────────────────────
+
+acceptance_criterion:
+  reference: "Letter Eqs. (D.4)-(D.6); Letter Eq. (22); CL-2026-005 v0.4 Entry 4"
+  observable: "K(t)"
+  error_metric: "relative_frobenius"
+  threshold: 1.0e-8
+  projection_scheme: null
+  rationale: |
+    PASS iff every test case in frozen_parameters.model.test_cases satisfies
+    its per-case derived-observable conditions on K(t).
+
+    Decompose K(t) in the Pauli basis:
+
+      K(t) = a(t) * I + b(t) * sigma_x + c(t) * sigma_y + d(t) * sigma_z
+
+    where a(t), b(t), c(t), d(t) are real (K is Hermitian). Define:
+
+      transverse_norm(t)   := sqrt(b(t)^2 + c(t)^2)
+      longitudinal(t)      := |d(t)|
+      rotation_angle(t)    := arctan2(transverse_norm(t), longitudinal(t))   # in [0, pi/2]
+
+    transverse_norm(t) is the sigma_x / sigma_y component magnitude;
+    longitudinal(t) is the sigma_z component magnitude. rotation_angle(t)
+    is the angle between K(t)'s eigenbasis and the sigma_z basis. K(t)
+    is proportional to sigma_z exactly when transverse_norm(t) = 0
+    (equivalently rotation_angle(t) = 0).
+
+    Per-case PASS conditions, mapped to Entry 4.B sub-claims:
+
+    (1) thermal_bath:
+        - B.1 (no eigenbasis rotation): max_t rotation_angle(t) <= 1.0e-8
+          OR max_t transverse_norm(t) / max(longitudinal(t), epsilon) <= 1.0e-8
+          (the two conditions are equivalent up to numerical guards near
+          longitudinal -> 0; the runner uses whichever is well-defined
+          for the given numerical state).
+        Failure of B.1 in the thermal case would falsify the parity-class
+        theorem of Letter Eqs. (D.4)-(D.6) numerically — a strong DG-1
+        FAIL signal that would also bear on the Letter's analytic claim.
+        (If observed, the routing rule per plan §10 applies: do not edit
+        the Ledger; route via fresh Council deliberation per Sail v0.5
+        §0 and §9 DG-5.)
+
+    (2) coherent_displaced_bath:
+        - B.2 (eigenbasis rotation when odd cumulants are nonzero):
+            max_t transverse_norm(t) > 1.0e-5
+          (the transverse signal must EXCEED the sensitivity floor;
+          this is a *positive* assertion that breaking Fock-diagonal
+          symmetry produces a measurable rotation, not a tolerance check).
+        Failure of B.2 (transverse signal below sensitivity) would
+        indicate either the displacement amplitude is too small to
+        produce a second-order signal at this perturbative order, or
+        the recursion is missing the odd-cumulant contribution.
+
+    PASS for the card requires both per-case conditions. The bounded-
+    maximalist reading (DG-1 work plan v0.1.2 §1.1) requires every
+    Entry 4.B sub-claim to be exercised; this card exercises both.
+
+    The three-order-of-magnitude gap between B.1 tolerance (1e-8 rad)
+    and B.2 sensitivity floor (1e-5 transverse-norm) makes a
+    false-positive B.2 (numerical noise mistaken for rotation signal)
+    extremely unlikely.
+
+    N_card = 2 per plan §1.2: B.1's parity-class result is a second-order
+    statement (Letter Eqs. (D.4)-(D.6)); B.2's rotation signal manifests
+    at order 2 when odd cumulants are nonzero. The card runs the TCL
+    recursion at every order n ∈ {0, 1, 2}; B.1 must hold at every order
+    in the thermal case; B.2 must manifest at order 2 in the displaced
+    case.
+
+    Out of scope for Card A4 (DG-1 boundary):
+      - Energy-level shift verification: Entry 4.B.1 explicitly allows
+        an energy-level shift (renormalisation of the sigma_z
+        coefficient); Card A4 does NOT gate on the value of d(t).
+        A separate B.3-style shift check could be added in a future
+        DG-2 card if it becomes scientifically interesting, but it is
+        not part of Entry 4's B-predictions.
+      - "At all orders" verification: DG-1 verifies up to N_card = 2;
+        the analytical proof's all-order character (Letter Eqs.
+        (D.4)-(D.6)) is acknowledged but not gated by DG-1 (plan §1.1).
+      - Cross-basis verification: DG-2 universal-default check.
+      - Failure-envelope characterisation (e.g. coupling_strength sweep
+        to find divergence): DG-4 territory.
+      - Convergence in bath_mode_cutoff or t_end: not part of DG-1
+        acceptance; matched to Card A3 for cross-card consistency
+        within the same regime.
+      - Comparison to Gatto et al. 2024's numerical evidence as
+        independent cross-method validation: that is DG-3 territory
+        (cross-method failure-asymmetry pairing); the citation in
+        the per-case `reference` field records the numerical-conjecture
+        precedent but does not invoke it as a DG-1 PASS condition.
+
+# ─── Result block ─────────────────────────────────────────────────────────────
+
+result:
+  verdict: null
+  evidence: []
+  commit_hash: ""
+  runner_version: ""
+  notes: ""
+
+# ─── Failure-mode log ─────────────────────────────────────────────────────────
+
+failure_mode_log: []
+
+# ─── Stewardship flag ─────────────────────────────────────────────────────────
+
+stewardship_flag:
+  status: "unflagged"
+  rationale: ""
+  data_source: ""
+  search_performed: ""
