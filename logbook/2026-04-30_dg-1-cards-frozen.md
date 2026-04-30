@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-30
 **Type:** structural
-**Triggering commit:** (to be populated on commit)
+**Triggering commit:** 54bbb35df5c20993b4615740bdb70db567374415
 **Triggering evidence:**
 - [`benchmarks/benchmark_cards/A1_closed-form-K_v0.1.0.yaml`](../benchmarks/benchmark_cards/A1_closed-form-K_v0.1.0.yaml) (committed 2026-04-30 at 252e2f1; CL-2026-005 v0.4 Entry 1)
 - [`benchmarks/benchmark_cards/A3_pure-dephasing_v0.1.0.yaml`](../benchmarks/benchmark_cards/A3_pure-dephasing_v0.1.0.yaml) (committed 2026-04-30 at dbef635; CL-2026-005 v0.4 Entry 3)
