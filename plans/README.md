@@ -50,13 +50,14 @@ This index is the canonical source of truth for *current* plan status. Updating 
 
 | Plan | Canonical version | Operational status | Phase | Anchor |
 |---|---|---|---|---|
-| [DG-1 Work Plan](dg-1-work-plan_v0.1.1.md) | v0.1.1 | draft | pre-Phase-A | Sail v0.5 §9 (DG-1); CL-2026-005 v0.4 Entries 1, 3, 4 |
+| [DG-1 Work Plan](dg-1-work-plan_v0.1.2.md) | v0.1.2 | active | Phase A (schema-drafting) | Sail v0.5 §9 (DG-1); CL-2026-005 v0.4 Entries 1, 3, 4 |
 
 ### Superseded plans (retained for audit)
 
 | Plan | Version | Superseded by | Date |
 |---|---|---|---|
 | [DG-1 Work Plan v0.1.0](dg-1-work-plan_v0.1.0.md) | v0.1.0 | [v0.1.1](dg-1-work-plan_v0.1.1.md) | 2026-04-30 |
+| [DG-1 Work Plan v0.1.1](dg-1-work-plan_v0.1.1.md) | v0.1.1 | [v0.1.2](dg-1-work-plan_v0.1.2.md) | 2026-04-30 |
 
 ---
 

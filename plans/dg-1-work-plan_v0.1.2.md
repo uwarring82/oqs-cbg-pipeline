@@ -1,14 +1,13 @@
 ---
 plan_id: dg-1-work-plan
-version: v0.1.1
+version: v0.1.2
 date: 2026-04-30
 type: work-plan
 anchor_sail: sail/sail-cbg-pipeline_v0.5.md §§4, 5, 9 (DG-1), 10 (Risks #6, #8), 11
 anchor_ledger: ledger/CL-2026-005_v0.4.md Entries 1, 3, 4 (COMPATIBLE)
 anchor_envelope: docs/validity_envelope.md DG-1 row (NOT YET ATTEMPTED → target PASS)
-status: draft
-supersedes: dg-1-work-plan_v0.1.0.md
-superseded_by: dg-1-work-plan_v0.1.2.md
+status: active
+supersedes: dg-1-work-plan_v0.1.1.md
 license: CC-BY-4.0 (LICENSE-docs)
 ---
 
@@ -53,7 +52,7 @@ The cards' acceptance criteria record N_card as a frozen parameter and verify th
 
 ### 2.1 In scope
 
-- Benchmark-card YAML schema artefact (`docs/benchmark_card_schema.md` and an example `.yaml` template in `benchmarks/benchmark_cards/`).
+- Benchmark-card YAML schema artefact (`benchmarks/benchmark_cards/SCHEMA.md` and an example `.yaml` template `benchmarks/benchmark_cards/_template.yaml`).
 - Three DG-1 benchmark cards (`A1`, `A3`, `A4`), one per Ledger Entry, each with a frozen-parameter block and an empty result block.
 - Implementation of the modules each card depends on:
   - `cbg/basis.py`, `cbg/effective_hamiltonian.py`, `cbg/cumulants.py` (low-order paths only), `cbg/bath_correlations.py`, `cbg/tcl_recursion.py` (low-order paths only)
@@ -114,7 +113,7 @@ The hard rule: **no scientific-implementation function body exits `NotImplemente
 
 **Outputs.**
 
-1. `docs/benchmark_card_schema.md` — human-readable specification of the card schema, with field definitions, required vs optional, and validation rules.
+1. `benchmarks/benchmark_cards/SCHEMA.md` — human-readable specification of the card schema, with field definitions, required vs optional, and validation rules. Co-located with the cards themselves rather than in `docs/`, since `docs/` is reserved for the five protective-scaffolding files named in Sail v0.5 §11; the schema is operational specification, not protective scaffolding.
 2. `benchmarks/benchmark_cards/_template.yaml` — machine-readable template carrying the schema by example, including:
    - Top-level metadata (`card_id`, `version`, `date`, `dg_target`, `ledger_entry`, `model`, `status`).
    - `gauge:` block (per `docs/benchmark_protocol.md` §1 machine-readable annotation).
@@ -231,7 +230,7 @@ The plan, the schema artefact, the cards, and the result artefacts are designed 
 ### F — Findable
 
 - The plan lives at a stable path (`plans/dg-1-work-plan_v0.1.0.md`); subsequent revisions are new files (`v0.1.1`, `v0.2.0`, …) with `supersedes:`/`superseded_by:` cross-links, not in-place content edits.
-- The plan, schema, and cards are indexed: [plans/README.md](../plans/README.md) (operational status), [docs/README.md](../docs/README.md) (will be extended with a row for `docs/benchmark_card_schema.md` when Phase A adds it), [benchmarks/benchmark_cards/README.md](../benchmarks/benchmark_cards/README.md) (will be extended with a card index in Phase B).
+- The plan, schema, and cards are indexed: [plans/README.md](../plans/README.md) (operational status), [benchmarks/benchmark_cards/README.md](../benchmarks/benchmark_cards/README.md) (will be extended in Phase A with a pointer to `SCHEMA.md` and `_template.yaml`, and in Phase B with a card index). [docs/README.md](../docs/README.md) is *not* extended — its scope is locked to the five protective files per Sail v0.5 §11.
 - Every artefact carries rich front-matter metadata (id, version, date, anchors, status-as-of-commit), making each searchable by attribute, not just by filename.
 - The repository's top-level `README.md`, `CITATION.cff`, `codemeta.json`, `.zenodo.json` provide cross-discovery from external indexes once an archival snapshot is minted (after DG-1 PASS, the `v0.2.0` git tag is the natural Zenodo anchor).
 
@@ -335,13 +334,17 @@ If during execution any finding bears on the Sail (e.g. the §11 minimal-impleme
 ## Revision history
 
 - **v0.1.0 (2026-04-29).** Initial draft. Established four-phase benchmark-cards-first ordering, DG-1/DG-2 boundary (no `cbg/diagnostics.py` cross-basis check at DG-1), maximalist sub-claim reading, two-commit Phase D pattern, version-namespace discipline, lacunae section, FAIR alignment.
-- **v0.1.1 (2026-04-30, this revision).** Steward supersedure following second-pass audit:
+- **v0.1.1 (2026-04-30).** Steward supersedure following second-pass audit:
   - **Bounded-maximalist reading (§1.1).** Maximalist sub-claim reading retained; explicit perturbative cap *N_card* added per card. Reproduction is "every B-prediction at every order ≤ N_card", not "every B-prediction at all orders". The Ledger's "at all orders" structural claims are acknowledged as analytical proofs that DG-1 verifies up to N_card; unbounded numerical verification is intractable, symbolic verification is out of scope. The cap is recorded as a frozen parameter in each card.
   - **N_card defaults (§1.2).** Per-card minimum: A1 = 0 (closed-form algebraic), A3 = 2 (parity-driven structure observable at second order), A4 = 2 (eigenbasis-rotation observable at second order). Higher caps are explicitly DG-2 territory.
   - **Entry 5 boundary (§2.2).** Removed the suggestion that Card A1 might "incidentally exercise" Entry 5. Card A1 is the order-0 closed-form check; Entry 5's parity-FDT content lives near A3/A4, and even there is reserved for DG-2.
   - **Tag-vs-commit message rationale (§4 Phase D).** Added one-paragraph rationale for why the tag and commit messages differ.
   - **Anchor bump (front matter).** Sail anchor v0.4 → v0.5; `supersedes:` field set to `dg-1-work-plan_v0.1.0.md`.
+- **v0.1.2 (2026-04-30, this revision).** Steward supersedure to relocate the schema artefact and engage the plan:
+  - **Schema location.** `docs/benchmark_card_schema.md` → `benchmarks/benchmark_cards/SCHEMA.md`. `docs/` is locked to the five protective-scaffolding files per Sail v0.5 §11; the schema is operational specification, not protective. Co-locating with the cards themselves keeps the operational artefacts together. Phase A logbook entry (`benchmark-card-schema-drafted`) records the same rationale.
+  - **Operational status engaged.** Front-matter `status:` set to `active` (was `draft` in v0.1.0 / v0.1.1). Plans index updated to mark v0.1.2 as active / Phase A.
+  - **Anchor bump (front matter).** `supersedes:` set to `dg-1-work-plan_v0.1.1.md`. No other substantive content changes.
 
 ---
 
-*End of DG-1 Work Plan v0.1.1. Steward-authored; revisable. No Council clearance required. CC-BY-4.0 (LICENSE-docs).*
+*End of DG-1 Work Plan v0.1.2. Steward-authored; revisable. No Council clearance required. CC-BY-4.0 (LICENSE-docs).*
