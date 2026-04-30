@@ -1,14 +1,13 @@
 ---
 plan_id: dg-1-work-plan
-version: v0.1.0
-date: 2026-04-29
+version: v0.1.1
+date: 2026-04-30
 type: work-plan
-anchor_sail: sail/sail-cbg-pipeline_v0.4.md §§4, 5, 9 (DG-1), 10 (Risks #6, #8), 11
+anchor_sail: sail/sail-cbg-pipeline_v0.5.md §§4, 5, 9 (DG-1), 10 (Risks #6, #8), 11
 anchor_ledger: ledger/CL-2026-005_v0.4.md Entries 1, 3, 4 (COMPATIBLE)
 anchor_envelope: docs/validity_envelope.md DG-1 row (NOT YET ATTEMPTED → target PASS)
 status: draft
-supersedes: none
-superseded_by: dg-1-work-plan_v0.1.1.md
+supersedes: dg-1-work-plan_v0.1.0.md
 license: CC-BY-4.0 (LICENSE-docs)
 ---
 
@@ -16,11 +15,11 @@ license: CC-BY-4.0 (LICENSE-docs)
 
 ## 1. Objective
 
-Pass DG-1 as defined in Sail v0.4 §9:
+Pass DG-1 as defined in Sail v0.5 §9:
 
 > *Pass if Entries 1, 3, and 4 of CL-2026-005 are reproduced numerically.*
 
-This plan operationalises that objective in **benchmark-cards-first** ordering: a benchmark-card YAML schema is drafted, three filled cards (one per Entry) are committed with frozen parameters *before any scientific-implementation module body exits `NotImplementedError`*, implementation work is then derived from the cards, and DG-1 is decided by running the pipeline against the cards' acceptance criteria. The ordering is a direct mitigation of Sail v0.4 §10 Risk #6 (*"building a codebase before defining benchmark cards"*) and Risk #8 (*"overfitting the pipeline to known solvable models"*).
+This plan operationalises that objective in **benchmark-cards-first** ordering: a benchmark-card YAML schema is drafted, three filled cards (one per Entry) are committed with frozen parameters *before any scientific-implementation module body exits `NotImplementedError`*, implementation work is then derived from the cards, and DG-1 is decided by running the pipeline against the cards' acceptance criteria. The ordering is a direct mitigation of Sail v0.5 §10 Risk #6 (*"building a codebase before defining benchmark cards"*) and Risk #8 (*"overfitting the pipeline to known solvable models"*).
 
 The qualifier "scientific-implementation module body" matters: the v0.1.0 scaffold already contains executable Python that is *not* scientific implementation — package import-time protective-doc checks ([cbg/__init__.py:34-53](../cbg/__init__.py#L34-L53)), failure-mode label constants ([cbg/diagnostics.py:26-38](../cbg/diagnostics.py#L26-L38)), and `structural_constraints` tuples in `models/`. Those are scaffolding, not science, and are exempt from the cards-first rule. The rule applies to functions whose body would execute the CBG construction.
 
@@ -28,11 +27,26 @@ DG-1 does **not** require structural-identity stacking (that is DG-2), nor cross
 
 ### 1.1 Reading of "reproduced numerically"
 
-Sail §9 DG-1 says only "*Pass if Entries 1, 3, and 4 of CL-2026-005 are reproduced numerically.*" That sentence is ambiguous between a minimalist reading (reproduce each Entry's headline structural result) and a maximalist reading (reproduce all of each Entry's *Predictions / consequences* sub-claims B.1, B.2, B.3 from the Ledger). This plan adopts the **maximalist reading**: each card targets every B-prediction listed for its Entry in CL-2026-005 v0.4. Rationale: a minimalist DG-1 PASS would let the pipeline reproduce the trivial sub-case (e.g. K(t) = (ω/2) σ_z under a thermal bath) without ever exercising the contrasting case (time-dependent shift under a coherently-displaced bath); that would weaken the validity envelope's claim of having "reproduced Entry 3" relative to the Ledger's actual content. The maximalist reading is the one a non-conflicted reader would expect.
+Sail §9 DG-1 says only "*Pass if Entries 1, 3, and 4 of CL-2026-005 are reproduced numerically.*" That sentence is ambiguous on two axes: *which sub-claims* (just the headline structural result, or every *Predictions / consequences* sub-claim B.1, B.2, B.3 in each Entry?) and *to what order* (the headline result for Entries 3 and 4 is "at all orders"; reproducing it numerically requires a perturbative cap).
+
+This plan adopts a **bounded-maximalist** reading on both axes:
+
+- **Sub-claims:** every B-prediction listed for each Entry in CL-2026-005 v0.4 is targeted by its card. A minimalist reading that reproduced only the trivial sub-case (e.g. K(t) = (ω/2) σ_z under a thermal bath, without ever exercising the contrasting non-thermal case where the time-dependent shift appears) would weaken the validity envelope relative to the Ledger's actual content.
+- **Order:** each card freezes a finite perturbative cap *N_card* (Phase B) and verifies the B-predictions *up to that cap*. The Ledger's "at all orders" structural claims (notably Entry 4's "K(t) ∝ σ_z at all orders" and Entry 3's "K_2m = 0 at all orders") are not directly numerically verifiable; what DG-1 verifies is that the claim **holds at every computed order ≤ N_card**. The all-order character of the analytical proof is acknowledged but not gated by DG-1; gating it would require either symbolic verification (out of scope) or unbounded numerical search (intractable).
+
+The bounded-maximalist reading is what a non-conflicted reader would treat as the operational meaning of "reproduced numerically": every B-prediction is exercised, every order *for which the pipeline computes K_n* satisfies the predicted structure, and the cap *N_card* is recorded explicitly in the card's `frozen_parameters:` block. A future steward who finds the structure violated at order *N_card + 1* would log a DG-2 finding (or a DG-4 failure-envelope finding, depending on cause), not retroactively invalidate the DG-1 PASS — the envelope's authorisation scope is bounded by the cap.
 
 ### 1.2 Minimum perturbative order
 
-DG-1 cards execute the TCL recursion only at the **minimum order** needed to demonstrate the Entry's B-predictions: order 0–2 for Cards A3 and A4 (sufficient for the parity-driven structural results); order 0 algebraic evaluation for Card A1 (Entry 1's claim is a closed-form expression, not a perturbative result). Higher-order recursion is DG-2 territory. Modules `cbg/cumulants.py` and `cbg/tcl_recursion.py` are implemented only along the code paths the cards exercise at these orders; higher-order paths remain stubbed.
+DG-1 cards execute the TCL recursion at the **minimum order N_card** sufficient to exercise every B-prediction in the corresponding Entry. The defaults this plan prescribes (cards may freeze higher caps if the steward judges fit, but not lower):
+
+- **Card A1 (Entry 1):** N_card = 0. Entry 1's claim is a closed-form algebraic expression for K from L (Letter Eqs. (6)–(7)); no perturbative recursion is needed. The three B-predictions (canonical-Lindblad recovery, Markovian Lamb shift, pseudo-Kraus reduction) are each direct evaluations of the closed form.
+- **Card A3 (Entry 3):** N_card = 2. Entry 3.B.1 (K(t) = (ω_r(t)/2) σ_z) is a structural statement; Entry 3.B.2 (thermal-bath trivialisation to (ω/2) σ_z, no renormalisation) holds trivially at every order; Entry 3.B.3 (time-dependent shift for non-thermal bath) is a second-order observable. N_card = 2 lets all three be exercised without entering DG-2 territory.
+- **Card A4 (Entry 4):** N_card = 2. Same structure: Entry 4.B.1 (no eigenbasis rotation for thermal bath) holds at every order; Entry 4.B.2 (eigenbasis rotation for non-thermal bath, where odd cumulants are nonzero) is a second-order observable per Letter Eqs. (D.4)–(D.6).
+
+Higher-order recursion (N ≥ 3) is DG-2 territory. Modules `cbg/cumulants.py` and `cbg/tcl_recursion.py` are implemented only along the code paths Cards A3/A4 exercise at orders ≤ 2; higher-order paths remain stubbed and raise `NotImplementedError`.
+
+The cards' acceptance criteria record N_card as a frozen parameter and verify the B-predictions order-by-order *up to N_card*. A card whose order-cap is later raised (e.g. to N_card = 4 in DG-2 work) is a *new card* per the supersedure discipline; the DG-1 card with N_card = 2 is retained as historical record.
 
 ## 2. Scope
 
@@ -54,7 +68,7 @@ DG-1 cards execute the TCL recursion only at the **minimum order** needed to dem
 ### 2.2 Out of scope
 
 - Entry 2 (recursive perturbative series, scope-limited): convergence is open per Ledger constraints; full reproduction belongs to DG-2.
-- Entry 5 (parity structure, FDT): DG-2 territory at higher orders; second-order may be incidentally exercised by Card A1 but is not gated here.
+- Entry 5 (parity structure, FDT): DG-2 territory at higher orders. Entry 5's second-order FDT decomposition concerns the *parity structure* of K_2 and is naturally adjacent to Cards A3/A4 (which evaluate K_n for spin-bath models at orders ≤ 2), not Card A1 (which is the closed-form algebraic check at order 0). Even at second order, however, Entry 5's discriminant content — identifying the FDT structure within K_2 rather than merely computing K_2 — is reserved for DG-2 and not gated by DG-1. DG-1 cards do not assert anything about Entry 5.
 - Entry 6 (trapped-ion validation): empirical, with self-reference flag; not reproducible by this repository at any DG.
 - Entry 7 (thermodynamic interpretation): DG-5 territory; routes via fresh Council deliberation.
 - Models `models/jaynes_cummings.py` and `models/fano_anderson.py`: DG-2/DG-5 venues.
@@ -201,6 +215,8 @@ The validity envelope's update protocol ([docs/validity_envelope.md:56-62](../do
 
 **Tag D.3 (PASS only).** Tag `v0.2.0` annotated against the D.2 commit, with message `DG-1: pass — repository validity envelope expanded to cover Entries 1, 3, 4`. **No tag is created on FAIL.**
 
+The tag message intentionally differs from the D.2 commit message ("Cards A1, A3, A4 reproduced"). The commit message records *what was done in this commit* (run results landed; envelope updated; logbook entry written). The tag message records *what the tag means at the validity-envelope layer* (the envelope's authorisation scope expanded to cover three Ledger Entries at the frozen N_card cap). Both messages are canonical for their respective consumers — `git log` for commit messages, `git tag -n` and Zenodo deposition metadata for tag messages.
+
 **Verdict computation.**
 - **DG-1 PASS** if all three cards verdict = PASS.
 - **DG-1 FAIL-WITH-CAUSE** otherwise; cause label drawn from the Sail §9 DG-4 taxonomy (convergence_failure / tcl_singularity / projection_ambiguity / truncation_artefact / benchmark_disagreement) or, if none fits, recorded as a new failure mode with explicit text.
@@ -234,7 +250,7 @@ The plan, the schema artefact, the cards, and the result artefacts are designed 
 
 ### R — Reusable
 
-- Provenance is explicit at every layer: the plan anchors to Sail v0.4 and CL-2026-005 v0.4; the schema anchors to `docs/benchmark_protocol.md`; cards anchor to specific Ledger Entries; results anchor to commit hashes and runner versions.
+- Provenance is explicit at every layer: the plan anchors to Sail v0.5 and CL-2026-005 v0.4; the schema anchors to `docs/benchmark_protocol.md`; cards anchor to specific Ledger Entries; results anchor to commit hashes and runner versions.
 - Versioning is explicit and consistent across plan (semver), schema (versioned in front-matter), cards (version field), and repository (git tags).
 - The parameter-freezing protocol (per `docs/benchmark_protocol.md` §4) ensures that any third party can reproduce a result by checking out the commit referenced in the card's `result:` block and re-running with the card's `frozen_parameters:` block — no out-of-band knowledge is required.
 - License clarity (CC-BY-4.0 docs, code license per LICENSE) permits redistribution and adaptation with attribution; this is consistent with the repository's `do_not_cite_as.md` constraint, which restricts *interpretive citation*, not *technical reuse*.
@@ -242,7 +258,7 @@ The plan, the schema artefact, the cards, and the result artefacts are designed 
 
 ## 6. Risks and deviations
 
-Inherited from Sail v0.4 §10 with mitigations specific to DG-1:
+Inherited from Sail v0.5 §10 with mitigations specific to DG-1:
 
 | Sail Risk | Concrete DG-1 manifestation | Mitigation in this plan |
 |---|---|---|
@@ -309,10 +325,22 @@ The plan itself is acceptance-criterion-satisfying when the path-appropriate set
 
 ## 10. Routing notes
 
-This plan does not modify the Sail and does not modify the Ledger. It schedules and orders steward work that is bounded by both. If during execution any finding bears on CL-2026-005 (e.g. discovers an inconsistency in an Entry that this plan was meant to merely reproduce), the routing rule is: **do not edit the Ledger; route via fresh Council deliberation per Sail v0.4 §0 and §9 DG-5.** A repository-level finding that bears on the Ledger triggers a logbook `discussion-outcome` entry and a Council convocation request, never a direct edit.
+This plan does not modify the Sail and does not modify the Ledger. It schedules and orders steward work that is bounded by both. If during execution any finding bears on CL-2026-005 (e.g. discovers an inconsistency in an Entry that this plan was meant to merely reproduce), the routing rule is: **do not edit the Ledger; route via fresh Council deliberation per Sail v0.5 §0 and §9 DG-5.** A repository-level finding that bears on the Ledger triggers a logbook `discussion-outcome` entry and a Council convocation request, never a direct edit.
 
 If during execution any finding bears on the Sail (e.g. the §11 minimal-implementation scaffold proves structurally inadequate for one of the cards), the routing rule is: **steward authors a Sail revision, with substantive Ledger-bearing content routed via Council per §0.** The plan itself may be revised freely.
 
 ---
 
-*End of DG-1 Work Plan v0.1.0. Steward-authored; revisable. No Council clearance required. CC-BY-4.0 (LICENSE-docs).*
+## Revision history
+
+- **v0.1.0 (2026-04-29).** Initial draft. Established four-phase benchmark-cards-first ordering, DG-1/DG-2 boundary (no `cbg/diagnostics.py` cross-basis check at DG-1), maximalist sub-claim reading, two-commit Phase D pattern, version-namespace discipline, lacunae section, FAIR alignment.
+- **v0.1.1 (2026-04-30, this revision).** Steward supersedure following second-pass audit:
+  - **Bounded-maximalist reading (§1.1).** Maximalist sub-claim reading retained; explicit perturbative cap *N_card* added per card. Reproduction is "every B-prediction at every order ≤ N_card", not "every B-prediction at all orders". The Ledger's "at all orders" structural claims are acknowledged as analytical proofs that DG-1 verifies up to N_card; unbounded numerical verification is intractable, symbolic verification is out of scope. The cap is recorded as a frozen parameter in each card.
+  - **N_card defaults (§1.2).** Per-card minimum: A1 = 0 (closed-form algebraic), A3 = 2 (parity-driven structure observable at second order), A4 = 2 (eigenbasis-rotation observable at second order). Higher caps are explicitly DG-2 territory.
+  - **Entry 5 boundary (§2.2).** Removed the suggestion that Card A1 might "incidentally exercise" Entry 5. Card A1 is the order-0 closed-form check; Entry 5's parity-FDT content lives near A3/A4, and even there is reserved for DG-2.
+  - **Tag-vs-commit message rationale (§4 Phase D).** Added one-paragraph rationale for why the tag and commit messages differ.
+  - **Anchor bump (front matter).** Sail anchor v0.4 → v0.5; `supersedes:` field set to `dg-1-work-plan_v0.1.0.md`.
+
+---
+
+*End of DG-1 Work Plan v0.1.1. Steward-authored; revisable. No Council clearance required. CC-BY-4.0 (LICENSE-docs).*
