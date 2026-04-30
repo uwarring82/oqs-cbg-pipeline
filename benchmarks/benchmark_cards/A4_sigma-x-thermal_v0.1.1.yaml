@@ -209,7 +209,7 @@ result:
   verdict: "PASS"
   evidence:
     - "benchmarks/results/A4_sigma-x-thermal_v0.1.1_result.json"
-  commit_hash: ""
+  commit_hash: "44f94a9781c175fed9dc6eb6b396396b8229f5dd"
   runner_version: "0.1.0"
   notes: |
     Verdict computed by reporting.benchmark_card.run_card via the
