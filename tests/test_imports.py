@@ -53,9 +53,15 @@ def test_cbg_imports():
 
 
 def test_stubs_raise_notimplementederror():
-    """v0.1.0 stubs must raise NotImplementedError, not return placeholder values.
+    """Stubs not yet implemented must raise NotImplementedError.
 
-    Covers every stub function across cbg/ and the DG-1-venue model modules.
+    Covers every still-stubbed function across cbg/ and the DG-1-venue
+    model modules. As DG-1 Phase C lands, entries are removed from
+    ``cases`` (and replaced by behaviour tests in dedicated test
+    modules); see the per-module test files (e.g. tests/test_basis.py)
+    for behaviour assertions on the implemented functions. This test
+    is for the still-stubbed surface.
+
     Non-DG-1 model modules (jaynes_cummings, fano_anderson) carry only
     ``structural_constraints`` tuples at v0.1.0 (no function stubs); see
     those modules' docstrings for the rationale and the DG at which their
@@ -66,10 +72,12 @@ def test_stubs_raise_notimplementederror():
 
     # (callable, args, kwargs) — args sized so each call would otherwise reach
     # the function body. The body must raise NotImplementedError.
+    #
+    # Removed (now implemented; see tests/test_basis.py):
+    #   - basis.matrix_unit_basis (DG-1 Phase C C.1)
+    #   - basis.verify_orthonormality (DG-1 Phase C C.1)
     cases = [
-        (basis.matrix_unit_basis, (2,), {}),
         (basis.su_d_generator_basis, (2,), {}),
-        (basis.verify_orthonormality, ([],), {}),
         (effective_hamiltonian.K_from_generator, (lambda x: x, []), {}),
         (effective_hamiltonian.K_perturbative, (2,), {}),
         (diagnostics.perturbative_order_norms, ([],), {}),
