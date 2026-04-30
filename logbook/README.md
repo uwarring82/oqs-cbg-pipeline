@@ -67,9 +67,10 @@ Both exceptions are bookkeeping completions of explicit gaps, not substantive re
 | 2026-04-29 | `repo-init` | initialisation | Repository scaffold v0.1.0; Sail v0.4 active; CL-2026-005 v0.4 vendored |
 | 2026-04-29 | `public-site-added` | structural | Root `index.html` added as a static public landing page |
 | 2026-04-29 | `sail-v0.5-bump` | sail-bump | Cardinality-fix supersedure: Sail v0.5 names all five `docs/` files non-optional, aligning Sail wording with already-enforced behaviour; no Ledger impact |
+| 2026-04-30 | `benchmark-card-schema-drafted` | structural | Phase A of DG-1 work plan v0.1.2: `benchmarks/benchmark_cards/SCHEMA.md` (schema v0.1.1) + `_template.yaml` drafted; v0.1.1 bump within Phase A added `model_kind` discriminator after Card A1 preview surfaced misfits; cards-first ordering remains intact |
 
 (This index is updated atomically when new entries are added.)
 
 ---
 
-*Last updated: 2026-04-29. CC-BY-4.0 (see ../LICENSE-docs).*
+*Last updated: 2026-04-30. CC-BY-4.0 (see ../LICENSE-docs).*

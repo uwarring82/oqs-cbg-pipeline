@@ -1,0 +1,173 @@
+# Benchmark-card template — `oqs-cbg-pipeline`
+#
+# Anchor: SCHEMA.md (this directory); docs/benchmark_protocol.md §1, §4
+# Schema version: v0.1.1
+# Status: template — copy and rename to <card_id>_<short-tag>_v<version>.yaml
+#         before editing. The leading underscore in this file's name marks it
+#         as not-a-card; the runner ignores files whose basename begins with `_`.
+#
+# This template shows the `dynamical` shape (the common case: system-bath
+# model with time-dependent K(t); Cards A3, A4 and DG-2+). For
+# `model_kind: algebraic_map` cards (Card A1: closed-form L → K verification
+# at a single instant), see SCHEMA.md §Algebraic-map cards — the model
+# block uses `test_cases:` instead of `system_hamiltonian`/`coupling_operator`/
+# `bath_type`, and `numerical.time_grid` is optional.
+#
+# This file is the canonical machine-readable example of the card schema. Every
+# field defined in SCHEMA.md is present below with an inline comment explaining
+# its required form. Optional fields are marked `# optional`. Fields whose value
+# is fixed by protocol (e.g. the gauge block) are filled with the canonical
+# value; replacing them would invalidate the card.
+#
+# This template is intentionally parse-valid but NOT validation-valid: zero-
+# valued thresholds and TBD-* placeholders fail SCHEMA.md validation rules
+# 3, 8, 9, 10. The exemption is documented in SCHEMA.md §Validation rules and
+# prevents stewards from committing the template unchanged.
+#
+# When instantiating a card from this template:
+#   1. cp _template.yaml A<n>_<short-tag>_v0.1.0.yaml
+#   2. Replace every value marked TBD-* with the card-specific value.
+#   3. Replace zero-valued numerics (system_dimension, thresholds, time_grid,
+#      bath_mode_cutoff, etc.) with card-specific values.
+#   4. Leave the `result:` block as-is (status frozen-awaiting-run).
+#   5. Leave `failure_mode_log:` empty for first-issue cards.
+#   6. Validate with `yamllint` and a hand re-read against SCHEMA.md.
+
+# ─── Top-level metadata ───────────────────────────────────────────────────────
+
+schema_version: "v0.1.1"        # the SCHEMA.md dialect this card claims to satisfy
+card_id: "TBD-CARD-ID"          # e.g. "A1", "A3", "A4". Pattern: ^[A-E][0-9]+$
+version: "v0.1.0"               # semver of THIS card; increments on supersedure
+date: "TBD-YYYY-MM-DD"          # ISO-8601, steward local timezone (Europe/Berlin)
+dg_target: "TBD-DG-N"           # one of DG-1, DG-2, DG-3, DG-4, DG-5
+ledger_entry: "TBD-LEDGER-ANCHOR"  # e.g. "CL-2026-005 v0.4 Entry 1"
+model: "TBD-MODEL-IDENTIFIER"   # e.g. "pure_dephasing", "spin_boson_sigma_x"
+status: "frozen-awaiting-run"   # single hyphenated token; see SCHEMA.md §Status values
+
+# supersedes: "<prior-filename.yaml>"      # optional; absent on first-issue cards
+# superseded_by: "<successor-filename.yaml>"  # optional; appended when successor exists
+
+license: "CC-BY-4.0 (LICENSE-docs)"
+
+# ─── Gauge block ──────────────────────────────────────────────────────────────
+# Per docs/benchmark_protocol.md §1. Values below are canonical for DG-1; do not
+# substitute. Alternative gauges (DG-5) require a schema bump.
+
+gauge:
+  gauge: "hayden-sorce-minimal-dissipation"
+  coordinate_dependent: true
+  direct_observable: false
+  gauge_alignment_required_for_comparison:
+    - "hmf"
+    - "polaron"
+    - "mori"
+
+# ─── Frozen parameters ────────────────────────────────────────────────────────
+# Per docs/benchmark_protocol.md §4.1. All four sub-blocks are required.
+
+frozen_parameters:
+
+  model:
+    model_kind: "dynamical"                # one of: dynamical, algebraic_map. See SCHEMA.md §Algebraic-map cards
+                                           # for the `algebraic_map` shape (Card A1: closed-form L → K at one instant).
+    system_dimension: 0                    # integer; e.g. 2 for a qubit. Required for both model_kind values.
+    # ── Fields below are required when model_kind == dynamical; omit for algebraic_map ──
+    system_hamiltonian: "TBD-EXPRESSION"   # symbolic; e.g. "(omega/2) * sigma_z"
+    coupling_operator: "TBD-EXPRESSION"    # symbolic; e.g. "sigma_z" or "sigma_x"
+    bath_type: "TBD-BATH-TYPE"             # one of: bosonic_linear, bosonic_displaced, fermionic, none
+    bath_spectral_density:                 # required when bath_type != none
+      family: "TBD-FAMILY"                 # e.g. "ohmic", "drude_lorentz"
+      cutoff_frequency: 0.0                # in declared units
+      coupling_strength: 0.0               # dimensionless or specify units in a comment
+    bath_state:                            # required when bath_type != none
+      family: "TBD-BATH-STATE"             # e.g. "thermal", "coherent_displaced"
+      temperature: 0.0                     # declare units explicitly in a comment
+      # displacement_amplitude: 0.0        # required when family == "coherent_displaced"
+    # ── For model_kind == algebraic_map, replace the dynamical fields above with: ──
+    # test_cases:                          # non-empty list; each entry has name/description/expected_outcome/reference
+    #   - name: "TBD-CASE-NAME"
+    #     description: "TBD-ONE-LINE"
+    #     expected_outcome: "TBD-SYMBOLIC-OR-PROSE"
+    #     reference: "TBD-LETTER-EQ-OR-PAPER"
+
+  truncation:
+    perturbative_order: 0                  # the frozen N_card; non-negative integer
+    basis: "TBD-BASIS"                     # e.g. "matrix_unit", "pauli"
+    bath_mode_cutoff: 0                    # required when model.bath_type != none
+    # hierarchy_depth: 0                   # optional; HEOM-specific
+    # bond_dimension: 0                    # optional; TEMPO/MPS-specific
+    # pseudomode_count: 0                  # optional; pseudomode/chain-mapping-specific
+
+  numerical:
+    time_grid:                             # required when model_kind == dynamical; omit for algebraic_map
+      t_start: 0.0
+      t_end: 0.0
+      n_points: 0
+      scheme: "uniform"                    # one of: uniform, chebyshev, log
+    integration_tolerance:
+      relative: 1.0e-12
+      absolute: 1.0e-14
+    solver: "TBD-SOLVER-ID"                # e.g. "scipy_dop853"; "analytical" for algebraic_map cards
+
+  comparison:
+    reference: "TBD-REFERENCE"             # citation key or symbolic, e.g. "Letter Eq. (6)"
+    target_observable: "TBD-OBSERVABLE"    # e.g. "K(t)", "omega_r(t)", "eigenbasis_rotation_angle"
+    error_metric: "TBD-METRIC"             # e.g. "relative_frobenius", "absolute_l2"
+    threshold: 0.0                         # positive number; e.g. 1.0e-10
+    # projection_scheme: "TBD-SCHEME"      # required for non-TCL methods (Sail §2)
+
+# ─── Acceptance criterion ─────────────────────────────────────────────────────
+# Human-readable restatement of the comparison rule. Mirrors the four scalar
+# fields of frozen_parameters.comparison; the rationale captures conditional
+# logic that the structured fields cannot.
+
+acceptance_criterion:
+  reference: "TBD-REFERENCE"
+  observable: "TBD-OBSERVABLE"
+  error_metric: "TBD-METRIC"
+  threshold: 0.0
+  projection_scheme: null
+  rationale: |
+    TBD: Plain-language statement of pass conditions. Reference Ledger
+    sub-claims by their B-prediction index (e.g. "B.1", "B.2", "B.3") and
+    the corresponding Letter equations by their numbering. State explicitly
+    any conditional logic (e.g. "PASS iff B.1 AND B.2 AND B.3", or "PASS iff
+    case-A error <= threshold AND case-B signal exceeds sensitivity").
+
+# ─── Result block ─────────────────────────────────────────────────────────────
+# Empty at draft (frozen-awaiting-run). Populated in Phase D verdict commit
+# (status, verdict, evidence, runner_version, optional notes). The
+# commit_hash placeholder is filled by a SEPARATE follow-up commit whose
+# message reads `cards: fill self-referential commit_hash placeholder for
+# <card_id>` and touches only that field; see SCHEMA.md §Card lifecycle.
+# (An `--amend` will not work: amending changes the tree, which changes the
+# hash, so the placeholder cannot resolve to its own commit's hash.)
+
+result:
+  verdict: null                  # one of PASS, FAIL, CONDITIONAL once populated
+  evidence: []                   # list of repo-relative paths
+  commit_hash: ""                # 40-character SHA-1 once populated
+  runner_version: ""             # semver of reporting/benchmark_card.py at run time
+  notes: ""                      # optional free text
+
+# ─── Failure-mode log ─────────────────────────────────────────────────────────
+# Empty at first-issue draft. Populated only on superseding cards.
+# Each entry has the shape:
+#   - date: 2026-MM-DD
+#     change: "what was modified"
+#     reason: "why; reference evidence (commit hash, run output)"
+#     predecessor_card_id: "A3"
+#     predecessor_version: "v0.1.0"
+
+failure_mode_log: []
+
+# ─── Stewardship flag ─────────────────────────────────────────────────────────
+# Per docs/stewardship_conflict.md. The field is present on every card, even
+# when unflagged, so flag-propagation is mechanically auditable. DG-1 cards
+# (Tier 1, theory-internal) are unflagged.
+
+stewardship_flag:
+  status: "unflagged"            # one of: unflagged, primary, secondary, stewardship-conflict-bound
+  rationale: ""                  # required when status != unflagged
+  data_source: ""                # required when status in {primary, secondary}
+  search_performed: ""           # required when status == stewardship-conflict-bound
