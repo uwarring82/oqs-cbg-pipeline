@@ -1,14 +1,13 @@
 ---
 plan_id: dg-1-work-plan
-version: v0.1.3
+version: v0.1.4
 date: 2026-04-30
 type: work-plan
 anchor_sail: sail/sail-cbg-pipeline_v0.5.md §§4, 5, 9 (DG-1), 10 (Risks #6, #8), 11
 anchor_ledger: ledger/CL-2026-005_v0.4.md Entries 1, 3, 4 (COMPATIBLE)
 anchor_envelope: docs/validity_envelope.md DG-1 row (NOT YET ATTEMPTED → target PASS)
 status: active
-supersedes: dg-1-work-plan_v0.1.2.md
-superseded_by: dg-1-work-plan_v0.1.4.md
+supersedes: dg-1-work-plan_v0.1.3.md
 license: CC-BY-4.0 (LICENSE-docs)
 ---
 
@@ -37,19 +36,27 @@ This plan adopts a **bounded-maximalist** reading on both axes:
 
 The bounded-maximalist reading is what a non-conflicted reader would treat as the operational meaning of "reproduced numerically": every B-prediction is exercised, every order *for which the pipeline computes K_n* satisfies the predicted structure, and the cap *N_card* is recorded explicitly in the card's `frozen_parameters:` block. A future steward who finds the structure violated at order *N_card + 1* would log a DG-2 finding (or a DG-4 failure-envelope finding, depending on cause), not retroactively invalidate the DG-1 PASS — the envelope's authorisation scope is bounded by the cap.
 
-**Operationalisability carve-out** (added v0.1.3). The bounded-maximalist reading is bounded further by what can be operationalised with the resources at hand. A B-prediction whose verification requires prior-art whose closed form the steward does not have access to — and which is not transcribed in the Letter or in the Ledger entry's paraphrase — cannot be numerically compared at DG-1; the comparison is undefined without the prior-art formula. Such a B-prediction is deferred to DG-2 with an explicit failure_mode_log entry on the affected card recording the gap and the routing.
+**Operationalisability carve-out** (added v0.1.3; extended v0.1.4). The bounded-maximalist reading is bounded further by what can be operationalised with the resources at hand. A B-prediction whose verification requires prior-art (or model-side specification) whose closed form the steward does not have access to — and which is not transcribed in the Letter or in the Ledger entry's paraphrase — cannot be numerically compared at DG-1; the comparison is undefined without the missing form. Such a B-prediction is deferred to DG-2 with an explicit `failure_mode_log` entry on the affected card recording the gap and the routing.
 
-The carve-out applies *narrowly* — only to specific B-predictions whose verification depends on inaccessible prior art, not to entire Entries. CL-2026-005 v0.4 Entry 1.B.3 ("Applied to a pseudo-Kraus representation, K reduces to the diagonal Hayden–Sorce 2022 expression") is the one such case in the DG-1 set: the Hayden–Sorce 2022 closed form (Hayden, Sorce, *Communications Physics* **5**, 92 (2022)) is not transcribed in the Letter or Ledger paraphrase, and the steward did not have direct access to the paper at the time of Card A1 v0.1.0 → v0.1.1 supersedure (2026-04-30). Phase B preview drafting of Card A1 v0.1.0 surfaced the gap during DG-1 Phase C.3 (commit `09714cf`): a numerical sanity check via the just-implemented `cbg.effective_hamiltonian.K_from_generator` revealed that Letter Eq. (6) on the pseudo-Kraus L (as written) yields K = 0, not the speculative `(ω_11 − ω_22) σ_z` form Card A1 v0.1.0 had encoded. Without the prior-art formula, no comparison is possible. Card A1 v0.1.1 records the deferral; Entry 1.B.1 and 1.B.2 remain DG-1 territory.
+The carve-out applies *narrowly* — only to specific B-predictions whose verification depends on inaccessible prior art or under-specified card content, not to entire Entries. As of plan v0.1.4 there are three such DG-1 cases, surfaced by Phase C drafting and resolved identically (DG-2 deferral, parallel structure):
 
-The carve-out parallels the Entry 5 deferral in §2.2 (parity-FDT decomposition reserved for DG-2). Both are cases where DG-1's "reproduced numerically" criterion meets a resource-availability boundary; both are recorded explicitly with their routing rather than silently weakened or strengthened. A future plan revision can repatriate Entry 1.B.3 from DG-2 to a fresh DG-1 card once the Hayden–Sorce 2022 formula is transcribed; the current deferral does not foreclose that path.
+- **Entry 1.B.3** (pseudo-Kraus reduction to diagonal Hayden–Sorce 2022 expression). The Hayden–Sorce 2022 closed form (Hayden, Sorce, *Communications Physics* **5**, 92 (2022)) is not transcribed in the Letter or Ledger paraphrase, and the steward did not have direct access to the paper. Surfaced during DG-1 Phase C.3 (commit `09714cf`): a numerical sanity check via the just-implemented `cbg.effective_hamiltonian.K_from_generator` revealed that Letter Eq. (6) on the pseudo-Kraus L (as written) yields K = 0, not the speculative `(ω_11 − ω_22) σ_z` form Card A1 v0.1.0 had encoded. Recorded under Card A1 v0.1.1 `failure_mode_log[0]`; Entry 1.B.1 and 1.B.2 remain DG-1 territory.
+
+- **Entry 3.B.3** (time-dependent shift in non-thermal/coherent-displaced bath, as a second-order observable per Letter Appendix D). Cards A3/A4's per-case `bath_state.coherent_displaced` carries `displacement_amplitude: 1.0` but does not pin the displacement-mode frequency or envelope. A coherent state on a multi-mode bath requires a basis choice that the card spec does not encode. Surfaced during DG-1 Phase C.7 (commit `18f36bb`): `cbg.cumulants.D_bar_1` for the displaced case raised with an explicit "convention not specified" routing message. Recorded under Card A3 v0.1.1 `failure_mode_log[0]`; Entry 3.B.1 and 3.B.2 remain DG-1 territory in the thermal case.
+
+- **Entry 4.B.2** (eigenbasis rotation when odd-order bath cumulants are nonzero, as a second-order observable per Letter Appendix D). Same surfacing context, same convention gap as Entry 3.B.3. Recorded under Card A4 v0.1.1 `failure_mode_log[0]`; Entry 4.B.1 (parity-class theorem in the thermal case) remains DG-1 territory.
+
+The carve-out parallels the Entry 5 deferral in §2.2 (parity-FDT decomposition reserved for DG-2). All four — Entries 1.B.3, 3.B.3, 4.B.2, and 5 — are cases where DG-1's "reproduced numerically" criterion meets a resource- or specification-availability boundary; all are recorded explicitly with their routing rather than silently weakened or strengthened. A future plan revision can repatriate any of them from DG-2 to a fresh DG-1 card once the missing prior-art formula is transcribed (or, for the displacement cases, once a Council-cleared convention is adopted). The current deferrals do not foreclose those paths.
+
+**Pattern note.** The three deferrals (1.B.3, 3.B.3, 4.B.2) all share a common form: the Letter's structural claim is verifiable in the *unambiguous* sub-case (canonical Lindblad / thermal bath) but not in the *contrast* sub-case (pseudo-Kraus reduction / non-thermal bath). DG-1's verification under v0.1.4 covers the unambiguous sub-cases only; DG-2 will pick up the contrast sub-cases once the missing specifications are available. This is the cards-first ordering's intended outcome: the sub-cases that were operationalisable at DG-1 are now in the cards; the rest are routed forward with full audit trail.
 
 ### 1.2 Minimum perturbative order
 
 DG-1 cards execute the TCL recursion at the **minimum order N_card** sufficient to exercise every B-prediction in the corresponding Entry. The defaults this plan prescribes (cards may freeze higher caps if the steward judges fit, but not lower):
 
 - **Card A1 (Entry 1):** N_card = 0. Entry 1's claim is a closed-form algebraic expression for K from L (Letter Eqs. (6)–(7)); no perturbative recursion is needed. Two of the three B-predictions are exercised at DG-1 via Card A1 v0.1.1 (canonical-Lindblad recovery, Markovian Lamb shift); the pseudo-Kraus reduction (Entry 1.B.3) is deferred to DG-2 per §1.1's operationalisability carve-out (Hayden–Sorce 2022 closed form not transcribed; see Card A1 v0.1.1 `failure_mode_log` for the surfacing context).
-- **Card A3 (Entry 3):** N_card = 2. Entry 3.B.1 (K(t) = (ω_r(t)/2) σ_z) is a structural statement; Entry 3.B.2 (thermal-bath trivialisation to (ω/2) σ_z, no renormalisation) holds trivially at every order; Entry 3.B.3 (time-dependent shift for non-thermal bath) is a second-order observable. N_card = 2 lets all three be exercised without entering DG-2 territory.
-- **Card A4 (Entry 4):** N_card = 2. Same structure: Entry 4.B.1 (no eigenbasis rotation for thermal bath) holds at every order; Entry 4.B.2 (eigenbasis rotation for non-thermal bath, where odd cumulants are nonzero) is a second-order observable per Letter Eqs. (D.4)–(D.6).
+- **Card A3 (Entry 3):** N_card = 2. Entry 3.B.1 (K(t) = (ω_r(t)/2) σ_z) is a structural statement; Entry 3.B.2 (thermal-bath trivialisation to (ω/2) σ_z, no renormalisation) holds trivially at every order. Card A3 v0.1.1 verifies B.1 + B.2 in the thermal case. Entry 3.B.3 (time-dependent shift for non-thermal bath) is a second-order observable but is deferred to DG-2 per §1.1's operationalisability carve-out (displacement-convention gap; see Card A3 v0.1.1 `failure_mode_log[0]`).
+- **Card A4 (Entry 4):** N_card = 2. Card A4 v0.1.1 verifies Entry 4.B.1 (no eigenbasis rotation for thermal bath; parity-class theorem of Letter Eqs. (D.4)–(D.6)) in the thermal case. Entry 4.B.2 (eigenbasis rotation for non-thermal bath, where odd cumulants are nonzero) is a second-order observable but is deferred to DG-2 per §1.1's operationalisability carve-out (same displacement-convention gap as Entry 3.B.3; see Card A4 v0.1.1 `failure_mode_log[0]`).
 
 Higher-order recursion (N ≥ 3) is DG-2 territory. Modules `cbg/cumulants.py` and `cbg/tcl_recursion.py` are implemented only along the code paths Cards A3/A4 exercise at orders ≤ 2; higher-order paths remain stubbed and raise `NotImplementedError`.
 
@@ -75,7 +82,9 @@ The cards' acceptance criteria record N_card as a frozen parameter and verify th
 ### 2.2 Out of scope
 
 - Entry 2 (recursive perturbative series, scope-limited): convergence is open per Ledger constraints; full reproduction belongs to DG-2.
-- **Entry 1.B.3** (pseudo-Kraus reduction to diagonal Hayden–Sorce 2022 expression): deferred to DG-2 per §1.1's operationalisability carve-out (added in this plan revision). The Hayden–Sorce 2022 closed form is not transcribed in the Letter or Ledger paraphrase; without the prior-art formula, no numerical comparison is possible at DG-1. Entry 1.B.1 (canonical-Lindblad recovery) and Entry 1.B.2 (Markovian Lamb shift) remain DG-1 territory and are gated by Card A1 v0.1.1.
+- **Entry 1.B.3** (pseudo-Kraus reduction to diagonal Hayden–Sorce 2022 expression): deferred to DG-2 per §1.1's operationalisability carve-out. The Hayden–Sorce 2022 closed form is not transcribed in the Letter or Ledger paraphrase; without the prior-art formula, no numerical comparison is possible at DG-1. Entry 1.B.1 (canonical-Lindblad recovery) and Entry 1.B.2 (Markovian Lamb shift) remain DG-1 territory and are gated by Card A1 v0.1.1.
+- **Entry 3.B.3** (time-dependent shift in non-thermal bath): deferred to DG-2 per §1.1's operationalisability carve-out (extended in this plan revision to cover displacement-convention gaps). The cards' `bath_state.coherent_displaced` does not pin the displacement-mode convention on a multi-mode bath; without an explicit convention, no comparison is possible at DG-1. Entry 3.B.1 and 3.B.2 remain DG-1 territory in the thermal case via Card A3 v0.1.1.
+- **Entry 4.B.2** (eigenbasis rotation in non-thermal bath): deferred to DG-2 per §1.1's operationalisability carve-out, same gap as Entry 3.B.3. Entry 4.B.1 (parity-class theorem in the thermal case) remains DG-1 territory via Card A4 v0.1.1.
 - Entry 5 (parity structure, FDT): DG-2 territory at higher orders. Entry 5's second-order FDT decomposition concerns the *parity structure* of K_2 and is naturally adjacent to Cards A3/A4 (which evaluate K_n for spin-bath models at orders ≤ 2), not Card A1 (which is the closed-form algebraic check at order 0). Even at second order, however, Entry 5's discriminant content — identifying the FDT structure within K_2 rather than merely computing K_2 — is reserved for DG-2 and not gated by DG-1. DG-1 cards do not assert anything about Entry 5.
 - Entry 6 (trapped-ion validation): empirical, with self-reference flag; not reproducible by this repository at any DG.
 - Entry 7 (thermodynamic interpretation): DG-5 territory; routes via fresh Council deliberation.
@@ -158,28 +167,28 @@ Each card is a standalone YAML file in `benchmarks/benchmark_cards/`, populated 
 #### Card A3 — Entry 3: pure dephasing structural result
 
 - **Anchor.** CL-2026-005 v0.4 Entry 3; Letter Eq. (19), Letter Appendix D.
-- **Reproduction targets** (per Entry 3.B):
+- **Reproduction targets** (per Entry 3.B; Card A3 v0.1.1 verifies B.1 and B.2 in the thermal case; B.3 deferred to DG-2 per §1.1 operationalisability carve-out):
   1. K(t) = (ω_r(t)/2) σ_z (no environment-induced eigenbasis rotation).
   2. For thermal bosonic bath (Fock-diagonal initial state): K(t) = (ω/2) σ_z exactly, no renormalisation, recovering the standard spin–boson exact result (Łuczka 1990; Doll et al. 2008; Leggett et al. 1987).
-  3. Time-dependent shift when odd-order bath cumulants are nonzero (e.g. coherently-displaced bath): demonstrated as a sweep showing nonzero ω_r(t) − ω.
-- **Frozen parameters** (illustrative scaffolding only — see §2.4):
-  - H_S = (ω/2) σ_z; A = σ_z; bath: linearly-coupled bosonic, ohmic spectral density, finite cutoff; bath state: thermal at temperature T (target ½) and a coherently-displaced state (target 3).
-  - Perturbative order: minimum order needed to demonstrate B-predictions (expected: order 0 for the thermal trivial case; order ≤ 2 for the non-thermal contrast case).
-  - Time grid, integration tolerance, spectral cutoff: populated in card during Phase B.
-  - Acceptance: ω_r(t) − ω = 0 within tolerance for thermal case (target 2); ω_r(t) − ω ≠ 0 within sensitivity for displaced case (target 3); K(t) ∝ σ_z at machine precision (target 1).
+  3. *(Deferred to DG-2.)* Time-dependent shift when odd-order bath cumulants are nonzero (e.g. coherently-displaced bath): demonstrated as a sweep showing nonzero ω_r(t) − ω. Verification requires a displacement-mode convention on the multi-mode bath that the cards' `displacement_amplitude: 1.0` does not pin. See Card A3 v0.1.1 `failure_mode_log` for the surfacing context (Phase C.7 commit `18f36bb`: `cbg.cumulants.D_bar_1` for the displaced case raised with explicit "convention not specified" routing).
+- **Frozen parameters** (actual values populated in Card A3 v0.1.1):
+  - H_S = (ω/2) σ_z; A = σ_z; bath: linearly-coupled bosonic, ohmic spectral density, finite cutoff (α = 0.05, ω_c = 10 ω-units); bath state: thermal at temperature T = 0.5 ω-units (the only DG-1-verifiable case at v0.1.1).
+  - Perturbative order: N_card = 2.
+  - Time grid: t ∈ [0, 20/ω], 200 uniform points, scheme uniform.
+  - Acceptance: ω_r(t) − ω = 0 within tolerance for thermal case (target 2); K(t) ∝ σ_z at machine precision (target 1). Displaced-case acceptance is deferred to DG-2.
 - **Modules touched.** `models/pure_dephasing.py`, `cbg/effective_hamiltonian.py`, `cbg/cumulants.py` (orders ≤ 2 only), `cbg/bath_correlations.py`, `cbg/tcl_recursion.py` (orders ≤ 2 only), `numerical/time_grid.py`.
 
 #### Card A4 — Entry 4: σ_x thermal-bath result
 
 - **Anchor.** CL-2026-005 v0.4 Entry 4; Letter Eqs. (D.4)–(D.6); Letter Eq. (22).
-- **Reproduction targets** (per Entry 4.B):
-  1. K(t) ∝ σ_z (no eigenbasis rotation) for thermal bosonic bath with orthogonal coupling A = σ_x.
-  2. Eigenbasis rotation when odd-order bath cumulants are nonzero (e.g. coherent displacement, non-equilibrium preparation): demonstrated as a sweep.
-- **Frozen parameters** (illustrative scaffolding only — see §2.4):
-  - H_S = (ω/2) σ_z; A = σ_x; bath: thermal bosonic, ohmic, finite cutoff; non-thermal comparison state for target 2.
-  - Perturbative order: minimum order needed to demonstrate B-predictions (expected: order ≤ 2; the parity-class result of Letter Eqs. (D.4)–(D.6) is a second-order statement).
-  - Time grid, integration tolerance, spectral cutoff: populated in card during Phase B.
-  - Acceptance: rotation angle θ(t) of K(t)'s eigenbasis relative to σ_z basis ≤ tolerance for thermal case; θ(t) > sensitivity threshold for non-thermal case.
+- **Reproduction targets** (per Entry 4.B; Card A4 v0.1.1 verifies B.1 in the thermal case; B.2 deferred to DG-2 per §1.1 operationalisability carve-out):
+  1. K(t) ∝ σ_z (no eigenbasis rotation) for thermal bosonic bath with orthogonal coupling A = σ_x. The parity-class theorem of Letter Eqs. (D.4)–(D.6) is what suppresses the transverse contributions.
+  2. *(Deferred to DG-2.)* Eigenbasis rotation when odd-order bath cumulants are nonzero (e.g. coherent displacement, non-equilibrium preparation): demonstrated as a sweep. Same displacement-convention gap as Entry 3.B.3 (see Card A4 v0.1.1 `failure_mode_log`).
+- **Frozen parameters** (actual values populated in Card A4 v0.1.1; matched to Card A3 v0.1.1 for cross-card consistency):
+  - H_S = (ω/2) σ_z; A = σ_x; bath: thermal bosonic, ohmic, finite cutoff (α = 0.05, ω_c = 10 ω-units); thermal at temperature T = 0.5 ω-units (the only DG-1-verifiable case at v0.1.1).
+  - Perturbative order: N_card = 2.
+  - Time grid: matched to A3 (t ∈ [0, 20/ω], 200 uniform points).
+  - Acceptance: rotation angle θ(t) of K(t)'s eigenbasis relative to σ_z basis ≤ tolerance for thermal case (target 1). Displaced-case acceptance is deferred to DG-2.
 - **Modules touched.** `models/spin_boson_sigma_x.py`, `cbg/effective_hamiltonian.py`, `cbg/cumulants.py` (orders ≤ 2 only), `cbg/bath_correlations.py`, `cbg/tcl_recursion.py` (orders ≤ 2 only), `numerical/time_grid.py`.
 
 **Acceptance criterion (Phase B).** Three card files committed, each with top-level `status: frozen-awaiting-run` (single hyphenated token; this is the YAML key value the Phase A schema enumerates). No card has a populated `result:` block. Validation at this phase is by hand-inspection plus a third-party YAML linter (`yamllint`); schema-conformance via `reporting/benchmark_card.py` happens in Phase C — Phase B does *not* depend on Phase C tooling existing.
@@ -352,13 +361,20 @@ If during execution any finding bears on the Sail (e.g. the §11 minimal-impleme
   - **Schema location.** `docs/benchmark_card_schema.md` → `benchmarks/benchmark_cards/SCHEMA.md`. `docs/` is locked to the five protective-scaffolding files per Sail v0.5 §11; the schema is operational specification, not protective. Co-locating with the cards themselves keeps the operational artefacts together. Phase A logbook entry (`benchmark-card-schema-drafted`) records the same rationale.
   - **Operational status engaged.** Front-matter `status:` set to `active` (was `draft` in v0.1.0 / v0.1.1). Plans index updated to mark v0.1.2 as active / Phase A.
   - **Anchor bump (front matter).** `supersedes:` set to `dg-1-work-plan_v0.1.1.md`. No other substantive content changes.
-- **v0.1.3 (2026-04-30, this revision).** Steward supersedure following Phase C.3 numerical sanity check. Surfaced by `cbg.effective_hamiltonian.K_from_generator` exercising Card A1 v0.1.0's pseudo-Kraus test case (commit `09714cf`):
+- **v0.1.3 (2026-04-30, superseded by v0.1.4).** Steward supersedure following Phase C.3 numerical sanity check. Surfaced by `cbg.effective_hamiltonian.K_from_generator` exercising Card A1 v0.1.0's pseudo-Kraus test case (commit `09714cf`):
   - **Operationalisability carve-out (§1.1).** Added explicit narrowing of the bounded-maximalist reading: a B-prediction whose verification depends on prior-art whose closed form the steward does not have transcribed access to is deferred to DG-2, with the affected card's `failure_mode_log` recording the gap. This carves out specific B-predictions, not entire Entries.
   - **Entry 1.B.3 deferred to DG-2 (§1.2, §2.2, §4 Phase B Card A1).** Entry 1.B.3's verification requires the Hayden–Sorce 2022 closed form (Hayden, Sorce, *Communications Physics* **5**, 92 (2022)). The Letter and Ledger paraphrase do not transcribe it; the steward did not have direct paper access at supersedure time. Card A1 supersedes from v0.1.0 to v0.1.1 (B.3 test case removed; `failure_mode_log` entry records the surfacing context). DG-1 Card A1 verifies B.1 and B.2 only.
   - **Card A1 v0.1.0 → v0.1.1 supersedure.** Recorded under Card A1 v0.1.1's `failure_mode_log[0]` per [`SCHEMA.md`](../benchmarks/benchmark_cards/SCHEMA.md) §Supersedure. Predecessor v0.1.0 retains its content; `superseded_by:` annotation appended; `status:` updated to `superseded` in the same commit.
   - **Stale-text fixes.** §2.4 stale "future plan revision (v0.1.1)" generalised. §5 FAIR — Findable: `plans/dg-1-work-plan_v0.1.0.md` generalised to `<MAJOR>.<MINOR>.<PATCH>` form. §7 Dependencies: Sail anchor `v0.4` → `v0.5` (the v0.4 file is retained per supersedure discipline; the v0.5 is canonical-current). §8.1 Plan status: stale "current revision (v0.1.0) committed at status: draft" updated to reflect v0.1.3 / status: active.
   - **Anchor bump (front matter).** `supersedes:` set to `dg-1-work-plan_v0.1.2.md`. No structural reorganisation; phase ordering and FAIR alignment unchanged.
+- **v0.1.4 (2026-04-30, this revision).** Steward supersedure following DG-1 Phase C.7 drafting. Surfaced by `cbg.cumulants.D_bar_1` for the coherent_displaced bath state (commit `18f36bb`), which raised with an explicit "convention not specified" routing message:
+  - **Operationalisability carve-out extended (§1.1).** The carve-out introduced in v0.1.3 for Entry 1.B.3 is widened to also cover Entries 3.B.3 and 4.B.2. All three share a common form: the Letter's structural claim is verifiable in the unambiguous sub-case (canonical Lindblad / thermal bath) but not in the contrast sub-case (pseudo-Kraus reduction / non-thermal bath, the latter requiring a displacement-mode convention the cards do not pin). The §1.1 carve-out section was rewritten as a list naming all three deferrals with their surfacing commits and `failure_mode_log` anchors. A "Pattern note" paragraph documents the common shape (thermal/canonical sub-case at DG-1; contrast sub-case routed to DG-2).
+  - **Entry 3.B.3 deferred to DG-2 (§1.2 Card A3 line; §2.2 out of scope; §4 Phase B Card A3).** Card A3 v0.1.0 → v0.1.1 supersedure: removes `coherent_displaced_bath` test case, retains `thermal_bath` only. Card A3 v0.1.1 verifies Entry 3.B.1 (no eigenbasis rotation) + Entry 3.B.2 (thermal trivialisation). Recorded under Card A3 v0.1.1 `failure_mode_log[0]`.
+  - **Entry 4.B.2 deferred to DG-2 (§1.2 Card A4 line; §2.2 out of scope; §4 Phase B Card A4).** Card A4 v0.1.0 → v0.1.1 supersedure: same shape as A3, retains `thermal_bath` only. Card A4 v0.1.1 verifies Entry 4.B.1 (parity-class theorem in the thermal case). Recorded under Card A4 v0.1.1 `failure_mode_log[0]`.
+  - **§4 Phase B reproduction targets and frozen parameters.** Card A3 and A4 sections updated to mark target 3 / target 2 (respectively) as "*(Deferred to DG-2.)*" with surfacing-context cross-references, and to record the actual frozen-parameter values populated in v0.1.1 (replacing the v0.1.3 "illustrative scaffolding only" hedge for Cards A3/A4, since their frozen parameters are now committed in YAML).
+  - **No structural reorganisation.** Phase ordering, FAIR alignment, and the Phase D verdict-commit pattern are unchanged. The DG-1 acceptance criterion remains "PASS if Cards A1, A3, A4 verdict = PASS"; the cards now verify a smaller (but unambiguous) set of B-predictions.
+  - **Anchor bump (front matter).** `supersedes:` set to `dg-1-work-plan_v0.1.3.md`.
 
 ---
 
-*End of DG-1 Work Plan v0.1.3. Steward-authored; revisable. No Council clearance required. CC-BY-4.0 (LICENSE-docs).*
+*End of DG-1 Work Plan v0.1.4. Steward-authored; revisable. No Council clearance required. CC-BY-4.0 (LICENSE-docs).*

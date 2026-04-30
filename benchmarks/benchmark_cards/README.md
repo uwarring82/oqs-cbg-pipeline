@@ -33,13 +33,15 @@ See [`SCHEMA.md`](SCHEMA.md) §Supersedure and
 | Card ID | DG | Ledger anchor | Status | File |
 |---|---|---|---|---|
 | A1 | DG-1 | CL-2026-005 v0.4 Entry 1 (B.1, B.2; B.3 deferred to DG-2) | frozen-awaiting-run | [A1_closed-form-K_v0.1.1.yaml](A1_closed-form-K_v0.1.1.yaml) |
-| A3 | DG-1 | CL-2026-005 v0.4 Entry 3 | frozen-awaiting-run | [A3_pure-dephasing_v0.1.0.yaml](A3_pure-dephasing_v0.1.0.yaml) |
-| A4 | DG-1 | CL-2026-005 v0.4 Entry 4 | frozen-awaiting-run | [A4_sigma-x-thermal_v0.1.0.yaml](A4_sigma-x-thermal_v0.1.0.yaml) |
+| A3 | DG-1 | CL-2026-005 v0.4 Entry 3 (B.1, B.2 thermal; B.3 deferred to DG-2) | frozen-awaiting-run | [A3_pure-dephasing_v0.1.1.yaml](A3_pure-dephasing_v0.1.1.yaml) |
+| A4 | DG-1 | CL-2026-005 v0.4 Entry 4 (B.1 thermal; B.2 deferred to DG-2) | frozen-awaiting-run | [A4_sigma-x-thermal_v0.1.1.yaml](A4_sigma-x-thermal_v0.1.1.yaml) |
 
-The three DG-1 cards are now frozen per [DG-1 work plan v0.1.3](../../plans/dg-1-work-plan_v0.1.3.md) §4 Phase B. Verdicts populate in Phase D. The index is updated atomically when cards are committed, when their `status` field changes per [SCHEMA.md](SCHEMA.md) §Card lifecycle, or when a successor card is added.
+The three DG-1 cards are now frozen per [DG-1 work plan v0.1.4](../../plans/dg-1-work-plan_v0.1.4.md) §4 Phase B. Verdicts populate in Phase D. The index is updated atomically when cards are committed, when their `status` field changes per [SCHEMA.md](SCHEMA.md) §Card lifecycle, or when a successor card is added.
 
 ### Superseded cards (retained for audit)
 
 | Card ID | Version | Superseded by | Date | Reason |
 |---|---|---|---|---|
 | A1 | v0.1.0 | [v0.1.1](A1_closed-form-K_v0.1.1.yaml) | 2026-04-30 | Entry 1.B.3 (pseudo-Kraus) deferred to DG-2; Hayden–Sorce 2022 closed form not transcribed. See A1 v0.1.1 `failure_mode_log[0]`. |
+| A3 | v0.1.0 | [v0.1.1](A3_pure-dephasing_v0.1.1.yaml) | 2026-04-30 | Entry 3.B.3 (time-dependent shift in non-thermal bath) deferred to DG-2; displacement convention on multi-mode bath under-specified. See A3 v0.1.1 `failure_mode_log[0]`. |
+| A4 | v0.1.0 | [v0.1.1](A4_sigma-x-thermal_v0.1.1.yaml) | 2026-04-30 | Entry 4.B.2 (eigenbasis rotation in non-thermal bath) deferred to DG-2; same displacement-convention gap as A3. See A4 v0.1.1 `failure_mode_log[0]`. |

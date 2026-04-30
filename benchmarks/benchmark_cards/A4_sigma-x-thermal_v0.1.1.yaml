@@ -1,43 +1,49 @@
 # DG-1 Benchmark Card A4 — Unbiased-spin (A = sigma_x) thermal-bath result
 #
 # Anchor: CL-2026-005 v0.4 Entry 4; Letter Eqs. (D.4)-(D.6), Letter Eq. (22);
-#         SCHEMA.md v0.1.2
-# Phase: B (frozen-awaiting-run) per DG-1 work plan v0.1.2 §4 Phase B
+#         SCHEMA.md v0.1.2; DG-1 work plan v0.1.4 (active)
+# Phase: B (frozen-awaiting-run)
 #
 # This card verifies that under a spin-boson model with orthogonal coupling
 # (H_S = (omega/2)*sigma_z, A = sigma_x, bosonic linear coupling), the
 # effective Hamiltonian K(t) computed by the TCL recursion at orders <= 2
-# satisfies Entry 4.B sub-claims:
+# satisfies the thermal-baseline sub-claim of Entry 4.B:
 #   B.1: For a thermal bosonic bath, odd-order contributions to K(t) vanish
 #        and even orders contribute only diagonal terms, so K(t) ∝ sigma_z
 #        and the eigenbasis of H_S is NOT rotated by the interaction
-#        (energy-level shift is allowed; rotation is not).
-#   B.2: When odd-order bath cumulants are nonzero (coherent displacement,
-#        non-equilibrium preparation), the eigenbasis of K(t) rotates from
-#        the sigma_z basis: a non-zero transverse (sigma_x, sigma_y) component
-#        appears, manifesting as a measurable rotation angle theta(t).
+#        (energy-level shift is allowed; rotation is not). The parity-class
+#        theorem of Letter Eqs. (D.4)-(D.6) is what suppresses the
+#        transverse contributions even though A is orthogonal to H_S.
 #
-# Entry 4 is structurally distinct from Entry 3: with A = sigma_x (orthogonal
+# Entry 4.B.2 (eigenbasis rotation when odd-order bath cumulants are nonzero,
+# e.g. coherent displacement) is deferred to DG-2 per DG-1 work plan v0.1.4
+# §1.1: same operationalisability carve-out as Card A3 v0.1.1's removal of
+# Entry 3.B.3. The cards' per-case `bath_state.coherent_displaced` carries
+# `displacement_amplitude: 1.0` but does not pin the displacement-mode
+# convention on a multi-mode bath. Without an explicit convention
+# (transcribed from Letter Appendix D or Council-cleared), the B.2
+# verification cannot be operationalised at DG-1. See failure_mode_log[0].
+#
+# Card A4 is structurally distinct from Card A3: with A = sigma_x (orthogonal
 # to H_S), the naive expectation is eigenbasis rotation; the parity-class
-# theorem of Letter Eqs. (D.4)-(D.6) is what suppresses it for thermal baths.
-# Card A4 checks that suppression numerically and verifies that breaking
-# Fock-diagonal symmetry restores the rotation.
+# theorem is what suppresses it for thermal baths. Card A4 v0.1.1 checks
+# that suppression numerically.
 #
-# model_kind: dynamical with test_cases (parameter sweep over bath_state).
-# perturbative_order: 2 per DG-1 work plan v0.1.2 §1.2 (the parity-class
-# result is a second-order statement; B.1/B.2 each manifest at order 2).
+# model_kind: dynamical with test_cases (single thermal case at v0.1.1).
+# perturbative_order: 2 per DG-1 work plan v0.1.4 §1.2 (parity-class result
+# is a second-order statement; B.1 holds at every order in the thermal case).
 
 # ─── Top-level metadata ───────────────────────────────────────────────────────
 
 schema_version: "v0.1.2"
 card_id: "A4"
-version: "v0.1.0"
+version: "v0.1.1"
 date: "2026-04-30"
 dg_target: "DG-1"
 ledger_entry: "CL-2026-005 v0.4 Entry 4"
 model: "spin_boson_sigma_x"
-status: "superseded"
-superseded_by: "A4_sigma-x-thermal_v0.1.1.yaml"
+status: "frozen-awaiting-run"
+supersedes: "A4_sigma-x-thermal_v0.1.0.yaml"
 license: "CC-BY-4.0 (LICENSE-docs)"
 
 # ─── Gauge block ──────────────────────────────────────────────────────────────
@@ -65,7 +71,7 @@ frozen_parameters:
       family: "ohmic"
       cutoff_frequency: 10.0               # omega-units (matched to A3 for cross-card consistency)
       coupling_strength: 0.05              # ohmic dimensionless coupling alpha (matched to A3; weak coupling at order 2)
-    # bath_state omitted at model level: each test_case provides its own.
+    # bath_state omitted at model level: per-case override below.
     test_cases:
 
       - name: "thermal_bath"
@@ -91,33 +97,12 @@ frozen_parameters:
           - "Entry 4.B.1 (no eigenbasis rotation in canonical thermal regime; parity-class theorem)"
         reference: "Letter Eqs. (D.4)-(D.6); Letter Eq. (22); CL-2026-005 v0.4 Entry 4.B.1; Gatto, Colla, Breuer, Thoss, Phys. Rev. A 110, 032210 (2024) — prior numerical conjecture"
 
-      - name: "coherent_displaced_bath"
-        description: |
-          Bosonic bath in a coherently-displaced state with displacement
-          amplitude alpha_disp = 1.0 (one bath quantum in the
-          coherent-state parameter sense). The displacement breaks the
-          Fock-diagonal symmetry, introducing nonzero odd-order bath
-          cumulants. The parity-class theorem no longer suppresses
-          transverse contributions; B.2 predicts eigenbasis rotation
-          (theta(t) > 0) at order 2.
-        bath_state:
-          family: "coherent_displaced"
-          temperature: 0.0                  # vacuum baseline + displacement (matched to A3)
-          displacement_amplitude: 1.0       # alpha_disp = 1 (matched to A3)
-        expected_outcome: |
-          K(t) eigenbasis rotates from the sigma_z basis: at least one
-          of the sigma_x or sigma_y projections of K becomes nonzero at
-          order 2 (manifestation of the broken parity class). The
-          rotation angle theta(t) (defined in acceptance_criterion)
-          exceeds the sensitivity floor at some t in the time grid.
-          The sigma_z coefficient is not constrained by this card;
-          only the rotation signal is gated.
-        verifies:
-          - "Entry 4.B.2 (eigenbasis rotation when odd-order bath cumulants are nonzero)"
-        reference: "Letter Eqs. (D.4)-(D.6); CL-2026-005 v0.4 Entry 4.B.2"
+      # NB: Card A4 v0.1.0 included a second test case (coherent_displaced_bath)
+      # for Entry 4.B.2. Removed in this revision; see failure_mode_log
+      # entry below for rationale and the DG-2 deferral.
 
   truncation:
-    perturbative_order: 2                   # N_card per DG-1 work plan v0.1.2 §1.2
+    perturbative_order: 2                   # N_card per DG-1 work plan v0.1.4 §1.2
     basis: "matrix_unit"                    # cross-basis verification is DG-2
     bath_mode_cutoff: 1024                  # discretisation of the continuous ohmic spectral density (matched to A3)
 
@@ -147,8 +132,9 @@ acceptance_criterion:
   threshold: 1.0e-8
   projection_scheme: null
   rationale: |
-    PASS iff every test case in frozen_parameters.model.test_cases satisfies
-    its per-case derived-observable conditions on K(t).
+    PASS iff the single test case in frozen_parameters.model.test_cases
+    (thermal_bath) satisfies its per-case derived-observable conditions
+    on K(t).
 
     Decompose K(t) in the Pauli basis:
 
@@ -166,55 +152,42 @@ acceptance_criterion:
     is proportional to sigma_z exactly when transverse_norm(t) = 0
     (equivalently rotation_angle(t) = 0).
 
-    Per-case PASS conditions, mapped to Entry 4.B sub-claims:
+    Per-case PASS conditions for thermal_bath, mapped to Entry 4.B.1:
 
-    (1) thermal_bath:
-        - B.1 (no eigenbasis rotation): max_t rotation_angle(t) <= 1.0e-8
-          OR max_t transverse_norm(t) / max(longitudinal(t), epsilon) <= 1.0e-8
-          (the two conditions are equivalent up to numerical guards near
-          longitudinal -> 0; the runner uses whichever is well-defined
-          for the given numerical state).
-        Failure of B.1 in the thermal case would falsify the parity-class
-        theorem of Letter Eqs. (D.4)-(D.6) numerically — a strong DG-1
-        FAIL signal that would also bear on the Letter's analytic claim.
-        (If observed, the routing rule per plan §10 applies: do not edit
-        the Ledger; route via fresh Council deliberation per Sail v0.5
-        §0 and §9 DG-5.)
+      - B.1 (no eigenbasis rotation): max_t rotation_angle(t) <= 1.0e-8
+        OR max_t transverse_norm(t) / max(longitudinal(t), epsilon) <= 1.0e-8
+        (the two conditions are equivalent up to numerical guards near
+        longitudinal -> 0; the runner uses whichever is well-defined
+        for the given numerical state).
+      Failure of B.1 in the thermal case would falsify the parity-class
+      theorem of Letter Eqs. (D.4)-(D.6) numerically — a strong DG-1
+      FAIL signal that would also bear on the Letter's analytic claim.
+      (If observed, the routing rule per plan §10 applies: do not edit
+      the Ledger; route via fresh Council deliberation per Sail v0.5
+      §0 and §9 DG-5.)
 
-    (2) coherent_displaced_bath:
-        - B.2 (eigenbasis rotation when odd cumulants are nonzero):
-            max_t transverse_norm(t) > 1.0e-5
-          (the transverse signal must EXCEED the sensitivity floor;
-          this is a *positive* assertion that breaking Fock-diagonal
-          symmetry produces a measurable rotation, not a tolerance check).
-        Failure of B.2 (transverse signal below sensitivity) would
-        indicate either the displacement amplitude is too small to
-        produce a second-order signal at this perturbative order, or
-        the recursion is missing the odd-cumulant contribution.
-
-    PASS for the card requires both per-case conditions. The bounded-
-    maximalist reading (DG-1 work plan v0.1.2 §1.1) requires every
-    Entry 4.B sub-claim to be exercised; this card exercises both.
-
-    The three-order-of-magnitude gap between B.1 tolerance (1e-8 rad)
-    and B.2 sensitivity floor (1e-5 transverse-norm) makes a
-    false-positive B.2 (numerical noise mistaken for rotation signal)
-    extremely unlikely.
+    PASS for the card requires this single condition. The bounded-
+    maximalist reading (DG-1 work plan v0.1.4 §1.1) requires every
+    Entry 4.B sub-claim *that can be operationalised with the resources
+    at hand* to be exercised; B.1 is exercised here, and Entry 4.B.2
+    (eigenbasis rotation in non-thermal bath) is deferred to DG-2 per
+    the operationalisability carve-out (see failure_mode_log[0] and
+    the v0.1.4 plan revision).
 
     N_card = 2 per plan §1.2: B.1's parity-class result is a second-order
-    statement (Letter Eqs. (D.4)-(D.6)); B.2's rotation signal manifests
-    at order 2 when odd cumulants are nonzero. The card runs the TCL
-    recursion at every order n ∈ {0, 1, 2}; B.1 must hold at every order
-    in the thermal case; B.2 must manifest at order 2 in the displaced
-    case.
+    statement (Letter Eqs. (D.4)-(D.6)); the card runs the TCL recursion
+    at every order n ∈ {0, 1, 2}; B.1 must hold at every order in the
+    thermal case.
 
-    Out of scope for Card A4 (DG-1 boundary):
+    Out of scope for Card A4 v0.1.1 (DG-1 boundary):
+      - Entry 4.B.2 (eigenbasis rotation when odd cumulants are nonzero):
+        deferred to DG-2. The convention from `bath_state.coherent_displaced`
+        with `displacement_amplitude: 1.0` to ⟨B(t)⟩ on a multi-mode
+        bath is under-specified; without it, the B.2 verification
+        cannot be operationalised. See failure_mode_log[0].
       - Energy-level shift verification: Entry 4.B.1 explicitly allows
         an energy-level shift (renormalisation of the sigma_z
         coefficient); Card A4 does NOT gate on the value of d(t).
-        A separate B.3-style shift check could be added in a future
-        DG-2 card if it becomes scientifically interesting, but it is
-        not part of Entry 4's B-predictions.
       - "At all orders" verification: DG-1 verifies up to N_card = 2;
         the analytical proof's all-order character (Letter Eqs.
         (D.4)-(D.6)) is acknowledged but not gated by DG-1 (plan §1.1).
@@ -225,9 +198,9 @@ acceptance_criterion:
         acceptance; matched to Card A3 for cross-card consistency
         within the same regime.
       - Comparison to Gatto et al. 2024's numerical evidence as
-        independent cross-method validation: that is DG-3 territory
-        (cross-method failure-asymmetry pairing); the citation in
-        the per-case `reference` field records the numerical-conjecture
+        independent cross-method validation: DG-3 territory
+        (cross-method failure-asymmetry pairing); the citation in the
+        thermal case's `reference` field records the numerical-conjecture
         precedent but does not invoke it as a DG-1 PASS condition.
 
 # ─── Result block ─────────────────────────────────────────────────────────────
@@ -241,7 +214,37 @@ result:
 
 # ─── Failure-mode log ─────────────────────────────────────────────────────────
 
-failure_mode_log: []
+failure_mode_log:
+  - date: "2026-04-30"
+    change: |
+      Removed test case "coherent_displaced_bath" (Entry 4.B.2 verification).
+      Card A4 v0.1.1 verifies Entry 4.B.1 in the thermal case only.
+    reason: |
+      DG-1 Phase C.7 drafting (cbg.cumulants.D_bar_1, commit 18f36bb)
+      surfaced the operationalisability gap on the coherent_displaced
+      test case: the card's `bath_state.coherent_displaced` field carries
+      `displacement_amplitude: 1.0` but does not pin the displacement-mode
+      frequency or envelope. A coherent state on a multi-mode bath
+      requires a basis choice that the card spec does not encode. The
+      same gap was surfaced for Card A3 (Entry 3.B.3) and is resolved
+      identically here — DG-2 deferral, parallel to Entry 1.B.3
+      (Card A1 v0.1.0 -> v0.1.1; Hayden-Sorce 2022 transcription gap).
+
+      Resolution path: DG-2 deferral, recorded under DG-1 work plan
+      v0.1.4 §1.1 operationalisability carve-out. A homemade convention
+      would make DG-1 verify "our convention produces structure" rather
+      than "the paper's prediction (Letter App. D) is reproduced",
+      weakening the validity envelope. A future card can repatriate
+      Entry 4.B.2 to a fresh DG-1 verification once Letter Appendix D's
+      displacement convention is transcribed (or a Council-cleared
+      convention is adopted).
+
+      Routing: this is a steward-side scope adjustment per DG-1 work
+      plan v0.1.4 §1.1. It does not bear on the Ledger (the Ledger's
+      Entry 4.B.2 claim is not invalidated; it is simply not gated by
+      DG-1 of this repository). No Council deliberation is required.
+    predecessor_card_id: "A4"
+    predecessor_version: "v0.1.0"
 
 # ─── Stewardship flag ─────────────────────────────────────────────────────────
 
