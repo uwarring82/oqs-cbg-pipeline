@@ -1,29 +1,40 @@
 # DG-1 Benchmark Card A1 — Operational expression for K(t)
 #
-# Anchor: CL-2026-005 v0.4 Entry 1; Letter Eqs. (6)-(7); SCHEMA.md v0.1.1
-# Phase: B (frozen-awaiting-run) per DG-1 work plan v0.1.2 §4 Phase B
+# Anchor: CL-2026-005 v0.4 Entry 1; Letter Eqs. (6)-(7); SCHEMA.md v0.1.2;
+#         DG-1 work plan v0.1.3 (active)
+# Phase: B (frozen-awaiting-run)
 #
 # This card verifies that the basis-independent closed-form recipe
 #   K = (1/2id) sum_alpha [F_alpha^dagger, L[F_alpha]]
-# (Letter Eq. (6); matrix-unit form Letter Eq. (7)) applied to three
-# representative L specifications reproduces the analytically-known K
-# for each case (Entry 1.B.1, B.2, B.3).
+# (Letter Eq. (6); matrix-unit form Letter Eq. (7)) applied to two
+# representative L specifications reproduces the analytically-known K for
+# each case: Entry 1.B.1 (canonical Lindblad with traceless jumps recovers
+# the input H term) and Entry 1.B.2 (Markovian weak-coupling generator
+# reproduces the standard Lamb shift).
+#
+# Entry 1.B.3 (pseudo-Kraus reduction to the diagonal Hayden-Sorce 2022
+# expression) is deferred to DG-2 per DG-1 work plan v0.1.3 §1.1: the
+# Hayden-Sorce 2022 closed form is not transcribed in the Letter or Ledger
+# paraphrase, and the steward does not have access to the paper directly,
+# so no numerical comparison is possible at DG-1. The deferral was
+# surfaced by Phase B preview drafting of Card A1 v0.1.0; see
+# failure_mode_log entry below.
 #
 # model_kind: algebraic_map (Entry 1 is a closed-form L -> K identity, not
 # a dynamical evolution; verification is at a single instant; perturbative
-# order is 0 per DG-1 work plan v0.1.2 §1.2).
+# order is 0 per DG-1 work plan v0.1.3 §1.2).
 
 # ─── Top-level metadata ───────────────────────────────────────────────────────
 
-schema_version: "v0.1.1"
+schema_version: "v0.1.2"
 card_id: "A1"
-version: "v0.1.0"
+version: "v0.1.1"
 date: "2026-04-30"
 dg_target: "DG-1"
 ledger_entry: "CL-2026-005 v0.4 Entry 1"
 model: "closed_form_algebraic"
-status: "superseded"
-superseded_by: "A1_closed-form-K_v0.1.1.yaml"
+status: "frozen-awaiting-run"
+supersedes: "A1_closed-form-K_v0.1.0.yaml"
 license: "CC-BY-4.0 (LICENSE-docs)"
 
 # ─── Gauge block ──────────────────────────────────────────────────────────────
@@ -91,29 +102,9 @@ frozen_parameters:
           (the system Hamiltonian plus the standard Lamb-shift correction).
         reference: "Letter Eq. (6); CL-2026-005 v0.4 Entry 1.B.2; Breuer-Petruccione §3.3"
 
-      - name: "pseudo_kraus_diagonal"
-        description: |
-          Diagonal pseudo-Kraus generator L[X] = sum_i omega_ii V_i X V_i^dagger
-          (no commutator term). The recipe should reduce to the diagonal
-          Hayden-Sorce 2022 closed form for K, reproducing the special case
-          the new basis-independent formula generalises to off-diagonal
-          omega_{ij}. (The off-diagonal generalisation itself is acknowledged
-          but not gated by DG-1; see Entry 1.D.)
-        L_form: "sum_i omega_ii * V_i * X * V_i^dagger"   # NB: no -i[H, X] commutator
-        V_operators:
-          - "|0><1|"           # = sigma_minus
-          - "|1><0|"           # = sigma_plus
-        parameters:
-          omega_11: 0.1        # weight on V_1 = |0><1|
-          omega_22: 0.05       # weight on V_2 = |1><0|
-        expected_outcome: |
-          K matches the diagonal Hayden-Sorce 2022 closed-form expression
-          when both formulae are evaluated on this pseudo-Kraus L.
-          (For this V_1, V_2 set in d=2, the Hayden-Sorce 2022 diagonal
-          form yields K proportional to (omega_11 - omega_22) * sigma_z
-          up to the gauge-fixed coefficient; the verification is that
-          Letter Eq. (6) gives the same answer.)
-        reference: "Letter Eq. (6); CL-2026-005 v0.4 Entry 1.B.3; Hayden-Sorce 2022 (diagonal pseudo-Kraus form)"
+      # NB: Card A1 v0.1.0 included a third test case (pseudo_kraus_diagonal)
+      # for Entry 1.B.3. Removed in this revision; see failure_mode_log
+      # entry below for rationale and the DG-2 deferral.
 
   truncation:
     perturbative_order: 0      # algebraic identity; no perturbative recursion
@@ -167,26 +158,32 @@ acceptance_criterion:
         Failure would indicate a systematic mismatch with the
         Breuer-Petruccione §3.3 form.
 
-      - pseudo_kraus_diagonal (Entry 1.B.3): K_expected matches the
-        diagonal Hayden-Sorce 2022 closed-form expression for the
-        same L. Failure would indicate the new general formula does
-        not recover the prior result on its overlap regime.
-
-    All three are independent algebraic checks at the single instant
-    Letter Eq. (6) defines; N_card = 0 per DG-1 work plan v0.1.2 §1.2.
+    Both are independent algebraic checks at the single instant
+    Letter Eq. (6) defines; N_card = 0 per DG-1 work plan v0.1.3 §1.2.
     The bounded-maximalist reading (plan §1.1) requires every Entry
-    1.B sub-claim to be exercised — this card exercises all three.
+    1.B sub-claim to be exercised that *can be operationalised with
+    the resources at hand*; B.1 and B.2 are exercised here, and
+    Entry 1.B.3 is deferred to DG-2 (see Out-of-scope below and the
+    failure_mode_log entry).
 
-    Out of scope for Card A1 (DG-1 boundary):
+    Out of scope for Card A1 v0.1.1 (DG-1 boundary):
+      - Entry 1.B.3 (pseudo-Kraus reduction to diagonal Hayden-Sorce
+        2022 expression): deferred to DG-2 per DG-1 work plan v0.1.3
+        §1.1. The Hayden-Sorce 2022 closed form is not transcribed in
+        the Letter or Ledger paraphrase, and the steward does not have
+        access to the paper directly; no numerical comparison is
+        possible until the prior-art formula is transcribed. See
+        failure_mode_log[0] below.
       - Off-diagonal pseudo-Kraus (omega_{ij}, i != j): the new formula's
         generalisation claim per Entry 1.D. Verification of the
         generalisation is a structural-extension check that belongs to
-        DG-2, not DG-1.
+        DG-2, not DG-1 (would also benefit from the Hayden-Sorce 2022
+        transcription).
       - Cross-basis verification (evaluating K in a non-matrix-unit
         Hilbert-Schmidt orthonormal basis and asserting agreement):
         DG-2 universal-default structural-identity check per Sail v0.5
-        §9 DG-2 and DG-1 work plan v0.1.2 §2.1.
-      - Cross-dimension verification: DG-1 work plan v0.1.2 §4 Phase B
+        §9 DG-2 and DG-1 work plan v0.1.3 §2.1.
+      - Cross-dimension verification: DG-1 work plan v0.1.3 §4 Phase B
         Card A1 lists d in {2, 3} as illustrative scaffolding. This
         card freezes d = 2 (the minimal non-trivial case, matching the
         qubit scope of Cards A3/A4); d = 3 is deferred to DG-2 as a
@@ -207,7 +204,60 @@ result:
 
 # ─── Failure-mode log ─────────────────────────────────────────────────────────
 
-failure_mode_log: []
+failure_mode_log:
+  - date: "2026-04-30"
+    change: |
+      Removed test case "pseudo_kraus_diagonal" (Entry 1.B.3 verification).
+      Card A1 v0.1.1 verifies Entry 1.B.1 and 1.B.2 only.
+    reason: |
+      Phase B preview drafting of Card A1 v0.1.0 surfaced an unverifiable
+      expected_outcome for the pseudo_kraus_diagonal test case.
+
+      Card A1 v0.1.0 stated K_expected was "K proportional to
+      (omega_11 - omega_22) * sigma_z up to the gauge-fixed coefficient"
+      based on the Hayden-Sorce 2022 diagonal pseudo-Kraus form. During
+      DG-1 Phase C.3 (cbg.effective_hamiltonian.K_from_generator
+      implemented and tested at commit 09714cf), a numerical sanity check
+      revealed:
+
+        - The pseudo-Kraus L as written in v0.1.0
+          (L[X] = sum_i omega_ii V_i X V_i^dagger, no anti-commutator)
+          is NOT trace-annihilating: Tr(L(E_00)) = omega_22 ≠ 0. Letter
+          Eq. (6) precondition violated. Application of Letter Eq. (6)
+          to this L numerically yields K = 0, not the (omega_11 - omega_22)
+          sigma_z form claimed by v0.1.0.
+        - Adding the canonical anti-commutator term to make L trace-
+          annihilating still yields K = 0 via Letter Eq. (6) (consistent
+          with Entry 1.B.1: a pure dissipator with traceless jumps
+          contributes zero to K).
+        - The (omega_11 - omega_22) sigma_z claim in v0.1.0 was a
+          speculative reading of the Ledger Entry 1.B.3 paraphrase
+          ("K reduces to the diagonal Hayden-Sorce 2022 expression"),
+          not a transcription of the actual Hayden-Sorce 2022 closed
+          form (Hayden, Sorce, Communications Physics 5, 92 (2022)).
+
+      The verification of Entry 1.B.3 ("the new formula generalises
+      the prior result to the off-diagonal case") requires the
+      Hayden-Sorce 2022 closed form for the diagonal pseudo-Kraus
+      input. The steward does not have direct access to that paper at
+      the time of this revision; without the prior-art formula, no
+      numerical comparison is possible.
+
+      The bounded-maximalist reading (DG-1 work plan v0.1.3 §1.1) is
+      bounded by what can be operationalised with the resources at
+      hand. Entry 1.B.3's verification depends on inaccessible prior
+      art and is therefore deferred to DG-2 — paralleling the Entry 5
+      deferral (where a similar resource constraint applies to the
+      parity-FDT decomposition). The deferral is bounded: it covers
+      only Entry 1.B.3, not the entire Entry 1; Entry 1.B.1 and 1.B.2
+      remain DG-1 territory.
+
+      Routing: this is a steward-side scope adjustment per DG-1 work
+      plan v0.1.3 §1.1. It does not bear on the Ledger (the Ledger's
+      Entry 1.B.3 claim is not invalidated; it is simply not gated by
+      DG-1 of this repository). No Council deliberation is required.
+    predecessor_card_id: "A1"
+    predecessor_version: "v0.1.0"
 
 # ─── Stewardship flag ─────────────────────────────────────────────────────────
 

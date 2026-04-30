@@ -1,14 +1,13 @@
 ---
 plan_id: dg-1-work-plan
-version: v0.1.2
+version: v0.1.3
 date: 2026-04-30
 type: work-plan
 anchor_sail: sail/sail-cbg-pipeline_v0.5.md §§4, 5, 9 (DG-1), 10 (Risks #6, #8), 11
 anchor_ledger: ledger/CL-2026-005_v0.4.md Entries 1, 3, 4 (COMPATIBLE)
 anchor_envelope: docs/validity_envelope.md DG-1 row (NOT YET ATTEMPTED → target PASS)
 status: active
-supersedes: dg-1-work-plan_v0.1.1.md
-superseded_by: dg-1-work-plan_v0.1.3.md
+supersedes: dg-1-work-plan_v0.1.2.md
 license: CC-BY-4.0 (LICENSE-docs)
 ---
 
@@ -37,11 +36,17 @@ This plan adopts a **bounded-maximalist** reading on both axes:
 
 The bounded-maximalist reading is what a non-conflicted reader would treat as the operational meaning of "reproduced numerically": every B-prediction is exercised, every order *for which the pipeline computes K_n* satisfies the predicted structure, and the cap *N_card* is recorded explicitly in the card's `frozen_parameters:` block. A future steward who finds the structure violated at order *N_card + 1* would log a DG-2 finding (or a DG-4 failure-envelope finding, depending on cause), not retroactively invalidate the DG-1 PASS — the envelope's authorisation scope is bounded by the cap.
 
+**Operationalisability carve-out** (added v0.1.3). The bounded-maximalist reading is bounded further by what can be operationalised with the resources at hand. A B-prediction whose verification requires prior-art whose closed form the steward does not have access to — and which is not transcribed in the Letter or in the Ledger entry's paraphrase — cannot be numerically compared at DG-1; the comparison is undefined without the prior-art formula. Such a B-prediction is deferred to DG-2 with an explicit failure_mode_log entry on the affected card recording the gap and the routing.
+
+The carve-out applies *narrowly* — only to specific B-predictions whose verification depends on inaccessible prior art, not to entire Entries. CL-2026-005 v0.4 Entry 1.B.3 ("Applied to a pseudo-Kraus representation, K reduces to the diagonal Hayden–Sorce 2022 expression") is the one such case in the DG-1 set: the Hayden–Sorce 2022 closed form (Hayden, Sorce, *Communications Physics* **5**, 92 (2022)) is not transcribed in the Letter or Ledger paraphrase, and the steward did not have direct access to the paper at the time of Card A1 v0.1.0 → v0.1.1 supersedure (2026-04-30). Phase B preview drafting of Card A1 v0.1.0 surfaced the gap during DG-1 Phase C.3 (commit `09714cf`): a numerical sanity check via the just-implemented `cbg.effective_hamiltonian.K_from_generator` revealed that Letter Eq. (6) on the pseudo-Kraus L (as written) yields K = 0, not the speculative `(ω_11 − ω_22) σ_z` form Card A1 v0.1.0 had encoded. Without the prior-art formula, no comparison is possible. Card A1 v0.1.1 records the deferral; Entry 1.B.1 and 1.B.2 remain DG-1 territory.
+
+The carve-out parallels the Entry 5 deferral in §2.2 (parity-FDT decomposition reserved for DG-2). Both are cases where DG-1's "reproduced numerically" criterion meets a resource-availability boundary; both are recorded explicitly with their routing rather than silently weakened or strengthened. A future plan revision can repatriate Entry 1.B.3 from DG-2 to a fresh DG-1 card once the Hayden–Sorce 2022 formula is transcribed; the current deferral does not foreclose that path.
+
 ### 1.2 Minimum perturbative order
 
 DG-1 cards execute the TCL recursion at the **minimum order N_card** sufficient to exercise every B-prediction in the corresponding Entry. The defaults this plan prescribes (cards may freeze higher caps if the steward judges fit, but not lower):
 
-- **Card A1 (Entry 1):** N_card = 0. Entry 1's claim is a closed-form algebraic expression for K from L (Letter Eqs. (6)–(7)); no perturbative recursion is needed. The three B-predictions (canonical-Lindblad recovery, Markovian Lamb shift, pseudo-Kraus reduction) are each direct evaluations of the closed form.
+- **Card A1 (Entry 1):** N_card = 0. Entry 1's claim is a closed-form algebraic expression for K from L (Letter Eqs. (6)–(7)); no perturbative recursion is needed. Two of the three B-predictions are exercised at DG-1 via Card A1 v0.1.1 (canonical-Lindblad recovery, Markovian Lamb shift); the pseudo-Kraus reduction (Entry 1.B.3) is deferred to DG-2 per §1.1's operationalisability carve-out (Hayden–Sorce 2022 closed form not transcribed; see Card A1 v0.1.1 `failure_mode_log` for the surfacing context).
 - **Card A3 (Entry 3):** N_card = 2. Entry 3.B.1 (K(t) = (ω_r(t)/2) σ_z) is a structural statement; Entry 3.B.2 (thermal-bath trivialisation to (ω/2) σ_z, no renormalisation) holds trivially at every order; Entry 3.B.3 (time-dependent shift for non-thermal bath) is a second-order observable. N_card = 2 lets all three be exercised without entering DG-2 territory.
 - **Card A4 (Entry 4):** N_card = 2. Same structure: Entry 4.B.1 (no eigenbasis rotation for thermal bath) holds at every order; Entry 4.B.2 (eigenbasis rotation for non-thermal bath, where odd cumulants are nonzero) is a second-order observable per Letter Eqs. (D.4)–(D.6).
 
@@ -69,6 +74,7 @@ The cards' acceptance criteria record N_card as a frozen parameter and verify th
 ### 2.2 Out of scope
 
 - Entry 2 (recursive perturbative series, scope-limited): convergence is open per Ledger constraints; full reproduction belongs to DG-2.
+- **Entry 1.B.3** (pseudo-Kraus reduction to diagonal Hayden–Sorce 2022 expression): deferred to DG-2 per §1.1's operationalisability carve-out (added in this plan revision). The Hayden–Sorce 2022 closed form is not transcribed in the Letter or Ledger paraphrase; without the prior-art formula, no numerical comparison is possible at DG-1. Entry 1.B.1 (canonical-Lindblad recovery) and Entry 1.B.2 (Markovian Lamb shift) remain DG-1 territory and are gated by Card A1 v0.1.1.
 - Entry 5 (parity structure, FDT): DG-2 territory at higher orders. Entry 5's second-order FDT decomposition concerns the *parity structure* of K_2 and is naturally adjacent to Cards A3/A4 (which evaluate K_n for spin-bath models at orders ≤ 2), not Card A1 (which is the closed-form algebraic check at order 0). Even at second order, however, Entry 5's discriminant content — identifying the FDT structure within K_2 rather than merely computing K_2 — is reserved for DG-2 and not gated by DG-1. DG-1 cards do not assert anything about Entry 5.
 - Entry 6 (trapped-ion validation): empirical, with self-reference flag; not reproducible by this repository at any DG.
 - Entry 7 (thermodynamic interpretation): DG-5 territory; routes via fresh Council deliberation.
@@ -90,7 +96,7 @@ The following are deliberately left under-specified at v0.1.0; they are populate
 - The exact analytical-reference expressions Cards A1, A3, A4 compare against (the Ledger Entries cite the equations; the cards must transcribe them with explicit symbol-mapping).
 - The tolerance values (10⁻¹⁰ for A1 is illustrative; A3, A4 tolerances depend on the chosen integration scheme).
 
-A future plan revision (`dg-1-work-plan_v0.1.1.md`) populates these once Phase A's schema is finalised, *if* the values turn out to depend on schema decisions; otherwise the cards themselves are the canonical record and no plan revision is required.
+A future plan revision populates these only if the values turn out to depend on schema or plan decisions that themselves change; otherwise the cards themselves are the canonical record and no plan revision is required. (The actual values were populated directly in Cards A1 v0.1.1, A3 v0.1.0, A4 v0.1.0 during Phase B without requiring a plan revision.)
 
 ## 3. Approach: benchmark-cards-first
 
@@ -137,12 +143,12 @@ Each card is a standalone YAML file in `benchmarks/benchmark_cards/`, populated 
 #### Card A1 — Entry 1: operational K(t) form
 
 - **Anchor.** CL-2026-005 v0.4 Entry 1; Letter Eqs. (6)–(7).
-- **Reproduction targets** (per Entry 1.B):
+- **Reproduction targets** (per Entry 1.B; Card A1 v0.1.1 verifies B.1 and B.2; B.3 deferred to DG-2 per §1.1 operationalisability carve-out):
   1. Canonical Lindblad input with traceless jump operators → K returns the original Hamiltonian term.
   2. Markovian weak-coupling generator → K reproduces standard Lamb shift.
-  3. Pseudo-Kraus representation L[X] = Σ_i ω_ii V_i X V_i† → K reduces to the diagonal Hayden–Sorce 2022 expression.
-- **Frozen parameters** (illustrative scaffolding only — actual values are populated in the YAML card during Phase B; see §2.4):
-  - System dimension d ∈ {2, 3} (small enough to evaluate the basis-independent sum directly).
+  3. *(Deferred to DG-2.)* Pseudo-Kraus representation L[X] = Σ_i ω_ii V_i X V_i† → K reduces to the diagonal Hayden–Sorce 2022 expression. Verification requires the Hayden–Sorce 2022 closed form, which is not transcribed in the Letter or Ledger paraphrase. See Card A1 v0.1.1 `failure_mode_log` for the surfacing context (Phase C.3 numerical sanity check at commit `09714cf` confirmed Letter Eq. (6) on the as-written pseudo-Kraus L yields K = 0, not the speculative `(ω_11 − ω_22) σ_z` form Card A1 v0.1.0 had encoded).
+- **Frozen parameters** (illustrative scaffolding only — actual values populated in Card A1 v0.1.1):
+  - System dimension d = 2 frozen in v0.1.1 (Card A1's matched-pair design with Cards A3/A4); d = 3 deferred to DG-2 as a cross-dimension structural-identity check.
   - Hilbert–Schmidt operator basis: matrix-unit basis {|j⟩⟨k|} (single basis; cross-basis verification is DG-2 territory and is not exercised here).
   - Tolerance: relative Frobenius-norm error vs analytical reference, threshold ≤ 10⁻¹⁰.
 - **Modules touched.** `cbg/basis.py`, `cbg/effective_hamiltonian.py`, `numerical/tensor_ops.py`.
@@ -230,7 +236,7 @@ The plan, the schema artefact, the cards, and the result artefacts are designed 
 
 ### F — Findable
 
-- The plan lives at a stable path (`plans/dg-1-work-plan_v0.1.0.md`); subsequent revisions are new files (`v0.1.1`, `v0.2.0`, …) with `supersedes:`/`superseded_by:` cross-links, not in-place content edits.
+- The plan lives at a stable path (`plans/dg-1-work-plan_v<MAJOR>.<MINOR>.<PATCH>.md`); subsequent revisions are new files with `supersedes:`/`superseded_by:` cross-links, not in-place content edits.
 - The plan, schema, and cards are indexed: [plans/README.md](../plans/README.md) (operational status), [benchmarks/benchmark_cards/README.md](../benchmarks/benchmark_cards/README.md) (will be extended in Phase A with a pointer to `SCHEMA.md` and `_template.yaml`, and in Phase B with a card index). [docs/README.md](../docs/README.md) is *not* extended — its scope is locked to the five protective files per Sail v0.5 §11.
 - Every artefact carries rich front-matter metadata (id, version, date, anchors, status-as-of-commit), making each searchable by attribute, not just by filename.
 - The repository's top-level `README.md`, `CITATION.cff`, `codemeta.json`, `.zenodo.json` provide cross-discovery from external indexes once an archival snapshot is minted (after DG-1 PASS, the `v0.2.0` git tag is the natural Zenodo anchor).
@@ -282,7 +288,7 @@ If during Phase C an Entry's reproduction proves infeasible at the frozen parame
 - `docs/benchmark_protocol.md` (already at HEAD; v0.1.0 baseline).
 - `docs/validity_envelope.md` (already at HEAD; will be edited by Phase D).
 - `docs/stewardship_conflict.md`, `docs/do_not_cite_as.md`, `docs/endorsement_marker.md` (already at HEAD; not edited by this plan).
-- `sail/sail-cbg-pipeline_v0.4.md` (already at HEAD; not edited by this plan).
+- `sail/sail-cbg-pipeline_v0.5.md` (already at HEAD; not edited by this plan). The superseded `sail/sail-cbg-pipeline_v0.4.md` is also retained at HEAD per supersedure discipline.
 - `ledger/CL-2026-005_v0.4.md` (already at HEAD; immutable; consulted, never edited).
 - `LICENSE-docs` (CC-BY-4.0; covers plan, schema, cards-as-prose, logbook entries).
 
@@ -301,7 +307,7 @@ This plan is intentionally not time-bound (Risk #8 mitigation: time pressure enc
 
 ### 8.1 Plan status field
 
-The `status:` field in the front-matter is set at commit time and reflects the plan's status *as of that commit*. The current revision (`v0.1.0`) is committed at `status: draft`. There is no in-place transition to `active`: post-commit, the file is content-immutable per `plans/README.md`. The plan's *operational* status (which version is canonical-current and at which phase) is tracked in the `plans/README.md` index, not in the individual plan files. This separates the audit-stable record (the file) from the working-status pointer (the index), which is the pattern used by the validity envelope and the logbook index.
+The `status:` field in the front-matter is set at commit time and reflects the plan's status *as of that commit*. This revision (`v0.1.3`) is committed at `status: active`, mirroring the operational state at commit time (Phase C is in progress). There is no in-place transition of `status:`: post-commit, the file is content-immutable per `plans/README.md` (with the single `superseded_by:` exception). The plan's *operational* status (which version is canonical-current and at which phase) is tracked in the `plans/README.md` index, not in the individual plan files. This separates the audit-stable record (the file) from the working-status pointer (the index), which is the pattern used by the validity envelope and the logbook index.
 
 ### 8.2 Version-namespace discipline
 
@@ -341,11 +347,17 @@ If during execution any finding bears on the Sail (e.g. the §11 minimal-impleme
   - **Entry 5 boundary (§2.2).** Removed the suggestion that Card A1 might "incidentally exercise" Entry 5. Card A1 is the order-0 closed-form check; Entry 5's parity-FDT content lives near A3/A4, and even there is reserved for DG-2.
   - **Tag-vs-commit message rationale (§4 Phase D).** Added one-paragraph rationale for why the tag and commit messages differ.
   - **Anchor bump (front matter).** Sail anchor v0.4 → v0.5; `supersedes:` field set to `dg-1-work-plan_v0.1.0.md`.
-- **v0.1.2 (2026-04-30, this revision).** Steward supersedure to relocate the schema artefact and engage the plan:
+- **v0.1.2 (2026-04-30, superseded by v0.1.3).** Steward supersedure to relocate the schema artefact and engage the plan:
   - **Schema location.** `docs/benchmark_card_schema.md` → `benchmarks/benchmark_cards/SCHEMA.md`. `docs/` is locked to the five protective-scaffolding files per Sail v0.5 §11; the schema is operational specification, not protective. Co-locating with the cards themselves keeps the operational artefacts together. Phase A logbook entry (`benchmark-card-schema-drafted`) records the same rationale.
   - **Operational status engaged.** Front-matter `status:` set to `active` (was `draft` in v0.1.0 / v0.1.1). Plans index updated to mark v0.1.2 as active / Phase A.
   - **Anchor bump (front matter).** `supersedes:` set to `dg-1-work-plan_v0.1.1.md`. No other substantive content changes.
+- **v0.1.3 (2026-04-30, this revision).** Steward supersedure following Phase C.3 numerical sanity check. Surfaced by `cbg.effective_hamiltonian.K_from_generator` exercising Card A1 v0.1.0's pseudo-Kraus test case (commit `09714cf`):
+  - **Operationalisability carve-out (§1.1).** Added explicit narrowing of the bounded-maximalist reading: a B-prediction whose verification depends on prior-art whose closed form the steward does not have transcribed access to is deferred to DG-2, with the affected card's `failure_mode_log` recording the gap. This carves out specific B-predictions, not entire Entries.
+  - **Entry 1.B.3 deferred to DG-2 (§1.2, §2.2, §4 Phase B Card A1).** Entry 1.B.3's verification requires the Hayden–Sorce 2022 closed form (Hayden, Sorce, *Communications Physics* **5**, 92 (2022)). The Letter and Ledger paraphrase do not transcribe it; the steward did not have direct paper access at supersedure time. Card A1 supersedes from v0.1.0 to v0.1.1 (B.3 test case removed; `failure_mode_log` entry records the surfacing context). DG-1 Card A1 verifies B.1 and B.2 only.
+  - **Card A1 v0.1.0 → v0.1.1 supersedure.** Recorded under Card A1 v0.1.1's `failure_mode_log[0]` per [`SCHEMA.md`](../benchmarks/benchmark_cards/SCHEMA.md) §Supersedure. Predecessor v0.1.0 retains its content; `superseded_by:` annotation appended; `status:` updated to `superseded` in the same commit.
+  - **Stale-text fixes.** §2.4 stale "future plan revision (v0.1.1)" generalised. §5 FAIR — Findable: `plans/dg-1-work-plan_v0.1.0.md` generalised to `<MAJOR>.<MINOR>.<PATCH>` form. §7 Dependencies: Sail anchor `v0.4` → `v0.5` (the v0.4 file is retained per supersedure discipline; the v0.5 is canonical-current). §8.1 Plan status: stale "current revision (v0.1.0) committed at status: draft" updated to reflect v0.1.3 / status: active.
+  - **Anchor bump (front matter).** `supersedes:` set to `dg-1-work-plan_v0.1.2.md`. No structural reorganisation; phase ordering and FAIR alignment unchanged.
 
 ---
 
-*End of DG-1 Work Plan v0.1.2. Steward-authored; revisable. No Council clearance required. CC-BY-4.0 (LICENSE-docs).*
+*End of DG-1 Work Plan v0.1.3. Steward-authored; revisable. No Council clearance required. CC-BY-4.0 (LICENSE-docs).*
