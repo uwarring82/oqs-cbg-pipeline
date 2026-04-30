@@ -37,7 +37,7 @@ date: "2026-04-30"
 dg_target: "DG-1"
 ledger_entry: "CL-2026-005 v0.4 Entry 3"
 model: "pure_dephasing"
-status: "frozen-awaiting-run"
+status: "pass"
 supersedes: "A3_pure-dephasing_v0.1.0.yaml"
 license: "CC-BY-4.0 (LICENSE-docs)"
 
@@ -178,11 +178,19 @@ acceptance_criterion:
 # ─── Result block ─────────────────────────────────────────────────────────────
 
 result:
-  verdict: null
-  evidence: []
+  verdict: "PASS"
+  evidence:
+    - "benchmarks/results/A3_pure-dephasing_v0.1.1_result.json"
   commit_hash: ""
-  runner_version: ""
-  notes: ""
+  runner_version: "0.1.0"
+  notes: |
+    Verdict computed by reporting.benchmark_card.run_card via the
+    dynamical handler (TCL2 thermal-bath path through cbg.tcl_recursion).
+    The thermal_bath test_case returned error = 0.0 (machine precision;
+    well below the 1.0e-8 threshold) — Entry 3.B.1 (K(t) ∝ sigma_z) and
+    Entry 3.B.2 (no renormalisation; spin-boson exact result) reproduced
+    at orders ≤ N_card = 2. Re-runnable via
+    `python scripts/run_dg1_verdict.py`.
 
 # ─── Failure-mode log ─────────────────────────────────────────────────────────
 

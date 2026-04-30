@@ -1,0 +1,19 @@
+{
+  "card_id": "A3",
+  "card_version": "v0.1.1",
+  "card_path": "benchmarks/benchmark_cards/A3_pure-dephasing_v0.1.1.yaml",
+  "schema_version": "v0.1.2",
+  "ledger_entry": "CL-2026-005 v0.4 Entry 3",
+  "verdict": "PASS",
+  "runner_version": "0.1.0",
+  "computed_at_utc": "2026-04-30T21:06:52+00:00",
+  "test_case_results": [
+    {
+      "name": "thermal_bath",
+      "passed": true,
+      "error": 0.0,
+      "threshold": 1e-08,
+      "notes": ""
+    }
+  ]
+}

@@ -33,7 +33,7 @@ date: "2026-04-30"
 dg_target: "DG-1"
 ledger_entry: "CL-2026-005 v0.4 Entry 1"
 model: "closed_form_algebraic"
-status: "frozen-awaiting-run"
+status: "pass"
 supersedes: "A1_closed-form-K_v0.1.0.yaml"
 license: "CC-BY-4.0 (LICENSE-docs)"
 
@@ -196,11 +196,18 @@ acceptance_criterion:
 # ─── Result block ─────────────────────────────────────────────────────────────
 
 result:
-  verdict: null
-  evidence: []
+  verdict: "PASS"
+  evidence:
+    - "benchmarks/results/A1_closed-form-K_v0.1.1_result.json"
   commit_hash: ""
-  runner_version: ""
-  notes: ""
+  runner_version: "0.1.0"
+  notes: |
+    Verdict computed by reporting.benchmark_card.run_card via the
+    algebraic_map handler registry; both test_cases (canonical_lindblad_traceless,
+    markovian_weak_coupling_lamb_shift) returned error = 0.0 (machine
+    precision; well below the 1.0e-10 threshold). Entry 1.B.1 and 1.B.2
+    structural predictions reproduced. Re-runnable via
+    `python scripts/run_dg1_verdict.py`.
 
 # ─── Failure-mode log ─────────────────────────────────────────────────────────
 
