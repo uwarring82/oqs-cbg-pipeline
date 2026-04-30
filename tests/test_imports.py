@@ -53,19 +53,63 @@ def test_cbg_imports():
 
 
 def test_stubs_raise_notimplementederror():
-    """v0.1.0 stubs must raise NotImplementedError, not return placeholder values."""
-    from cbg import basis, effective_hamiltonian
+    """v0.1.0 stubs must raise NotImplementedError, not return placeholder values.
 
-    # Verify with raw try/except so this works even without pytest installed
-    for callable_obj, args in (
-        (basis.matrix_unit_basis, (2,)),
-        (basis.su_d_generator_basis, (2,)),
-    ):
+    Covers every stub function across cbg/ and the DG-1-venue model modules.
+    Non-DG-1 model modules (jaynes_cummings, fano_anderson) carry only
+    ``structural_constraints`` tuples at v0.1.0 (no function stubs); see
+    those modules' docstrings for the rationale and the DG at which their
+    function stubs land.
+    """
+    from cbg import basis, effective_hamiltonian, diagnostics
+    from models import pure_dephasing, spin_boson_sigma_x
+
+    # (callable, args, kwargs) — args sized so each call would otherwise reach
+    # the function body. The body must raise NotImplementedError.
+    cases = [
+        (basis.matrix_unit_basis, (2,), {}),
+        (basis.su_d_generator_basis, (2,), {}),
+        (basis.verify_orthonormality, ([],), {}),
+        (effective_hamiltonian.K_from_generator, (lambda x: x, []), {}),
+        (effective_hamiltonian.K_perturbative, (2,), {}),
+        (diagnostics.perturbative_order_norms, ([],), {}),
+        (diagnostics.tcl_invertibility_distance, (None,), {}),
+        (diagnostics.basis_independence_check, (None, [], []), {}),
+        (pure_dephasing.hamiltonian, (1.0,), {}),
+        (pure_dephasing.coupling_operator, (), {}),
+        (spin_boson_sigma_x.hamiltonian, (1.0, [], []), {}),
+    ]
+
+    for case in cases:
+        if case is None:
+            continue
+        callable_obj, args, kwargs = case
         try:
-            callable_obj(*args)
+            callable_obj(*args, **kwargs)
         except NotImplementedError:
             pass
         else:
             raise AssertionError(
-                f"{callable_obj.__name__} did not raise NotImplementedError"
+                f"{callable_obj.__module__}.{callable_obj.__name__} did not raise NotImplementedError"
             )
+
+
+def test_diagnostics_constants_present():
+    """cbg.diagnostics must export the five DG-4 cause labels (Sail v0.5 §9 DG-4).
+
+    These are scaffolding constants, not scientific implementations; they
+    are exempt from the no-NotImplementedError-before-DG-1 rule and must be
+    importable from v0.1.0 onward so benchmark cards can reference the same
+    vocabulary.
+    """
+    from cbg import diagnostics
+
+    expected = {
+        "convergence_failure",
+        "tcl_singularity",
+        "projection_ambiguity",
+        "truncation_artefact",
+        "benchmark_disagreement",
+    }
+    assert diagnostics.VALID_CAUSE_LABELS == expected, \
+        f"VALID_CAUSE_LABELS mismatch: {diagnostics.VALID_CAUSE_LABELS} vs {expected}"

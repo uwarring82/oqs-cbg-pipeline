@@ -44,9 +44,14 @@ Do NOT modify the Ledger or Sail from logbook entries; document the route only.)
 
 ### Immutability
 
-Once committed, a logbook entry is immutable. Corrections take the form of a *new* entry that supersedes the old one, with an explicit `supersedes: YYYY-MM-DD_old-tag.md` field in its header. The old entry remains in the repository, with a `superseded by:` annotation appended (this annotation is the one and only edit ever permitted to a committed entry).
+Once committed, a logbook entry is immutable. Corrections take the form of a *new* entry that supersedes the old one, with an explicit `supersedes: YYYY-MM-DD_old-tag.md` field in its header. The old entry remains in the repository, with a `superseded by:` annotation appended.
 
-This mirrors the Ledger's discipline at the repository layer.
+Two narrow categories of post-commit edit are permitted:
+
+1. **`superseded by:` annotation** — appended when a successor entry is added (per the supersedure rule above).
+2. **Self-referential placeholder fills** — where an entry's `Triggering commit:` field carries the explicit placeholder `(to be populated on commit)` *and* the entry's introducing commit is itself the trigger (typical of sail-bumps, plan-revision logs, and other entries whose subject is the commit they live in). The placeholder may be replaced with the introducing commit's hash in a follow-up commit. The follow-up commit message must state `logbook: fill self-referential triggering-commit placeholder for <entry-tag>` and touch only that field. Any other text edit to a committed entry continues to require supersedure.
+
+Both exceptions are bookkeeping completions of explicit gaps, not substantive revisions. They mirror the Ledger's discipline at the repository layer (the Ledger permits typo-level corrections under Council mandate; the logbook permits these two structural completions under steward discipline).
 
 ### What does *not* go in the logbook
 

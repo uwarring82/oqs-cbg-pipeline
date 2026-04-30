@@ -6,7 +6,7 @@
 
 ## What this repository is
 
-This repository implements the numerical pipeline scoped by the Sail "Towards a Decision-Forcing Numerical Pipeline for Non-Markovian Open Quantum Dynamics" (v0.4). It is a Sail-internal artefact. It is *not* a Ledger entry, *not* a coastline, and *not* a validation claim about the underlying Colla–Breuer–Gasbarri (CBG) framework.
+This repository implements the numerical pipeline scoped by the Sail "Towards a Decision-Forcing Numerical Pipeline for Non-Markovian Open Quantum Dynamics" (v0.5). It is a Sail-internal artefact. It is *not* a Ledger entry, *not* a coastline, and *not* a validation claim about the underlying Colla–Breuer–Gasbarri (CBG) framework.
 
 ## What this repository is not
 

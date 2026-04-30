@@ -19,7 +19,7 @@ jobs:
                    docs/benchmark_protocol.md; do
             if [ ! -f "$f" ]; then
               echo "FAIL: mandatory protective document missing: $f"
-              echo "      Sail v0.4 §11 requires this file at HEAD."
+              echo "      Sail v0.5 §11 requires this file at HEAD."
               exit 1
             fi
           done
