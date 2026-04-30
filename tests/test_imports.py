@@ -73,12 +73,13 @@ def test_stubs_raise_notimplementederror():
     # (callable, args, kwargs) — args sized so each call would otherwise reach
     # the function body. The body must raise NotImplementedError.
     #
-    # Removed (now implemented; see tests/test_basis.py):
-    #   - basis.matrix_unit_basis (DG-1 Phase C C.1)
-    #   - basis.verify_orthonormality (DG-1 Phase C C.1)
+    # Removed (now implemented; see per-module test files):
+    #   - basis.matrix_unit_basis             (DG-1 Phase C.1; tests/test_basis.py)
+    #   - basis.verify_orthonormality          (DG-1 Phase C.1; tests/test_basis.py)
+    #   - effective_hamiltonian.K_from_generator
+    #     (DG-1 Phase C.3; tests/test_effective_hamiltonian.py)
     cases = [
         (basis.su_d_generator_basis, (2,), {}),
-        (effective_hamiltonian.K_from_generator, (lambda x: x, []), {}),
         (effective_hamiltonian.K_perturbative, (2,), {}),
         (diagnostics.perturbative_order_norms, ([],), {}),
         (diagnostics.tcl_invertibility_distance, (None,), {}),

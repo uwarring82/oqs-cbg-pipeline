@@ -6,7 +6,7 @@ Implements:
     K = (1 / 2id) Σ_α [F_α†, L[F_α]]                       (Letter Eq. (6))
     K = (1 / 2id) Σ_{j,k} [|j⟩⟨k|, L[|k⟩⟨j|]]              (Letter Eq. (7))
 
-and the recursive perturbative series
+and (DG-2 territory, stubbed) the recursive perturbative series
 
     K(t) = Σ_n λ^n K_n(t)                                    (Letter Eq. (15))
 
@@ -26,34 +26,81 @@ DG status (per docs/validity_envelope.md):
 from typing import Callable, List
 import numpy as np
 
+from numerical.tensor_ops import commutator
 
-def K_from_generator(generator: Callable,
+
+def K_from_generator(generator: Callable[[np.ndarray], np.ndarray],
                      basis: List[np.ndarray]) -> np.ndarray:
     """Compute K from a TCL generator L using Letter Eq. (6).
+
+    Implements the basis-independent operational form:
+
+        K = (1 / 2id) Σ_α [F_α†, L[F_α]]                       (Letter Eq. (6))
+
+    For the matrix-unit basis F_α = |j⟩⟨k|, this reduces to
+    Letter Eq. (7) under the relabelling (j, k) ↔ α.
 
     Parameters
     ----------
     generator : callable
-        L : (d×d array) -> (d×d array). Must be Hermiticity-preserving and
-        trace-annihilating.
-    basis : list of d×d arrays
-        Hilbert–Schmidt orthonormal operator basis {F_α}.
+        L : (d×d ndarray) -> (d×d ndarray). Must be Hermiticity-preserving
+        and trace-annihilating per Letter Eq. (6) preconditions; this
+        precondition is the caller's responsibility (not validated here).
+    basis : list of d×d ndarrays
+        Hilbert–Schmidt orthonormal operator basis {F_α}. For Letter
+        Eq. (6) to recover K, the basis should be COMPLETE (d² elements)
+        and orthonormal; an incomplete basis yields the projection of K
+        onto the basis-spanned subspace. HS-orthonormality can be
+        verified by cbg.basis.verify_orthonormality before calling.
 
     Returns
     -------
-    K : d×d array
-        The minimal-dissipation effective Hamiltonian. Coordinate-dependent.
+    K : d×d ndarray (complex)
+        The minimal-dissipation effective Hamiltonian under the
+        Hayden–Sorce gauge. Coordinate-dependent per the module-level
+        discipline.
+
+    Raises
+    ------
+    ValueError
+        If `basis` is empty, or if basis elements have inconsistent or
+        non-square shapes.
 
     Notes
     -----
     Verification of the basis-independence identity (running this function
-    with two different bases and checking agreement) is the universal
-    default DG-2 structural-identity check.
+    with two different complete HS-orthonormal bases and checking
+    agreement) is the universal default DG-2 structural-identity check.
+    DG-1 cards use a single basis (matrix-unit) and verify against
+    analytical references.
+
+    For a purely unitary generator L[X] = -i[H, X], this function
+    returns H - (Tr H / d) I — i.e., the traceless part of H. For
+    traceless H (e.g., (ω/2)σ_z), the returned K equals H exactly.
+    The trace-removal is the gauge-fixing of the minimal-dissipation
+    representative.
     """
-    raise NotImplementedError(
-        "K_from_generator: not implemented at v0.1.0 (pre-DG-1). "
-        "Implementation will follow Letter Eq. (6) directly."
-    )
+    if len(basis) == 0:
+        raise ValueError("K_from_generator: basis must be non-empty")
+
+    d = basis[0].shape[0]
+    if basis[0].shape != (d, d):
+        raise ValueError(
+            f"K_from_generator: first basis element has non-square shape "
+            f"{basis[0].shape}; expected (d, d)"
+        )
+    for idx, F in enumerate(basis):
+        if F.shape != (d, d):
+            raise ValueError(
+                f"K_from_generator: basis element {idx} has shape {F.shape}; "
+                f"expected ({d}, {d}) (consistent with basis[0])"
+            )
+
+    K = np.zeros((d, d), dtype=complex)
+    for F_alpha in basis:
+        K += commutator(F_alpha.conj().T, generator(F_alpha))
+    K /= (2j * d)
+    return K
 
 
 def K_perturbative(order: int, **kwargs):
@@ -69,5 +116,7 @@ def K_perturbative(order: int, **kwargs):
         - model-appropriate constraints declared in the benchmark card.
     """
     raise NotImplementedError(
-        "K_perturbative: not implemented at v0.1.0 (pre-DG-2)."
+        "K_perturbative: not implemented at DG-1 Phase C.3. "
+        "Recursive K_n requires cbg.cumulants (Phase C.7) and "
+        "cbg.tcl_recursion (Phase C.8); will land in those phases."
     )
