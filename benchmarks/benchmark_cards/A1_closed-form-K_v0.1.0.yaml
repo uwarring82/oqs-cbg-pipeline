@@ -1,0 +1,217 @@
+# DG-1 Benchmark Card A1 — Operational expression for K(t)
+#
+# Anchor: CL-2026-005 v0.4 Entry 1; Letter Eqs. (6)-(7); SCHEMA.md v0.1.1
+# Phase: B (frozen-awaiting-run) per DG-1 work plan v0.1.2 §4 Phase B
+#
+# This card verifies that the basis-independent closed-form recipe
+#   K = (1/2id) sum_alpha [F_alpha^dagger, L[F_alpha]]
+# (Letter Eq. (6); matrix-unit form Letter Eq. (7)) applied to three
+# representative L specifications reproduces the analytically-known K
+# for each case (Entry 1.B.1, B.2, B.3).
+#
+# model_kind: algebraic_map (Entry 1 is a closed-form L -> K identity, not
+# a dynamical evolution; verification is at a single instant; perturbative
+# order is 0 per DG-1 work plan v0.1.2 §1.2).
+
+# ─── Top-level metadata ───────────────────────────────────────────────────────
+
+schema_version: "v0.1.1"
+card_id: "A1"
+version: "v0.1.0"
+date: "2026-04-30"
+dg_target: "DG-1"
+ledger_entry: "CL-2026-005 v0.4 Entry 1"
+model: "closed_form_algebraic"
+status: "frozen-awaiting-run"
+license: "CC-BY-4.0 (LICENSE-docs)"
+
+# ─── Gauge block ──────────────────────────────────────────────────────────────
+
+gauge:
+  gauge: "hayden-sorce-minimal-dissipation"
+  coordinate_dependent: true
+  direct_observable: false
+  gauge_alignment_required_for_comparison:
+    - "hmf"
+    - "polaron"
+    - "mori"
+
+# ─── Frozen parameters ────────────────────────────────────────────────────────
+
+frozen_parameters:
+
+  model:
+    model_kind: "algebraic_map"
+    system_dimension: 2
+
+    # The system-side scaffolding (system_hamiltonian, coupling_operator,
+    # bath_type, bath_spectral_density, bath_state) is omitted per
+    # SCHEMA.md §Algebraic-map cards: each test case fixes its own L.
+
+    test_cases:
+
+      - name: "canonical_lindblad_traceless"
+        description: |
+          Canonical Lindblad form with traceless jump operators. The
+          recipe should return the input H term exactly; the dissipator's
+          traceless jump operators contribute zero Hamiltonian part.
+        hamiltonian_term: "(omega / 2) * sigma_z"
+        jump_operators:
+          - "sqrt(gamma_minus) * sigma_minus"
+          - "sqrt(gamma_plus)  * sigma_plus"
+        parameters:
+          omega: 1.0           # dimensionless; sets the energy scale
+          gamma_minus: 0.1     # downward dissipation rate (omega-units)
+          gamma_plus: 0.05     # upward (thermal-excitation) rate (omega-units)
+        expected_outcome: |
+          K = (omega / 2) * sigma_z  (the input Hamiltonian term recovered
+          exactly via Letter Eq. (6) applied to the canonical Lindblad L).
+        reference: "Letter Eq. (6); CL-2026-005 v0.4 Entry 1.B.1"
+
+      - name: "markovian_weak_coupling_lamb_shift"
+        description: |
+          Markovian weak-coupling generator with explicit Lamb-shift
+          correction added to the system Hamiltonian. The recipe should
+          recover H_S + H_LS, reproducing the textbook weak-coupling
+          result (Breuer-Petruccione §3.3).
+        hamiltonian_term: "((omega + 2 * delta_LS) / 2) * sigma_z"
+        # The total coherent term is H_S + H_LS where H_S = (omega/2)*sigma_z
+        # and H_LS = delta_LS * sigma_z. Both are folded into a single
+        # `hamiltonian_term` per the Lindblad-form convention.
+        jump_operators:
+          - "sqrt(gamma) * sigma_minus"
+        parameters:
+          omega: 1.0           # bare system energy (dimensionless)
+          delta_LS: 0.01       # Lamb-shift correction (omega-units; small)
+          gamma: 0.1           # weak-coupling dissipation rate (omega-units)
+        expected_outcome: |
+          K = ((omega + 2 * delta_LS) / 2) * sigma_z
+            = (omega / 2) * sigma_z + delta_LS * sigma_z
+          (the system Hamiltonian plus the standard Lamb-shift correction).
+        reference: "Letter Eq. (6); CL-2026-005 v0.4 Entry 1.B.2; Breuer-Petruccione §3.3"
+
+      - name: "pseudo_kraus_diagonal"
+        description: |
+          Diagonal pseudo-Kraus generator L[X] = sum_i omega_ii V_i X V_i^dagger
+          (no commutator term). The recipe should reduce to the diagonal
+          Hayden-Sorce 2022 closed form for K, reproducing the special case
+          the new basis-independent formula generalises to off-diagonal
+          omega_{ij}. (The off-diagonal generalisation itself is acknowledged
+          but not gated by DG-1; see Entry 1.D.)
+        L_form: "sum_i omega_ii * V_i * X * V_i^dagger"   # NB: no -i[H, X] commutator
+        V_operators:
+          - "|0><1|"           # = sigma_minus
+          - "|1><0|"           # = sigma_plus
+        parameters:
+          omega_11: 0.1        # weight on V_1 = |0><1|
+          omega_22: 0.05       # weight on V_2 = |1><0|
+        expected_outcome: |
+          K matches the diagonal Hayden-Sorce 2022 closed-form expression
+          when both formulae are evaluated on this pseudo-Kraus L.
+          (For this V_1, V_2 set in d=2, the Hayden-Sorce 2022 diagonal
+          form yields K proportional to (omega_11 - omega_22) * sigma_z
+          up to the gauge-fixed coefficient; the verification is that
+          Letter Eq. (6) gives the same answer.)
+        reference: "Letter Eq. (6); CL-2026-005 v0.4 Entry 1.B.3; Hayden-Sorce 2022 (diagonal pseudo-Kraus form)"
+
+  truncation:
+    perturbative_order: 0      # algebraic identity; no perturbative recursion
+    basis: "matrix_unit"       # Letter Eq. (7) form; cross-basis verification is DG-2
+
+  numerical:
+    # time_grid omitted: model_kind == algebraic_map (single-instant verification).
+    integration_tolerance:
+      # Solver is "analytical"; these tolerances apply to numerical round-off
+      # in the closed-form evaluation (matrix products, basis sums). The
+      # actual acceptance gate is the comparison threshold below (1.0e-10);
+      # these are deliberately tighter so round-off is not the dominant error.
+      relative: 1.0e-12
+      absolute: 1.0e-14
+    solver: "analytical"
+
+  comparison:
+    reference: "Letter Eqs. (6)-(7); CL-2026-005 v0.4 Entry 1.A; per-case anchors in frozen_parameters.model.test_cases[i].reference"
+    target_observable: "K"
+    error_metric: "relative_frobenius"
+    threshold: 1.0e-10
+
+# ─── Acceptance criterion ─────────────────────────────────────────────────────
+
+acceptance_criterion:
+  reference: "Letter Eqs. (6)-(7); CL-2026-005 v0.4 Entry 1"
+  observable: "K"
+  error_metric: "relative_frobenius"
+  threshold: 1.0e-10
+  projection_scheme: null
+  rationale: |
+    PASS iff every test case in frozen_parameters.model.test_cases satisfies
+
+      ||K_computed - K_expected||_F / ||K_expected||_F <= 1.0e-10,
+
+    where K_computed is obtained by applying Letter Eq. (7) (the
+    matrix-unit form of the basis-independent recipe Letter Eq. (6))
+    to that case's L, and K_expected is the analytically-known result
+    for that L.
+
+    Per-case PASS conditions, mapped to Entry 1.B sub-claims:
+
+      - canonical_lindblad_traceless (Entry 1.B.1): K_expected equals
+        the input Hamiltonian term (omega/2)*sigma_z exactly. Failure
+        would indicate the recipe spuriously absorbs part of the
+        traceless dissipator into the Hamiltonian sector.
+
+      - markovian_weak_coupling_lamb_shift (Entry 1.B.2): K_expected
+        equals the input Hamiltonian term plus the Lamb-shift
+        correction, reproducing the textbook weak-coupling result.
+        Failure would indicate a systematic mismatch with the
+        Breuer-Petruccione §3.3 form.
+
+      - pseudo_kraus_diagonal (Entry 1.B.3): K_expected matches the
+        diagonal Hayden-Sorce 2022 closed-form expression for the
+        same L. Failure would indicate the new general formula does
+        not recover the prior result on its overlap regime.
+
+    All three are independent algebraic checks at the single instant
+    Letter Eq. (6) defines; N_card = 0 per DG-1 work plan v0.1.2 §1.2.
+    The bounded-maximalist reading (plan §1.1) requires every Entry
+    1.B sub-claim to be exercised — this card exercises all three.
+
+    Out of scope for Card A1 (DG-1 boundary):
+      - Off-diagonal pseudo-Kraus (omega_{ij}, i != j): the new formula's
+        generalisation claim per Entry 1.D. Verification of the
+        generalisation is a structural-extension check that belongs to
+        DG-2, not DG-1.
+      - Cross-basis verification (evaluating K in a non-matrix-unit
+        Hilbert-Schmidt orthonormal basis and asserting agreement):
+        DG-2 universal-default structural-identity check per Sail v0.5
+        §9 DG-2 and DG-1 work plan v0.1.2 §2.1.
+      - Cross-dimension verification: DG-1 work plan v0.1.2 §4 Phase B
+        Card A1 lists d in {2, 3} as illustrative scaffolding. This
+        card freezes d = 2 (the minimal non-trivial case, matching the
+        qubit scope of Cards A3/A4); d = 3 is deferred to DG-2 as a
+        cross-dimension structural-identity check. The algebraic
+        identity Letter Eq. (6) is dimension-independent in principle,
+        so d = 2 verifies the structure; d = 3 would verify robustness.
+      - Higher-order perturbative recursion: Entry 1 is order-0 by
+        construction (closed-form algebraic identity).
+
+# ─── Result block ─────────────────────────────────────────────────────────────
+
+result:
+  verdict: null
+  evidence: []
+  commit_hash: ""
+  runner_version: ""
+  notes: ""
+
+# ─── Failure-mode log ─────────────────────────────────────────────────────────
+
+failure_mode_log: []
+
+# ─── Stewardship flag ─────────────────────────────────────────────────────────
+
+stewardship_flag:
+  status: "unflagged"
+  rationale: ""
+  data_source: ""
+  search_performed: ""

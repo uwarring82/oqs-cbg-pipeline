@@ -32,7 +32,7 @@ See [`SCHEMA.md`](SCHEMA.md) §Supersedure and
 
 | Card ID | DG | Ledger anchor | Status | File |
 |---|---|---|---|---|
-| (none yet) | — | — | — | — |
+| A1 | DG-1 | CL-2026-005 v0.4 Entry 1 | frozen-awaiting-run | [A1_closed-form-K_v0.1.0.yaml](A1_closed-form-K_v0.1.0.yaml) |
 
-DG-1 work plan v0.1.2 §4 Phase B will add `A1`, `A3`, `A4`. The index is
+DG-1 work plan v0.1.2 §4 Phase B will add A3 and A4 next. The index is
 updated atomically when cards are committed.
