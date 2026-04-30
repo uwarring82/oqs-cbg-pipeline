@@ -68,25 +68,25 @@ def test_stubs_raise_notimplementederror():
     function stubs land.
     """
     from cbg import basis, effective_hamiltonian, diagnostics
-    from models import pure_dephasing, spin_boson_sigma_x
 
     # (callable, args, kwargs) — args sized so each call would otherwise reach
     # the function body. The body must raise NotImplementedError.
     #
     # Removed (now implemented; see per-module test files):
-    #   - basis.matrix_unit_basis             (DG-1 Phase C.1; tests/test_basis.py)
+    #   - basis.matrix_unit_basis              (DG-1 Phase C.1; tests/test_basis.py)
     #   - basis.verify_orthonormality          (DG-1 Phase C.1; tests/test_basis.py)
     #   - effective_hamiltonian.K_from_generator
     #     (DG-1 Phase C.3; tests/test_effective_hamiltonian.py)
+    #   - pure_dephasing.hamiltonian           (DG-1 Phase C.9; tests/test_pure_dephasing.py)
+    #   - pure_dephasing.coupling_operator     (DG-1 Phase C.9; tests/test_pure_dephasing.py)
+    #   - spin_boson_sigma_x.hamiltonian
+    #     (DG-1 Phase C.10; tests/test_spin_boson_sigma_x.py)
     cases = [
         (basis.su_d_generator_basis, (2,), {}),
         (effective_hamiltonian.K_perturbative, (2,), {}),
         (diagnostics.perturbative_order_norms, ([],), {}),
         (diagnostics.tcl_invertibility_distance, (None,), {}),
         (diagnostics.basis_independence_check, (None, [], []), {}),
-        (pure_dephasing.hamiltonian, (1.0,), {}),
-        (pure_dephasing.coupling_operator, (), {}),
-        (spin_boson_sigma_x.hamiltonian, (1.0, [], []), {}),
     ]
 
     for case in cases:

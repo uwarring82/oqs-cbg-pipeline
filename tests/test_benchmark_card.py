@@ -31,10 +31,16 @@ from reporting import benchmark_card as bc
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CARDS_DIR = REPO_ROOT / "benchmarks" / "benchmark_cards"
 
+# Canonical-current cards (v0.1.1 across the board after the
+# Card A3/A4 v0.1.0 → v0.1.1 supersedure that deferred displaced cases).
 A1_PATH = CARDS_DIR / "A1_closed-form-K_v0.1.1.yaml"
-A1_V010_PATH = CARDS_DIR / "A1_closed-form-K_v0.1.0.yaml"  # superseded
-A3_PATH = CARDS_DIR / "A3_pure-dephasing_v0.1.0.yaml"
-A4_PATH = CARDS_DIR / "A4_sigma-x-thermal_v0.1.0.yaml"
+A3_PATH = CARDS_DIR / "A3_pure-dephasing_v0.1.1.yaml"
+A4_PATH = CARDS_DIR / "A4_sigma-x-thermal_v0.1.1.yaml"
+
+# Superseded cards retained for audit-trail tests.
+A1_V010_PATH = CARDS_DIR / "A1_closed-form-K_v0.1.0.yaml"
+A3_V010_PATH = CARDS_DIR / "A3_pure-dephasing_v0.1.0.yaml"
+A4_V010_PATH = CARDS_DIR / "A4_sigma-x-thermal_v0.1.0.yaml"
 
 
 # ─── Helpers ────────────────────────────────────────────────────────────────
@@ -69,15 +75,17 @@ def test_load_card_a1_v011_succeeds():
     assert card.source_path == A1_PATH
 
 
-def test_load_card_a3_v010_succeeds():
+def test_load_card_a3_succeeds():
     card = bc.load_card(A3_PATH)
     assert card.card_id == "A3"
+    assert card.version == "v0.1.1"
     assert card.model_kind == "dynamical"
 
 
-def test_load_card_a4_v010_succeeds():
+def test_load_card_a4_succeeds():
     card = bc.load_card(A4_PATH)
     assert card.card_id == "A4"
+    assert card.version == "v0.1.1"
     assert card.model_kind == "dynamical"
 
 
@@ -87,6 +95,18 @@ def test_load_card_superseded_a1_v010_succeeds():
     card = bc.load_card(A1_V010_PATH)
     assert card.status == "superseded"
     assert card.superseded_by == "A1_closed-form-K_v0.1.1.yaml"
+
+
+def test_load_card_superseded_a3_v010_succeeds():
+    card = bc.load_card(A3_V010_PATH)
+    assert card.status == "superseded"
+    assert card.superseded_by == "A3_pure-dephasing_v0.1.1.yaml"
+
+
+def test_load_card_superseded_a4_v010_succeeds():
+    card = bc.load_card(A4_V010_PATH)
+    assert card.status == "superseded"
+    assert card.superseded_by == "A4_sigma-x-thermal_v0.1.1.yaml"
 
 
 def test_load_card_string_path():
@@ -146,7 +166,12 @@ def test_rule5_superseded_without_superseded_by_raises(a1_data):
 
 
 def test_rule3_frozen_awaiting_run_with_dirty_result_raises(a1_data):
-    a1_data["result"]["verdict"] = "PASS"  # dirty result while still frozen-awaiting-run
+    # Reset to frozen-awaiting-run baseline (the loaded card may already
+    # carry a populated result block post-Phase D verdict commit), then
+    # introduce a dirty-result violation.
+    a1_data["status"] = "frozen-awaiting-run"
+    a1_data["result"]["verdict"] = "PASS"  # dirty result while frozen-awaiting-run
+    a1_data["result"]["runner_version"] = ""
     with pytest.raises(bc.SchemaValidationError, match="rule 3"):
         bc.validate_card_data(a1_data)
 
@@ -162,7 +187,7 @@ def test_rule4_pass_status_requires_matching_verdict(a1_data):
 def test_rule4_pass_status_requires_runner_version(a1_data):
     a1_data["status"] = "pass"
     a1_data["result"]["verdict"] = "PASS"
-    # runner_version stays empty
+    a1_data["result"]["runner_version"] = ""  # explicitly clear (post-D may have set it)
     with pytest.raises(bc.SchemaValidationError, match="rule 4"):
         bc.validate_card_data(a1_data)
 
@@ -353,30 +378,69 @@ def test_run_card_a1_v010_pseudo_kraus_handler_missing(a1_data):
         bc.run_card(card)
 
 
-# ─── Runner: dynamical cards (A3, A4) routed to C.5–C.10 ────────────────────
+# ─── Runner: dynamical cards (A3, A4) thermal-only ───────────────────────────
 
 
-def test_run_card_a3_raises_dynamical_routing():
+def test_run_card_a3_v011_passes_thermal_case():
+    """Card A3 v0.1.1 (pure dephasing, thermal_bath) verdict = PASS.
+
+    Verifies Entry 3.B.1 (K(t) ∝ sigma_z) + Entry 3.B.2 (no
+    renormalisation; ω_r(t) = ω at all orders ≤ N_card = 2). End-to-end
+    through cbg.tcl_recursion.K_total_thermal_on_grid.
+    """
     card = bc.load_card(A3_PATH)
-    with pytest.raises(NotImplementedError, match="C.5"):
-        bc.run_card(card)
+    result = bc.run_card(card)
+    assert result.verdict == "PASS"
+    assert len(result.test_case_results) == 1
+    tcr = result.test_case_results[0]
+    assert tcr.name == "thermal_bath"
+    assert tcr.passed
+    # The thermal trivialisation gives error well below threshold.
+    assert tcr.error < 1e-10
+    assert tcr.threshold == card.threshold
 
 
-def test_run_card_a4_raises_dynamical_routing():
+def test_run_card_a4_v011_passes_thermal_case():
+    """Card A4 v0.1.1 (sigma_x, thermal_bath) verdict = PASS.
+
+    Verifies Entry 4.B.1 (parity-class theorem; no eigenbasis rotation
+    for thermal bath) at order ≤ N_card = 2.
+    """
     card = bc.load_card(A4_PATH)
-    with pytest.raises(NotImplementedError, match="C.5"):
+    result = bc.run_card(card)
+    assert result.verdict == "PASS"
+    assert len(result.test_case_results) == 1
+    tcr = result.test_case_results[0]
+    assert tcr.name == "thermal_bath"
+    assert tcr.passed
+    assert tcr.error < 1e-10
+    assert tcr.threshold == card.threshold
+
+
+def test_run_card_a3_v010_displaced_case_routes_to_dg2():
+    """The superseded A3 v0.1.0 has a coherent_displaced test_case; running
+    it surfaces the operationalisability carve-out via the routing message.
+
+    Audit-trail test: confirms the runner correctly refuses to evaluate the
+    deferred case rather than silently producing a misleading verdict."""
+    card = bc.load_card(A3_V010_PATH)
+    with pytest.raises(NotImplementedError, match="v0.1.4"):
         bc.run_card(card)
 
 
-def test_run_card_dynamical_routing_message_lists_c5_through_c10():
-    """The dynamical-routing message mentions all the unimplemented modules."""
+def test_run_card_a4_v010_displaced_case_routes_to_dg2():
+    """A4 v0.1.0 displaced case routes to DG-2, parallel to A3 v0.1.0."""
+    card = bc.load_card(A4_V010_PATH)
+    with pytest.raises(NotImplementedError, match="v0.1.4"):
+        bc.run_card(card)
+
+
+def test_run_card_dynamical_uses_correct_runner_version():
+    """The runner_version recorded on a dynamical CardResult matches
+    reporting.benchmark_card.__version__."""
     card = bc.load_card(A3_PATH)
-    with pytest.raises(NotImplementedError) as exc_info:
-        bc.run_card(card)
-    msg = str(exc_info.value)
-    for mod in ["time_grid", "bath_correlations", "cumulants", "tcl_recursion",
-                "pure_dephasing", "spin_boson_sigma_x"]:
-        assert mod in msg
+    result = bc.run_card(card)
+    assert result.runner_version == bc.__version__
 
 
 # ─── Runner: gauge tampering aborts before computation ──────────────────────

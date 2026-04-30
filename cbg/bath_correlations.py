@@ -174,8 +174,9 @@ def bath_two_point_thermal(
     # 0/0 cancellation. coth(βω/2) = 1 + 2 / (exp(βω) - 1) where β = 1/T.
     beta = 1.0 / temperature
 
-    def _real_integrand(omega: float) -> float:
-        # J(ω) coth(βω/2) cos(ωt)
+    def _real_amplitude(omega: float) -> float:
+        # The non-oscillatory amplitude J(ω) coth(βω/2) (cos(ωt) factored
+        # out into scipy.integrate.quad's weight='cos').
         if omega <= 0.0:
             return 0.0  # integrand vanishes at ω = 0 (ω · coth-factor → finite)
         bw = beta * omega
@@ -186,16 +187,38 @@ def bath_two_point_thermal(
             coth_factor = 1.0
         else:
             coth_factor = 1.0 + 2.0 / np.expm1(bw)
-        return alpha * omega * np.exp(-omega / omega_c) * coth_factor * np.cos(omega * t_diff)
+        return alpha * omega * np.exp(-omega / omega_c) * coth_factor
 
-    def _imag_integrand(omega: float) -> float:
-        # -J(ω) sin(ωt)
+    def _imag_amplitude(omega: float) -> float:
+        # The non-oscillatory amplitude -J(ω) (sin(ωt) factored out into
+        # scipy.integrate.quad's weight='sin').
         if omega <= 0.0:
             return 0.0
-        return -alpha * omega * np.exp(-omega / omega_c) * np.sin(omega * t_diff)
+        return -alpha * omega * np.exp(-omega / omega_c)
 
-    real_part, _ = integrate.quad(_real_integrand, 0.0, upper, limit=quad_limit)
-    imag_part, _ = integrate.quad(_imag_integrand, 0.0, upper, limit=quad_limit)
+    # When t_diff = 0, weight='cos'/'sin' degenerates (sin(0)=0 means the
+    # imag integral is exactly 0 with no quadrature needed; cos(0)=1
+    # means the real integral reduces to plain quadrature on the amplitude).
+    # scipy's quad with weight='cos' at wvar=0 should handle this, but we
+    # shortcut for clarity.
+    if t_diff == 0.0:
+        real_part, _ = integrate.quad(_real_amplitude, 0.0, upper, limit=quad_limit)
+        imag_part = 0.0
+    else:
+        # weight='cos' / weight='sin' integrate
+        # ∫_0^upper amplitude(ω) cos(ω·t_diff) dω (or sin) analytically
+        # in each quadrature subinterval. Far more accurate than naive
+        # quadrature on the oscillatory product, and avoids spurious
+        # IntegrationWarning ("integral is probably divergent or slowly
+        # convergent") for grid points with t_diff at the cutoff scale.
+        real_part, _ = integrate.quad(
+            _real_amplitude, 0.0, upper,
+            weight="cos", wvar=t_diff, limit=quad_limit,
+        )
+        imag_part, _ = integrate.quad(
+            _imag_amplitude, 0.0, upper,
+            weight="sin", wvar=t_diff, limit=quad_limit,
+        )
     return complex(real_part, imag_part)
 
 

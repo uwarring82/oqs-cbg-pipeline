@@ -1,8 +1,9 @@
 """
 reporting.benchmark_card — Loader, validator, runner, and result-block writer.
 
-DG-1 Phase C.4 per the work plan. Provides the infrastructure that Cards
-A1, A3, A4 depend on:
+DG-1 Phase C.4 per the work plan; extended in Phase C.10 to wire the
+dynamical-card runner. Provides the infrastructure that Cards A1, A3,
+A4 depend on:
 
     load_card(path)           — Read a YAML card and validate it against
                                 SCHEMA.md v0.1.2.
@@ -11,19 +12,26 @@ A1, A3, A4 depend on:
     verify_gauge_annotation   — Enforce the canonical Hayden–Sorce
                                 minimal-dissipation gauge block.
     run_card(card)            — Dispatch by model_kind. algebraic_map
-                                cards (A1) run to verdict; dynamical
-                                cards (A3, A4) raise with explicit
-                                C.5–C.10 routing pending implementation.
+                                cards (A1) run via Letter Eq. (6) on
+                                the registered test-case handlers;
+                                dynamical cards (A3, A4) run via the
+                                TCL2 thermal-bath path through
+                                cbg.tcl_recursion (thermal-only at
+                                DG-1; coherent_displaced is deferred to
+                                DG-2 per plan v0.1.4 §1.1).
     populate_result           — Mutate the in-memory card with the
                                 verdict + metadata. Disk serialisation
                                 is deferred (Phase D verdict commit needs
                                 a comment-preserving YAML library).
 
-Test-case handlers live in a registry (_TEST_CASE_HANDLERS) keyed by
-test_cases[i].name. New test cases require new entries; the registry
-makes the runner-side support surface explicit and auditable.
+Test-case handlers live in two registries — _TEST_CASE_HANDLERS for
+algebraic_map cards (keyed by test_cases[i].name) and
+_DYNAMICAL_TEST_CASE_HANDLERS for dynamical cards (keyed by
+(card.model, test_cases[i].name)). New test cases require new entries;
+the registries make the runner-side support surface explicit and
+auditable.
 
-Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.3 §4 Phase C row C.4.
+Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.4 §4 Phase C rows C.4 and C.10.
 """
 
 from __future__ import annotations
@@ -37,7 +45,10 @@ import yaml
 
 from cbg.basis import matrix_unit_basis, verify_orthonormality
 from cbg.effective_hamiltonian import K_from_generator
+from cbg.tcl_recursion import K_total_thermal_on_grid
+from models import pure_dephasing, spin_boson_sigma_x
 from numerical.tensor_ops import anticommutator, commutator
+from numerical.time_grid import build_time_grid
 
 
 __version__ = "0.1.0"  # Recorded in card.result.runner_version
@@ -424,7 +435,11 @@ def verify_gauge_annotation(card: BenchmarkCard) -> None:
 
 # ─── Test-case handlers (algebraic_map cards) ────────────────────────────────
 
-# Pauli matrices — used by the canonical-Lindblad handlers below.
+# Pauli matrices — used by both the algebraic-map Lindblad handlers
+# (sigma_z, sigma_minus, sigma_plus) and the dynamical-card derived
+# observables (sigma_x, sigma_y, sigma_z).
+_SIGMA_X = np.array([[0, 1], [1, 0]], dtype=complex)
+_SIGMA_Y = np.array([[0, -1j], [1j, 0]], dtype=complex)
 _SIGMA_Z = np.array([[1, 0], [0, -1]], dtype=complex)
 _SIGMA_MINUS = np.array([[0, 1], [0, 0]], dtype=complex)  # |0><1|
 _SIGMA_PLUS = np.array([[0, 0], [1, 0]], dtype=complex)   # |1><0|
@@ -526,13 +541,7 @@ def run_card(card: BenchmarkCard) -> CardResult:
     if card.model_kind == "algebraic_map":
         return _run_algebraic_map(card)
     if card.model_kind == "dynamical":
-        raise NotImplementedError(
-            f"run_card: dynamical model_kind requires Phase C.5–C.10 modules "
-            f"(numerical.time_grid, cbg.bath_correlations, cbg.cumulants, "
-            f"cbg.tcl_recursion, models.pure_dephasing, models.spin_boson_sigma_x). "
-            f"Card {card.card_id} v{card.version} cannot be run until those "
-            f"modules are implemented per DG-1 work plan v0.1.3 §4 Phase C."
-        )
+        return _run_dynamical(card)
     # Unreachable given rule 13 validation, but defensive:
     raise SchemaValidationError(
         f"run_card: unknown model_kind {card.model_kind!r}"
@@ -590,6 +599,166 @@ def _run_algebraic_map(card: BenchmarkCard) -> CardResult:
         test_case_results.append(TestCaseResult(
             name=name,
             passed=error <= threshold,
+            error=error,
+            threshold=threshold,
+        ))
+
+    all_passed = all(r.passed for r in test_case_results)
+    verdict = "PASS" if all_passed else "FAIL"
+    return CardResult(
+        card_id=card.card_id,
+        verdict=verdict,
+        test_case_results=test_case_results,
+        runner_version=__version__,
+    )
+
+
+# ─── Dynamical-card runner (Cards A3, A4 thermal-only at DG-1) ──────────────
+
+# Model-factory registry: card.model -> (model_spec dict) -> (H_S, A) ndarrays.
+_MODEL_FACTORIES: Dict[str, Callable[[Dict[str, Any]], Tuple[np.ndarray, np.ndarray]]] = {
+    "pure_dephasing": pure_dephasing.system_arrays_from_spec,
+    "spin_boson_sigma_x": spin_boson_sigma_x.system_arrays_from_spec,
+}
+
+
+def _dyn_handler_pure_dephasing_thermal(
+    K_array: np.ndarray, t_grid: np.ndarray, threshold: float, H_S: np.ndarray,
+) -> Tuple[bool, float]:
+    """Card A3 v0.1.1 thermal_bath PASS condition.
+
+    Verifies Entry 3.B.1 (K(t) ∝ sigma_z; max_t shape_residual <= threshold)
+    AND Entry 3.B.2 (no renormalisation: max_t |omega_r(t) - omega| <= threshold).
+
+    omega is extracted from H_S = (omega/2) sigma_z by reading the [0,0]
+    entry — this assumes the canonical pure-dephasing H_S form, which is
+    enforced by models.pure_dephasing.system_arrays_from_spec validation.
+
+    Returns (passed, error) where error = max(max_shape_residual, max_shift).
+    """
+    omega = float(2.0 * H_S[0, 0].real)
+    max_shape_residual = 0.0
+    max_shift = 0.0
+    for K_t in K_array:
+        # Project onto sigma_z: 0.5 * trace(sigma_z K) sigma_z
+        coeff = 0.5 * np.trace(_SIGMA_Z @ K_t).real
+        proj = coeff * _SIGMA_Z
+        diff_norm = float(np.linalg.norm(K_t - proj, ord="fro"))
+        K_norm = float(np.linalg.norm(K_t, ord="fro"))
+        shape_residual = diff_norm / K_norm if K_norm > 0 else 0.0
+        max_shape_residual = max(max_shape_residual, shape_residual)
+        # omega_r(t) = trace(sigma_z K(t)); shift = omega_r - omega
+        omega_r = float(np.trace(_SIGMA_Z @ K_t).real)
+        max_shift = max(max_shift, abs(omega_r - omega))
+    error = max(max_shape_residual, max_shift)
+    return error <= threshold, error
+
+
+def _dyn_handler_sigma_x_thermal(
+    K_array: np.ndarray, t_grid: np.ndarray, threshold: float, H_S: np.ndarray,
+) -> Tuple[bool, float]:
+    """Card A4 v0.1.1 thermal_bath PASS condition.
+
+    Verifies Entry 4.B.1 (no eigenbasis rotation; max_t transverse_norm
+    <= threshold). The transverse_norm is the magnitude of the sigma_x +
+    sigma_y components of K(t); zero (within tolerance) means K is
+    proportional to sigma_z, i.e. eigenbasis aligned with H_S's eigenbasis.
+
+    Energy-level shift is explicitly NOT gated (Entry 4.B.1 allows it);
+    only the rotation is constrained.
+
+    Returns (passed, max_transverse_norm).
+    """
+    max_transverse = 0.0
+    for K_t in K_array:
+        b = 0.5 * np.trace(_SIGMA_X @ K_t)
+        c = 0.5 * np.trace(_SIGMA_Y @ K_t)
+        transverse = float(np.sqrt(abs(b)**2 + abs(c)**2))
+        max_transverse = max(max_transverse, transverse)
+    return max_transverse <= threshold, max_transverse
+
+
+# Dynamical test-case handler registry: keyed by (card.model, test_case_name).
+# The model qualifier in the key is what distinguishes A3.thermal_bath from
+# A4.thermal_bath (both have the same test_case name but different physics).
+_DYNAMICAL_TEST_CASE_HANDLERS: Dict[
+    Tuple[str, str],
+    Callable[[np.ndarray, np.ndarray, float, np.ndarray], Tuple[bool, float]],
+] = {
+    ("pure_dephasing", "thermal_bath"): _dyn_handler_pure_dephasing_thermal,
+    ("spin_boson_sigma_x", "thermal_bath"): _dyn_handler_sigma_x_thermal,
+}
+
+
+def _run_dynamical(card: BenchmarkCard) -> CardResult:
+    """Run a dynamical card. Thermal-only at DG-1.
+
+    Pipeline:
+        1. Build (H_S, A) from card.model via _MODEL_FACTORIES dispatch.
+        2. Build the time grid from frozen_parameters.numerical.time_grid.
+        3. For each test_case:
+              a. Verify bath_state.family == "thermal" (others raise with
+                 carve-out routing per plan v0.1.4 §1.1).
+              b. Compute K_total = K_0 + K_1 + ... + K_{N_card} on the grid
+                 via cbg.tcl_recursion.K_total_thermal_on_grid.
+              c. Apply the per-(model, test_case_name) handler from
+                 _DYNAMICAL_TEST_CASE_HANDLERS to derive the verdict.
+
+    Coherent-displaced bath states are deferred to DG-2 per the
+    operationalisability carve-out (Cards A3 v0.1.0 / A4 v0.1.0 had those
+    cases; v0.1.1 cards retain only thermal_bath).
+    """
+    fp = card.frozen_parameters
+
+    # 1. Model arrays
+    model_factory = _MODEL_FACTORIES.get(card.model)
+    if model_factory is None:
+        raise NotImplementedError(
+            f"_run_dynamical: no model factory registered for "
+            f"card.model {card.model!r}. Known models: "
+            f"{sorted(_MODEL_FACTORIES.keys())}"
+        )
+    H_S, A = model_factory(fp["model"])
+
+    # 2. Time grid
+    grid = build_time_grid(fp["numerical"]["time_grid"])
+
+    # 3. Iterate test_cases
+    sd = fp["model"]["bath_spectral_density"]
+    N_card = fp["truncation"]["perturbative_order"]
+    threshold = card.threshold
+
+    test_case_results: List[TestCaseResult] = []
+    for case in fp["model"]["test_cases"]:
+        bs = case["bath_state"]
+        bs_family = bs.get("family")
+        if bs_family != "thermal":
+            raise NotImplementedError(
+                f"_run_dynamical: bath_state.family {bs_family!r} not "
+                f"supported at DG-1. Cards A3 / A4 coherent_displaced "
+                f"sub-cases (Entries 3.B.3, 4.B.2) are deferred to DG-2 "
+                f"per DG-1 work plan v0.1.4 §1.1 operationalisability "
+                f"carve-out (displacement convention not specified). "
+                f"Only 'thermal' is supported at this version."
+            )
+
+        K_array = K_total_thermal_on_grid(
+            N_card, grid.times, H_S, A,
+            bath_state=bs, spectral_density=sd,
+        )
+
+        handler_key = (card.model, case["name"])
+        handler = _DYNAMICAL_TEST_CASE_HANDLERS.get(handler_key)
+        if handler is None:
+            raise TestCaseHandlerNotFoundError(
+                f"_run_dynamical: no handler registered for "
+                f"(model={card.model!r}, test_case={case['name']!r}). "
+                f"Known: {sorted(_DYNAMICAL_TEST_CASE_HANDLERS.keys())}"
+            )
+        passed, error = handler(K_array, grid.times, threshold, H_S)
+        test_case_results.append(TestCaseResult(
+            name=case["name"],
+            passed=passed,
             error=error,
             threshold=threshold,
         ))
