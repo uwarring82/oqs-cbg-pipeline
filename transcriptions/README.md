@@ -8,7 +8,13 @@ Transcriptions are operational artefacts. They do not modify the Ledger, Sail, v
 
 | Transcription | Version | Status | Purpose |
 |---|---|---|---|
-| [Hayden-Sorce 2022 pseudo-Kraus formula](hayden-sorce-2022_pseudokraus_v0.1.0.md) | v0.1.0 | in-use | Transcribes the finite-dimensional pseudo-Kraus expression for the canonical Hamiltonian needed to repatriate CL-2026-005 Entry 1.B.3 from DG-2 deferral. Cited by frozen DG-2 Card B1 ([benchmarks/benchmark_cards/B1_pseudo-kraus-diagonal_v0.1.0.yaml](../benchmarks/benchmark_cards/B1_pseudo-kraus-diagonal_v0.1.0.yaml)). |
+| [Hayden-Sorce 2022 pseudo-Kraus formula](hayden-sorce-2022_pseudokraus_v0.1.1.md) | v0.1.1 | in-use (current) | Adds off-diagonal pseudo-Kraus coverage (§4b, §7a) to the v0.1.0 single-index/diagonal content, repatriating both halves of CL-2026-005 Entry 1.B.3 plus Entry 1.D's off-diagonal generalization claim into the DG-2 path. Source content unchanged from v0.1.0; off-diagonal expression is a Letter-derived consequence. |
+
+### Superseded transcriptions (retained for audit)
+
+| Transcription | Version | Superseded by | Date | Reason |
+|---|---|---|---|---|
+| [Hayden-Sorce 2022 pseudo-Kraus formula](hayden-sorce-2022_pseudokraus_v0.1.0.md) | v0.1.0 | [v0.1.1](hayden-sorce-2022_pseudokraus_v0.1.1.md) | 2026-05-01 | v0.1.0 covered only the diagonal / single-index pseudo-Kraus form. v0.1.1 extends to off-diagonal pseudo-Kraus (Hermitian coefficient matrix) for the Entry 1.D generalization claim. v0.1.0 remains anchored by frozen Card B1 v0.1.0 ([benchmarks/benchmark_cards/B1_pseudo-kraus-diagonal_v0.1.0.yaml](../benchmarks/benchmark_cards/B1_pseudo-kraus-diagonal_v0.1.0.yaml)) per SCHEMA.md §Card lifecycle. |
 
 ## Naming
 
