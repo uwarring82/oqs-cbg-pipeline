@@ -37,6 +37,9 @@ A1_PATH = CARDS_DIR / "A1_closed-form-K_v0.1.1.yaml"
 A3_PATH = CARDS_DIR / "A3_pure-dephasing_v0.1.1.yaml"
 A4_PATH = CARDS_DIR / "A4_sigma-x-thermal_v0.1.1.yaml"
 
+# DG-2 cards.
+B1_PATH = CARDS_DIR / "B1_pseudo-kraus-diagonal_v0.1.0.yaml"
+
 # Superseded cards retained for audit-trail tests.
 A1_V010_PATH = CARDS_DIR / "A1_closed-form-K_v0.1.0.yaml"
 A3_V010_PATH = CARDS_DIR / "A3_pure-dephasing_v0.1.0.yaml"
@@ -526,3 +529,165 @@ def test_unknown_test_case_name_raises_handler_not_found(a1_data):
     card = bc._data_to_card(a1_data)
     with pytest.raises(bc.TestCaseHandlerNotFoundError, match="made_up_test"):
         bc.run_card(card)
+
+
+# ─── Symbolic-operator parser (B1 pseudo-Kraus support) ─────────────────────
+
+
+def test_eval_operator_expression_parses_complex_combination():
+    op = bc._eval_operator_expression("I + 1j * a * sigma_z", {"a": 0.5}, 2)
+    expected = np.array([[1 + 0.5j, 0], [0, 1 - 0.5j]], dtype=complex)
+    assert np.allclose(op, expected)
+
+
+def test_eval_operator_expression_parses_sqrt_scaling():
+    op = bc._eval_operator_expression("sqrt(1 + b**2) * I", {"b": 0.5}, 2)
+    expected = np.sqrt(1.25) * np.eye(2, dtype=complex)
+    assert np.allclose(op, expected)
+
+
+def test_eval_operator_expression_handles_empty_parameters():
+    op = bc._eval_operator_expression("sigma_x", {}, 2)
+    assert np.allclose(op, bc._SIGMA_X)
+
+
+def test_eval_operator_expression_rejects_unknown_identifier():
+    with pytest.raises(ValueError, match="unknown identifier"):
+        bc._eval_operator_expression("sigma_q", {}, 2)
+
+
+def test_eval_operator_expression_rejects_attribute_access():
+    """Attribute access (e.g. ``I.real``) must be rejected — closes a
+    common eval-escape route."""
+    with pytest.raises(ValueError, match="forbidden AST node|unknown identifier"):
+        bc._eval_operator_expression("I.real", {}, 2)
+
+
+def test_eval_operator_expression_rejects_non_sqrt_call():
+    with pytest.raises(ValueError, match="only calls to|unknown identifier"):
+        bc._eval_operator_expression("exp(1) * I", {}, 2)
+
+
+def test_eval_operator_expression_rejects_parameter_shadowing_namespace():
+    with pytest.raises(ValueError, match="shadows a reserved identifier"):
+        bc._eval_operator_expression("I + a * sigma_z", {"I": 0.0, "a": 0.5}, 2)
+
+
+def test_eval_operator_expression_rejects_unregistered_dimension():
+    with pytest.raises(NotImplementedError, match="no operator namespace"):
+        bc._eval_operator_expression("I", {}, 3)
+
+
+def test_eval_operator_expression_rejects_syntax_error():
+    with pytest.raises(ValueError, match="cannot parse"):
+        bc._eval_operator_expression("I +", {}, 2)
+
+
+# ─── B1 pseudo-Kraus runner end-to-end ──────────────────────────────────────
+
+
+def test_load_card_b1_succeeds():
+    card = bc.load_card(B1_PATH)
+    assert card.card_id == "B1"
+    assert card.dg_target == "DG-2"
+    assert card.version == "v0.1.0"
+    assert card.status == "frozen-awaiting-run"
+    assert card.model_kind == "algebraic_map"
+
+
+def test_run_card_b1_passes_all_three_test_cases():
+    """Card B1 v0.1.0's three pseudo-Kraus test_cases all PASS at machine
+    precision; HPTA residuals are well below the absolute tolerance."""
+    card = bc.load_card(B1_PATH)
+    result = bc.run_card(card)
+    assert result.verdict == "PASS"
+    assert len(result.test_case_results) == 3
+    names = {r.name for r in result.test_case_results}
+    assert names == {
+        "pseudo_kraus_diagonal_sigma_z",
+        "pseudo_kraus_diagonal_sigma_x",
+        "pseudo_kraus_traceless_jumps",
+    }
+    for tcr in result.test_case_results:
+        assert tcr.passed
+        assert tcr.error <= card.threshold
+        # All three fixtures satisfy HPTA as algebraic identities; numerical
+        # residual is bounded by complex-arithmetic round-off (~3e-16) and
+        # is well below the 1e-14 absolute threshold.
+        assert tcr.hpta_residual is not None
+        assert tcr.hpta_threshold is not None
+        assert tcr.hpta_residual <= tcr.hpta_threshold
+
+
+def test_run_card_b1_sigma_z_recovers_minus_half_sigma_z():
+    """Diagnostic check: the σ_z fixture (a=0.5) reproduces K = -0.5 σ_z
+    at exactly zero error (algebraic tautology of the matrix-unit
+    summation against the trace-based H_HS formula)."""
+    card = bc.load_card(B1_PATH)
+    result = bc.run_card(card)
+    tcr = next(r for r in result.test_case_results
+               if r.name == "pseudo_kraus_diagonal_sigma_z")
+    assert tcr.error == 0.0
+
+
+def test_run_card_b1_sigma_x_recovers_minus_half_sigma_x():
+    """The σ_x analog is structurally identical to the σ_z fixture and
+    must also pass at exactly zero error — confirms the implementation
+    is not silently axis-biased."""
+    card = bc.load_card(B1_PATH)
+    result = bc.run_card(card)
+    tcr = next(r for r in result.test_case_results
+               if r.name == "pseudo_kraus_diagonal_sigma_x")
+    assert tcr.error == 0.0
+
+
+def test_run_card_b1_traceless_gives_zero_K():
+    """All-traceless jumps (σ_x with γ=1, σ_y with γ=-1) give K = 0
+    per transcription §5; HPTA holds exactly (σ_x² = σ_y² = I)."""
+    card = bc.load_card(B1_PATH)
+    result = bc.run_card(card)
+    tcr = next(r for r in result.test_case_results
+               if r.name == "pseudo_kraus_traceless_jumps")
+    assert tcr.error == 0.0
+    assert tcr.hpta_residual == 0.0
+
+
+def test_b1_test_case_handlers_all_registered():
+    """Every test_case name in Card B1 v0.1.0 has a registered handler."""
+    card = bc.load_card(B1_PATH)
+    for case in card.frozen_parameters["model"]["test_cases"]:
+        assert case["name"] in bc._TEST_CASE_HANDLERS
+
+
+def test_run_card_b1_hpta_gate_short_circuits_on_violation():
+    """Synthetic HPTA-violating fixture (E_2 = I instead of sqrt(1+a²)*I)
+    triggers the HPTA precondition gate; the K comparison is skipped and
+    the failure carries a diagnostic note plus the residual fields."""
+    raw = _load_raw(B1_PATH)
+    case = raw["frozen_parameters"]["model"]["test_cases"][0]
+    # Break HPTA by removing the sqrt scaling on E_2; the fixture is no
+    # longer a valid pseudo-Kraus generator.
+    case["pseudo_kraus_operators"][1] = "I"
+    card = bc._data_to_card(raw)
+    # Bypass full validation (gauge etc. unchanged); call the algebraic-map
+    # runner directly to focus the assertion on the HPTA gate.
+    result = bc._run_algebraic_map(card)
+    tcr = next(r for r in result.test_case_results
+               if r.name == "pseudo_kraus_diagonal_sigma_z")
+    assert not tcr.passed
+    assert tcr.hpta_residual is not None
+    assert tcr.hpta_residual > tcr.hpta_threshold
+    assert "HPTA precondition failed" in tcr.notes
+
+
+# ─── A1 regression: TestCaseResult.hpta_residual is None for Lindblad ───────
+
+
+def test_a1_results_carry_no_hpta_fields():
+    """A1's Lindblad-form handlers do not surface an HPTA residual; the
+    new TestCaseResult fields remain None for these cases."""
+    card = bc.load_card(A1_PATH)
+    result = bc.run_card(card)
+    for tcr in result.test_case_results:
+        assert tcr.hpta_residual is None
+        assert tcr.hpta_threshold is None
