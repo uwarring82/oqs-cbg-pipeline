@@ -36,10 +36,13 @@ See [`SCHEMA.md`](SCHEMA.md) §Supersedure and
 | A3 | DG-1 | CL-2026-005 v0.4 Entry 3 (B.1, B.2 thermal; B.3 deferred to DG-2) | **pass** (2026-04-30) | [A3_pure-dephasing_v0.1.1.yaml](A3_pure-dephasing_v0.1.1.yaml) |
 | A4 | DG-1 | CL-2026-005 v0.4 Entry 4 (B.1 thermal; B.2 deferred to DG-2) | **pass** (2026-04-30) | [A4_sigma-x-thermal_v0.1.1.yaml](A4_sigma-x-thermal_v0.1.1.yaml) |
 | B1 | DG-2 | CL-2026-005 v0.4 Entry 1.B.3 (diagonal pseudo-Kraus reduction) | **pass** (2026-05-01) | [B1_pseudo-kraus-diagonal_v0.1.0.yaml](B1_pseudo-kraus-diagonal_v0.1.0.yaml) |
+| B2 | DG-2 | CL-2026-005 v0.4 Entry 1.B.3 (off-diagonal half), Entry 1.D | **frozen-awaiting-run** (2026-05-01) | [B2_pseudo-kraus-offdiagonal_v0.1.0.yaml](B2_pseudo-kraus-offdiagonal_v0.1.0.yaml) |
 
 The three DG-1 cards reached the **PASS** verdict per [DG-1 work plan v0.1.4](../../plans/dg-1-work-plan_v0.1.4.md) §4 Phase D; see [logbook/2026-04-30_dg-1-pass.md](../../logbook/2026-04-30_dg-1-pass.md) for the verdict logbook entry and [benchmarks/results/](../results/) for the JSON evidence artefacts.
 
 Card B1 is the first DG-2 card and reached **pass** at runner version 0.1.0. All three pseudo-Kraus test_cases returned error = 0.0 (machine precision) with HPTA residuals well below the 1.0e-14 absolute bound.
+
+Card B2 is **frozen-awaiting-run**: SCHEMA.md v0.1.2 validation passes (all 16 rules) and the gauge-annotation block is canonical, but no runner handler is yet registered for its three test_case names (`offdiag_omega_imaginary_sigma_z`, `offdiag_omega_imaginary_sigma_x`, `offdiag_omega_diagonal_only`). B2 introduces the off-diagonal pseudo-Kraus card surface (`pseudo_kraus_offdiag_operators` + `pseudo_kraus_offdiag_omega`) per transcription [v0.1.1 §4b / §7a](../../transcriptions/hayden-sorce-2022_pseudokraus_v0.1.1.md). Implementation of handlers and the small omega-parser extension in [`reporting/benchmark_card.py`](../../reporting/benchmark_card.py) is a separate work step deliberately scoped after the freeze, per cards-first discipline.
 
 The index is updated atomically when cards are committed, when their `status` field changes per [SCHEMA.md](SCHEMA.md) §Card lifecycle, or when a successor card is added.
 

@@ -1,0 +1,329 @@
+# DG-2 Benchmark Card B2 — Off-diagonal pseudo-Kraus reduction (Letter Eq. (6) generalization)
+#
+# Anchor: CL-2026-005 v0.4 Entry 1.B.3 (off-diagonal half); Entry 1.D
+#         (off-diagonal generalization claim);
+#         Letter Eqs. (6)-(7);
+#         transcriptions/hayden-sorce-2022_pseudokraus_v0.1.1.md §4b, §7a;
+#         SCHEMA.md v0.1.2
+# Phase: B (frozen-awaiting-run)
+#
+# This card repatriates the off-diagonal half of CL-2026-005 v0.4 Entry
+# 1.B.3 and Entry 1.D's "the new formula generalises the prior result
+# to the off-diagonal (omega_{ij}) case" claim. Hayden-Sorce 2022's
+# source content gives the canonical-Hamiltonian closed form in
+# diagonal / single-index pseudo-Kraus form (transcription §4 / §5);
+# the Letter's contribution is that the basis-independent recipe
+# Letter Eq. (6) absorbs the off-diagonal pseudo-Kraus form
+#
+#   L(rho) = sum_{i,j} omega_{ij} V_i rho V_j^dagger,
+#            omega_{ji} = omega_{ij}^*  (Hermitian),
+#
+# without requiring a prior eigendecomposition of omega. Transcription
+# §4b records the Letter-derived direct expression
+#
+#   H_HS^off-diag[L]
+#     = (1 / 2id) sum_{i,j} omega_{ij}
+#                 (Tr(V_i) V_j^dagger - Tr(V_j^dagger) V_i),
+#
+# which is algebraically equivalent to the diagonal §4 formula after
+# eigendecomposing omega.
+#
+# B2 verifies that the implementation in cbg.effective_hamiltonian.K_from_generator
+# (matrix-unit basis sum) numerically reproduces H_HS^off-diag on three
+# frozen off-diagonal fixtures, and that both the Hermiticity-of-omega
+# and HPTA preconditions are mechanically enforced before the K
+# comparison is evaluated. Card B1 v0.1.0 (PASS, 2026-05-01) covered the
+# diagonal half of Entry 1.B.3; B2 closes the off-diagonal half and
+# Entry 1.D for diagonal V_i with cross-coupled omega.
+#
+# model_kind: algebraic_map (single-instant verification of a closed-
+# form L -> K identity; perturbative order is 0; no time evolution).
+#
+# Card surface (additive over B1): each test_case fixes a list of V_i
+# operators (`pseudo_kraus_offdiag_operators`) and a Hermitian
+# coefficient matrix (`pseudo_kraus_offdiag_omega`), with optional
+# named scalar parameters reused by both. The runner extension
+# required to execute B2 is bounded: a new handler reuses the AST-
+# restricted symbolic-operator parser (B1 work) for V_i and a
+# component-wise variant for omega's complex entries.
+#
+# Out-of-scope for B2 v0.1.0 (deferred to later cards):
+#   - Higher-d off-diagonal cases (d > 2); B2 freezes d = 2 to match
+#     the qubit scope of A1 / A3 / A4 / B1.
+#   - Off-diagonal cases with more than two V_i; B2 freezes a
+#     two-operator structure (n = 2). The §4b expression is
+#     n-independent, so this is a scope choice, not a formulation
+#     limit.
+#   - Cross-basis verification (DG-2 universal-default check per
+#     Sail v0.5 §9 DG-2); orthogonal track.
+#   - Coherent-displacement gap (Entries 3.B.3, 4.B.2); orthogonal
+#     track, still Council-gated.
+
+# ─── Top-level metadata ───────────────────────────────────────────────────────
+
+schema_version: "v0.1.2"
+card_id: "B2"
+version: "v0.1.0"
+date: "2026-05-01"
+dg_target: "DG-2"
+ledger_entry: "CL-2026-005 v0.4 Entry 1.B.3 (off-diagonal half), Entry 1.D"
+model: "closed_form_algebraic"
+status: "frozen-awaiting-run"
+license: "CC-BY-4.0 (LICENSE-docs)"
+
+# ─── Gauge block ──────────────────────────────────────────────────────────────
+
+gauge:
+  gauge: "hayden-sorce-minimal-dissipation"
+  coordinate_dependent: true
+  direct_observable: false
+  gauge_alignment_required_for_comparison:
+    - "hmf"
+    - "polaron"
+    - "mori"
+
+# ─── Frozen parameters ────────────────────────────────────────────────────────
+
+frozen_parameters:
+
+  model:
+    model_kind: "algebraic_map"
+    system_dimension: 2
+
+    # The system-side scaffolding is omitted per SCHEMA.md §Algebraic-map
+    # cards: each test_case fixes its own L via pseudo_kraus_offdiag_operators
+    # (V_i) and pseudo_kraus_offdiag_omega (Hermitian coefficient matrix).
+    # No dynamical system-bath model.
+    #
+    # Field convention (additive over B1):
+    #   pseudo_kraus_offdiag_operators : ordered list of V_i symbolic strings,
+    #     parsed against the d=2 Pauli + I namespace (same parser as B1's
+    #     pseudo_kraus_operators).
+    #   pseudo_kraus_offdiag_omega     : 2D list (n × n where n = number of
+    #     V_i), entries are symbolic strings parsed as complex scalars under
+    #     the parameter substitution. Must be Hermitian: omega[j][i] equals
+    #     conj(omega[i][j]).
+    #   parameters                      : dict of named real scalars used in
+    #     V_i strings and / or omega entries.
+
+    test_cases:
+
+      - name: "offdiag_omega_imaginary_sigma_z"
+        description: |
+          Hermitian off-diagonal pseudo-Kraus generator with V_1 = I,
+          V_2 = sigma_z, and omega Hermitian with imaginary off-diagonal
+          entries. The §4b formula gives H_HS^off-diag = beta * sigma_z;
+          this is the canonical off-diagonal fixture from transcription
+          §7a (worked example with explicit per-term derivation table).
+        pseudo_kraus_offdiag_operators:
+          - "I"
+          - "sigma_z"
+        pseudo_kraus_offdiag_omega:
+          - ["1.0",          "1j * beta"]
+          - ["-1j * beta",   "-1.0"]
+        parameters:
+          beta: 0.5
+        hermiticity_precondition: |
+          omega_{ji} = omega_{ij}^*; diagonal entries real.
+          omega = [[1,  i*beta], [-i*beta, -1]]:
+            omega_21 = -i*beta = (i*beta)^* = omega_12^* ✓
+            omega_11 = 1, omega_22 = -1; both real ✓
+          Hermitian for any real beta.
+        hpta_precondition: |
+          sum_{i,j} omega_{ij} V_j^dagger V_i
+            = omega_11 V_1^dag V_1 + omega_12 V_2^dag V_1
+              + omega_21 V_1^dag V_2 + omega_22 V_2^dag V_2
+            = 1 I + (i*beta) sigma_z + (-i*beta) sigma_z + (-1) I
+            = (1 - 1) I + (i*beta - i*beta) sigma_z
+            = 0
+          identically (algebraic identity, exact for all real beta).
+        expected_outcome: |
+          H_HS^off-diag = beta * sigma_z = 0.5 * sigma_z (transcription
+          §7a, evaluated at beta = 0.5; per-term derivation table in §7a).
+        reference: "transcriptions/hayden-sorce-2022_pseudokraus_v0.1.1.md §4b (off-diagonal formula), §7a (worked fixture, per-term table); CL-2026-005 v0.4 Entry 1.B.3 off-diagonal half, Entry 1.D"
+
+      - name: "offdiag_omega_imaginary_sigma_x"
+        description: |
+          Pauli-orientation cross-check: same Hermitian-omega structure
+          as the sigma_z fixture above, with V_1 = sigma_x, V_2 = I
+          (basis swap and axis change). The §4b formula gives
+          H_HS^off-diag = -beta * sigma_x, confirming the off-diagonal
+          handler does not silently prefer the sigma_z axis. The minus
+          sign relative to the first fixture is structural: with
+          Tr(V_1) = 0 and Tr(V_2) = 2 (both off-diagonal terms have
+          Tr factors that flip sign).
+        pseudo_kraus_offdiag_operators:
+          - "sigma_x"
+          - "I"
+        pseudo_kraus_offdiag_omega:
+          - ["1.0",          "1j * beta"]
+          - ["-1j * beta",   "-1.0"]
+        parameters:
+          beta: 0.5
+        hermiticity_precondition: |
+          Same structure as the sigma_z fixture; Hermitian for any real
+          beta. omega entries are not affected by the V_i basis swap.
+        hpta_precondition: |
+          sum_{i,j} omega_{ij} V_j^dagger V_i
+            = omega_11 V_1^dag V_1 + omega_12 V_2^dag V_1
+              + omega_21 V_1^dag V_2 + omega_22 V_2^dag V_2
+            = 1 sigma_x^2 + (i*beta) (I)(sigma_x)
+              + (-i*beta) (sigma_x)(I) + (-1) I^2
+            = I + (i*beta) sigma_x + (-i*beta) sigma_x + (-I)
+            = (1 - 1) I + (i*beta - i*beta) sigma_x
+            = 0
+          identically (uses sigma_x^2 = I).
+        expected_outcome: |
+          H_HS^off-diag = -beta * sigma_x = -0.5 * sigma_x
+          (per-term derivation: only the (1,2) and (2,1) summands are
+          nonzero; both contribute -2i*beta*sigma_x, summing to
+          -4i*beta*sigma_x; division by 2id = 4i gives -beta*sigma_x).
+        reference: "transcriptions/hayden-sorce-2022_pseudokraus_v0.1.1.md §4b (off-diagonal formula); §7a final paragraph (sigma_x analog claim); CL-2026-005 v0.4 Entry 1.B.3 off-diagonal half, Entry 1.D"
+
+      - name: "offdiag_omega_diagonal_only"
+        description: |
+          Degeneracy / consistency check: same V_i basis as the first
+          fixture (V_1 = I, V_2 = sigma_z) but with omega purely diagonal
+          (off-diagonal entries zero). The off-diagonal §4b formula must
+          collapse to the §4 / §5 single-index expression; with V_1 = I
+          (Tr-cancellation in the (1,1) summand) and V_2 = sigma_z
+          (traceless, zero contribution), the answer is K = 0. This case
+          confirms the off-diagonal handler degenerates correctly when
+          the off-diagonal entries vanish — paralleling B1's
+          pseudo_kraus_traceless_jumps test in spirit (purely-degenerate
+          input ⇒ K = 0).
+        pseudo_kraus_offdiag_operators:
+          - "I"
+          - "sigma_z"
+        pseudo_kraus_offdiag_omega:
+          - ["1.0",   "0.0"]
+          - ["0.0",   "-1.0"]
+        parameters: {}
+        hermiticity_precondition: |
+          omega = diag(1, -1); real and diagonal, trivially Hermitian.
+        hpta_precondition: |
+          sum_{i,j} omega_{ij} V_j^dagger V_i
+            = 1 I + 0 + 0 + (-1) sigma_z^2
+            = I - I
+            = 0
+          identically.
+        expected_outcome: |
+          H_HS^off-diag = 0 (per-term: (1,1) gives Tr(I) I^dag - Tr(I) I = 0;
+          (2,2) gives Tr(sigma_z) sigma_z - Tr(sigma_z) sigma_z = 0;
+          (1,2) and (2,1) zero by omega).
+        reference: "transcriptions/hayden-sorce-2022_pseudokraus_v0.1.1.md §4b (off-diagonal formula), §7a 'diagonal sub-case' paragraph; CL-2026-005 v0.4 Entry 1.B.3 off-diagonal half (degenerate sub-case)"
+
+  truncation:
+    perturbative_order: 0      # algebraic identity; no perturbative recursion
+    basis: "matrix_unit"       # Letter Eq. (7) form; cross-basis verification is a separate card
+
+  numerical:
+    # time_grid omitted: model_kind == algebraic_map (single-instant verification).
+    integration_tolerance:
+      # Solver is "analytical"; these tolerances bound numerical round-off
+      # in the closed-form evaluation. The Hermiticity and HPTA precondition
+      # residuals are checked against `absolute` (1.0e-14); the K comparison
+      # threshold below (1.0e-10) is the acceptance gate.
+      relative: 1.0e-12
+      absolute: 1.0e-14
+    solver: "analytical"
+
+  comparison:
+    reference: "Letter Eqs. (6)-(7); transcriptions/hayden-sorce-2022_pseudokraus_v0.1.1.md §4b, §7a; CL-2026-005 v0.4 Entry 1.B.3 (off-diagonal half), Entry 1.D; per-case anchors in frozen_parameters.model.test_cases[i].reference"
+    target_observable: "K"
+    error_metric: "relative_frobenius"
+    threshold: 1.0e-10
+
+# ─── Acceptance criterion ─────────────────────────────────────────────────────
+
+acceptance_criterion:
+  reference: "Letter Eqs. (6)-(7); transcriptions/hayden-sorce-2022_pseudokraus_v0.1.1.md §4b, §7a; CL-2026-005 v0.4 Entry 1.B.3 (off-diagonal half), Entry 1.D"
+  observable: "K"
+  error_metric: "relative_frobenius"
+  threshold: 1.0e-10
+  projection_scheme: null
+  rationale: |
+    PASS iff every test case in frozen_parameters.model.test_cases
+    satisfies ALL THREE of the following:
+
+      (1) Hermiticity precondition holds:
+            ||omega - omega^dagger||_F <= 1.0e-14
+          where omega is the Hermitian coefficient matrix parsed from
+          pseudo_kraus_offdiag_omega. All three frozen fixtures
+          satisfy this exactly by construction; any residual above
+          1.0e-14 indicates an implementation bug in the omega-parsing
+          pipeline.
+
+      (2) HPTA precondition holds:
+            ||sum_{i,j} omega_{ij} V_j^dagger V_i||_F <= 1.0e-14
+          where {V_i} is parsed from pseudo_kraus_offdiag_operators.
+          All three frozen fixtures satisfy HPTA as algebraic identities.
+
+      (3) K comparison is within threshold:
+            ||K_computed - K_expected||_F / max(||K_expected||_F, 1) <= 1.0e-10
+          where K_computed is obtained by applying Letter Eq. (7) (the
+          matrix-unit form of the basis-independent recipe Letter
+          Eq. (6)) via cbg.effective_hamiltonian.K_from_generator to
+          the off-diagonal pseudo-Kraus generator
+            L(rho) = sum_{i,j} omega_{ij} V_i rho V_j^dagger
+          built from the case's pseudo_kraus_offdiag_operators and
+          pseudo_kraus_offdiag_omega with the case's parameters
+          substituted, and K_expected is the §4b trace-based
+          H_HS^off-diag formula evaluated symbolically on the same
+          fixture (per the per-term derivation in §7a).
+
+          The max(_, 1) guard keeps the metric well-defined when
+          K_expected = 0 (third test case); for that case it reduces
+          to ||K_computed||_F.
+
+    Per-case PASS conditions, mapped to Entry 1.B.3 off-diagonal
+    half + Entry 1.D:
+
+      - offdiag_omega_imaginary_sigma_z: K_computed = beta * sigma_z =
+        0.5 * sigma_z. Failure would indicate the matrix-unit basis sum
+        and the §4b trace-based H_HS^off-diag formula disagree
+        numerically — a bug in either K_from_generator's basis-summation
+        or the off-diagonal handler's omega-and-V_i assembly.
+
+      - offdiag_omega_imaginary_sigma_x: K_computed = -beta * sigma_x =
+        -0.5 * sigma_x. Failure here with the sigma_z case passing
+        would indicate an axis-specific bug or a sign-handling bug
+        in the off-diagonal handler (the minus sign relative to the
+        first fixture is structural; see the case's expected_outcome
+        derivation note).
+
+      - offdiag_omega_diagonal_only: K_computed = 0. Failure would
+        indicate the off-diagonal handler does not correctly
+        degenerate when omega's off-diagonal entries vanish, i.e. the
+        runner is treating the off-diagonal scaffolding as if it
+        added a structural contribution beyond the diagonal §5 case.
+
+    Out of scope for Card B2 v0.1.0:
+      - Higher-d off-diagonal cases (d > 2): B2 freezes d = 2.
+      - Off-diagonal with n > 2 operators: B2 freezes n = 2.
+      - Cross-basis verification: orthogonal DG-2 universal-default
+        check; separate card.
+      - Coherent-displacement gap (Entries 3.B.3, 4.B.2): unrelated
+        to Entry 1.B.3 / 1.D; remains gated on Council-cleared
+        displacement convention.
+
+# ─── Result block ─────────────────────────────────────────────────────────────
+
+result:
+  verdict: null
+  evidence: []
+  commit_hash: ""
+  runner_version: ""
+  notes: ""
+
+# ─── Failure-mode log ─────────────────────────────────────────────────────────
+
+failure_mode_log: []
+
+# ─── Stewardship flag ─────────────────────────────────────────────────────────
+
+stewardship_flag:
+  status: "unflagged"
+  rationale: ""
+  data_source: ""
+  search_performed: ""
