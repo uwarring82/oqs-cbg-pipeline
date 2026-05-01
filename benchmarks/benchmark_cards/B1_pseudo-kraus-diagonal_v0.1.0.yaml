@@ -1,0 +1,285 @@
+# DG-2 Benchmark Card B1 — Pseudo-Kraus reduction to Hayden-Sorce 2022 diagonal expression
+#
+# Anchor: CL-2026-005 v0.4 Entry 1.B.3; Letter Eqs. (6)-(7);
+#         transcriptions/hayden-sorce-2022_pseudokraus_v0.1.0.md;
+#         SCHEMA.md v0.1.2
+# Phase: B (frozen-awaiting-run)
+#
+# This card repatriates Entry 1.B.3 from its DG-1 deferral. The Hayden-
+# Sorce 2022 closed-form expression for the canonical Hamiltonian under
+# the diagonal pseudo-Kraus representation is now transcribed at
+# transcriptions/hayden-sorce-2022_pseudokraus_v0.1.0.md §4 (general
+# formula) and §5 (diagonal specialization):
+#
+#   H_HS[L] = (1 / 2id) sum_j gamma_j (Tr(E_j) E_j^dagger - Tr(E_j^dagger) E_j)
+#
+# for any pseudo-Kraus generator
+#
+#   L(rho) = sum_j gamma_j E_j rho E_j^dagger,    gamma_j in R,
+#
+# satisfying the Hermiticity-preserving / trace-annihilating (HPTA)
+# precondition
+#
+#   sum_j gamma_j E_j^dagger E_j = 0.
+#
+# Per transcription §4a, this formula and the basis-independent
+# Letter Eq. (6) form K = (1/2id) sum_alpha [F_alpha^dagger, L[F_alpha]]
+# are different basis-projections of the same canonical-Hamiltonian
+# projection on htp(H); they are algebraically identical on pseudo-
+# Kraus inputs. The card therefore verifies that the implementation in
+# cbg.effective_hamiltonian.K_from_generator (matrix-unit basis sum)
+# numerically reproduces the trace-based H_HS formula on three frozen
+# fixtures, and that the HPTA precondition is mechanically enforced
+# before the comparison is evaluated.
+#
+# model_kind: algebraic_map (single-instant verification of a closed-
+# form L -> K identity; perturbative order is 0; no time evolution).
+#
+# Out-of-scope for B1 (deferred to later cards):
+#   - Off-diagonal pseudo-Kraus reduction (omega_{ij}, i != j); the
+#     "generalises to off-diagonal" half of Entry 1.B.3 / Entry 1.D
+#     requires an off-diagonal extension of the HS 2022 formula not
+#     present in transcription v0.1.0. Future card.
+#   - Cross-basis verification (running K_from_generator under a
+#     non-matrix-unit basis and asserting agreement); this is the
+#     DG-2 universal-default structural-identity check per Sail v0.5
+#     §9 DG-2, scoped to a separate card.
+#   - Cross-dimension verification (d > 2); B1 freezes d = 2 to match
+#     A1's qubit scope.
+
+# ─── Top-level metadata ───────────────────────────────────────────────────────
+
+schema_version: "v0.1.2"
+card_id: "B1"
+version: "v0.1.0"
+date: "2026-05-01"
+dg_target: "DG-2"
+ledger_entry: "CL-2026-005 v0.4 Entry 1.B.3"
+model: "closed_form_algebraic"
+status: "frozen-awaiting-run"
+license: "CC-BY-4.0 (LICENSE-docs)"
+
+# ─── Gauge block ──────────────────────────────────────────────────────────────
+
+gauge:
+  gauge: "hayden-sorce-minimal-dissipation"
+  coordinate_dependent: true
+  direct_observable: false
+  gauge_alignment_required_for_comparison:
+    - "hmf"
+    - "polaron"
+    - "mori"
+
+# ─── Frozen parameters ────────────────────────────────────────────────────────
+
+frozen_parameters:
+
+  model:
+    model_kind: "algebraic_map"
+    system_dimension: 2
+
+    # The system-side scaffolding (system_hamiltonian, coupling_operator,
+    # bath_type, bath_spectral_density, bath_state) is omitted per
+    # SCHEMA.md §Algebraic-map cards: each test_case fixes its own L
+    # via pseudo_kraus_operators + pseudo_kraus_coefficients. There is
+    # no dynamical system-bath model.
+
+    test_cases:
+
+      - name: "pseudo_kraus_diagonal_sigma_z"
+        description: |
+          Two-operator HPTA pseudo-Kraus generator built from the
+          identity and an i*sigma_z component. Designed so the trace-
+          based Hayden-Sorce formula gives a nonzero traceless single-
+          Pauli output along sigma_z. This is the canonical fixture
+          from transcription §7.
+        pseudo_kraus_operators:
+          - "I + 1j * a * sigma_z"
+          - "sqrt(1 + a**2) * I"
+        pseudo_kraus_coefficients:
+          - 1.0
+          - -1.0
+        parameters:
+          a: 0.5
+        hpta_precondition: |
+          gamma_1 E_1^dagger E_1 + gamma_2 E_2^dagger E_2
+            = (I - i*a*sigma_z)(I + i*a*sigma_z) - (1 + a**2) I
+            = (1 + a**2) I - (1 + a**2) I
+            = 0
+          identically (algebraic identity, exact for all real a).
+        expected_outcome: |
+          H_HS = -a * sigma_z = -0.5 * sigma_z (the transcription §7
+          worked example, evaluated at a = 0.5).
+        reference: "transcriptions/hayden-sorce-2022_pseudokraus_v0.1.0.md §4 (general formula), §5 (diagonal specialization), §7 (worked fixture); CL-2026-005 v0.4 Entry 1.B.3"
+
+      - name: "pseudo_kraus_diagonal_sigma_x"
+        description: |
+          Pauli-rotation cross-check: same two-operator HPTA structure
+          as the sigma_z fixture above, with sigma_z replaced by
+          sigma_x. The HS formula must give -b * sigma_x, confirming
+          the implementation does not silently prefer the sigma_z
+          axis. (The construction is well-defined because sigma_x
+          squares to I, so the HPTA identity is preserved.)
+        pseudo_kraus_operators:
+          - "I + 1j * b * sigma_x"
+          - "sqrt(1 + b**2) * I"
+        pseudo_kraus_coefficients:
+          - 1.0
+          - -1.0
+        parameters:
+          b: 0.5
+        hpta_precondition: |
+          gamma_1 E_1^dagger E_1 + gamma_2 E_2^dagger E_2
+            = (I - i*b*sigma_x)(I + i*b*sigma_x) - (1 + b**2) I
+            = (1 + b**2) I - (1 + b**2) I
+            = 0
+          identically (algebraic identity, exact for all real b;
+          uses sigma_x^2 = I).
+        expected_outcome: |
+          H_HS = -b * sigma_x = -0.5 * sigma_x (the sigma_x analog of
+          transcription §7, evaluated at b = 0.5).
+        reference: "transcriptions/hayden-sorce-2022_pseudokraus_v0.1.0.md §4 (general formula); §7 final paragraph (sigma_x analog); CL-2026-005 v0.4 Entry 1.B.3"
+
+      - name: "pseudo_kraus_traceless_jumps"
+        description: |
+          HPTA pseudo-Kraus generator built entirely from traceless
+          Pauli operators (Tr(sigma_x) = Tr(sigma_y) = 0). The
+          transcribed formula evaluates to zero per transcription §5
+          ("If every V_i is traceless, this expression gives zero"):
+          every summand of the H_HS sum carries Tr(E_j) = 0 and
+          Tr(E_j^dagger) = 0. Sanity check that the trace-based
+          formula correctly handles the all-traceless input — and
+          parallels Card A1 v0.1.1 Entry 1.B.1 (canonical Lindblad
+          with traceless jumps gives K = 0) from a different basis
+          construction.
+        pseudo_kraus_operators:
+          - "sigma_x"
+          - "sigma_y"
+        pseudo_kraus_coefficients:
+          - 1.0
+          - -1.0
+        parameters: {}
+        hpta_precondition: |
+          gamma_1 E_1^dagger E_1 + gamma_2 E_2^dagger E_2
+            = sigma_x^2 - sigma_y^2
+            = I - I
+            = 0
+          identically (algebraic identity; sigma_x^2 = sigma_y^2 = I).
+        expected_outcome: |
+          H_HS = 0 (all jump operators traceless => every summand of
+          the H_HS formula is zero).
+        reference: "transcriptions/hayden-sorce-2022_pseudokraus_v0.1.0.md §5 second bullet under 'Immediate consequences'; CL-2026-005 v0.4 Entry 1.B.3"
+
+  truncation:
+    perturbative_order: 0      # algebraic identity; no perturbative recursion
+    basis: "matrix_unit"       # Letter Eq. (7) form; cross-basis verification is a separate card
+
+  numerical:
+    # time_grid omitted: model_kind == algebraic_map (single-instant verification).
+    integration_tolerance:
+      # Solver is "analytical"; these tolerances bound numerical round-off in
+      # the closed-form evaluation (matrix products, basis sums, complex
+      # arithmetic involving sqrt(1 + a**2)). The HPTA precondition residual
+      # is checked against `absolute` (1.0e-14); the comparison threshold
+      # below (1.0e-10) is the acceptance gate.
+      relative: 1.0e-12
+      absolute: 1.0e-14
+    solver: "analytical"
+
+  comparison:
+    reference: "Letter Eqs. (6)-(7); transcriptions/hayden-sorce-2022_pseudokraus_v0.1.0.md §4-§5; CL-2026-005 v0.4 Entry 1.B.3; per-case anchors in frozen_parameters.model.test_cases[i].reference"
+    target_observable: "K"
+    error_metric: "relative_frobenius"
+    threshold: 1.0e-10
+
+# ─── Acceptance criterion ─────────────────────────────────────────────────────
+
+acceptance_criterion:
+  reference: "Letter Eqs. (6)-(7); transcriptions/hayden-sorce-2022_pseudokraus_v0.1.0.md §4-§5; CL-2026-005 v0.4 Entry 1.B.3"
+  observable: "K"
+  error_metric: "relative_frobenius"
+  threshold: 1.0e-10
+  projection_scheme: null
+  rationale: |
+    PASS iff every test case in frozen_parameters.model.test_cases
+    satisfies BOTH of the following:
+
+      (1) HPTA precondition holds:
+            ||sum_j gamma_j E_j^dagger E_j||_F <= 1.0e-14
+          (numerical absolute Frobenius bound; the three frozen
+          fixtures all satisfy HPTA as algebraic identities, so any
+          residual above 1.0e-14 indicates an implementation bug in
+          the runner's symbolic-to-numerical pipeline rather than a
+          flaw in the fixture itself).
+
+      (2) Comparison error is within threshold:
+            ||K_computed - K_expected||_F / max(||K_expected||_F, 1) <= 1.0e-10
+          where K_computed is obtained by applying Letter Eq. (7) (the
+          matrix-unit form of the basis-independent recipe Letter
+          Eq. (6)) via cbg.effective_hamiltonian.K_from_generator to
+          the pseudo-Kraus generator
+            L(rho) = sum_j gamma_j E_j rho E_j^dagger
+          built from the case's pseudo_kraus_operators and
+          pseudo_kraus_coefficients with the case's parameters
+          substituted, and K_expected is the trace-based H_HS formula
+          evaluated symbolically on the same fixture per transcription
+          §4. (The max(_,1) guard keeps the metric well-defined when
+          K_expected = 0; for the third test case it reduces to
+          ||K_computed||_F.)
+
+    Per-case PASS conditions, mapped to Entry 1.B.3 sub-claim:
+
+      - pseudo_kraus_diagonal_sigma_z: K_computed = -a * sigma_z =
+        -0.5 * sigma_z. Failure would indicate that the matrix-unit
+        basis sum and the trace-based H_HS formula disagree
+        numerically — a bug in K_from_generator's basis-summation,
+        because §4a of the transcription proves these expressions
+        are algebraically identical on pseudo-Kraus inputs.
+
+      - pseudo_kraus_diagonal_sigma_x: K_computed = -b * sigma_x =
+        -0.5 * sigma_x. Failure with the sigma_z case passing would
+        indicate an axis-specific bug in the implementation (e.g. a
+        hard-coded sigma_z branch).
+
+      - pseudo_kraus_traceless_jumps: K_computed = 0. Failure would
+        indicate the runner does not correctly zero the H_HS formula
+        when every E_j is traceless — i.e. either Tr(E_j) is being
+        miscomputed or the per-summand assembly is not handled.
+
+    Out of scope for Card B1 v0.1.0:
+      - Off-diagonal pseudo-Kraus (omega_{ij}, i != j): the "new
+        formula generalises the prior result to the off-diagonal
+        case" half of Entry 1.B.3 / Entry 1.D requires an off-
+        diagonal extension of the HS 2022 expression that
+        transcription v0.1.0 does not provide. Future card under a
+        future transcription bump.
+      - Cross-basis verification: DG-2 universal-default structural-
+        identity check per Sail v0.5 §9 DG-2; scoped to a separate
+        card so PASS/FAIL of the basis-summation pipeline (this card)
+        and the basis-independence claim are not conflated.
+      - Cross-dimension verification (d > 2): B1 freezes d = 2 to
+        match the qubit scope of Cards A1, A3, A4.
+      - Coherent-displacement convention gap (Entries 3.B.3, 4.B.2):
+        unrelated to Entry 1.B.3; remains gated on the second DG-2
+        unblocker (Council-cleared displacement convention).
+
+# ─── Result block ─────────────────────────────────────────────────────────────
+
+result:
+  verdict: null
+  evidence: []
+  commit_hash: ""
+  runner_version: ""
+  notes: ""
+
+# ─── Failure-mode log ─────────────────────────────────────────────────────────
+
+failure_mode_log: []
+
+# ─── Stewardship flag ─────────────────────────────────────────────────────────
+
+stewardship_flag:
+  status: "unflagged"
+  rationale: ""
+  data_source: ""
+  search_performed: ""

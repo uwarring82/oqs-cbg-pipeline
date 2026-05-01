@@ -35,8 +35,13 @@ See [`SCHEMA.md`](SCHEMA.md) §Supersedure and
 | A1 | DG-1 | CL-2026-005 v0.4 Entry 1 (B.1, B.2; B.3 deferred to DG-2) | **pass** (2026-04-30) | [A1_closed-form-K_v0.1.1.yaml](A1_closed-form-K_v0.1.1.yaml) |
 | A3 | DG-1 | CL-2026-005 v0.4 Entry 3 (B.1, B.2 thermal; B.3 deferred to DG-2) | **pass** (2026-04-30) | [A3_pure-dephasing_v0.1.1.yaml](A3_pure-dephasing_v0.1.1.yaml) |
 | A4 | DG-1 | CL-2026-005 v0.4 Entry 4 (B.1 thermal; B.2 deferred to DG-2) | **pass** (2026-04-30) | [A4_sigma-x-thermal_v0.1.1.yaml](A4_sigma-x-thermal_v0.1.1.yaml) |
+| B1 | DG-2 | CL-2026-005 v0.4 Entry 1.B.3 (diagonal pseudo-Kraus reduction) | **frozen-awaiting-run** (2026-05-01) | [B1_pseudo-kraus-diagonal_v0.1.0.yaml](B1_pseudo-kraus-diagonal_v0.1.0.yaml) |
 
-The three DG-1 cards reached the **PASS** verdict per [DG-1 work plan v0.1.4](../../plans/dg-1-work-plan_v0.1.4.md) §4 Phase D; see [logbook/2026-04-30_dg-1-pass.md](../../logbook/2026-04-30_dg-1-pass.md) for the verdict logbook entry and [benchmarks/results/](../results/) for the JSON evidence artefacts. The index is updated atomically when cards are committed, when their `status` field changes per [SCHEMA.md](SCHEMA.md) §Card lifecycle, or when a successor card is added.
+The three DG-1 cards reached the **PASS** verdict per [DG-1 work plan v0.1.4](../../plans/dg-1-work-plan_v0.1.4.md) §4 Phase D; see [logbook/2026-04-30_dg-1-pass.md](../../logbook/2026-04-30_dg-1-pass.md) for the verdict logbook entry and [benchmarks/results/](../results/) for the JSON evidence artefacts.
+
+Card B1 is the first DG-2 card and is **frozen-awaiting-run**: SCHEMA.md v0.1.2 validation passes (all 16 rules) and the gauge-annotation block is canonical, but no runner handler is yet registered for its three test_case names (`pseudo_kraus_diagonal_sigma_z`, `pseudo_kraus_diagonal_sigma_x`, `pseudo_kraus_traceless_jumps`). Implementation of the handlers in [`reporting/benchmark_card.py`](../../reporting/benchmark_card.py) `_TEST_CASE_HANDLERS` is a separate work step deliberately scoped after the freeze, per cards-first discipline.
+
+The index is updated atomically when cards are committed, when their `status` field changes per [SCHEMA.md](SCHEMA.md) §Card lifecycle, or when a successor card is added.
 
 ### Superseded cards (retained for audit)
 
