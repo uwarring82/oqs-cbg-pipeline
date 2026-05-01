@@ -72,9 +72,10 @@ Both exceptions are bookkeeping completions of explicit gaps, not substantive re
 | 2026-04-30 | `dg-1-pass` | dg-pass | DG-1 PASSED — Cards A1 v0.1.1, A3 v0.1.1, A4 v0.1.1 reproduce CL-2026-005 v0.4 Entries 1, 3, 4 (unambiguous sub-cases) at machine precision; Entries 1.B.3, 3.B.3, 4.B.2 deferred to DG-2 per plan v0.1.4 §1.1; validity envelope NOT YET ATTEMPTED → PASS; tag `v0.2.0` pending |
 | 2026-05-01 | `hayden-sorce-transcription-initiated` | structural | Source-transcription surface added; Hayden-Sorce 2022 pseudo-Kraus formula transcribed for the Entry 1.B.3 DG-2 unblocking path; no code/card/DG status change |
 | 2026-05-01 | `dg-2-b1-card-frozen` | structural | DG-2 Card B1 v0.1.0 frozen against the (pre-commit hardened) Hayden-Sorce transcription; three HPTA pseudo-Kraus fixtures freeze the diagonal half of Entry 1.B.3; no runner handlers yet (cards-first), no DG status change |
+| 2026-05-01 | `dg-2-b1-pass` | structural | DG-2 Card B1 v0.1.0 PASS — diagonal pseudo-Kraus runner confirms Entry 1.B.3 at machine precision; three test_cases all error=0.0, HPTA residuals below 1e-14; does not constitute full DG-2 PASS |
 
 (This index is updated atomically when new entries are added.)
 
 ---
 
-*Last updated: 2026-05-01 (DG-2 Card B1 frozen). CC-BY-4.0 (see ../LICENSE-docs).*
+*Last updated: 2026-05-01 (DG-2 Card B1 pass). CC-BY-4.0 (see ../LICENSE-docs).*

@@ -269,7 +269,7 @@ result:
   verdict: "PASS"
   evidence:
     - "benchmarks/results/B1_pseudo-kraus-diagonal_v0.1.0_result.json"
-  commit_hash: ""
+  commit_hash: "4502863eeb6b5f0d06dcbc4b9ff5fd6ea65f920e"
   runner_version: "0.1.0"
   notes: |
     Verdict computed by reporting.benchmark_card.run_card via the

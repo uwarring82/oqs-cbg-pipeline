@@ -591,7 +591,7 @@ def test_load_card_b1_succeeds():
     assert card.card_id == "B1"
     assert card.dg_target == "DG-2"
     assert card.version == "v0.1.0"
-    assert card.status == "frozen-awaiting-run"
+    assert card.status == "pass"
     assert card.model_kind == "algebraic_map"
 
 
