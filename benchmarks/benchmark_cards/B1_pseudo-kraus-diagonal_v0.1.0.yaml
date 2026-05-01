@@ -56,7 +56,7 @@ date: "2026-05-01"
 dg_target: "DG-2"
 ledger_entry: "CL-2026-005 v0.4 Entry 1.B.3"
 model: "closed_form_algebraic"
-status: "frozen-awaiting-run"
+status: "pass"
 license: "CC-BY-4.0 (LICENSE-docs)"
 
 # ─── Gauge block ──────────────────────────────────────────────────────────────
@@ -266,11 +266,19 @@ acceptance_criterion:
 # ─── Result block ─────────────────────────────────────────────────────────────
 
 result:
-  verdict: null
-  evidence: []
+  verdict: "PASS"
+  evidence:
+    - "benchmarks/results/B1_pseudo-kraus-diagonal_v0.1.0_result.json"
   commit_hash: ""
-  runner_version: ""
-  notes: ""
+  runner_version: "0.1.0"
+  notes: |
+    Verdict computed by reporting.benchmark_card.run_card via the
+    algebraic_map handler registry with pseudo-Kraus parser and HPTA
+    precondition gate. All three test_cases returned error = 0.0 (machine
+    precision; well below the 1.0e-10 threshold). HPTA residuals
+    (3.14e-16, 3.14e-16, 0.0) are all well below the 1.0e-14 absolute
+    bound. Entry 1.B.3 diagonal pseudo-Kraus structural prediction
+    reproduced. Re-runnable via pytest tests/test_benchmark_card.py.
 
 # ─── Failure-mode log ─────────────────────────────────────────────────────────
 

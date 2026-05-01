@@ -1,0 +1,39 @@
+{
+  "card_id": "B1",
+  "card_version": "v0.1.0",
+  "card_path": "benchmarks/benchmark_cards/B1_pseudo-kraus-diagonal_v0.1.0.yaml",
+  "schema_version": "v0.1.2",
+  "ledger_entry": "CL-2026-005 v0.4 Entry 1.B.3",
+  "verdict": "PASS",
+  "runner_version": "0.1.0",
+  "computed_at_utc": "2026-05-01T10:22:55.505549+00:00",
+  "test_case_results": [
+    {
+      "name": "pseudo_kraus_diagonal_sigma_z",
+      "passed": true,
+      "error": 0.0,
+      "threshold": 1e-10,
+      "hpta_residual": 3.1401849173675503e-16,
+      "hpta_threshold": 1e-14,
+      "notes": ""
+    },
+    {
+      "name": "pseudo_kraus_diagonal_sigma_x",
+      "passed": true,
+      "error": 0.0,
+      "threshold": 1e-10,
+      "hpta_residual": 3.1401849173675503e-16,
+      "hpta_threshold": 1e-14,
+      "notes": ""
+    },
+    {
+      "name": "pseudo_kraus_traceless_jumps",
+      "passed": true,
+      "error": 0.0,
+      "threshold": 1e-10,
+      "hpta_residual": 0.0,
+      "hpta_threshold": 1e-14,
+      "notes": ""
+    }
+  ]
+}
