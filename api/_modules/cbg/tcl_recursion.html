@@ -1,0 +1,786 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>cbg.tcl_recursion &#8212; oqs-cbg-pipeline</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=e0f99f8f"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/cbg/tcl_recursion';</script>
+    <link rel="canonical" href="/oqs-cbg-pipeline/api/_modules/cbg/tcl_recursion.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">oqs-cbg-pipeline · API</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../index.html">
+                    oqs-cbg-pipeline — API documentation
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../cbg.html"><code class="docutils literal notranslate"><span class="pre">cbg</span></code> — Colla–Breuer–Gasbarri effective-Hamiltonian construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../models.html"><code class="docutils literal notranslate"><span class="pre">models</span></code> — System–environment model factories</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../numerical.html"><code class="docutils literal notranslate"><span class="pre">numerical</span></code> — Numerical primitives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reporting.html"><code class="docutils literal notranslate"><span class="pre">reporting</span></code> — Benchmark-card schema, loader, validator, runner</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/uwarring82/oqs-cbg-pipeline" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/uwarring82/oqs-cbg-pipeline/issues/new?title=Issue%20on%20page%20%2F_modules/cbg/tcl_recursion.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for cbg.tcl_recursion</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">cbg.tcl_recursion — Recursive construction of the TCL generator L_t.</span>
+
+<span class="sd">Implements the recursion described in Companion Eqs. (19)-(28),</span>
+<span class="sd">yielding L_t = Σ_n λ^n L_n in canonical generalised-Lindblad form</span>
+<span class="sd">with traceless jump operators at every order.</span>
+
+<span class="sd">The recursion uses the generalised cumulants D̄(τ_1^k, s_1^{n-k})</span>
+<span class="sd">which are evaluated in cbg.cumulants (NOT a Nakajima-Zwanzig</span>
+<span class="sd">memory kernel — TCL is time-local; see bath_correlations.py docstring).</span>
+
+<span class="sd">DG-1 scope (this module, C.8):</span>
+<span class="sd">    - L_n at orders n in {0, 1, 2}, thermal Gaussian bath only</span>
+<span class="sd">      (D̄_1 = 0; the displaced-bath case is deferred to DG-2 per the</span>
+<span class="sd">      operationalisability carve-out in plan v0.1.4 §1.1).</span>
+<span class="sd">    - L_0[X] = -i [H_S, X].</span>
+<span class="sd">    - L_1[X] = 0 (thermal: ⟨B⟩ = 0).</span>
+<span class="sd">    - L_2[X](t) = -∫_0^t du {C(t-u) [A, A_I(u-t) X]</span>
+<span class="sd">                              + C(t-u)* [X A_I(u-t), A]}</span>
+<span class="sd">      where C(τ) is the connected bath two-point at the spec&#39;s</span>
+<span class="sd">      temperature (cbg.cumulants.D_bar_2) and A_I(τ) = e^{iH_S τ} A</span>
+<span class="sd">      e^{-iH_S τ} is the interaction-picture coupling operator.</span>
+<span class="sd">    - K_n_thermal_on_grid: extracts K_n(t) at every t in t_grid by</span>
+<span class="sd">      applying Letter Eq. (6) to L_n[F_α](t) for each basis element</span>
+<span class="sd">      F_α (cbg.basis + cbg.effective_hamiltonian.K_from_generator).</span>
+<span class="sd">    - K_total_thermal_on_grid: sums K_0 + K_1 + ... + K_{N_card} at</span>
+<span class="sd">      every t in t_grid; the runner-facing entry point.</span>
+
+<span class="sd">DG-2 scope (stubbed):</span>
+<span class="sd">    - L_n at orders n &gt;= 3 (full Companion Eq. (28) recursion).</span>
+<span class="sd">    - Non-thermal bath states (D̄_1 ≠ 0); requires the displacement</span>
+<span class="sd">      convention deferred per plan v0.1.4 §1.1.</span>
+<span class="sd">    - canonical_lindblad_form: full K + dissipator decomposition with</span>
+<span class="sd">      traceless jump operators (Companion Eq. (43)). DG-1 cards only</span>
+<span class="sd">      need K (via Letter Eq. (6) extraction); the dissipator side is</span>
+<span class="sd">      DG-2.</span>
+
+<span class="sd">Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.4 §4 Phase C row C.8.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">expm</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">cbg.basis</span><span class="w"> </span><span class="kn">import</span> <span class="n">matrix_unit_basis</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cbg.cumulants</span><span class="w"> </span><span class="kn">import</span> <span class="n">D_bar_2</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cbg.effective_hamiltonian</span><span class="w"> </span><span class="kn">import</span> <span class="n">K_from_generator</span>
+
+
+<span class="c1"># ─── Interaction-picture helper ──────────────────────────────────────────────</span>
+
+
+<div class="viewcode-block" id="interaction_picture">
+<a class="viewcode-back" href="../../cbg.html#cbg.tcl_recursion.interaction_picture">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">interaction_picture</span><span class="p">(</span><span class="n">H_S</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">A</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">tau</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute A_I(τ) = e^{i H_S τ} A e^{-i H_S τ}.</span>
+
+<span class="sd">    Used to evolve the system coupling operator A under H_S only (the</span>
+<span class="sd">    interaction-picture transformation). Vectorising over `tau` is left</span>
+<span class="sd">    to the caller.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    H_S : ndarray</span>
+<span class="sd">        System Hamiltonian, shape (d, d).</span>
+<span class="sd">    A : ndarray</span>
+<span class="sd">        System coupling operator, shape (d, d).</span>
+<span class="sd">    tau : float</span>
+<span class="sd">        Interaction-picture time argument; can be positive or negative.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ndarray, shape (d, d), dtype complex</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">U</span> <span class="o">=</span> <span class="n">expm</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">H_S</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span> <span class="o">*</span> <span class="n">tau</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">U</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span> <span class="o">@</span> <span class="n">U</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span></div>
+
+
+
+<span class="c1"># ─── L_n at order n (thermal-only path) ──────────────────────────────────────</span>
+
+
+<div class="viewcode-block" id="L_n_thermal_at_time">
+<a class="viewcode-back" href="../../cbg.html#cbg.tcl_recursion.L_n_thermal_at_time">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">L_n_thermal_at_time</span><span class="p">(</span>
+    <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">t_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">t_grid</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">system_hamiltonian</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">coupling_operator</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">D_bar_2_array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a callable that computes L_n[X] at time t_grid[t_idx] for</span>
+<span class="sd">    a thermal Gaussian bath.</span>
+
+<span class="sd">    Implements:</span>
+<span class="sd">        - n = 0: L_0[X] = -i [H_S, X] (the bare Liouvillian; not really</span>
+<span class="sd">          a perturbative term, but supplied here so K_total_thermal can</span>
+<span class="sd">          uniformly assemble K = K_0 + K_1 + K_2 + ... via Letter Eq. (6)).</span>
+<span class="sd">        - n = 1: L_1[X] = 0 (thermal Gaussian bath has ⟨B⟩ = 0).</span>
+<span class="sd">        - n = 2: L_2[X](t) = -∫_0^t du {C(t-u) [A, A_I(u-t) X] +</span>
+<span class="sd">                                         C(t-u)* [X A_I(u-t), A]}</span>
+<span class="sd">          via trapezoidal integration over s_grid = t_grid[: t_idx+1].</span>
+<span class="sd">          The integrand is operator-valued; the trapezoidal rule is</span>
+<span class="sd">          inlined for efficiency (avoids 4 separate scalar integrations</span>
+<span class="sd">          per matrix entry).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n : int</span>
+<span class="sd">        Perturbative order; one of 0, 1, 2 at DG-1.</span>
+<span class="sd">    t_idx : int</span>
+<span class="sd">        Index into t_grid at which to evaluate L_n.</span>
+<span class="sd">    t_grid : ndarray, shape (n_t,)</span>
+<span class="sd">        Time points; must satisfy t_grid[0] = 0 for the integral lower</span>
+<span class="sd">        bound to be the physical t_start = 0 (the cards&#39; convention).</span>
+<span class="sd">    system_hamiltonian, coupling_operator : ndarray, shape (d, d)</span>
+<span class="sd">        H_S and A.</span>
+<span class="sd">    D_bar_2_array : ndarray, shape (n_t, n_t), dtype complex</span>
+<span class="sd">        Precomputed connected two-point on the time grid; required for</span>
+<span class="sd">        n = 2; ignored for n in {0, 1}. Use cbg.cumulants.D_bar_2 to</span>
+<span class="sd">        construct.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    callable</span>
+<span class="sd">        L_n_apply : (X: (d, d) ndarray) -&gt; (d, d) ndarray.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    NotImplementedError</span>
+<span class="sd">        For n &gt;= 3 (DG-2 territory).</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        For invalid arguments.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">H_S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">system_hamiltonian</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+        <span class="k">return</span> <span class="k">lambda</span> <span class="n">X</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="p">(</span><span class="n">H_S</span> <span class="o">@</span> <span class="n">X</span> <span class="o">-</span> <span class="n">X</span> <span class="o">@</span> <span class="n">H_S</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># Thermal Gaussian bath: D̄_1 = 0 → L_1 = 0 identically.</span>
+        <span class="c1"># (For non-thermal bath, L_1 would carry a ⟨B(t)⟩-driven term.</span>
+        <span class="c1"># Deferred to DG-2 per plan v0.1.4 §1.1.)</span>
+        <span class="k">return</span> <span class="k">lambda</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">D_bar_2_array</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;L_n_thermal_at_time: n=2 requires D_bar_2_array (use &quot;</span>
+                <span class="s2">&quot;cbg.cumulants.D_bar_2 to construct)&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">H_S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">system_hamiltonian</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coupling_operator</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+        <span class="n">t_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t_grid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">D_bar_2_array</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">t_idx</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># Integration interval has zero length; L_2(t=t_grid[0]) = 0.</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">return</span> <span class="k">lambda</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+
+        <span class="c1"># Pre-compute A_I(u - t) for each s in s_grid = t_grid[:t_idx+1].</span>
+        <span class="c1"># u = s, u - t = s - t (≤ 0).</span>
+        <span class="n">s_grid</span> <span class="o">=</span> <span class="n">t_grid</span><span class="p">[:</span> <span class="n">t_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">n_s</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s_grid</span><span class="p">)</span>
+        <span class="n">t_at</span> <span class="o">=</span> <span class="n">t_grid</span><span class="p">[</span><span class="n">t_idx</span><span class="p">]</span>
+        <span class="n">A_I_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_s</span><span class="p">,</span> <span class="o">*</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">s_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_s</span><span class="p">):</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="n">s_grid</span><span class="p">[</span><span class="n">s_idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">t_at</span>  <span class="c1"># ≤ 0</span>
+            <span class="n">A_I_array</span><span class="p">[</span><span class="n">s_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">interaction_picture</span><span class="p">(</span><span class="n">H_S</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">tau</span><span class="p">)</span>
+
+        <span class="c1"># C(t - s) = D̄_2(t, s) (stationary; depends only on the difference).</span>
+        <span class="n">C_at</span> <span class="o">=</span> <span class="n">D</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="p">:</span> <span class="n">t_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># shape (n_s,)</span>
+        <span class="n">C_at_conj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">C_at</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">L_2_apply</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># Build integrand[s_idx] = C(t-s) [A, A_I(s-t) X]</span>
+            <span class="c1">#                          + C(t-s)* [X A_I(s-t), A]</span>
+            <span class="n">integrand</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_s</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">s_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_s</span><span class="p">):</span>
+                <span class="n">A_I_su</span> <span class="o">=</span> <span class="n">A_I_array</span><span class="p">[</span><span class="n">s_idx</span><span class="p">]</span>
+                <span class="c1"># [A, A_I X] = A @ A_I @ X - A_I @ X @ A</span>
+                <span class="n">term1</span> <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">A_I_su</span> <span class="o">@</span> <span class="n">X</span> <span class="o">-</span> <span class="n">A_I_su</span> <span class="o">@</span> <span class="n">X</span> <span class="o">@</span> <span class="n">A</span>
+                <span class="c1"># [X A_I, A] = X @ A_I @ A - A @ X @ A_I</span>
+                <span class="n">term2</span> <span class="o">=</span> <span class="n">X</span> <span class="o">@</span> <span class="n">A_I_su</span> <span class="o">@</span> <span class="n">A</span> <span class="o">-</span> <span class="n">A</span> <span class="o">@</span> <span class="n">X</span> <span class="o">@</span> <span class="n">A_I_su</span>
+                <span class="n">integrand</span><span class="p">[</span><span class="n">s_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">C_at</span><span class="p">[</span><span class="n">s_idx</span><span class="p">]</span> <span class="o">*</span> <span class="n">term1</span> <span class="o">+</span> <span class="n">C_at_conj</span><span class="p">[</span><span class="n">s_idx</span><span class="p">]</span> <span class="o">*</span> <span class="n">term2</span>
+
+            <span class="c1"># Trapezoidal integral over s; result is (d, d).</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_s</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="n">ds</span> <span class="o">=</span> <span class="n">s_grid</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">s_grid</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">out</span> <span class="o">+=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">integrand</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">integrand</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">ds</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">out</span>  <span class="c1"># the leading minus sign in the TCL2 formula</span>
+
+        <span class="k">return</span> <span class="n">L_2_apply</span>
+
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;L_n_thermal_at_time: n=</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> not implemented at DG-1. K_n at &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;orders n &gt;= 3 is DG-2 territory per Sail v0.5 §9 DG-2 and &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;DG-1 work plan v0.1.4 §1.2.&quot;</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="c1"># ─── K_n on the time grid (Letter Eq. (6) extraction) ───────────────────────</span>
+
+
+<div class="viewcode-block" id="K_n_thermal_on_grid">
+<a class="viewcode-back" href="../../cbg.html#cbg.tcl_recursion.K_n_thermal_on_grid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">K_n_thermal_on_grid</span><span class="p">(</span>
+    <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">t_grid</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">system_hamiltonian</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">coupling_operator</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">bath_state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">spectral_density</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">basis</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute K_n(t) at every t in t_grid for a thermal Gaussian bath.</span>
+
+<span class="sd">    For each t_idx, applies Letter Eq. (6) — K = (1/(2id)) Σ_α [F_α†, L[F_α]] —</span>
+<span class="sd">    to L_n_thermal_at_time(n, t_idx, ...) using the matrix-unit basis (or</span>
+<span class="sd">    a caller-supplied HS-orthonormal basis).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n : int</span>
+<span class="sd">        Perturbative order; one of 0, 1, 2 at DG-1.</span>
+<span class="sd">    t_grid : ndarray, shape (n_t,)</span>
+<span class="sd">        Time points.</span>
+<span class="sd">    system_hamiltonian, coupling_operator : ndarray, shape (d, d)</span>
+<span class="sd">        H_S and A.</span>
+<span class="sd">    bath_state, spectral_density : dict</span>
+<span class="sd">        Card per-case bath_state and bath_spectral_density mappings.</span>
+<span class="sd">        Used only for n = 2 (where D̄_2 is built); ignored for n in {0, 1}.</span>
+<span class="sd">    basis : list of (d, d) ndarrays, optional</span>
+<span class="sd">        HS-orthonormal basis for Letter Eq. (6). Defaults to the</span>
+<span class="sd">        matrix-unit basis at the system dimension d.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ndarray, shape (n_t, d, d), dtype complex</span>
+<span class="sd">        K_n(t_grid).</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    NotImplementedError</span>
+<span class="sd">        If bath_state.family is not &quot;thermal&quot; (non-thermal bath at orders</span>
+<span class="sd">        ≥ 1 requires the displacement convention deferred per plan v0.1.4).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">family</span> <span class="o">=</span> <span class="n">bath_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;family&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">family</span> <span class="o">!=</span> <span class="s2">&quot;thermal&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;K_n_thermal_on_grid: bath_state.family </span><span class="si">{</span><span class="n">family</span><span class="si">!r}</span><span class="s2"> at &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;n=</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> requires the displacement convention deferred to &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;DG-2 per DG-1 work plan v0.1.4 §1.1. Only &#39;thermal&#39; is &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;supported at DG-1 (D̄_1 = 0 by Gaussian symmetry).&quot;</span>
+            <span class="p">)</span>
+
+    <span class="n">H_S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">system_hamiltonian</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coupling_operator</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+    <span class="n">t_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t_grid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">H_S</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">basis</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">basis</span> <span class="o">=</span> <span class="n">matrix_unit_basis</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+    <span class="c1"># For n = 2, precompute the D̄_2 array once (reused across all t_idx).</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="n">D_bar_2</span><span class="p">(</span>
+            <span class="n">t_grid</span><span class="p">,</span> <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span> <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span>
+        <span class="p">)</span>
+
+    <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">t_grid</span><span class="p">),</span> <span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">t_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t_grid</span><span class="p">)):</span>
+        <span class="n">L_n_apply</span> <span class="o">=</span> <span class="n">L_n_thermal_at_time</span><span class="p">(</span>
+            <span class="n">n</span><span class="p">,</span> <span class="n">t_idx</span><span class="p">,</span> <span class="n">t_grid</span><span class="p">,</span> <span class="n">H_S</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">D_bar_2_array</span><span class="o">=</span><span class="n">D</span>
+        <span class="p">)</span>
+        <span class="n">K</span><span class="p">[</span><span class="n">t_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">K_from_generator</span><span class="p">(</span><span class="n">L_n_apply</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">K</span></div>
+
+
+
+<div class="viewcode-block" id="K_total_thermal_on_grid">
+<a class="viewcode-back" href="../../cbg.html#cbg.tcl_recursion.K_total_thermal_on_grid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">K_total_thermal_on_grid</span><span class="p">(</span>
+    <span class="n">N_card</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">t_grid</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">system_hamiltonian</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">coupling_operator</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">bath_state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">spectral_density</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">basis</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute K(t) = Σ_{n=0}^{N_card} K_n(t) at every t in t_grid for a</span>
+<span class="sd">    thermal Gaussian bath.</span>
+
+<span class="sd">    The runner-facing entry point: returns the full effective Hamiltonian</span>
+<span class="sd">    on the time grid, ready for comparison against a card&#39;s expected_outcome.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    N_card : int</span>
+<span class="sd">        Perturbative cap from the card&#39;s frozen_parameters.truncation</span>
+<span class="sd">        .perturbative_order; must be in {0, 1, 2} at DG-1.</span>
+<span class="sd">    t_grid, system_hamiltonian, coupling_operator, bath_state,</span>
+<span class="sd">    spectral_density, basis : as in K_n_thermal_on_grid.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ndarray, shape (n_t, d, d), dtype complex</span>
+<span class="sd">        K(t_grid).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">N_card</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">N_card</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="n">N_card</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;K_total_thermal_on_grid: N_card must be a non-negative integer; &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="n">N_card</span><span class="si">!r}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">N_card</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;K_total_thermal_on_grid: N_card=</span><span class="si">{</span><span class="n">N_card</span><span class="si">}</span><span class="s2"> not implemented at &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;DG-1. K_n at orders n &gt;= 3 is DG-2 territory per Sail v0.5 &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;§9 DG-2 and DG-1 work plan v0.1.4 §1.2.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">H_S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">system_hamiltonian</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">H_S</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">t_grid</span><span class="p">),</span> <span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_card</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">K</span> <span class="o">+=</span> <span class="n">K_n_thermal_on_grid</span><span class="p">(</span>
+            <span class="n">n</span><span class="p">,</span> <span class="n">t_grid</span><span class="p">,</span> <span class="n">system_hamiltonian</span><span class="p">,</span> <span class="n">coupling_operator</span><span class="p">,</span>
+            <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span> <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+            <span class="n">basis</span><span class="o">=</span><span class="n">basis</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">K</span></div>
+
+
+
+<span class="c1"># ─── Existing-stub-signature shim ────────────────────────────────────────────</span>
+
+
+<div class="viewcode-block" id="L_n">
+<a class="viewcode-back" href="../../cbg.html#cbg.tcl_recursion.L_n">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">L_n</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the n-th order TCL generator term per Companion Eq. (28).</span>
+
+<span class="sd">    DG-1 thin wrapper: routes to L_n_thermal_at_time when called with</span>
+<span class="sd">    the canonical (t_idx, t_grid, system_hamiltonian, coupling_operator,</span>
+<span class="sd">    D_bar_2_array) kwargs and a thermal bath state. Other configurations</span>
+<span class="sd">    raise NotImplementedError with explicit DG-2 routing.</span>
+
+<span class="sd">    Callers should generally prefer L_n_thermal_at_time (explicit</span>
+<span class="sd">    parameters) or K_n_thermal_on_grid (higher-level batched form) over</span>
+<span class="sd">    this generic-stub shim.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;L_n: n=</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> not implemented at DG-1; n &gt;= 3 is DG-2 territory.&quot;</span>
+        <span class="p">)</span>
+    <span class="n">bath_state</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bath_state&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">bath_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">bath_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;family&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;thermal&quot;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">&quot;L_n: non-thermal bath at orders &gt;= 1 requires the displacement &quot;</span>
+            <span class="s2">&quot;convention deferred to DG-2 per plan v0.1.4 §1.1.&quot;</span>
+        <span class="p">)</span>
+    <span class="n">required</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;t_idx&quot;</span><span class="p">,</span> <span class="s2">&quot;t_grid&quot;</span><span class="p">,</span> <span class="s2">&quot;system_hamiltonian&quot;</span><span class="p">,</span> <span class="s2">&quot;coupling_operator&quot;</span><span class="p">)</span>
+    <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">required</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;L_n: missing required kwargs </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">; pass &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;(t_idx, t_grid, system_hamiltonian, coupling_operator) &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;and (D_bar_2_array for n=2).&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">L_n_thermal_at_time</span><span class="p">(</span>
+        <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span>
+        <span class="n">t_idx</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;t_idx&quot;</span><span class="p">],</span>
+        <span class="n">t_grid</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;t_grid&quot;</span><span class="p">],</span>
+        <span class="n">system_hamiltonian</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;system_hamiltonian&quot;</span><span class="p">],</span>
+        <span class="n">coupling_operator</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;coupling_operator&quot;</span><span class="p">],</span>
+        <span class="n">D_bar_2_array</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;D_bar_2_array&quot;</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="c1"># ─── Stubbed: full canonical Lindblad decomposition (DG-2) ───────────────────</span>
+
+
+<div class="viewcode-block" id="canonical_lindblad_form">
+<a class="viewcode-back" href="../../cbg.html#cbg.tcl_recursion.canonical_lindblad_form">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">canonical_lindblad_form</span><span class="p">(</span><span class="n">L_generator</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decompose L into K (Hamiltonian part) + canonical dissipator with</span>
+<span class="sd">    traceless jump operators, per Companion Eq. (43).</span>
+
+<span class="sd">    DG-1 only needs K (via Letter Eq. (6); use cbg.effective_hamiltonian.</span>
+<span class="sd">    K_from_generator). The full K + traceless-dissipator decomposition is</span>
+<span class="sd">    DG-2 territory and stays stubbed here.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+        <span class="s2">&quot;canonical_lindblad_form: not implemented at DG-1. The K + &quot;</span>
+        <span class="s2">&quot;traceless-dissipator decomposition (Companion Eq. (43)) is DG-2 &quot;</span>
+        <span class="s2">&quot;territory; DG-1 cards only need K, which is provided by &quot;</span>
+        <span class="s2">&quot;cbg.effective_hamiltonian.K_from_generator via Letter Eq. (6).&quot;</span>
+    <span class="p">)</span></div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Ulrich Warring
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, Ulrich Warring (code: MIT; docs: CC-BY-4.0).
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <p>Code under MIT, documentation under CC-BY-4.0. API docs are auto-generated from in-source docstrings; for project status and citation policy see the <a href='../index.html'>landing page</a>.</p>
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

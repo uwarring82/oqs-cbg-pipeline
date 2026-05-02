@@ -1,0 +1,757 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>cbg.bath_correlations &#8212; oqs-cbg-pipeline</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=e0f99f8f"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/cbg/bath_correlations';</script>
+    <link rel="canonical" href="/oqs-cbg-pipeline/api/_modules/cbg/bath_correlations.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">oqs-cbg-pipeline · API</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../index.html">
+                    oqs-cbg-pipeline — API documentation
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../cbg.html"><code class="docutils literal notranslate"><span class="pre">cbg</span></code> — Colla–Breuer–Gasbarri effective-Hamiltonian construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../models.html"><code class="docutils literal notranslate"><span class="pre">models</span></code> — System–environment model factories</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../numerical.html"><code class="docutils literal notranslate"><span class="pre">numerical</span></code> — Numerical primitives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reporting.html"><code class="docutils literal notranslate"><span class="pre">reporting</span></code> — Benchmark-card schema, loader, validator, runner</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/uwarring82/oqs-cbg-pipeline" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/uwarring82/oqs-cbg-pipeline/issues/new?title=Issue%20on%20page%20%2F_modules/cbg/bath_correlations.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for cbg.bath_correlations</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">cbg.bath_correlations — Bath spectral densities and connected n-point bath</span>
+<span class="sd">correlation functions for the CBG construction.</span>
+
+<span class="sd">This module is NOT a Nakajima–Zwanzig memory kernel.</span>
+
+<span class="sd">The TCL representation is time-local at every order; the non-Markovian</span>
+<span class="sd">character lives in the time-dependence of L_t, not in a kernel</span>
+<span class="sd">convolution. This module evaluates:</span>
+
+<span class="sd">    D(τ_1^k, s_1^{n-k}) = Tr_E { B^R(s_1^{n-k}) ∘ B^L(τ_1^k) [ρ_E] }</span>
+<span class="sd">                          × θ(τ_1^k) θ(s_1^{n-k})         (Companion Eq. (15))</span>
+
+<span class="sd">i.e. ordered n-point bath correlation functions, used to build the</span>
+<span class="sd">generalised cumulants D̄ in cbg.cumulants (Companion Eq. (24)).</span>
+
+<span class="sd">DG-1 scope (C.6):</span>
+<span class="sd">    - Ohmic spectral density evaluator J(ω) = α ω exp(-ω/ω_c).</span>
+<span class="sd">    - Two-point thermal connected correlator for bosonic linear coupling:</span>
+
+<span class="sd">        C(t) = ⟨B(t) B(0)⟩_connected_thermal</span>
+<span class="sd">             = ∫_0^∞ dω J(ω) [coth(ω / 2T) cos(ωt) - i sin(ωt)]</span>
+
+<span class="sd">      This is also the connected two-point for *coherent-displaced* bath</span>
+<span class="sd">      states: displacement leaves the connected (cumulant) part of any</span>
+<span class="sd">      Gaussian state invariant; only the first cumulant ⟨B(t)⟩ shifts</span>
+<span class="sd">      under displacement, and ⟨B(t)⟩ is *not* a connected two-point.</span>
+<span class="sd">      The first-cumulant ⟨B(t)⟩ assembly from a card&#39;s</span>
+<span class="sd">      `bath_state: coherent_displaced` spec is a model-layer</span>
+<span class="sd">      responsibility (models/pure_dephasing.py, models/spin_boson_sigma_x.py).</span>
+
+<span class="sd">DG-2 scope (stubbed here):</span>
+<span class="sd">    - Non-ohmic spectral densities (Drude–Lorentz, sub-/super-ohmic).</span>
+<span class="sd">    - n-point ordered correlations for n ≥ 3 (Companion Eq. (15) at</span>
+<span class="sd">      higher orders), needed for K_n at orders ≥ 3.</span>
+
+<span class="sd">The module is physically separated from time-grid integration to prevent</span>
+<span class="sd">accidental importation of Markovian solver defaults from libraries like</span>
+<span class="sd">QuTiP. Time-grid integration belongs in numerical/; bath-correlation</span>
+<span class="sd">evaluation belongs here. The two are not interchangeable.</span>
+
+<span class="sd">If a future extension requires Nakajima–Zwanzig-style kernels, those</span>
+<span class="sd">would live in a separate cbg.nz_kernels module, not here.</span>
+
+<span class="sd">Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.3 §4 Phase C row C.6.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">integrate</span>
+
+
+<span class="c1"># ─── Spectral densities ─────────────────────────────────────────────────────</span>
+
+
+<div class="viewcode-block" id="ohmic_spectral_density">
+<a class="viewcode-back" href="../../cbg.html#cbg.bath_correlations.ohmic_spectral_density">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">ohmic_spectral_density</span><span class="p">(</span>
+    <span class="n">omega</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">omega_c</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ohmic spectral density J(ω) = α ω exp(-ω/ω_c).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    omega : array or scalar</span>
+<span class="sd">        Frequencies at which to evaluate. Must be non-negative; the</span>
+<span class="sd">        physical convention is J(ω) defined for ω ≥ 0.</span>
+<span class="sd">    alpha : float</span>
+<span class="sd">        Dimensionless coupling strength. Must be non-negative.</span>
+<span class="sd">    omega_c : float</span>
+<span class="sd">        Cutoff frequency (high-frequency exponential rolloff). Must be positive.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ndarray</span>
+<span class="sd">        J(ω) of the same shape as `omega`, dtype float.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If alpha &lt; 0, omega_c &lt;= 0, or any omega &lt; 0.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">alpha</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ohmic_spectral_density: alpha must be &gt;= 0; got </span><span class="si">{</span><span class="n">alpha</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">omega_c</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ohmic_spectral_density: omega_c must be &gt; 0; got </span><span class="si">{</span><span class="n">omega_c</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">omega</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">omega</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">omega</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;ohmic_spectral_density: omega must be non-negative&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">omega</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">omega</span> <span class="o">/</span> <span class="n">omega_c</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># ─── Two-point thermal connected correlator (bosonic linear coupling) ──────</span>
+
+
+<div class="viewcode-block" id="bath_two_point_thermal">
+<a class="viewcode-back" href="../../cbg.html#cbg.bath_correlations.bath_two_point_thermal">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">bath_two_point_thermal</span><span class="p">(</span>
+    <span class="n">t_diff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">omega_c</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">upper_cutoff_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">,</span>
+    <span class="n">quad_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Connected two-point bath correlator C(t) = ⟨B(t) B(0)⟩_connected</span>
+<span class="sd">    for an ohmic bath linearly coupled to the system.</span>
+
+<span class="sd">    Implements</span>
+
+<span class="sd">        C(t) = ∫_0^∞ dω J(ω) [coth(ω / 2T) cos(ωt) - i sin(ωt)]</span>
+
+<span class="sd">    with J(ω) = α ω exp(-ω/ω_c). At T = 0, the integral has the closed</span>
+<span class="sd">    form C(t) = α / (1/ω_c + it)²; this shortcut is used to avoid the</span>
+<span class="sd">    coth divergence at ω → 0 when T = 0.</span>
+
+<span class="sd">    For T &gt; 0, the integral is evaluated numerically via</span>
+<span class="sd">    scipy.integrate.quad on the real (cos · coth) and imaginary</span>
+<span class="sd">    (-sin) parts separately. The integrable singularity at ω → 0</span>
+<span class="sd">    (where J coth → 2αT) is bounded; quad handles it without endpoint</span>
+<span class="sd">    refinement.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    t_diff : float</span>
+<span class="sd">        Time difference t (the correlator depends only on t_1 - t_2 by</span>
+<span class="sd">        stationarity of the bath equilibrium).</span>
+<span class="sd">    alpha, omega_c : float</span>
+<span class="sd">        Spectral density parameters; see ohmic_spectral_density.</span>
+<span class="sd">    temperature : float</span>
+<span class="sd">        Bath temperature in the same units as ω (i.e. k_B T / ℏ if ω is</span>
+<span class="sd">        in angular frequency units; or the dimensionless ratio T/ω_S if</span>
+<span class="sd">        the system frequency sets the energy scale, as in Cards A3/A4).</span>
+<span class="sd">        Must be non-negative. T = 0 takes the analytical-limit shortcut.</span>
+<span class="sd">    upper_cutoff_factor : float, optional</span>
+<span class="sd">        Numerical integration upper limit, expressed as a multiple of</span>
+<span class="sd">        omega_c. Defaults to 30 (where exp(-30) ≈ 1e-13). Adjust upward</span>
+<span class="sd">        only if the integrand has weight beyond this; ohmic exponential</span>
+<span class="sd">        decay makes 30 conservative.</span>
+<span class="sd">    quad_limit : int, optional</span>
+<span class="sd">        Maximum number of subintervals scipy.integrate.quad uses.</span>
+<span class="sd">        Defaults to 200; adequate for ohmic at T ≲ 10 ω_c.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    complex</span>
+<span class="sd">        C(t) as a Python complex scalar.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If alpha &lt; 0, omega_c &lt;= 0, or temperature &lt; 0.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">alpha</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;bath_two_point_thermal: alpha must be &gt;= 0; got </span><span class="si">{</span><span class="n">alpha</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">omega_c</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;bath_two_point_thermal: omega_c must be &gt; 0; got </span><span class="si">{</span><span class="n">omega_c</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">temperature</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;bath_two_point_thermal: temperature must be &gt;= 0; got </span><span class="si">{</span><span class="n">temperature</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">temperature</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="c1"># Analytical T = 0 limit: C(t) = α / (1/ω_c + it)².</span>
+        <span class="n">denom</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">omega_c</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">t_diff</span>
+        <span class="k">return</span> <span class="nb">complex</span><span class="p">(</span><span class="n">alpha</span> <span class="o">/</span> <span class="p">(</span><span class="n">denom</span> <span class="o">*</span> <span class="n">denom</span><span class="p">))</span>
+
+    <span class="n">upper</span> <span class="o">=</span> <span class="n">upper_cutoff_factor</span> <span class="o">*</span> <span class="n">omega_c</span>
+
+    <span class="c1"># coth(x) = (e^x + e^{-x}) / (e^x - e^{-x}) — but for numerical safety</span>
+    <span class="c1"># at small x (near ω → 0), use 1 + 2/(e^{2x} - 1) which avoids the</span>
+    <span class="c1"># 0/0 cancellation. coth(βω/2) = 1 + 2 / (exp(βω) - 1) where β = 1/T.</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">temperature</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_real_amplitude</span><span class="p">(</span><span class="n">omega</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="c1"># The non-oscillatory amplitude J(ω) coth(βω/2) (cos(ωt) factored</span>
+        <span class="c1"># out into scipy.integrate.quad&#39;s weight=&#39;cos&#39;).</span>
+        <span class="k">if</span> <span class="n">omega</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span>  <span class="c1"># integrand vanishes at ω = 0 (ω · coth-factor → finite)</span>
+        <span class="n">bw</span> <span class="o">=</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">omega</span>
+        <span class="c1"># For very small T (large β), bw can exceed expm1&#39;s overflow bound.</span>
+        <span class="c1"># In that regime coth → 1; bypass the expm1 call to avoid the</span>
+        <span class="c1"># harmless overflow warning.</span>
+        <span class="k">if</span> <span class="n">bw</span> <span class="o">&gt;</span> <span class="mf">700.0</span><span class="p">:</span>
+            <span class="n">coth_factor</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">coth_factor</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">expm1</span><span class="p">(</span><span class="n">bw</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">omega</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">omega</span> <span class="o">/</span> <span class="n">omega_c</span><span class="p">)</span> <span class="o">*</span> <span class="n">coth_factor</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_imag_amplitude</span><span class="p">(</span><span class="n">omega</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="c1"># The non-oscillatory amplitude -J(ω) (sin(ωt) factored out into</span>
+        <span class="c1"># scipy.integrate.quad&#39;s weight=&#39;sin&#39;).</span>
+        <span class="k">if</span> <span class="n">omega</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">omega</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">omega</span> <span class="o">/</span> <span class="n">omega_c</span><span class="p">)</span>
+
+    <span class="c1"># When t_diff = 0, weight=&#39;cos&#39;/&#39;sin&#39; degenerates (sin(0)=0 means the</span>
+    <span class="c1"># imag integral is exactly 0 with no quadrature needed; cos(0)=1</span>
+    <span class="c1"># means the real integral reduces to plain quadrature on the amplitude).</span>
+    <span class="c1"># scipy&#39;s quad with weight=&#39;cos&#39; at wvar=0 should handle this, but we</span>
+    <span class="c1"># shortcut for clarity.</span>
+    <span class="k">if</span> <span class="n">t_diff</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="n">real_part</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">integrate</span><span class="o">.</span><span class="n">quad</span><span class="p">(</span><span class="n">_real_amplitude</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">quad_limit</span><span class="p">)</span>
+        <span class="n">imag_part</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># weight=&#39;cos&#39; / weight=&#39;sin&#39; integrate</span>
+        <span class="c1"># ∫_0^upper amplitude(ω) cos(ω·t_diff) dω (or sin) analytically</span>
+        <span class="c1"># in each quadrature subinterval. Far more accurate than naive</span>
+        <span class="c1"># quadrature on the oscillatory product, and avoids spurious</span>
+        <span class="c1"># IntegrationWarning (&quot;integral is probably divergent or slowly</span>
+        <span class="c1"># convergent&quot;) for grid points with t_diff at the cutoff scale.</span>
+        <span class="n">real_part</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">integrate</span><span class="o">.</span><span class="n">quad</span><span class="p">(</span>
+            <span class="n">_real_amplitude</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="p">,</span>
+            <span class="n">weight</span><span class="o">=</span><span class="s2">&quot;cos&quot;</span><span class="p">,</span> <span class="n">wvar</span><span class="o">=</span><span class="n">t_diff</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">quad_limit</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">imag_part</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">integrate</span><span class="o">.</span><span class="n">quad</span><span class="p">(</span>
+            <span class="n">_imag_amplitude</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="p">,</span>
+            <span class="n">weight</span><span class="o">=</span><span class="s2">&quot;sin&quot;</span><span class="p">,</span> <span class="n">wvar</span><span class="o">=</span><span class="n">t_diff</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">quad_limit</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="nb">complex</span><span class="p">(</span><span class="n">real_part</span><span class="p">,</span> <span class="n">imag_part</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="bath_two_point_thermal_array">
+<a class="viewcode-back" href="../../cbg.html#cbg.bath_correlations.bath_two_point_thermal_array">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">bath_two_point_thermal_array</span><span class="p">(</span>
+    <span class="n">t_grid</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">omega_c</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tabulate C[j, k] = C(t_grid[j] - t_grid[k]) on a (n, n) grid.</span>
+
+<span class="sd">    Exploits stationarity (the connected two-point depends only on</span>
+<span class="sd">    t_1 - t_2) and Hermiticity (C(-t) = conj(C(t))) to evaluate</span>
+<span class="sd">    C only on a 1D array of unique time differences and broadcast.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    t_grid : ndarray, shape (n,)</span>
+<span class="sd">        Time points at which to tabulate.</span>
+<span class="sd">    alpha, omega_c, temperature : float</span>
+<span class="sd">        See bath_two_point_thermal.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ndarray, shape (n, n), dtype complex</span>
+<span class="sd">        C[j, k] = C(t_grid[j] - t_grid[k]).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">t_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t_grid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">t_grid</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;bath_two_point_thermal_array: t_grid must be 1D; &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;got shape </span><span class="si">{</span><span class="n">t_grid</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Compute C on the unique non-negative time-difference grid; reuse</span>
+    <span class="c1"># via Hermiticity for negative differences.</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">t_grid</span><span class="o">.</span><span class="n">size</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="n">t_grid</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">t_grid</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># shape (n, n); arbitrary signs</span>
+
+    <span class="n">unique_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">diff</span><span class="p">))</span>
+    <span class="n">c_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">bath_two_point_thermal</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">omega_c</span><span class="p">,</span> <span class="n">temperature</span><span class="p">)</span>
+         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">unique_pos</span><span class="p">],</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># Map: |diff| → C(|diff|); for negative diff, conjugate.</span>
+    <span class="n">c_lookup</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">unique_pos</span><span class="p">,</span> <span class="n">c_vals</span><span class="p">))</span>
+    <span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">diff</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">d</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="n">C</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">c_lookup</span><span class="p">[</span><span class="nb">abs</span><span class="p">(</span><span class="n">d</span><span class="p">)]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">C</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">c_lookup</span><span class="p">[</span><span class="nb">abs</span><span class="p">(</span><span class="n">d</span><span class="p">)])</span>
+    <span class="k">return</span> <span class="n">C</span></div>
+
+
+
+<span class="c1"># ─── Generic two-point dispatch ─────────────────────────────────────────────</span>
+
+
+<div class="viewcode-block" id="two_point">
+<a class="viewcode-back" href="../../cbg.html#cbg.bath_correlations.two_point">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">two_point</span><span class="p">(</span>
+    <span class="n">t1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">t2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">bath_state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">spectral_density</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Connected two-point bath correlator at the requested bath state.</span>
+
+<span class="sd">    Dispatches by (bath_state.family, spectral_density.family) to the</span>
+<span class="sd">    appropriate evaluator. For DG-1, supports:</span>
+
+<span class="sd">        - (&quot;thermal&quot;, &quot;ohmic&quot;): bath_two_point_thermal</span>
+<span class="sd">        - (&quot;coherent_displaced&quot;, &quot;ohmic&quot;): same evaluator with the</span>
+<span class="sd">          spec&#39;s `temperature` (the displacement leaves the connected</span>
+<span class="sd">          two-point invariant; the first cumulant ⟨B(t)⟩ is a</span>
+<span class="sd">          model-layer concern, not evaluated here).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    t1, t2 : float</span>
+<span class="sd">        Two time arguments. The correlator depends only on t1 - t2 by</span>
+<span class="sd">        stationarity.</span>
+<span class="sd">    bath_state : dict</span>
+<span class="sd">        The card&#39;s per-case `bath_state` mapping. Required key: `family`.</span>
+<span class="sd">        For thermal: also `temperature`. For coherent_displaced: also</span>
+<span class="sd">        `temperature` (the vacuum baseline, typically 0 in DG-1 cards).</span>
+<span class="sd">    spectral_density : dict</span>
+<span class="sd">        The card&#39;s `bath_spectral_density` mapping. Required keys:</span>
+<span class="sd">        `family`, plus family-specific parameters (for ohmic:</span>
+<span class="sd">        `coupling_strength` (= alpha), `cutoff_frequency` (= omega_c)).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    complex</span>
+<span class="sd">        C(t1 - t2) at the requested state.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    NotImplementedError</span>
+<span class="sd">        If the (bath_state.family, spectral_density.family) pair is not</span>
+<span class="sd">        supported at DG-1.</span>
+<span class="sd">    KeyError-style ValueError</span>
+<span class="sd">        If required keys are missing.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bs_family</span> <span class="o">=</span> <span class="n">bath_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;family&quot;</span><span class="p">)</span>
+    <span class="n">sd_family</span> <span class="o">=</span> <span class="n">spectral_density</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;family&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">sd_family</span> <span class="o">!=</span> <span class="s2">&quot;ohmic&quot;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;two_point: spectral_density.family </span><span class="si">{</span><span class="n">sd_family</span><span class="si">!r}</span><span class="s2"> not implemented &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;at DG-1. Only &#39;ohmic&#39; is supported. (Drude-Lorentz, sub-ohmic, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;super-ohmic → DG-2 territory.)&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">bs_family</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;thermal&quot;</span><span class="p">,</span> <span class="s2">&quot;coherent_displaced&quot;</span><span class="p">}:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;two_point: bath_state.family </span><span class="si">{</span><span class="n">bs_family</span><span class="si">!r}</span><span class="s2"> not implemented at &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;DG-1. Supported: &#39;thermal&#39;, &#39;coherent_displaced&#39; (the connected &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;two-point is identical to the thermal evaluator at the spec&#39;s &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;`temperature` — the displacement enters via the first cumulant, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;which is a model-layer concern).&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">alpha</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">spectral_density</span><span class="p">[</span><span class="s2">&quot;coupling_strength&quot;</span><span class="p">])</span>
+    <span class="n">omega_c</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">spectral_density</span><span class="p">[</span><span class="s2">&quot;cutoff_frequency&quot;</span><span class="p">])</span>
+    <span class="n">temperature</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">bath_state</span><span class="p">[</span><span class="s2">&quot;temperature&quot;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">bath_two_point_thermal</span><span class="p">(</span><span class="n">t1</span> <span class="o">-</span> <span class="n">t2</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">omega_c</span><span class="p">,</span> <span class="n">temperature</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># ─── n-point ordered correlator (DG-2 territory) ────────────────────────────</span>
+
+
+<div class="viewcode-block" id="n_point_ordered">
+<a class="viewcode-back" href="../../cbg.html#cbg.bath_correlations.n_point_ordered">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">n_point_ordered</span><span class="p">(</span><span class="n">tau_args</span><span class="p">,</span> <span class="n">s_args</span><span class="p">,</span> <span class="n">bath_state</span><span class="p">,</span> <span class="n">B_op</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ordered n-point correlation per Companion Eq. (15) at n ≥ 3.</span>
+
+<span class="sd">    DG-2 territory. Cards A3 and A4 (DG-1) only require the two-point</span>
+<span class="sd">    function, which is provided by `two_point` above. Higher-order</span>
+<span class="sd">    n-point correlations enter K_n at orders n ≥ 3 (DG-2), and the full</span>
+<span class="sd">    parity-decomposition machinery of Letter Eq. (D.5)-(D.6) becomes</span>
+<span class="sd">    operative at those orders.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+        <span class="s2">&quot;n_point_ordered: not implemented at DG-1. n-point bath &quot;</span>
+        <span class="s2">&quot;correlations for n &gt;= 3 are required by K_n at orders n &gt;= 3, &quot;</span>
+        <span class="s2">&quot;which is DG-2 territory per Sail v0.5 §9 DG-2 and DG-1 work plan &quot;</span>
+        <span class="s2">&quot;v0.1.3 §1.2.&quot;</span>
+    <span class="p">)</span></div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Ulrich Warring
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, Ulrich Warring (code: MIT; docs: CC-BY-4.0).
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <p>Code under MIT, documentation under CC-BY-4.0. API docs are auto-generated from in-source docstrings; for project status and citation policy see the <a href='../index.html'>landing page</a>.</p>
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

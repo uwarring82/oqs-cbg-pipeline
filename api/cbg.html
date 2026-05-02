@@ -1,0 +1,1430 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>cbg — Colla–Breuer–Gasbarri effective-Hamiltonian construction &#8212; oqs-cbg-pipeline</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=e0f99f8f"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'cbg';</script>
+    <link rel="canonical" href="/oqs-cbg-pipeline/api/cbg.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="models — System–environment model factories" href="models.html" />
+    <link rel="prev" title="oqs-cbg-pipeline — API documentation" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">oqs-cbg-pipeline · API</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="index.html">
+                    oqs-cbg-pipeline — API documentation
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">cbg</span></code> — Colla–Breuer–Gasbarri effective-Hamiltonian construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html"><code class="docutils literal notranslate"><span class="pre">models</span></code> — System–environment model factories</a></li>
+<li class="toctree-l1"><a class="reference internal" href="numerical.html"><code class="docutils literal notranslate"><span class="pre">numerical</span></code> — Numerical primitives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reporting.html"><code class="docutils literal notranslate"><span class="pre">reporting</span></code> — Benchmark-card schema, loader, validator, runner</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/uwarring82/oqs-cbg-pipeline" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/uwarring82/oqs-cbg-pipeline/issues/new?title=Issue%20on%20page%20%2Fcbg.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/cbg.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>cbg — Colla–Breuer–Gasbarri effective-Hamiltonian construction</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-cbg.effective_hamiltonian"><code class="docutils literal notranslate"><span class="pre">cbg.effective_hamiltonian</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.effective_hamiltonian.K_from_generator"><code class="docutils literal notranslate"><span class="pre">K_from_generator()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.effective_hamiltonian.K_perturbative"><code class="docutils literal notranslate"><span class="pre">K_perturbative()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-cbg.basis"><code class="docutils literal notranslate"><span class="pre">cbg.basis</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.basis.matrix_unit_basis"><code class="docutils literal notranslate"><span class="pre">matrix_unit_basis()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.basis.su_d_generator_basis"><code class="docutils literal notranslate"><span class="pre">su_d_generator_basis()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.basis.verify_orthonormality"><code class="docutils literal notranslate"><span class="pre">verify_orthonormality()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-cbg.tcl_recursion"><code class="docutils literal notranslate"><span class="pre">cbg.tcl_recursion</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.interaction_picture"><code class="docutils literal notranslate"><span class="pre">interaction_picture()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.L_n_thermal_at_time"><code class="docutils literal notranslate"><span class="pre">L_n_thermal_at_time()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.K_n_thermal_on_grid"><code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.K_total_thermal_on_grid"><code class="docutils literal notranslate"><span class="pre">K_total_thermal_on_grid()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.L_n"><code class="docutils literal notranslate"><span class="pre">L_n()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.canonical_lindblad_form"><code class="docutils literal notranslate"><span class="pre">canonical_lindblad_form()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-cbg.cumulants"><code class="docutils literal notranslate"><span class="pre">cbg.cumulants</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.cumulants.D_bar_1"><code class="docutils literal notranslate"><span class="pre">D_bar_1()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.cumulants.D_bar_2"><code class="docutils literal notranslate"><span class="pre">D_bar_2()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.cumulants.D_bar"><code class="docutils literal notranslate"><span class="pre">D_bar()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-cbg.bath_correlations"><code class="docutils literal notranslate"><span class="pre">cbg.bath_correlations</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.bath_correlations.ohmic_spectral_density"><code class="docutils literal notranslate"><span class="pre">ohmic_spectral_density()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.bath_correlations.bath_two_point_thermal"><code class="docutils literal notranslate"><span class="pre">bath_two_point_thermal()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.bath_correlations.bath_two_point_thermal_array"><code class="docutils literal notranslate"><span class="pre">bath_two_point_thermal_array()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.bath_correlations.two_point"><code class="docutils literal notranslate"><span class="pre">two_point()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.bath_correlations.n_point_ordered"><code class="docutils literal notranslate"><span class="pre">n_point_ordered()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-cbg.diagnostics"><code class="docutils literal notranslate"><span class="pre">cbg.diagnostics</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.diagnostics.perturbative_order_norms"><code class="docutils literal notranslate"><span class="pre">perturbative_order_norms()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.diagnostics.tcl_invertibility_distance"><code class="docutils literal notranslate"><span class="pre">tcl_invertibility_distance()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.diagnostics.basis_independence_check"><code class="docutils literal notranslate"><span class="pre">basis_independence_check()</span></code></a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="cbg-collabreuergasbarri-effective-hamiltonian-construction">
+<h1><code class="docutils literal notranslate"><span class="pre">cbg</span></code> — Colla–Breuer–Gasbarri effective-Hamiltonian construction<a class="headerlink" href="#cbg-collabreuergasbarri-effective-hamiltonian-construction" title="Link to this heading">#</a></h1>
+<p>Modules implementing the basis-independent operational expression for the
+effective Hamiltonian <em>K</em> (Letter Eqs. (6), (7)) and the recursive
+perturbative expansion (Letter Eq. (15), (16); Companion Eq. (45)).</p>
+<p>All outputs of this package are coordinate-dependent under the
+<strong>Hayden–Sorce minimal-dissipation gauge</strong> per Sail v0.5 §4. They are
+<strong>not</strong> directly observable Hamiltonians; any plot or table presenting
+<em>K(t)</em> must carry the gauge annotation specified in
+<a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/docs/benchmark_protocol.md"><code class="docutils literal notranslate"><span class="pre">docs/benchmark_protocol.md</span></code></a> §1.</p>
+<section id="module-cbg.effective_hamiltonian">
+<span id="cbg-effective-hamiltonian"></span><h2><code class="docutils literal notranslate"><span class="pre">cbg.effective_hamiltonian</span></code><a class="headerlink" href="#module-cbg.effective_hamiltonian" title="Link to this heading">#</a></h2>
+<p>cbg.effective_hamiltonian — Effective Hamiltonian K(t) under the
+Hayden–Sorce minimal-dissipation gauge.</p>
+<dl class="simple">
+<dt>Implements:</dt><dd><p>K = (1 / 2id) Σ_α [F_α†, L[F_α]]                       (Letter Eq. (6))
+K = (1 / 2id) Σ_{j,k} [<a href="#id1"><span class="problematic" id="id2">|j⟩⟨k|</span></a>, L[<a href="#id3"><span class="problematic" id="id4">|k⟩⟨j|</span></a>]]              (Letter Eq. (7))</p>
+</dd>
+</dl>
+<p>and (DG-2 territory, stubbed) the recursive perturbative series</p>
+<blockquote>
+<div><p>K(t) = Σ_n λ^n K_n(t)                                    (Letter Eq. (15))</p>
+</div></blockquote>
+<p>with K_n given by Letter Eq. (16) (companion paper Eq. (45)).</p>
+<dl class="simple">
+<dt>Output discipline (per Sail v0.5 §4):</dt><dd><p>All outputs of this module are COORDINATE-DEPENDENT under the chosen
+gauge. They are not directly observable Hamiltonians. Any plot or
+table presenting K(t) must carry the coordinate-choice annotation
+template from docs/benchmark_protocol.md §1.</p>
+</dd>
+<dt>DG status (per docs/validity_envelope.md):</dt><dd><p>DG-1 (Letter Eqs. (6)-(7) numerically reproduced)        NOT YET ATTEMPTED
+DG-2 (Recursive K_n at fourth order with structural ID)  NOT YET ATTEMPTED</p>
+</dd>
+</dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.effective_hamiltonian.K_from_generator">
+<span class="sig-prename descclassname"><span class="pre">cbg.effective_hamiltonian.</span></span><span class="sig-name descname"><span class="pre">K_from_generator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">generator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/effective_hamiltonian.html#K_from_generator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.effective_hamiltonian.K_from_generator" title="Link to this definition">#</a></dt>
+<dd><p>Compute K from a TCL generator L using Letter Eq. (6).</p>
+<p>Implements the basis-independent operational form:</p>
+<blockquote>
+<div><p>K = (1 / 2id) Σ_α [F_α†, L[F_α]]                       (Letter Eq. (6))</p>
+</div></blockquote>
+<p>For the matrix-unit basis F_α = <a href="#id5"><span class="problematic" id="id6">|j⟩⟨k|</span></a>, this reduces to
+Letter Eq. (7) under the relabelling (j, k) ↔ α.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>generator</strong> (<em>callable</em>) – L : (d×d ndarray) -&gt; (d×d ndarray). Must be Hermiticity-preserving
+and trace-annihilating per Letter Eq. (6) preconditions; this
+precondition is the caller’s responsibility (not validated here).</p></li>
+<li><p><strong>basis</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>d×d ndarrays</em>) – Hilbert–Schmidt orthonormal operator basis {F_α}. For Letter
+Eq. (6) to recover K, the basis should be COMPLETE (d² elements)
+and orthonormal; an incomplete basis yields the projection of K
+onto the basis-spanned subspace. HS-orthonormality can be
+verified by cbg.basis.verify_orthonormality before calling.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>K</strong> – The minimal-dissipation effective Hamiltonian under the
+Hayden–Sorce gauge. Coordinate-dependent per the module-level
+discipline.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>d×d ndarray (<a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.14)">complex</a>)</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If <cite>basis</cite> is empty, or if basis elements have inconsistent or
+    non-square shapes.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Verification of the basis-independence identity (running this function
+with two different complete HS-orthonormal bases and checking
+agreement) is the universal default DG-2 structural-identity check.
+DG-1 cards use a single basis (matrix-unit) and verify against
+analytical references.</p>
+<p>For a purely unitary generator L[X] = -i[H, X], this function
+returns H - (Tr H / d) I — i.e., the traceless part of H. For
+traceless H (e.g., (ω/2)σ_z), the returned K equals H exactly.
+The trace-removal is the gauge-fixing of the minimal-dissipation
+representative.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.effective_hamiltonian.K_perturbative">
+<span class="sig-prename descclassname"><span class="pre">cbg.effective_hamiltonian.</span></span><span class="sig-name descname"><span class="pre">K_perturbative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/effective_hamiltonian.html#K_perturbative"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.effective_hamiltonian.K_perturbative" title="Link to this definition">#</a></dt>
+<dd><p>Compute K_n(t) for n = 0, 1, …, <cite>order</cite> per Letter Eq. (16).</p>
+<p>Returns a list of K_n functions of t, in increasing order.</p>
+<p>DG-2 requires this function to satisfy at least one non-trivial
+structural constraint at each computed order:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>basis-independence (universal default), and/or</p></li>
+<li><p>parity rule (Letter Eqs. (23)-(24)) for spin systems, and/or</p></li>
+<li><p>vanishing pattern (Letter Appendix D) for symmetric couplings, and/or</p></li>
+<li><p>model-appropriate constraints declared in the benchmark card.</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-cbg.basis">
+<span id="cbg-basis"></span><h2><code class="docutils literal notranslate"><span class="pre">cbg.basis</span></code><a class="headerlink" href="#module-cbg.basis" title="Link to this heading">#</a></h2>
+<p>cbg.basis — Hilbert–Schmidt orthonormal operator bases.</p>
+<p>Provides bases {F_α}_{α=0}^{d²-1} satisfying Tr(F_α† F_β) = δ_αβ, used in:</p>
+<blockquote>
+<div><p>K = (1 / 2id) Σ_α [F_α†, L[F_α]]                       (Letter Eq. (6))</p>
+</div></blockquote>
+<p>The basis-independence of K under change of {F_α} is the universal default
+structural-identity check for DG-2 (Sail v0.5 §9). DG-1 cards (specifically
+Card A1) use the matrix-unit basis only; cross-basis verification is the
+DG-2 universal default check.</p>
+<dl class="simple">
+<dt>Implementations:</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>matrix_unit_basis(d):       {<a href="#id7"><span class="problematic" id="id8">|j⟩⟨k|</span></a>} basis, used in Letter Eq. (7).</dt><dd><p>Implemented at DG-1 Phase C C.1.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>su_d_generator_basis(d):    {1/√d, σ_i/√d}, used in Letter Eq. (B.10).</dt><dd><p>Stubbed; DG-2 territory.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>hermitian_basis(d):         d² real-orthonormal Hermitian operators.</dt><dd><p>Not stubbed; if/when needed at DG-2.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<p>Each function returns a list of d×d numpy arrays satisfying the
+Hilbert–Schmidt orthonormality relation up to numerical tolerance,
+verifiable by verify_orthonormality.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.basis.matrix_unit_basis">
+<span class="sig-prename descclassname"><span class="pre">cbg.basis.</span></span><span class="sig-name descname"><span class="pre">matrix_unit_basis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/basis.html#matrix_unit_basis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.basis.matrix_unit_basis" title="Link to this definition">#</a></dt>
+<dd><p>Matrix-unit basis {<a href="#id9"><span class="problematic" id="id10">|j⟩⟨k|</span></a>}, j,k ∈ {0, …, d-1}.</p>
+<p>The basis used in Letter Eq. (7). Each element E_{j,k} is the d×d
+complex matrix with E_{j,k}[m, n] = δ_{j,m} δ_{k,n}; equivalently,
+a single 1.0 at position (j, k) and zeros elsewhere.</p>
+<p>The basis is Hilbert–Schmidt orthonormal by construction:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>Tr(E_{j,k}† E_{l,m}) = Tr(E_{k,j} E_{l,m})</dt><dd><p>= δ_{j,l} Tr(E_{k,m})
+= δ_{j,l} δ_{k,m}.</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>No normalisation factor is needed — matrix units are already
+orthonormal under the trace inner product.</p>
+<p>The returned list is ordered with α = j·d + k, so that for d=2 the
+sequence is E_{0,0}, E_{0,1}, E_{1,0}, E_{1,1}.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>d</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – System Hilbert-space dimension. Must be a positive integer.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of d² numpy arrays of shape (d, d), dtype complex.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – if d is not a positive integer.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.basis.su_d_generator_basis">
+<span class="sig-prename descclassname"><span class="pre">cbg.basis.</span></span><span class="sig-name descname"><span class="pre">su_d_generator_basis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/basis.html#su_d_generator_basis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.basis.su_d_generator_basis" title="Link to this definition">#</a></dt>
+<dd><p>Generators of su(d) plus the identity, normalised for Hilbert–Schmidt.</p>
+<p>Used in Letter Eq. (B.10). DG-2 territory (cross-basis verification);
+not exercised by DG-1 cards.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>d</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.basis.verify_orthonormality">
+<span class="sig-prename descclassname"><span class="pre">cbg.basis.</span></span><span class="sig-name descname"><span class="pre">verify_orthonormality</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">basis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/basis.html#verify_orthonormality"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.basis.verify_orthonormality" title="Link to this definition">#</a></dt>
+<dd><p>Verify Tr(F_α† F_β) = δ_αβ to within <cite>tol</cite>.</p>
+<p>Returns True iff every pairwise Hilbert–Schmidt inner product is
+within <cite>tol</cite> of its expected value (1 for α = β, 0 otherwise). The
+test is used as a precondition for any K(t) computation that relies
+on the basis-independence identity (Letter Eq. (6)).</p>
+<p>An empty basis is vacuously orthonormal (no pairs to check).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>basis</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a><em>[</em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a><em>]</em>) – List of d×d numpy arrays. All elements must share the
+same shape; otherwise numpy will raise on the inner product.</p></li>
+<li><p><strong>tol</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Absolute tolerance for each pairwise inner product.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if all pairwise inner products are within <cite>tol</cite> of the
+Kronecker delta; False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-cbg.tcl_recursion">
+<span id="cbg-tcl-recursion"></span><h2><code class="docutils literal notranslate"><span class="pre">cbg.tcl_recursion</span></code><a class="headerlink" href="#module-cbg.tcl_recursion" title="Link to this heading">#</a></h2>
+<p>cbg.tcl_recursion — Recursive construction of the TCL generator L_t.</p>
+<p>Implements the recursion described in Companion Eqs. (19)-(28),
+yielding L_t = Σ_n λ^n L_n in canonical generalised-Lindblad form
+with traceless jump operators at every order.</p>
+<p>The recursion uses the generalised cumulants D̄(τ_1^k, s_1^{n-k})
+which are evaluated in cbg.cumulants (NOT a Nakajima-Zwanzig
+memory kernel — TCL is time-local; see bath_correlations.py docstring).</p>
+<dl>
+<dt>DG-1 scope (this module, C.8):</dt><dd><ul>
+<li><p>L_n at orders n in {0, 1, 2}, thermal Gaussian bath only
+(D̄_1 = 0; the displaced-bath case is deferred to DG-2 per the
+operationalisability carve-out in plan v0.1.4 §1.1).</p></li>
+<li><p>L_0[X] = -i [H_S, X].</p></li>
+<li><p>L_1[X] = 0 (thermal: ⟨B⟩ = 0).</p></li>
+<li><dl class="simple">
+<dt>L_2[X](t) = -∫_0^t du {C(t-u) [A, A_I(u-t) X]</dt><dd><ul class="simple">
+<li><p>C(t-u)* [X A_I(u-t), A]}</p></li>
+</ul>
+</dd>
+</dl>
+<p>where C(τ) is the connected bath two-point at the spec’s
+temperature (cbg.cumulants.D_bar_2) and A_I(τ) = e^{iH_S τ} A
+e^{-iH_S τ} is the interaction-picture coupling operator.</p>
+</li>
+<li><p>K_n_thermal_on_grid: extracts K_n(t) at every t in t_grid by
+applying Letter Eq. (6) to L_n[F_α](t) for each basis element
+F_α (cbg.basis + cbg.effective_hamiltonian.K_from_generator).</p></li>
+<li><p>K_total_thermal_on_grid: sums K_0 + K_1 + … + K_{N_card} at
+every t in t_grid; the runner-facing entry point.</p></li>
+</ul>
+</dd>
+<dt>DG-2 scope (stubbed):</dt><dd><ul class="simple">
+<li><p>L_n at orders n &gt;= 3 (full Companion Eq. (28) recursion).</p></li>
+<li><p>Non-thermal bath states (D̄_1 ≠ 0); requires the displacement
+convention deferred per plan v0.1.4 §1.1.</p></li>
+<li><p>canonical_lindblad_form: full K + dissipator decomposition with
+traceless jump operators (Companion Eq. (43)). DG-1 cards only
+need K (via Letter Eq. (6) extraction); the dissipator side is
+DG-2.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.4 §4 Phase C row C.8.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.tcl_recursion.interaction_picture">
+<span class="sig-prename descclassname"><span class="pre">cbg.tcl_recursion.</span></span><span class="sig-name descname"><span class="pre">interaction_picture</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">H_S</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/tcl_recursion.html#interaction_picture"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.tcl_recursion.interaction_picture" title="Link to this definition">#</a></dt>
+<dd><p>Compute A_I(τ) = e^{i H_S τ} A e^{-i H_S τ}.</p>
+<p>Used to evolve the system coupling operator A under H_S only (the
+interaction-picture transformation). Vectorising over <cite>tau</cite> is left
+to the caller.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>H_S</strong> (<em>ndarray</em>) – System Hamiltonian, shape (d, d).</p></li>
+<li><p><strong>A</strong> (<em>ndarray</em>) – System coupling operator, shape (d, d).</p></li>
+<li><p><strong>tau</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Interaction-picture time argument; can be positive or negative.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>ndarray, shape (d, d), dtype complex</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.tcl_recursion.L_n_thermal_at_time">
+<span class="sig-prename descclassname"><span class="pre">cbg.tcl_recursion.</span></span><span class="sig-name descname"><span class="pre">L_n_thermal_at_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_hamiltonian</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coupling_operator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D_bar_2_array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/tcl_recursion.html#L_n_thermal_at_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.tcl_recursion.L_n_thermal_at_time" title="Link to this definition">#</a></dt>
+<dd><p>Return a callable that computes L_n[X] at time t_grid[t_idx] for
+a thermal Gaussian bath.</p>
+<dl>
+<dt>Implements:</dt><dd><ul>
+<li><p>n = 0: L_0[X] = -i [H_S, X] (the bare Liouvillian; not really
+a perturbative term, but supplied here so K_total_thermal can
+uniformly assemble K = K_0 + K_1 + K_2 + … via Letter Eq. (6)).</p></li>
+<li><p>n = 1: L_1[X] = 0 (thermal Gaussian bath has ⟨B⟩ = 0).</p></li>
+<li><dl class="simple">
+<dt>n = 2: L_2[X](t) = -∫_0^t du {C(t-u) [A, A_I(u-t) X] +</dt><dd><p>C(t-u)* [X A_I(u-t), A]}</p>
+</dd>
+</dl>
+<p>via trapezoidal integration over s_grid = t_grid[: t_idx+1].
+The integrand is operator-valued; the trapezoidal rule is
+inlined for efficiency (avoids 4 separate scalar integrations
+per matrix entry).</p>
+</li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Perturbative order; one of 0, 1, 2 at DG-1.</p></li>
+<li><p><strong>t_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Index into t_grid at which to evaluate L_n.</p></li>
+<li><p><strong>t_grid</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>n_t</em><em>,</em><em>)</em>) – Time points; must satisfy t_grid[0] = 0 for the integral lower
+bound to be the physical t_start = 0 (the cards’ convention).</p></li>
+<li><p><strong>system_hamiltonian</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>d</em><em>, </em><em>d</em><em>)</em>) – H_S and A.</p></li>
+<li><p><strong>coupling_operator</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>d</em><em>, </em><em>d</em><em>)</em>) – H_S and A.</p></li>
+<li><p><strong>D_bar_2_array</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>n_t</em><em>, </em><em>n_t</em><em>)</em><em>, </em><em>dtype complex</em>) – Precomputed connected two-point on the time grid; required for
+n = 2; ignored for n in {0, 1}. Use cbg.cumulants.D_bar_2 to
+construct.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>L_n_apply : (X: (d, d) ndarray) -&gt; (d, d) ndarray.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>callable</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><strong>NotImplementedError</strong></a> – For n &gt;= 3 (DG-2 territory).</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – For invalid arguments.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.tcl_recursion.K_n_thermal_on_grid">
+<span class="sig-prename descclassname"><span class="pre">cbg.tcl_recursion.</span></span><span class="sig-name descname"><span class="pre">K_n_thermal_on_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_hamiltonian</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coupling_operator</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/tcl_recursion.html#K_n_thermal_on_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.tcl_recursion.K_n_thermal_on_grid" title="Link to this definition">#</a></dt>
+<dd><p>Compute K_n(t) at every t in t_grid for a thermal Gaussian bath.</p>
+<p>For each t_idx, applies Letter Eq. (6) — K = (1/(2id)) Σ_α [F_α†, L[F_α]] —
+to L_n_thermal_at_time(n, t_idx, …) using the matrix-unit basis (or
+a caller-supplied HS-orthonormal basis).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Perturbative order; one of 0, 1, 2 at DG-1.</p></li>
+<li><p><strong>t_grid</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>n_t</em><em>,</em><em>)</em>) – Time points.</p></li>
+<li><p><strong>system_hamiltonian</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>d</em><em>, </em><em>d</em><em>)</em>) – H_S and A.</p></li>
+<li><p><strong>coupling_operator</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>d</em><em>, </em><em>d</em><em>)</em>) – H_S and A.</p></li>
+<li><p><strong>bath_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Card per-case bath_state and bath_spectral_density mappings.
+Used only for n = 2 (where D̄_2 is built); ignored for n in {0, 1}.</p></li>
+<li><p><strong>spectral_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Card per-case bath_state and bath_spectral_density mappings.
+Used only for n = 2 (where D̄_2 is built); ignored for n in {0, 1}.</p></li>
+<li><p><strong>basis</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>(</em><em>d</em><em>, </em><em>d</em><em>) </em><em>ndarrays</em><em>, </em><em>optional</em>) – HS-orthonormal basis for Letter Eq. (6). Defaults to the
+matrix-unit basis at the system dimension d.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>K_n(t_grid).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray, shape (n_t, d, d), dtype complex</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><strong>NotImplementedError</strong></a> – If bath_state.family is not “thermal” (non-thermal bath at orders
+    ≥ 1 requires the displacement convention deferred per plan v0.1.4).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.tcl_recursion.K_total_thermal_on_grid">
+<span class="sig-prename descclassname"><span class="pre">cbg.tcl_recursion.</span></span><span class="sig-name descname"><span class="pre">K_total_thermal_on_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N_card</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_hamiltonian</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coupling_operator</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/tcl_recursion.html#K_total_thermal_on_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.tcl_recursion.K_total_thermal_on_grid" title="Link to this definition">#</a></dt>
+<dd><p>Compute K(t) = Σ_{n=0}^{N_card} K_n(t) at every t in t_grid for a
+thermal Gaussian bath.</p>
+<p>The runner-facing entry point: returns the full effective Hamiltonian
+on the time grid, ready for comparison against a card’s expected_outcome.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>N_card</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Perturbative cap from the card’s frozen_parameters.truncation
+.perturbative_order; must be in {0, 1, 2} at DG-1.</p></li>
+<li><p><strong>t_grid</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
+<li><p><strong>system_hamiltonian</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
+<li><p><strong>coupling_operator</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
+<li><p><strong>bath_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
+<li><p><strong>spectral_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
+<li><p><strong>basis</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a></p>
+</dd>
+</dl>
+<p>:param :
+:param spectral_density:
+:type spectral_density: as in K_n_thermal_on_grid.
+:param basis:
+:type basis: as in K_n_thermal_on_grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>K(t_grid).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>ndarray, shape (n_t, d, d), dtype complex</p>
+</dd>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>N_card</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>t_grid</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
+<li><p><strong>system_hamiltonian</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
+<li><p><strong>coupling_operator</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
+<li><p><strong>bath_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
+<li><p><strong>spectral_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
+<li><p><strong>basis</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.tcl_recursion.L_n">
+<span class="sig-prename descclassname"><span class="pre">cbg.tcl_recursion.</span></span><span class="sig-name descname"><span class="pre">L_n</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/tcl_recursion.html#L_n"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.tcl_recursion.L_n" title="Link to this definition">#</a></dt>
+<dd><p>Compute the n-th order TCL generator term per Companion Eq. (28).</p>
+<p>DG-1 thin wrapper: routes to L_n_thermal_at_time when called with
+the canonical (t_idx, t_grid, system_hamiltonian, coupling_operator,
+D_bar_2_array) kwargs and a thermal bath state. Other configurations
+raise NotImplementedError with explicit DG-2 routing.</p>
+<p>Callers should generally prefer L_n_thermal_at_time (explicit
+parameters) or K_n_thermal_on_grid (higher-level batched form) over
+this generic-stub shim.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.tcl_recursion.canonical_lindblad_form">
+<span class="sig-prename descclassname"><span class="pre">cbg.tcl_recursion.</span></span><span class="sig-name descname"><span class="pre">canonical_lindblad_form</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">L_generator</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/tcl_recursion.html#canonical_lindblad_form"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.tcl_recursion.canonical_lindblad_form" title="Link to this definition">#</a></dt>
+<dd><p>Decompose L into K (Hamiltonian part) + canonical dissipator with
+traceless jump operators, per Companion Eq. (43).</p>
+<p>DG-1 only needs K (via Letter Eq. (6); use cbg.effective_hamiltonian.
+K_from_generator). The full K + traceless-dissipator decomposition is
+DG-2 territory and stays stubbed here.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>L_generator</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><em>Callable</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-cbg.cumulants">
+<span id="cbg-cumulants"></span><h2><code class="docutils literal notranslate"><span class="pre">cbg.cumulants</span></code><a class="headerlink" href="#module-cbg.cumulants" title="Link to this heading">#</a></h2>
+<p>cbg.cumulants — Generalised cumulants D̄(τ_1^k, s_1^{n-k}) for the TCL recursion.</p>
+<p>Implements the recursion of Letter Eq. (17) and Companion Eq. (27):</p>
+<blockquote>
+<div><dl class="simple">
+<dt>D̄(τ_1^k, s_1^{n-k}) = D(τ_1^k, s_1^{n-k})</dt><dd><ul class="simple">
+<li><p>Σ_{l,r} D̄(τ_1^l, s_1^r) D̄(τ_{l+1}^k, s_{r+1}^{n-k})</p></li>
+</ul>
+</dd>
+</dl>
+</div></blockquote>
+<p>These are the time-ordered cumulants that drive the L_n recursion in
+cbg.tcl_recursion. They are formally similar to the ordered cumulants
+of van Kampen (Physica 74, 215 and 239 (1974)).</p>
+<dl>
+<dt>DG-1 scope (this module, C.7):</dt><dd><ul class="simple">
+<li><p>D̄_1(t) array on a time grid: ⟨B(t)⟩ as a (n,) ndarray.</p></li>
+<li><p>D̄_2(τ, s) array on a time grid: connected two-point as a
+(n, n) ndarray. For a Gaussian bath state this is the same as
+bath_correlations.bath_two_point_thermal_array at the spec’s
+temperature; the displacement (if any) leaves the connected
+part invariant.</p></li>
+<li><p>These are the canonical <em>time-ordered</em> (all-left) cumulants
+sufficient for K_1 and K_2 in Cards A3 and A4. The full
+left/right ordering machinery of Companion Eq. (24) is DG-2
+territory.</p></li>
+</ul>
+</dd>
+<dt>DG-2 territory (stubbed here):</dt><dd><ul class="simple">
+<li><p>General D_bar(τ_1^k, s_1^{n-k}) with mixed left/right indices.</p></li>
+<li><p>Cumulants for n ≥ 3 (recursive subtraction beyond the leading
+product term D̄_1·D̄_1).</p></li>
+<li><p>Cumulants of non-Gaussian bath states (where D̄_3 etc. don’t
+automatically vanish).</p></li>
+</ul>
+</dd>
+<dt>Coherent-displacement convention gap (DG-1):</dt><dd><p>Cards A3 and A4 specify per-case <cite>bath_state.coherent_displaced</cite>
+with <cite>displacement_amplitude: 1.0</cite> but no displacement-mode
+frequency or envelope. A coherent state on a multi-mode bath
+requires a basis choice that the cards don’t pin. Consequently,
+D̄_1 for <cite>bath_state.family == “coherent_displaced”</cite> is stubbed
+here with a clear “convention not specified” routing message;
+its resolution is a model-layer concern (cbg.cumulants is
+physics-generic; cbg/models/{pure_dephasing, spin_boson_sigma_x}
+is the right place to encode the model-specific convention OR
+declare the displaced case deferred to DG-2 like Entry 1.B.3).</p>
+<p>The thermal case (D̄_1 = 0) and the connected D̄_2 (same for
+both Gaussian states) are unambiguous and are implemented here.</p>
+</dd>
+</dl>
+<p>Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.3 §4 Phase C row C.7.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.cumulants.D_bar_1">
+<span class="sig-prename descclassname"><span class="pre">cbg.cumulants.</span></span><span class="sig-name descname"><span class="pre">D_bar_1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_grid</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/cumulants.html#D_bar_1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.cumulants.D_bar_1" title="Link to this definition">#</a></dt>
+<dd><p>First generalised cumulant D̄_1(t) = ⟨B(t)⟩ on the time grid.</p>
+<dl class="simple">
+<dt>Dispatches by <code class="docutils literal notranslate"><span class="pre">bath_state.family</span></code>:</dt><dd><ul class="simple">
+<li><p>“thermal”: returns a zero array of shape (n,) — thermal Gaussian
+bath states have ⟨B⟩ = 0 by symmetry.</p></li>
+<li><p>“coherent_displaced”: raises NotImplementedError. The
+displacement convention from <cite>displacement_amplitude</cite> to
+⟨B(t)⟩ is a model-layer concern; see the module docstring.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t_grid</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>n</em><em>,</em><em>)</em>) – Time-points at which to tabulate ⟨B(t)⟩.</p></li>
+<li><p><strong>bath_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – The card’s per-case bath_state mapping. Required key: family.</p></li>
+<li><p><strong>spectral_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em> | </em><em>None</em>) – Optional; included for signature parity with D_bar_2 and to allow
+future implementations to derive ⟨B(t)⟩ from the spectral density
+when a displacement convention is fixed. Ignored for thermal.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>D̄_1(t_grid).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray, shape (n,), dtype complex</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><strong>NotImplementedError</strong></a> – For coherent_displaced bath state (convention not specified).</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><strong>NotImplementedError</strong></a> – For other unsupported bath_state.family values.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.cumulants.D_bar_2">
+<span class="sig-prename descclassname"><span class="pre">cbg.cumulants.</span></span><span class="sig-name descname"><span class="pre">D_bar_2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_grid</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_density</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/cumulants.html#D_bar_2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.cumulants.D_bar_2" title="Link to this definition">#</a></dt>
+<dd><p>Second generalised cumulant D̄_2(τ, s) = ⟨B(τ) B(s)⟩_connected on
+the time grid.</p>
+<p>For a Gaussian bath state (thermal or coherent_displaced), the
+connected two-point is invariant under displacement: only D̄_1
+shifts under displacement, not D̄_2. The implementation therefore
+forwards to bath_correlations.bath_two_point_thermal_array at the
+spec’s temperature for both bath_state.family values supported at
+DG-1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t_grid</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>n</em><em>,</em><em>)</em>) – Time-points.</p></li>
+<li><p><strong>bath_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – The card’s per-case bath_state mapping. Required keys: family,
+temperature.</p></li>
+<li><p><strong>spectral_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – The card’s bath_spectral_density mapping. Required keys: family
+(“ohmic” at DG-1), coupling_strength (= alpha), cutoff_frequency
+(= omega_c).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>D̄_2[j, k] = ⟨B(t_grid[j]) B(t_grid[k])⟩_connected.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray, shape (n, n), dtype complex</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><strong>NotImplementedError</strong></a> – If spectral_density.family is not “ohmic” or bath_state.family
+    is not in {“thermal”, “coherent_displaced”}.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.cumulants.D_bar">
+<span class="sig-prename descclassname"><span class="pre">cbg.cumulants.</span></span><span class="sig-name descname"><span class="pre">D_bar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tau_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/cumulants.html#D_bar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.cumulants.D_bar" title="Link to this definition">#</a></dt>
+<dd><p>Compute the generalised cumulant D̄(τ_1^k, s_1^{n-k}) by recursion.</p>
+<p>Implements the recursive subtraction of Letter Eq. (17) /
+Companion Eq. (27):</p>
+<blockquote>
+<div><dl class="simple">
+<dt>D̄(τ_1^k, s_1^{n-k}) = D(τ_1^k, s_1^{n-k})</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>Σ_{l,r} D̄(τ_1^l, s_1^r) ·</dt><dd><p>D̄(τ_{l+1}^k, s_{r+1}^{n-k})</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</div></blockquote>
+<p>DG-1 implements the leaf cases for the canonical time-ordered
+cumulants used by Cards A3 and A4:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>k=1, n-k=0 (single τ argument) → D̄_1 = D_1 = ⟨B(τ)⟩.</p></li>
+<li><dl class="simple">
+<dt>k=2, n-k=0 (two τ arguments)   → D̄_2 = D_2 - D_1 ⊗ D_1</dt><dd><p>= connected two-point.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<p>For the canonical (all-left, time-ordered) DG-1 use cases, callers
+should prefer D_bar_1(t_grid, …) and D_bar_2(t_grid, …), which
+return precomputed (n,) and (n, n) arrays respectively. The
+array-form helpers compose efficiently with cbg.tcl_recursion.</p>
+<p>Mixed left/right indices (k != n) and orders n ≥ 3 are DG-2
+territory and raise NotImplementedError here.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tau_args</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Left-time arguments (τ_1, …, τ_k).</p></li>
+<li><p><strong>s_args</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Right-time arguments (s_1, …, s_{n-k}).</p></li>
+<li><p><strong>**kwargs</strong> – bath_state, spectral_density (as for D_bar_1, D_bar_2).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><strong>NotImplementedError</strong></a> – For mixed left/right indices, or for total order n ≥ 3.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-cbg.bath_correlations">
+<span id="cbg-bath-correlations"></span><h2><code class="docutils literal notranslate"><span class="pre">cbg.bath_correlations</span></code><a class="headerlink" href="#module-cbg.bath_correlations" title="Link to this heading">#</a></h2>
+<p>cbg.bath_correlations — Bath spectral densities and connected n-point bath
+correlation functions for the CBG construction.</p>
+<p>This module is NOT a Nakajima–Zwanzig memory kernel.</p>
+<p>The TCL representation is time-local at every order; the non-Markovian
+character lives in the time-dependence of L_t, not in a kernel
+convolution. This module evaluates:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>D(τ_1^k, s_1^{n-k}) = Tr_E { B^R(s_1^{n-k}) ∘ B^L(τ_1^k) [ρ_E] }</dt><dd><p>× θ(τ_1^k) θ(s_1^{n-k})         (Companion Eq. (15))</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>i.e. ordered n-point bath correlation functions, used to build the
+generalised cumulants D̄ in cbg.cumulants (Companion Eq. (24)).</p>
+<dl>
+<dt>DG-1 scope (C.6):</dt><dd><ul>
+<li><p>Ohmic spectral density evaluator J(ω) = α ω exp(-ω/ω_c).</p></li>
+<li><p>Two-point thermal connected correlator for bosonic linear coupling:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>C(t) = ⟨B(t) B(0)⟩_connected_thermal</dt><dd><p>= ∫_0^∞ dω J(ω) [coth(ω / 2T) cos(ωt) - i sin(ωt)]</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>This is also the connected two-point for <em>coherent-displaced</em> bath
+states: displacement leaves the connected (cumulant) part of any
+Gaussian state invariant; only the first cumulant ⟨B(t)⟩ shifts
+under displacement, and ⟨B(t)⟩ is <em>not</em> a connected two-point.
+The first-cumulant ⟨B(t)⟩ assembly from a card’s
+<cite>bath_state: coherent_displaced</cite> spec is a model-layer
+responsibility (models/pure_dephasing.py, models/spin_boson_sigma_x.py).</p>
+</li>
+</ul>
+</dd>
+<dt>DG-2 scope (stubbed here):</dt><dd><ul class="simple">
+<li><p>Non-ohmic spectral densities (Drude–Lorentz, sub-/super-ohmic).</p></li>
+<li><p>n-point ordered correlations for n ≥ 3 (Companion Eq. (15) at
+higher orders), needed for K_n at orders ≥ 3.</p></li>
+</ul>
+</dd>
+</dl>
+<p>The module is physically separated from time-grid integration to prevent
+accidental importation of Markovian solver defaults from libraries like
+QuTiP. Time-grid integration belongs in numerical/; bath-correlation
+evaluation belongs here. The two are not interchangeable.</p>
+<p>If a future extension requires Nakajima–Zwanzig-style kernels, those
+would live in a separate cbg.nz_kernels module, not here.</p>
+<p>Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.3 §4 Phase C row C.6.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.bath_correlations.ohmic_spectral_density">
+<span class="sig-prename descclassname"><span class="pre">cbg.bath_correlations.</span></span><span class="sig-name descname"><span class="pre">ohmic_spectral_density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">omega</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">omega_c</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/bath_correlations.html#ohmic_spectral_density"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.bath_correlations.ohmic_spectral_density" title="Link to this definition">#</a></dt>
+<dd><p>Ohmic spectral density J(ω) = α ω exp(-ω/ω_c).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>omega</strong> (<em>array</em><em> or </em><em>scalar</em>) – Frequencies at which to evaluate. Must be non-negative; the
+physical convention is J(ω) defined for ω ≥ 0.</p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Dimensionless coupling strength. Must be non-negative.</p></li>
+<li><p><strong>omega_c</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Cutoff frequency (high-frequency exponential rolloff). Must be positive.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>J(ω) of the same shape as <cite>omega</cite>, dtype float.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If alpha &lt; 0, omega_c &lt;= 0, or any omega &lt; 0.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.bath_correlations.bath_two_point_thermal">
+<span class="sig-prename descclassname"><span class="pre">cbg.bath_correlations.</span></span><span class="sig-name descname"><span class="pre">bath_two_point_thermal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_diff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">omega_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_cutoff_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quad_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/bath_correlations.html#bath_two_point_thermal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.bath_correlations.bath_two_point_thermal" title="Link to this definition">#</a></dt>
+<dd><p>Connected two-point bath correlator C(t) = ⟨B(t) B(0)⟩_connected
+for an ohmic bath linearly coupled to the system.</p>
+<p>Implements</p>
+<blockquote>
+<div><p>C(t) = ∫_0^∞ dω J(ω) [coth(ω / 2T) cos(ωt) - i sin(ωt)]</p>
+</div></blockquote>
+<p>with J(ω) = α ω exp(-ω/ω_c). At T = 0, the integral has the closed
+form C(t) = α / (1/ω_c + it)²; this shortcut is used to avoid the
+coth divergence at ω → 0 when T = 0.</p>
+<p>For T &gt; 0, the integral is evaluated numerically via
+scipy.integrate.quad on the real (cos · coth) and imaginary
+(-sin) parts separately. The integrable singularity at ω → 0
+(where J coth → 2αT) is bounded; quad handles it without endpoint
+refinement.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t_diff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Time difference t (the correlator depends only on t_1 - t_2 by
+stationarity of the bath equilibrium).</p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Spectral density parameters; see ohmic_spectral_density.</p></li>
+<li><p><strong>omega_c</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Spectral density parameters; see ohmic_spectral_density.</p></li>
+<li><p><strong>temperature</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Bath temperature in the same units as ω (i.e. k_B T / ℏ if ω is
+in angular frequency units; or the dimensionless ratio T/ω_S if
+the system frequency sets the energy scale, as in Cards A3/A4).
+Must be non-negative. T = 0 takes the analytical-limit shortcut.</p></li>
+<li><p><strong>upper_cutoff_factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Numerical integration upper limit, expressed as a multiple of
+omega_c. Defaults to 30 (where exp(-30) ≈ 1e-13). Adjust upward
+only if the integrand has weight beyond this; ohmic exponential
+decay makes 30 conservative.</p></li>
+<li><p><strong>quad_limit</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Maximum number of subintervals scipy.integrate.quad uses.
+Defaults to 200; adequate for ohmic at T ≲ 10 ω_c.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>C(t) as a Python complex scalar.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.14)">complex</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If alpha &lt; 0, omega_c &lt;= 0, or temperature &lt; 0.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.bath_correlations.bath_two_point_thermal_array">
+<span class="sig-prename descclassname"><span class="pre">cbg.bath_correlations.</span></span><span class="sig-name descname"><span class="pre">bath_two_point_thermal_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">omega_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/bath_correlations.html#bath_two_point_thermal_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.bath_correlations.bath_two_point_thermal_array" title="Link to this definition">#</a></dt>
+<dd><p>Tabulate C[j, k] = C(t_grid[j] - t_grid[k]) on a (n, n) grid.</p>
+<p>Exploits stationarity (the connected two-point depends only on
+t_1 - t_2) and Hermiticity (C(-t) = conj(C(t))) to evaluate
+C only on a 1D array of unique time differences and broadcast.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t_grid</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>n</em><em>,</em><em>)</em>) – Time points at which to tabulate.</p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – See bath_two_point_thermal.</p></li>
+<li><p><strong>omega_c</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – See bath_two_point_thermal.</p></li>
+<li><p><strong>temperature</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – See bath_two_point_thermal.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>C[j, k] = C(t_grid[j] - t_grid[k]).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray, shape (n, n), dtype complex</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.bath_correlations.two_point">
+<span class="sig-prename descclassname"><span class="pre">cbg.bath_correlations.</span></span><span class="sig-name descname"><span class="pre">two_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t2</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_density</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/bath_correlations.html#two_point"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.bath_correlations.two_point" title="Link to this definition">#</a></dt>
+<dd><p>Connected two-point bath correlator at the requested bath state.</p>
+<p>Dispatches by (bath_state.family, spectral_density.family) to the
+appropriate evaluator. For DG-1, supports:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>(“thermal”, “ohmic”): bath_two_point_thermal</p></li>
+<li><p>(“coherent_displaced”, “ohmic”): same evaluator with the
+spec’s <cite>temperature</cite> (the displacement leaves the connected
+two-point invariant; the first cumulant ⟨B(t)⟩ is a
+model-layer concern, not evaluated here).</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Two time arguments. The correlator depends only on t1 - t2 by
+stationarity.</p></li>
+<li><p><strong>t2</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Two time arguments. The correlator depends only on t1 - t2 by
+stationarity.</p></li>
+<li><p><strong>bath_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – The card’s per-case <cite>bath_state</cite> mapping. Required key: <cite>family</cite>.
+For thermal: also <cite>temperature</cite>. For coherent_displaced: also
+<cite>temperature</cite> (the vacuum baseline, typically 0 in DG-1 cards).</p></li>
+<li><p><strong>spectral_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – The card’s <cite>bath_spectral_density</cite> mapping. Required keys:
+<cite>family</cite>, plus family-specific parameters (for ohmic:
+<cite>coupling_strength</cite> (= alpha), <cite>cutoff_frequency</cite> (= omega_c)).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>C(t1 - t2) at the requested state.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.14)">complex</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><strong>NotImplementedError</strong></a> – If the (bath_state.family, spectral_density.family) pair is not
+    supported at DG-1.</p></li>
+<li><p><strong>KeyError-style ValueError</strong> – If required keys are missing.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.bath_correlations.n_point_ordered">
+<span class="sig-prename descclassname"><span class="pre">cbg.bath_correlations.</span></span><span class="sig-name descname"><span class="pre">n_point_ordered</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tau_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_op</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/bath_correlations.html#n_point_ordered"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.bath_correlations.n_point_ordered" title="Link to this definition">#</a></dt>
+<dd><p>Ordered n-point correlation per Companion Eq. (15) at n ≥ 3.</p>
+<p>DG-2 territory. Cards A3 and A4 (DG-1) only require the two-point
+function, which is provided by <cite>two_point</cite> above. Higher-order
+n-point correlations enter K_n at orders n ≥ 3 (DG-2), and the full
+parity-decomposition machinery of Letter Eq. (D.5)-(D.6) becomes
+operative at those orders.</p>
+</dd></dl>
+
+</section>
+<section id="module-cbg.diagnostics">
+<span id="cbg-diagnostics"></span><h2><code class="docutils literal notranslate"><span class="pre">cbg.diagnostics</span></code><a class="headerlink" href="#module-cbg.diagnostics" title="Link to this heading">#</a></h2>
+<p>cbg.diagnostics — Convergence and structural diagnostics.</p>
+<dl class="simple">
+<dt>Reports the diagnostics required by Sail v0.5 §7:</dt><dd><ul class="simple">
+<li><p>norm of successive perturbative orders;</p></li>
+<li><p>distance to TCL non-invertibility (||Λ_t - id||);</p></li>
+<li><p>trace preservation and Hermiticity preservation;</p></li>
+<li><p>positivity / CP violations of truncated generators;</p></li>
+<li><p>K(t) stability under basis changes (DG-2 universal default check);</p></li>
+<li><p>sensitivity to bath truncation;</p></li>
+<li><p>comparison error against numerically exact methods;</p></li>
+<li><p>gauge-dependence (DG-5 substrate, when alternative gauges available).</p></li>
+</ul>
+</dd>
+<dt>Failure-mode labels (per Sail v0.5 §9 DG-4 cause-label discipline):</dt><dd><ul class="simple">
+<li><p>convergence_failure</p></li>
+<li><p>tcl_singularity</p></li>
+<li><p>projection_ambiguity</p></li>
+<li><p>truncation_artefact</p></li>
+<li><p>benchmark_disagreement</p></li>
+</ul>
+</dd>
+</dl>
+<p>Diagnostics emit one or more of these labels when failure is detected.
+Labels are emitted in machine-readable form (string constants below)
+for inclusion in benchmark cards.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.diagnostics.perturbative_order_norms">
+<span class="sig-prename descclassname"><span class="pre">cbg.diagnostics.</span></span><span class="sig-name descname"><span class="pre">perturbative_order_norms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">K_n_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/diagnostics.html#perturbative_order_norms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.diagnostics.perturbative_order_norms" title="Link to this definition">#</a></dt>
+<dd><p>Return the operator norm ||K_n|| for each computed order n.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.diagnostics.tcl_invertibility_distance">
+<span class="sig-prename descclassname"><span class="pre">cbg.diagnostics.</span></span><span class="sig-name descname"><span class="pre">tcl_invertibility_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Lambda_t</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/diagnostics.html#tcl_invertibility_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.diagnostics.tcl_invertibility_distance" title="Link to this definition">#</a></dt>
+<dd><p>Return ||Λ_t - id||; values approaching 1 trigger a TCL singularity warning.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.diagnostics.basis_independence_check">
+<span class="sig-prename descclassname"><span class="pre">cbg.diagnostics.</span></span><span class="sig-name descname"><span class="pre">basis_independence_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">generator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/diagnostics.html#basis_independence_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.diagnostics.basis_independence_check" title="Link to this definition">#</a></dt>
+<dd><p>Universal-default DG-2 structural-identity check.</p>
+<p>Computes K via Letter Eq. (6) under two different bases and verifies
+agreement to within <cite>tol</cite>. Returns (passed: bool, residual: float).</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">oqs-cbg-pipeline — API documentation</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="models.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">models</span></code> — System–environment model factories</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-cbg.effective_hamiltonian"><code class="docutils literal notranslate"><span class="pre">cbg.effective_hamiltonian</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.effective_hamiltonian.K_from_generator"><code class="docutils literal notranslate"><span class="pre">K_from_generator()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.effective_hamiltonian.K_perturbative"><code class="docutils literal notranslate"><span class="pre">K_perturbative()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-cbg.basis"><code class="docutils literal notranslate"><span class="pre">cbg.basis</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.basis.matrix_unit_basis"><code class="docutils literal notranslate"><span class="pre">matrix_unit_basis()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.basis.su_d_generator_basis"><code class="docutils literal notranslate"><span class="pre">su_d_generator_basis()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.basis.verify_orthonormality"><code class="docutils literal notranslate"><span class="pre">verify_orthonormality()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-cbg.tcl_recursion"><code class="docutils literal notranslate"><span class="pre">cbg.tcl_recursion</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.interaction_picture"><code class="docutils literal notranslate"><span class="pre">interaction_picture()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.L_n_thermal_at_time"><code class="docutils literal notranslate"><span class="pre">L_n_thermal_at_time()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.K_n_thermal_on_grid"><code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.K_total_thermal_on_grid"><code class="docutils literal notranslate"><span class="pre">K_total_thermal_on_grid()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.L_n"><code class="docutils literal notranslate"><span class="pre">L_n()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.canonical_lindblad_form"><code class="docutils literal notranslate"><span class="pre">canonical_lindblad_form()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-cbg.cumulants"><code class="docutils literal notranslate"><span class="pre">cbg.cumulants</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.cumulants.D_bar_1"><code class="docutils literal notranslate"><span class="pre">D_bar_1()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.cumulants.D_bar_2"><code class="docutils literal notranslate"><span class="pre">D_bar_2()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.cumulants.D_bar"><code class="docutils literal notranslate"><span class="pre">D_bar()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-cbg.bath_correlations"><code class="docutils literal notranslate"><span class="pre">cbg.bath_correlations</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.bath_correlations.ohmic_spectral_density"><code class="docutils literal notranslate"><span class="pre">ohmic_spectral_density()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.bath_correlations.bath_two_point_thermal"><code class="docutils literal notranslate"><span class="pre">bath_two_point_thermal()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.bath_correlations.bath_two_point_thermal_array"><code class="docutils literal notranslate"><span class="pre">bath_two_point_thermal_array()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.bath_correlations.two_point"><code class="docutils literal notranslate"><span class="pre">two_point()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.bath_correlations.n_point_ordered"><code class="docutils literal notranslate"><span class="pre">n_point_ordered()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-cbg.diagnostics"><code class="docutils literal notranslate"><span class="pre">cbg.diagnostics</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.diagnostics.perturbative_order_norms"><code class="docutils literal notranslate"><span class="pre">perturbative_order_norms()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.diagnostics.tcl_invertibility_distance"><code class="docutils literal notranslate"><span class="pre">tcl_invertibility_distance()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.diagnostics.basis_independence_check"><code class="docutils literal notranslate"><span class="pre">basis_independence_check()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Ulrich Warring
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, Ulrich Warring (code: MIT; docs: CC-BY-4.0).
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <p>Code under MIT, documentation under CC-BY-4.0. API docs are auto-generated from in-source docstrings; for project status and citation policy see the <a href='../index.html'>landing page</a>.</p>
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

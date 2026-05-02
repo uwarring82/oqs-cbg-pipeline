@@ -1,0 +1,700 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>numerical.time_grid &#8212; oqs-cbg-pipeline</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=e0f99f8f"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/numerical/time_grid';</script>
+    <link rel="canonical" href="/oqs-cbg-pipeline/api/_modules/numerical/time_grid.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">oqs-cbg-pipeline · API</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../index.html">
+                    oqs-cbg-pipeline — API documentation
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../cbg.html"><code class="docutils literal notranslate"><span class="pre">cbg</span></code> — Colla–Breuer–Gasbarri effective-Hamiltonian construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../models.html"><code class="docutils literal notranslate"><span class="pre">models</span></code> — System–environment model factories</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../numerical.html"><code class="docutils literal notranslate"><span class="pre">numerical</span></code> — Numerical primitives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reporting.html"><code class="docutils literal notranslate"><span class="pre">reporting</span></code> — Benchmark-card schema, loader, validator, runner</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/uwarring82/oqs-cbg-pipeline" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/uwarring82/oqs-cbg-pipeline/issues/new?title=Issue%20on%20page%20%2F_modules/numerical/time_grid.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for numerical.time_grid</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">numerical.time_grid — Time-grid construction and time-ordered integration.</span>
+
+<span class="sd">Provides the time-grid layer Cards A3 and A4 depend on:</span>
+
+<span class="sd">    build_time_grid(spec)              — Construct a TimeGrid from a card&#39;s</span>
+<span class="sd">                                          frozen_parameters.numerical.time_grid</span>
+<span class="sd">                                          spec dict (YAML form).</span>
+<span class="sd">    TimeGrid                           — Dataclass wrapping the time array</span>
+<span class="sd">                                          plus the spec metadata.</span>
+<span class="sd">    integrate_with_ordering(integrand,</span>
+<span class="sd">                            t_grid,</span>
+<span class="sd">                            ordering)  — Cumulative time-ordered integral.</span>
+<span class="sd">                                          Used by cbg.tcl_recursion (C.8) for</span>
+<span class="sd">                                          the K_1 single-integral term and</span>
+<span class="sd">                                          the K_2 nested-integral term.</span>
+
+<span class="sd">Schemes implemented at DG-1 Phase C.5:</span>
+<span class="sd">    - uniform (linspace; matches Cards A3/A4 frozen_parameters.numerical.scheme)</span>
+
+<span class="sd">Schemes deferred to DG-2 (raise NotImplementedError with routing):</span>
+<span class="sd">    - chebyshev  (non-uniform; faster convergence at the bath-cutoff scale)</span>
+<span class="sd">    - log        (logarithmic spacing for memory-tail resolution)</span>
+
+<span class="sd">Orderings implemented at DG-1 Phase C.5:</span>
+<span class="sd">    - time_ordered (1D: ∫_0^t dτ f(τ); 2D: ∫_0^t dτ ∫_0^τ ds g(τ, s))</span>
+
+<span class="sd">Orderings deferred to DG-2+ (raise NotImplementedError with routing):</span>
+<span class="sd">    - anti_time_ordered, mixed orderings used in higher-order TCL terms</span>
+
+<span class="sd">The 2D time-ordered integral is the natural integration domain for K_2</span>
+<span class="sd">(Letter Eq. (16) order-2 term; companion paper Eq. (45) at n=2). C.8</span>
+<span class="sd">exercises this code path for Cards A3/A4.</span>
+
+<span class="sd">Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.3 §4 Phase C row C.5.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+
+<span class="c1"># ─── Schemes / orderings ────────────────────────────────────────────────────</span>
+
+<span class="n">KNOWN_SCHEMES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;uniform&quot;</span><span class="p">,)</span>
+<span class="n">KNOWN_ORDERINGS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;time_ordered&quot;</span><span class="p">,)</span>
+
+<span class="c1"># Schemes / orderings recognized but deferred to DG-2 (clear routing message</span>
+<span class="c1"># rather than the generic &quot;unknown&quot; error).</span>
+<span class="n">DEFERRED_SCHEMES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;chebyshev&quot;</span><span class="p">:</span> <span class="s2">&quot;DG-2: non-uniform grid with Chebyshev nodes (better &quot;</span>
+                 <span class="s2">&quot;convergence at the bath-cutoff scale)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;log&quot;</span><span class="p">:</span> <span class="s2">&quot;DG-2: logarithmic spacing for memory-tail resolution&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">DEFERRED_ORDERINGS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;anti_time_ordered&quot;</span><span class="p">:</span> <span class="s2">&quot;DG-2+: anti-time-ordered integration domain&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="c1"># ─── TimeGrid dataclass ─────────────────────────────────────────────────────</span>
+
+
+<div class="viewcode-block" id="TimeGrid">
+<a class="viewcode-back" href="../../numerical.html#numerical.time_grid.TimeGrid">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TimeGrid</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;An immutable-by-convention time grid plus its construction metadata.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    times : ndarray</span>
+<span class="sd">        The time-point array, shape (n_points,).</span>
+<span class="sd">    t_start, t_end : float</span>
+<span class="sd">        Endpoints of the grid (matched to the spec).</span>
+<span class="sd">    n_points : int</span>
+<span class="sd">        Number of points.</span>
+<span class="sd">    scheme : str</span>
+<span class="sd">        Construction scheme (e.g. &quot;uniform&quot;).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">times</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">t_start</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">t_end</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">n_points</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">scheme</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Step size for uniform grids; for non-uniform grids the value is</span>
+<span class="sd">        the *mean* spacing — callers should not rely on it for dispatch.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_points</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t_end</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_start</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># ─── Time-grid construction ─────────────────────────────────────────────────</span>
+
+
+<span class="n">REQUIRED_TIME_GRID_KEYS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;t_start&quot;</span><span class="p">,</span> <span class="s2">&quot;t_end&quot;</span><span class="p">,</span> <span class="s2">&quot;n_points&quot;</span><span class="p">,</span> <span class="s2">&quot;scheme&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="build_time_grid">
+<a class="viewcode-back" href="../../numerical.html#numerical.time_grid.build_time_grid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_time_grid</span><span class="p">(</span><span class="n">spec</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">TimeGrid</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct a TimeGrid from a card&#39;s time_grid spec dict.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    spec : dict</span>
+<span class="sd">        The mapping under `frozen_parameters.numerical.time_grid` in a</span>
+<span class="sd">        benchmark card. Required keys: t_start, t_end, n_points, scheme.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    TimeGrid</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If required keys are missing, t_end &lt;= t_start, or n_points &lt; 2.</span>
+<span class="sd">    NotImplementedError</span>
+<span class="sd">        If `scheme` is recognized as DG-2 territory.</span>
+<span class="sd">    KeyError-style ValueError</span>
+<span class="sd">        If `scheme` is unknown.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;build_time_grid: spec must be a mapping; got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+    <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">REQUIRED_TIME_GRID_KEYS</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spec</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;build_time_grid: missing required keys </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">t_start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">spec</span><span class="p">[</span><span class="s2">&quot;t_start&quot;</span><span class="p">])</span>
+    <span class="n">t_end</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">spec</span><span class="p">[</span><span class="s2">&quot;t_end&quot;</span><span class="p">])</span>
+    <span class="n">n_points</span> <span class="o">=</span> <span class="n">spec</span><span class="p">[</span><span class="s2">&quot;n_points&quot;</span><span class="p">]</span>
+    <span class="n">scheme</span> <span class="o">=</span> <span class="n">spec</span><span class="p">[</span><span class="s2">&quot;scheme&quot;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_points</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_points</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;build_time_grid: n_points must be int; got </span><span class="si">{</span><span class="n">n_points</span><span class="si">!r}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">n_points</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;build_time_grid: n_points must be &gt;= 2; got </span><span class="si">{</span><span class="n">n_points</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">t_end</span> <span class="o">&lt;=</span> <span class="n">t_start</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;build_time_grid: require t_end &gt; t_start; got &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;t_start=</span><span class="si">{</span><span class="n">t_start</span><span class="si">}</span><span class="s2">, t_end=</span><span class="si">{</span><span class="n">t_end</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">scheme</span> <span class="ow">in</span> <span class="n">DEFERRED_SCHEMES</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;build_time_grid: scheme </span><span class="si">{</span><span class="n">scheme</span><span class="si">!r}</span><span class="s2"> not implemented at DG-1. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">DEFERRED_SCHEMES</span><span class="p">[</span><span class="n">scheme</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">scheme</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">KNOWN_SCHEMES</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;build_time_grid: unknown scheme </span><span class="si">{</span><span class="n">scheme</span><span class="si">!r}</span><span class="s2">; &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;known: </span><span class="si">{</span><span class="n">KNOWN_SCHEMES</span><span class="si">}</span><span class="s2">; deferred: </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">DEFERRED_SCHEMES</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">scheme</span> <span class="o">==</span> <span class="s2">&quot;uniform&quot;</span><span class="p">:</span>
+        <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">t_start</span><span class="p">,</span> <span class="n">t_end</span><span class="p">,</span> <span class="n">n_points</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Unreachable given the checks above; defensive.</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;build_time_grid: unhandled scheme </span><span class="si">{</span><span class="n">scheme</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">TimeGrid</span><span class="p">(</span>
+        <span class="n">times</span><span class="o">=</span><span class="n">times</span><span class="p">,</span>
+        <span class="n">t_start</span><span class="o">=</span><span class="n">t_start</span><span class="p">,</span>
+        <span class="n">t_end</span><span class="o">=</span><span class="n">t_end</span><span class="p">,</span>
+        <span class="n">n_points</span><span class="o">=</span><span class="n">n_points</span><span class="p">,</span>
+        <span class="n">scheme</span><span class="o">=</span><span class="n">scheme</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="c1"># ─── Time-ordered integration ───────────────────────────────────────────────</span>
+
+
+<div class="viewcode-block" id="integrate_with_ordering">
+<a class="viewcode-back" href="../../numerical.html#numerical.time_grid.integrate_with_ordering">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">integrate_with_ordering</span><span class="p">(</span>
+    <span class="n">integrand</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">t_grid</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">ordering</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;time_ordered&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Cumulative time-ordered integral of an integrand sampled on `t_grid`.</span>
+
+<span class="sd">    The output F has the same length as t_grid and represents the integral</span>
+<span class="sd">    accumulated up to each t_grid[i].</span>
+
+<span class="sd">    Dispatch by `integrand.ndim`:</span>
+
+<span class="sd">    - **1D** (``integrand.shape == (n,)``): cumulative trapezoidal of the</span>
+<span class="sd">      single-time integrand,</span>
+
+<span class="sd">          F[i] = ∫_{t_grid[0]}^{t_grid[i]} integrand(τ) dτ        (Letter</span>
+<span class="sd">                                                                  K_1 form)</span>
+
+<span class="sd">    - **2D** (``integrand.shape == (n, n)``): cumulative trapezoidal of</span>
+<span class="sd">      the time-ordered nested integral. ``integrand[j, k]`` is the</span>
+<span class="sd">      integrand value at (τ = t_grid[j], s = t_grid[k]); only the</span>
+<span class="sd">      lower-triangular part k ≤ j is used,</span>
+
+<span class="sd">          F[i] = ∫_{t_grid[0]}^{t_grid[i]} dτ</span>
+<span class="sd">                 ∫_{t_grid[0]}^{τ}        ds  integrand(τ, s)     (Letter</span>
+<span class="sd">                                                                   K_2 form</span>
+<span class="sd">                                                                   at order 2)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    integrand : ndarray</span>
+<span class="sd">        Pre-evaluated integrand sampled on ``t_grid``. Shape (n,) or (n, n).</span>
+<span class="sd">        Complex dtype is supported (and is the typical case for K_n).</span>
+<span class="sd">    t_grid : ndarray</span>
+<span class="sd">        Time grid, shape (n,). Must be strictly monotonically increasing.</span>
+<span class="sd">    ordering : str</span>
+<span class="sd">        For DG-1, only ``&quot;time_ordered&quot;`` is implemented. Other orderings</span>
+<span class="sd">        raise NotImplementedError with explicit DG-2+ routing.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    F : ndarray</span>
+<span class="sd">        Cumulative integral, shape (n,), dtype matching the integrand.</span>
+<span class="sd">        F[0] = 0 (the integral over a zero-length interval).</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    NotImplementedError</span>
+<span class="sd">        If ``ordering`` is recognized as DG-2+ territory.</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        On unknown ``ordering``, shape mismatch, non-monotonic t_grid,</span>
+<span class="sd">        or unsupported integrand ndim.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ordering</span> <span class="ow">in</span> <span class="n">DEFERRED_ORDERINGS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;integrate_with_ordering: ordering </span><span class="si">{</span><span class="n">ordering</span><span class="si">!r}</span><span class="s2"> not implemented &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;at DG-1. </span><span class="si">{</span><span class="n">DEFERRED_ORDERINGS</span><span class="p">[</span><span class="n">ordering</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">ordering</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">KNOWN_ORDERINGS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;integrate_with_ordering: unknown ordering </span><span class="si">{</span><span class="n">ordering</span><span class="si">!r}</span><span class="s2">; &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;known: </span><span class="si">{</span><span class="n">KNOWN_ORDERINGS</span><span class="si">}</span><span class="s2">; deferred: </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">DEFERRED_ORDERINGS</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">integrand</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">integrand</span><span class="p">)</span>
+    <span class="n">t_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t_grid</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">t_grid</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;integrate_with_ordering: t_grid must be 1D; got shape </span><span class="si">{</span><span class="n">t_grid</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">t_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;integrate_with_ordering: t_grid must have at least 2 points; got </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">t_grid</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;integrate_with_ordering: t_grid must be strictly monotonically increasing&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">integrand</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">integrand</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="n">n</span><span class="p">,):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;integrate_with_ordering: 1D integrand shape </span><span class="si">{</span><span class="n">integrand</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;does not match t_grid length (</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">,)&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">_cumulative_trapezoid</span><span class="p">(</span><span class="n">integrand</span><span class="p">,</span> <span class="n">t_grid</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">integrand</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">integrand</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;integrate_with_ordering: 2D integrand shape </span><span class="si">{</span><span class="n">integrand</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;does not match expected (</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">_cumulative_time_ordered_double</span><span class="p">(</span><span class="n">integrand</span><span class="p">,</span> <span class="n">t_grid</span><span class="p">)</span>
+
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;integrate_with_ordering: integrand must be 1D or 2D; got ndim=</span><span class="si">{</span><span class="n">integrand</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_cumulative_trapezoid</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Cumulative trapezoidal rule:</span>
+
+<span class="sd">        F[0] = 0</span>
+<span class="sd">        F[i] = F[i-1] + 0.5 * (f[i-1] + f[i]) * (t[i] - t[i-1])     for i &gt;= 1</span>
+
+<span class="sd">    Returns an array the same length as t with the same dtype as f.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">increments</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">f</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">increments</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_cumulative_time_ordered_double</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Cumulative double time-ordered integral:</span>
+
+<span class="sd">        F[i] = ∫_{t[0]}^{t[i]} dτ ∫_{t[0]}^τ ds g(τ, s)</span>
+
+<span class="sd">    Computed by first reducing the inner s-integral at each τ (using the</span>
+<span class="sd">    trapezoidal rule on the lower-triangular part of `g`) to obtain</span>
+<span class="sd">    G[j] = ∫_{t[0]}^{t[j]} ds g(t[j], s), then taking the cumulative</span>
+<span class="sd">    trapezoidal of G over τ.</span>
+
+<span class="sd">    The function is O(n^2) in the number of grid points; for the n=200</span>
+<span class="sd">    DG-1 cards (A3, A4), this is ~40k operations and is fast enough for</span>
+<span class="sd">    DG-1 acceptance times.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># Inner integral G[j] = ∫_{t[0]}^{t[j]} ds g(t[j], s); j-th row,</span>
+    <span class="c1"># truncated at the j-th column (lower triangle).</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">g</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="c1"># Trapezoidal on g[j, 0:j+1] over t[0:j+1]</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="n">g</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="p">:</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">t</span><span class="p">[:</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">G</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapezoid</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">ts</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">np</span><span class="p">,</span> <span class="s2">&quot;trapezoid&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">ts</span><span class="p">)</span>
+    <span class="c1"># Outer cumulative trapezoidal over τ.</span>
+    <span class="k">return</span> <span class="n">_cumulative_trapezoid</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Ulrich Warring
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, Ulrich Warring (code: MIT; docs: CC-BY-4.0).
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <p>Code under MIT, documentation under CC-BY-4.0. API docs are auto-generated from in-source docstrings; for project status and citation policy see the <a href='../index.html'>landing page</a>.</p>
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

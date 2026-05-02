@@ -1,0 +1,760 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>models — System–environment model factories &#8212; oqs-cbg-pipeline</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=e0f99f8f"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'models';</script>
+    <link rel="canonical" href="/oqs-cbg-pipeline/api/models.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="numerical — Numerical primitives" href="numerical.html" />
+    <link rel="prev" title="cbg — Colla–Breuer–Gasbarri effective-Hamiltonian construction" href="cbg.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">oqs-cbg-pipeline · API</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="index.html">
+                    oqs-cbg-pipeline — API documentation
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="cbg.html"><code class="docutils literal notranslate"><span class="pre">cbg</span></code> — Colla–Breuer–Gasbarri effective-Hamiltonian construction</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">models</span></code> — System–environment model factories</a></li>
+<li class="toctree-l1"><a class="reference internal" href="numerical.html"><code class="docutils literal notranslate"><span class="pre">numerical</span></code> — Numerical primitives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reporting.html"><code class="docutils literal notranslate"><span class="pre">reporting</span></code> — Benchmark-card schema, loader, validator, runner</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/uwarring82/oqs-cbg-pipeline" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/uwarring82/oqs-cbg-pipeline/issues/new?title=Issue%20on%20page%20%2Fmodels.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/models.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>models — System–environment model factories</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-models.pure_dephasing"><code class="docutils literal notranslate"><span class="pre">models.pure_dephasing</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.pure_dephasing.hamiltonian"><code class="docutils literal notranslate"><span class="pre">hamiltonian()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.pure_dephasing.coupling_operator"><code class="docutils literal notranslate"><span class="pre">coupling_operator()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.pure_dephasing.system_arrays_from_spec"><code class="docutils literal notranslate"><span class="pre">system_arrays_from_spec()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-models.spin_boson_sigma_x"><code class="docutils literal notranslate"><span class="pre">models.spin_boson_sigma_x</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.spin_boson_sigma_x.hamiltonian"><code class="docutils literal notranslate"><span class="pre">hamiltonian()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.spin_boson_sigma_x.coupling_operator"><code class="docutils literal notranslate"><span class="pre">coupling_operator()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.spin_boson_sigma_x.system_arrays_from_spec"><code class="docutils literal notranslate"><span class="pre">system_arrays_from_spec()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-models.fano_anderson"><code class="docutils literal notranslate"><span class="pre">models.fano_anderson</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-models.jaynes_cummings"><code class="docutils literal notranslate"><span class="pre">models.jaynes_cummings</span></code></a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="models-systemenvironment-model-factories">
+<h1><code class="docutils literal notranslate"><span class="pre">models</span></code> — System–environment model factories<a class="headerlink" href="#models-systemenvironment-model-factories" title="Link to this heading">#</a></h1>
+<p>Concrete system–bath models that supply system Hamiltonians and coupling
+operators to the dynamical-card runner. Each module exposes a
+<code class="docutils literal notranslate"><span class="pre">system_arrays_from_spec(model_spec)</span></code> factory that consumes the
+<code class="docutils literal notranslate"><span class="pre">frozen_parameters.model</span></code> block of a benchmark card and returns
+<code class="docutils literal notranslate"><span class="pre">(H_S,</span> <span class="pre">A)</span></code> arrays, plus model-specific diagnostics where useful.</p>
+<p>DG-1 currently exercises <code class="docutils literal notranslate"><span class="pre">pure_dephasing</span></code> (Card A3) and
+<code class="docutils literal notranslate"><span class="pre">spin_boson_sigma_x</span></code> (Card A4); the remaining modules are scaffolds for
+DG-2+ work and may carry <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code> stubs at this version.</p>
+<section id="module-models.pure_dephasing">
+<span id="models-pure-dephasing"></span><h2><code class="docutils literal notranslate"><span class="pre">models.pure_dephasing</span></code><a class="headerlink" href="#module-models.pure_dephasing" title="Link to this heading">#</a></h2>
+<p>models.pure_dephasing — Spin under pure dephasing, A = sigma_z.</p>
+<p>Reproduces CL-2026-005 v0.4 Entry 3 (DG-1 thermal sub-case via Card A3
+v0.1.1; Entry 3.B.3 displaced sub-case deferred to DG-2 per plan v0.1.4
+§1.1):</p>
+<blockquote>
+<div><p>For H_S = (omega/2) sigma_z and A = sigma_z, K(t) = (omega_r(t)/2) sigma_z;
+even-order contributions vanish; odd-order contributions are proportional
+to sigma_z. For thermal Fock-diagonal initial bath states, omega_r(t) = omega
+at all orders (Łuczka 1990; Doll et al. 2008; Leggett et al. 1987).</p>
+</div></blockquote>
+<dl class="simple">
+<dt>Structural constraints declared for DG-2:</dt><dd><ul class="simple">
+<li><p>basis-independence of K (universal default);</p></li>
+<li><p>parity rule: K_2m = 0 (Letter App. D);</p></li>
+<li><p>K_2m+1 ∝ sigma_z;</p></li>
+<li><p>for thermal bath (diagonal in Fock basis), all odd cumulants of B
+vanish, hence K(t) = (omega/2) sigma_z (no renormalisation, recovers
+Łuczka 1990 / Doll 2008 / Leggett 1987).</p></li>
+</ul>
+</dd>
+<dt>DG-1 scope (this module, C.9):</dt><dd><ul class="simple">
+<li><p>hamiltonian(omega): H_S = (omega/2) sigma_z.</p></li>
+<li><p>coupling_operator(): A = sigma_z.</p></li>
+<li><p>system_arrays_from_spec(model_spec): runner-facing factory; reads
+a card’s frozen_parameters.model dict and returns (H_S, A) numpy
+arrays after validating the symbolic strings match the expected
+pure-dephasing form.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Convention: cards A3 v0.1.1’s <cite>system_hamiltonian: “(omega / 2) * sigma_z”</cite>
+is symbolic with omega = 1.0 in the cards’ omega-units convention (time
+grid in 1/omega units; bath cutoff and temperature in omega-units). The
+runner factory hardcodes omega = 1.0; future cards that wish to override
+should add a <cite>parameters: {omega: …}</cite> block at model level (not
+currently supported by the schema’s model block — would be a v0.1.x
+schema extension).</p>
+<p>Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.4 §4 Phase C row C.9.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="models.pure_dephasing.hamiltonian">
+<span class="sig-prename descclassname"><span class="pre">models.pure_dephasing.</span></span><span class="sig-name descname"><span class="pre">hamiltonian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">omega</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/pure_dephasing.html#hamiltonian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.pure_dephasing.hamiltonian" title="Link to this definition">#</a></dt>
+<dd><p>H_S = (omega / 2) sigma_z.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>omega</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – System frequency. For DG-1 cards (A3 v0.1.1), the convention is
+omega = 1.0 in omega-units.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>ndarray, shape (2, 2), dtype complex</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.pure_dephasing.coupling_operator">
+<span class="sig-prename descclassname"><span class="pre">models.pure_dephasing.</span></span><span class="sig-name descname"><span class="pre">coupling_operator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/pure_dephasing.html#coupling_operator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.pure_dephasing.coupling_operator" title="Link to this definition">#</a></dt>
+<dd><p>A = sigma_z (pure dephasing: coupling commutes with H_S).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.pure_dephasing.system_arrays_from_spec">
+<span class="sig-prename descclassname"><span class="pre">models.pure_dephasing.</span></span><span class="sig-name descname"><span class="pre">system_arrays_from_spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_spec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/pure_dephasing.html#system_arrays_from_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.pure_dephasing.system_arrays_from_spec" title="Link to this definition">#</a></dt>
+<dd><p>Build (H_S, A) numpy arrays from a card’s frozen_parameters.model dict.</p>
+<dl class="simple">
+<dt>Validates:</dt><dd><ul class="simple">
+<li><p>system_dimension == 2</p></li>
+<li><p>system_hamiltonian == “(omega / 2) * sigma_z”</p></li>
+<li><p>coupling_operator == “sigma_z”</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns H_S = (omega/2) sigma_z with omega = 1.0 (omega-units convention),
+and A = sigma_z.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model_spec</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – The card’s frozen_parameters.model mapping.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>tuple (H_S, A)</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(ndarray, ndarray), each shape (2, 2), dtype complex.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – On any validation mismatch (with a descriptive message).</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-models.spin_boson_sigma_x">
+<span id="models-spin-boson-sigma-x"></span><h2><code class="docutils literal notranslate"><span class="pre">models.spin_boson_sigma_x</span></code><a class="headerlink" href="#module-models.spin_boson_sigma_x" title="Link to this heading">#</a></h2>
+<p>models.spin_boson_sigma_x — Unbiased spin-boson, A = sigma_x, thermal bath.</p>
+<p>Reproduces CL-2026-005 v0.4 Entry 4 (DG-1 thermal sub-case via Card A4
+v0.1.1; Entry 4.B.2 displaced sub-case deferred to DG-2 per plan v0.1.4
+§1.1):</p>
+<blockquote>
+<div><p>For H_S = (omega/2) sigma_z, A = sigma_x, thermal bosonic bath:
+odd-order contributions to K vanish; even orders are diagonal in
+sigma_z. Eigenbasis of H_S is NOT rotated by the interaction (the
+parity-class theorem of Letter Eqs. (D.4)-(D.6)).</p>
+</div></blockquote>
+<dl class="simple">
+<dt>Structural constraints declared for DG-2:</dt><dd><ul class="simple">
+<li><p>basis-independence of K (universal default);</p></li>
+<li><p>parity rule: K_2m+1 = 0 (Letter App. D);</p></li>
+<li><p>K diagonal in sigma_z basis at all orders.</p></li>
+</ul>
+</dd>
+<dt>Numerical anchor:</dt><dd><p>Gatto, Colla, Breuer, Thoss, PRA 110, 032210 (2024) had reported
+numerical evidence; the present Letter provides the analytic proof.</p>
+</dd>
+<dt>DG-1 scope (this module, C.10):</dt><dd><ul class="simple">
+<li><p>hamiltonian(omega, omegas=None, gs=None): H_S = (omega/2) sigma_z.
+The omegas / gs arguments are kept in the signature for backward
+compatibility with the original v0.1.0 stub (which anticipated
+explicit-bath-mode constructions); they are ignored at DG-1, where
+the bath is treated via continuum spectral density in
+cbg.bath_correlations.</p></li>
+<li><p>coupling_operator(): A = sigma_x.</p></li>
+<li><p>system_arrays_from_spec(model_spec): runner-facing factory; reads
+a card’s frozen_parameters.model dict and returns (H_S, A) numpy
+arrays after validating the symbolic strings match the expected
+sigma_x-coupling form.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Convention: same omega-units convention as models.pure_dephasing
+(omega = 1.0 by default; see that module’s docstring).</p>
+<p>Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.4 §4 Phase C row C.10.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="models.spin_boson_sigma_x.hamiltonian">
+<span class="sig-prename descclassname"><span class="pre">models.spin_boson_sigma_x.</span></span><span class="sig-name descname"><span class="pre">hamiltonian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">omega</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">omegas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/spin_boson_sigma_x.html#hamiltonian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.spin_boson_sigma_x.hamiltonian" title="Link to this definition">#</a></dt>
+<dd><p>H_S = (omega / 2) sigma_z.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>omega</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – System frequency. omega = 1.0 by convention in DG-1 cards.</p></li>
+<li><p><strong>omegas</strong> (<em>sequence</em><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Explicit bath-mode frequencies and couplings. Retained in the
+signature for backward compatibility with v0.1.0 stub
+expectations; ignored at DG-1, where the bath is represented
+via continuum spectral density in cbg.bath_correlations.</p></li>
+<li><p><strong>gs</strong> (<em>sequence</em><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Explicit bath-mode frequencies and couplings. Retained in the
+signature for backward compatibility with v0.1.0 stub
+expectations; ignored at DG-1, where the bath is represented
+via continuum spectral density in cbg.bath_correlations.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>ndarray, shape (2, 2), dtype complex</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.spin_boson_sigma_x.coupling_operator">
+<span class="sig-prename descclassname"><span class="pre">models.spin_boson_sigma_x.</span></span><span class="sig-name descname"><span class="pre">coupling_operator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/spin_boson_sigma_x.html#coupling_operator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.spin_boson_sigma_x.coupling_operator" title="Link to this definition">#</a></dt>
+<dd><p>A = sigma_x (orthogonal to H_S; the structurally-distinguishing
+feature vs. models.pure_dephasing).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.spin_boson_sigma_x.system_arrays_from_spec">
+<span class="sig-prename descclassname"><span class="pre">models.spin_boson_sigma_x.</span></span><span class="sig-name descname"><span class="pre">system_arrays_from_spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_spec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/spin_boson_sigma_x.html#system_arrays_from_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.spin_boson_sigma_x.system_arrays_from_spec" title="Link to this definition">#</a></dt>
+<dd><p>Build (H_S, A) numpy arrays from a card’s frozen_parameters.model dict.</p>
+<dl class="simple">
+<dt>Validates:</dt><dd><ul class="simple">
+<li><p>system_dimension == 2</p></li>
+<li><p>system_hamiltonian == “(omega / 2) * sigma_z”</p></li>
+<li><p>coupling_operator == “sigma_x”</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns H_S = (omega/2) sigma_z with omega = 1.0, and A = sigma_x.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – On any validation mismatch.</p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>model_spec</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.14)"><em>Tuple</em></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-models.fano_anderson">
+<span id="models-fano-anderson"></span><h2><code class="docutils literal notranslate"><span class="pre">models.fano_anderson</span></code><a class="headerlink" href="#module-models.fano_anderson" title="Link to this heading">#</a></h2>
+<p>models.fano_anderson — Fano–Anderson model.</p>
+<p>Natural venue for DG-5 (thermodynamic discriminant). Solvable; admits
+a known K(t) under the minimal-dissipation gauge (Picatoste, Colla,
+Breuer, PRR 6, 013258 (2024)) AND comparison with a competing
+framework (e.g. Hamiltonian of mean force, polaron) to satisfy the
+“distinguishable thermodynamic prediction” criterion of DG-5.</p>
+<dl class="simple">
+<dt>Structural constraints declared for DG-2:</dt><dd><ul class="simple">
+<li><p>basis-independence of K (universal default);</p></li>
+<li><p>fermion-number conservation;</p></li>
+<li><p>particle-hole symmetry where applicable.</p></li>
+</ul>
+</dd>
+<dt>DG-5 pass criterion (per Sail v0.5 §9):</dt><dd><p>Identify at least one thermodynamic observable (work extraction,
+efficiency, heat current, work-heat partition) where the
+minimal-dissipation K(t) and the competing framework yield
+NUMERICALLY DISTINGUISHABLE predictions in the same model
+parameter regime. Side-by-side computation in a regime where
+the two predictions agree is NOT a DG-5 pass.</p>
+</dd>
+<dt>Stub depth at v0.1.0:</dt><dd><p>This module is <em>not</em> a DG-1 venue (DG-1 covers CL-2026-005 v0.4
+Entries 1, 3, 4, which use pure_dephasing and spin_boson_sigma_x).
+Function stubs (hamiltonian, coupling_operator, environment, etc.)
+are deliberately not yet present: pre-emptive API surface here
+would invite Sail v0.5 §10 Risk #6 (codebase before benchmark
+cards). Stubs land when this model’s first benchmark card is
+drafted, which is no earlier than DG-5 (with possible DG-2
+intermediate use for fermion-number-conservation checks).</p>
+</dd>
+</dl>
+</section>
+<section id="module-models.jaynes_cummings">
+<span id="models-jaynes-cummings"></span><h2><code class="docutils literal notranslate"><span class="pre">models.jaynes_cummings</span></code><a class="headerlink" href="#module-models.jaynes_cummings" title="Link to this heading">#</a></h2>
+<p>models.jaynes_cummings — Jaynes–Cummings model.</p>
+<p>Solvable model used for Tier 2 (perturbative convergence) and as a
+candidate venue for Tier 4 / DG-5 (thermodynamic discriminant against
+competing gauges).</p>
+<dl class="simple">
+<dt>Structural constraints declared for DG-2:</dt><dd><ul class="simple">
+<li><p>basis-independence of K (universal default);</p></li>
+<li><p>RWA-consistency of computed K_n;</p></li>
+<li><p>block-diagonal structure preserved by JC dynamics.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Reference for exact TCL form: Smirne &amp; Vacchini, PRA 82, 022110 (2010).</p>
+<dl class="simple">
+<dt>Stub depth at v0.1.0:</dt><dd><p>This module is <em>not</em> a DG-1 venue (DG-1 covers CL-2026-005 v0.4
+Entries 1, 3, 4, which use pure_dephasing and spin_boson_sigma_x).
+Function stubs (hamiltonian, coupling_operator, environment, etc.)
+are deliberately not yet present: pre-emptive API surface here
+would invite Sail v0.5 §10 Risk #6 (codebase before benchmark
+cards). Stubs land when this model’s first benchmark card is
+drafted, which is no earlier than DG-2.</p>
+</dd>
+</dl>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="cbg.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">cbg</span></code> — Colla–Breuer–Gasbarri effective-Hamiltonian construction</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="numerical.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">numerical</span></code> — Numerical primitives</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-models.pure_dephasing"><code class="docutils literal notranslate"><span class="pre">models.pure_dephasing</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.pure_dephasing.hamiltonian"><code class="docutils literal notranslate"><span class="pre">hamiltonian()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.pure_dephasing.coupling_operator"><code class="docutils literal notranslate"><span class="pre">coupling_operator()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.pure_dephasing.system_arrays_from_spec"><code class="docutils literal notranslate"><span class="pre">system_arrays_from_spec()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-models.spin_boson_sigma_x"><code class="docutils literal notranslate"><span class="pre">models.spin_boson_sigma_x</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.spin_boson_sigma_x.hamiltonian"><code class="docutils literal notranslate"><span class="pre">hamiltonian()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.spin_boson_sigma_x.coupling_operator"><code class="docutils literal notranslate"><span class="pre">coupling_operator()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.spin_boson_sigma_x.system_arrays_from_spec"><code class="docutils literal notranslate"><span class="pre">system_arrays_from_spec()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-models.fano_anderson"><code class="docutils literal notranslate"><span class="pre">models.fano_anderson</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-models.jaynes_cummings"><code class="docutils literal notranslate"><span class="pre">models.jaynes_cummings</span></code></a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Ulrich Warring
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, Ulrich Warring (code: MIT; docs: CC-BY-4.0).
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <p>Code under MIT, documentation under CC-BY-4.0. API docs are auto-generated from in-source docstrings; for project status and citation policy see the <a href='../index.html'>landing page</a>.</p>
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

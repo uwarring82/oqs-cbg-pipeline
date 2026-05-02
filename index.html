@@ -139,17 +139,48 @@
 <div class="wrap">
 
 <header>
-  <div class="eyebrow">Open numerical companion — scaffold v0.1.0</div>
+  <div class="eyebrow">Open numerical companion — DG-1 PASS · DG-2 in progress</div>
   <h1>oqs-cbg-pipeline</h1>
-  <p class="subtitle">A planned numerical implementation of the minimal-dissipation effective-Hamiltonian construction for non-Markovian open quantum systems. <strong>At v0.1.0 the repository is an architectural scaffold; no Decision Gate has yet been passed and no scientific output is yet computable.</strong></p>
+  <p class="subtitle">An open-source numerical implementation of the minimal-dissipation effective-Hamiltonian construction for non-Markovian open quantum systems. <strong>DG-1 has passed at tag <code>v0.2.0</code> (2026-04-30); DG-2 is in progress with one card already PASS and two more frozen.</strong></p>
   <div class="repo-line">
-    Code: <a href="https://github.com/uwarring82/oqs-cbg-pipeline">github.com/uwarring82/oqs-cbg-pipeline</a> · Live status: <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/docs/validity_envelope.md">validity envelope</a>
+    Code: <a href="https://github.com/uwarring82/oqs-cbg-pipeline">github.com/uwarring82/oqs-cbg-pipeline</a> · API docs: <a href="api/index.html">api/</a> · Live status: <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/docs/validity_envelope.md">validity envelope</a>
   </div>
 </header>
 
 <section>
-<p>This site introduces a planned open-source numerical pipeline for the construction developed by <strong>Alessandra Colla, Heinz-Peter Breuer, and Giulio Gasbarri</strong> in two recent papers in <em>Physical Review A</em>. It is offered as an open companion to that work — not a competing claim, not an endorsement, but the architectural scaffolding for a benchmarked numerical implementation, made available under FAIR principles. We welcome correspondence from the original authors and from the wider open-quantum-systems community, both theory and experiment.</p>
-<p><strong>Status disclosure.</strong> At repository version 0.1.0 (initialised 2026-04-29), no Decision Gate has been passed; module bodies raise <code>NotImplementedError</code>; the only outputs the repository can currently produce are structural-compliance smoke tests. The first scientific milestone (DG-1 — numerical reproduction of CL-2026-005 v0.4 Entries 1, 3, 4) is operationalised in the <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/plans/dg-1-work-plan_v0.1.0.md">DG-1 work plan</a> and has not yet been attempted. The "What the pipeline does" section below describes the intended scope; treat verbs in the present tense as forward-looking until the validity envelope says otherwise.</p>
+<p>This site introduces an open-source numerical pipeline for the construction developed by <strong>Alessandra Colla, Heinz-Peter Breuer, and Giulio Gasbarri</strong> in two recent papers in <em>Physical Review A</em>. It is offered as an open companion to that work — not a competing claim, not an endorsement, but a benchmarked numerical implementation made available under FAIR principles. We welcome correspondence from the original authors and from the wider open-quantum-systems community, both theory and experiment.</p>
+<p><strong>Current status.</strong> Repository tag <code>v0.2.0</code> records the first scientific milestone: <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/logbook/2026-04-30_dg-1-pass.md">DG-1 PASS</a> (2026-04-30). Three frozen DG-1 benchmark cards (A1, A3, A4) reproduce CL-2026-005 v0.4 Entries 1, 3, 4 (unambiguous sub-cases) at machine precision under the Hayden–Sorce gauge; a small set of sub-claims that depend on inputs not yet operationalisable were honestly deferred to DG-2 rather than fudged. DG-2 is now in progress: <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B1_pseudo-kraus-diagonal_v0.1.0.yaml">Card B1</a> has reached PASS (diagonal pseudo-Kraus reduction to the Hayden–Sorce 2022 closed form, Entry 1.B.3 diagonal half), <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B2_pseudo-kraus-offdiagonal_v0.1.0.yaml">Card B2</a> (off-diagonal half + Entry 1.D) and <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B3_cross-basis-structural-identity_v0.1.0.yaml">Card B3</a> (universal-default basis-independence check) are frozen awaiting runner wiring + verdict. The Council-gated coherent-displacement sub-claims (Entries 3.B.3, 4.B.2) remain blocked pending an independent displacement convention. The current authoritative state of the repository is the <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/docs/validity_envelope.md">validity envelope</a>; the <a href="api/index.html">auto-generated API documentation</a> describes the implementation surface.</p>
+</section>
+
+<section>
+<h2>Decision Gate progress</h2>
+<table style="border-collapse:collapse;font-size:0.95rem;width:100%;">
+  <thead>
+    <tr style="border-bottom:1px solid var(--rule);">
+      <th style="text-align:left;padding:0.4rem 0.6rem;">Gate</th>
+      <th style="text-align:left;padding:0.4rem 0.6rem;">Status</th>
+      <th style="text-align:left;padding:0.4rem 0.6rem;">Anchor</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding:0.4rem 0.6rem;"><strong>DG-1</strong></td>
+      <td style="padding:0.4rem 0.6rem;color:var(--sea);"><strong>PASS</strong> (2026-04-30; tag <code>v0.2.0</code>)</td>
+      <td style="padding:0.4rem 0.6rem;">Cards A1 / A3 / A4 reproduce CL-2026-005 v0.4 Entries 1, 3, 4 at machine precision; Entries 1.B.3, 3.B.3, 4.B.2 honestly deferred to DG-2.</td>
+    </tr>
+    <tr>
+      <td style="padding:0.4rem 0.6rem;"><strong>DG-2</strong></td>
+      <td style="padding:0.4rem 0.6rem;"><strong>partial</strong> — 1 PASS / 2 frozen / 1 Council-gated</td>
+      <td style="padding:0.4rem 0.6rem;">B1 PASS (Entry 1.B.3 diagonal). B2 frozen (Entry 1.B.3 off-diagonal + Entry 1.D). B3 frozen (Entry 1.A basis-independence). Coherent-displacement sub-claims (3.B.3 / 4.B.2) Council-gated.</td>
+    </tr>
+    <tr>
+      <td style="padding:0.4rem 0.6rem;"><strong>DG-3 / 4 / 5</strong></td>
+      <td style="padding:0.4rem 0.6rem;color:var(--stone);">not yet attempted</td>
+      <td style="padding:0.4rem 0.6rem;">Sequenced after DG-2 PASS.</td>
+    </tr>
+  </tbody>
+</table>
+<p style="margin-top:0.8rem;font-size:0.9rem;color:var(--stone);">Cards-first discipline: each card is committed at <code>status: frozen-awaiting-run</code> with all parameters fixed before any verifying code is written. Verdict commits are atomic and one-way; supersedure of a verdict requires a new card file. See the <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/SCHEMA.md">card schema (SCHEMA.md v0.1.2)</a> and <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/logbook/">logbook</a> for the audit trail.</p>
 </section>
 
 <section>
@@ -159,9 +190,9 @@
 
 <section>
 <h2>What the pipeline does</h2>
-<p>Starting from a microscopic open-system model, the pipeline computes the effective Hamiltonian <em>K</em>(<em>t</em>) of the time-convolutionless master equation under the Hayden–Sorce minimal-dissipation gauge, together with its perturbative expansion order by order, and the canonical generalised-Lindblad form of the corresponding generator. It is built around the basis-independent operational expression and the recursive perturbative construction introduced in the seed papers below.</p>
+<p>Starting from a microscopic open-system model, the pipeline computes the effective Hamiltonian <em>K</em>(<em>t</em>) of the time-convolutionless master equation under the Hayden–Sorce minimal-dissipation gauge, together with its perturbative expansion order by order, and the canonical generalised-Lindblad form of the corresponding generator. It is built around the basis-independent operational expression (Letter Eq. (6)) and the recursive perturbative construction introduced in the seed papers below.</p>
 <p>The pipeline aims to expose the <em>scope of applicability</em> of the construction rather than to confirm it. Concretely, this means: side-by-side comparison against numerically exact and standard approximate methods, explicit identification of regimes where the perturbative hierarchy fails, structural-identity checks at every computed order, and tracking of the gauge dependence wherever competing effective-Hamiltonian descriptions are available.</p>
-<p>At present (version 0.1.0), the repository contains the architectural scaffold, vendored references, and protective documentation. No scientific verification milestone has yet been reached. The roadmap and current status are documented in the repository.</p>
+<p>At <code>v0.2.0</code> (DG-1 PASS), the implementation that produces verdicts spans four packages — <code>cbg</code> (effective-Hamiltonian recipe and TCL recursion), <code>models</code> (system–environment factories), <code>numerical</code> (tensor primitives and time grids), and <code>reporting</code> (benchmark-card schema, loader, validator, runner). The auto-generated <a href="api/index.html">API documentation</a> covers all four; the <a href="cbg-tutorial-for-phd-students_v0.2.html">pedagogical tutorial</a> remains available as the entry-level orientation document. What is presently <em>verifiable</em> is bounded by the <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/docs/validity_envelope.md">validity envelope</a>; the API documentation describes capabilities, not validation status.</p>
 </section>
 
 <section>
@@ -231,7 +262,7 @@
 <p><strong>Conflict of interest.</strong> The maintainer of this repository (U. Warring) is a co-author of the trapped-ion experimental paper Colla, Hasse, Palani, Schaetz, Breuer, Warring, Nat. Commun. <strong>16</strong>, 2502 (2025), which is cited by the seed papers as providing experimental fingerprints supporting the minimal-dissipation Ansatz. To contain this conflict, the pipeline treats data from that experiment as a secondary cross-check only, never as primary evidence; primary experimental benchmarks must come from independent groups. Where no independent data exist, the corresponding model carries an explicit "awaiting independent replication" annotation. We actively welcome independent fingerprinting on other platforms.</p>
 </div>
 <p><strong>Scope of citation.</strong> This pipeline must not be cited as evidence that <em>K</em>(<em>t</em>) is the unique physical Hamiltonian of a strongly-coupled open quantum system. <em>K</em>(<em>t</em>) is coordinate-dependent under the Hayden–Sorce gauge; alternative gauges yield different effective Hamiltonians and different thermodynamic readings. Citation rules and the current scope of applicability are documented in the repository.</p>
-<p><strong>Status.</strong> Repository version 0.1.0. Architectural scaffold complete; no scientific verification milestone yet reached. Outputs at this version have demonstration value only.</p>
+<p><strong>Status.</strong> Repository at tag <code>v0.2.0</code>. DG-1 has passed; DG-2 is in progress (1 card PASS, 2 frozen, 1 Council-gated). DG-3 / DG-4 / DG-5 not yet attempted. Outputs verifiable at this version are bounded by the validity envelope; auto-generated <a href="api/index.html">API documentation</a> describes the implementation surface.</p>
 </section>
 
 <section>
@@ -242,7 +273,7 @@
 <footer>
 <p>Maintainer: Ulrich Warring, Physikalisches Institut, Albert-Ludwigs-Universität Freiburg <span class="center-dot"></span> ulrich.warring at physik.uni-freiburg.de</p>
 <p>Repository: code under MIT, documentation under CC-BY-4.0 <span class="center-dot"></span> citation file: <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/CITATION.cff">CITATION.cff</a></p>
-<p>Version 0.1.0 <span class="center-dot"></span> last updated 2026-04-30 <span class="center-dot"></span> a Zenodo DOI will be minted at the first scientific milestone</p>
+<p>Tag v0.2.0 (DG-1 PASS) <span class="center-dot"></span> last updated 2026-05-02 <span class="center-dot"></span> a Zenodo DOI will be minted at DG-2 PASS</p>
 </footer>
 
 </div>
