@@ -1,0 +1,289 @@
+# DG-2 Benchmark Card B3 — Cross-basis structural-identity for K_from_generator
+#
+# Anchor: CL-2026-005 v0.4 Entry 1.A (basis-independent form claim);
+#         Sail v0.5 §9 DG-2 universal-default structural-identity check;
+#         Letter Eqs. (6)-(7);
+#         cbg/effective_hamiltonian.py module docstring;
+#         cbg/basis.py su_d_generator_basis stub;
+#         SCHEMA.md v0.1.2
+# Phase: B (frozen-awaiting-run)
+#
+# Entry 1.A's central claim is that
+#
+#   K = (1 / 2id) sum_alpha [F_alpha^dagger, L[F_alpha]]      (Letter Eq. (6))
+#
+# yields the same operator K for ANY complete Hilbert-Schmidt-orthonormal
+# operator basis {F_alpha}. DG-1 cards (A1, A3, A4) and the diagonal /
+# off-diagonal pseudo-Kraus DG-2 cards (B1, B2) all evaluate K under the
+# matrix-unit basis F_{j,k} = |j⟩⟨k| (Letter Eq. (7)) — they verify K's
+# value, not its basis-independence. Sail v0.5 §9 DG-2 names cross-basis
+# verification as the DG-2 universal-default structural-identity check.
+#
+# B3 closes that universal default for d = 2: it freezes three known-
+# good HPTA fixtures (one pseudo-Kraus, two canonical Lindblad — all
+# reused from A1 and B1's frozen content) and asserts that
+# cbg.effective_hamiltonian.K_from_generator returns the same K under
+# both the matrix-unit basis (the existing reference) and the
+# su(d)-generator basis ({I, sigma_x, sigma_y, sigma_z} / sqrt(2) for
+# d = 2 — the normalized Pauli basis, per cbg.basis.su_d_generator_basis's
+# planned d=2 specialization). The card does NOT verify K's value
+# independently — that work is owned by A1 / B1 and remains unchanged.
+# B3 verifies *only* the basis-independence of the recipe.
+#
+# model_kind: algebraic_map (single-instant verification of a closed-
+# form L → K identity; perturbative order is 0; no time evolution).
+#
+# Card surface (additive over A1 / B1):
+#   - Each test_case carries the fixture-defining fields appropriate
+#     to its source-card shape (pseudo-Kraus or Lindblad), so the
+#     runner can rebuild L identically. Field names mirror A1 / B1
+#     so handler factories from those cards' wiring can be reused.
+#   - Each test_case adds `comparison_basis: "su_d_generator"`,
+#     specifying the alternate basis to compare against the matrix-
+#     unit reference under which K_from_generator is canonically
+#     evaluated.
+#
+# Out-of-scope for B3 v0.1.0 (deferred):
+#   - Cross-dimension cross-basis (d > 2): B3 freezes d = 2; the
+#     general-d su(d)-generator basis is implementable via
+#     cbg.basis.su_d_generator_basis once that stub fills in, but
+#     a higher-d fixture set is a separate freeze.
+#   - Pairwise comparison across MORE than two bases (e.g. matrix_unit
+#     vs su_d_generator vs hermitian_basis): the schema's per-case
+#     comparison_basis field carries one alternate; multi-basis is a
+#     future card surface.
+#   - Coherent-displacement gap (Entries 3.B.3, 4.B.2): unrelated
+#     orthogonal track; remains Council-gated.
+
+# ─── Top-level metadata ───────────────────────────────────────────────────────
+
+schema_version: "v0.1.2"
+card_id: "B3"
+version: "v0.1.0"
+date: "2026-05-01"
+dg_target: "DG-2"
+ledger_entry: "CL-2026-005 v0.4 Entry 1.A"
+model: "closed_form_algebraic"
+status: "frozen-awaiting-run"
+license: "CC-BY-4.0 (LICENSE-docs)"
+
+# ─── Gauge block ──────────────────────────────────────────────────────────────
+
+gauge:
+  gauge: "hayden-sorce-minimal-dissipation"
+  coordinate_dependent: true
+  direct_observable: false
+  gauge_alignment_required_for_comparison:
+    - "hmf"
+    - "polaron"
+    - "mori"
+
+# ─── Frozen parameters ────────────────────────────────────────────────────────
+
+frozen_parameters:
+
+  model:
+    model_kind: "algebraic_map"
+    system_dimension: 2
+
+    # The system-side scaffolding (system_hamiltonian, coupling_operator,
+    # bath_type, bath_spectral_density, bath_state) is omitted per
+    # SCHEMA.md §Algebraic-map cards: each test_case fixes its own L.
+    # B3's three test_cases are deliberately re-statements of frozen
+    # fixtures already passing under the matrix-unit reference (A1's
+    # two test_cases plus B1's sigma_z pseudo-Kraus fixture); the
+    # values of K are therefore known per A1 v0.1.1 / B1 v0.1.0 and
+    # are recorded here for cross-reference, but B3's PASS condition
+    # is the basis-independence equality K(matrix_unit) = K(su_d_generator),
+    # not the K value.
+
+    test_cases:
+
+      - name: "basis_independence_pseudo_kraus_sigma_z"
+        description: |
+          Reuse of B1's `pseudo_kraus_diagonal_sigma_z` fixture (V_1 = I + 1j*a*sigma_z,
+          V_2 = sqrt(1+a**2)*I, gammas = (1, -1), a = 0.5; HPTA holds as
+          algebraic identity; K_expected = -0.5*sigma_z under matrix_unit per
+          B1 v0.1.0 PASS). Asserts that K computed under the su(d)-generator
+          basis equals the matrix_unit reference within threshold.
+        pseudo_kraus_operators:
+          - "I + 1j * a * sigma_z"
+          - "sqrt(1 + a**2) * I"
+        pseudo_kraus_coefficients:
+          - 1.0
+          - -1.0
+        parameters:
+          a: 0.5
+        comparison_basis: "su_d_generator"
+        hpta_precondition: |
+          gamma_1 E_1^dagger E_1 + gamma_2 E_2^dagger E_2
+            = (I - i*a*sigma_z)(I + i*a*sigma_z) - (1 + a**2) I
+            = (1 + a**2) I - (1 + a**2) I
+            = 0
+          identically (algebraic identity, exact for all real a;
+          inherited from B1 fixture).
+        expected_outcome: |
+          ||K(matrix_unit) - K(su_d_generator)||_F / max(||K(matrix_unit)||_F, 1) <= 1.0e-10.
+          Common value (per B1 v0.1.0 PASS) is K = -a*sigma_z = -0.5*sigma_z.
+          B3 PASS does NOT re-verify the value; it verifies basis-independence.
+        reference: "Letter Eq. (6) basis-independence claim; transcriptions/hayden-sorce-2022_pseudokraus_v0.1.0.md §4 / §7; benchmarks/benchmark_cards/B1_pseudo-kraus-diagonal_v0.1.0.yaml frozen test_case pseudo_kraus_diagonal_sigma_z; CL-2026-005 v0.4 Entry 1.A"
+
+      - name: "basis_independence_lindblad_traceless"
+        description: |
+          Reuse of A1 v0.1.1's `canonical_lindblad_traceless` fixture
+          (H = (omega/2)*sigma_z; jumps sqrt(gamma_minus)*sigma_minus,
+          sqrt(gamma_plus)*sigma_plus; A1 PASS gives K = (omega/2)*sigma_z).
+          Lindblad form with traceless jumps is HPTA by construction;
+          no separate HPTA gate.
+        hamiltonian_term: "(omega / 2) * sigma_z"
+        jump_operators:
+          - "sqrt(gamma_minus) * sigma_minus"
+          - "sqrt(gamma_plus)  * sigma_plus"
+        parameters:
+          omega: 1.0           # dimensionless; sets the energy scale (mirrors A1)
+          gamma_minus: 0.1     # downward dissipation rate (mirrors A1)
+          gamma_plus: 0.05     # upward (thermal-excitation) rate (mirrors A1)
+        comparison_basis: "su_d_generator"
+        expected_outcome: |
+          ||K(matrix_unit) - K(su_d_generator)||_F / max(||K(matrix_unit)||_F, 1) <= 1.0e-10.
+          Common value (per A1 v0.1.1 PASS) is K = (omega/2)*sigma_z.
+          B3 PASS does NOT re-verify the value.
+        reference: "Letter Eq. (6) basis-independence claim; benchmarks/benchmark_cards/A1_closed-form-K_v0.1.1.yaml frozen test_case canonical_lindblad_traceless; CL-2026-005 v0.4 Entry 1.A"
+
+      - name: "basis_independence_lindblad_lamb_shift"
+        description: |
+          Reuse of A1 v0.1.1's `markovian_weak_coupling_lamb_shift`
+          fixture (H = ((omega + 2*delta_LS)/2)*sigma_z; single jump
+          sqrt(gamma)*sigma_minus; A1 PASS gives
+          K = ((omega + 2*delta_LS)/2)*sigma_z). Lindblad form (HPTA
+          automatic).
+        hamiltonian_term: "((omega + 2 * delta_LS) / 2) * sigma_z"
+        jump_operators:
+          - "sqrt(gamma) * sigma_minus"
+        parameters:
+          omega: 1.0           # bare system energy (mirrors A1)
+          delta_LS: 0.01       # Lamb-shift correction (mirrors A1)
+          gamma: 0.1           # weak-coupling dissipation rate (mirrors A1)
+        comparison_basis: "su_d_generator"
+        expected_outcome: |
+          ||K(matrix_unit) - K(su_d_generator)||_F / max(||K(matrix_unit)||_F, 1) <= 1.0e-10.
+          Common value (per A1 v0.1.1 PASS) is K = ((omega + 2*delta_LS)/2)*sigma_z.
+          B3 PASS does NOT re-verify the value.
+        reference: "Letter Eq. (6) basis-independence claim; benchmarks/benchmark_cards/A1_closed-form-K_v0.1.1.yaml frozen test_case markovian_weak_coupling_lamb_shift; CL-2026-005 v0.4 Entry 1.A"
+
+  truncation:
+    perturbative_order: 0      # algebraic identity; no perturbative recursion
+    basis: "matrix_unit"       # the REFERENCE basis; per-case `comparison_basis` carries the alternate
+
+  numerical:
+    # time_grid omitted: model_kind == algebraic_map (single-instant verification).
+    integration_tolerance:
+      # Solver is "analytical"; these tolerances bound numerical round-off
+      # in the closed-form evaluation. The HPTA precondition residual
+      # (pseudo-Kraus case only) is checked against `absolute` (1.0e-14);
+      # the cross-basis comparison threshold below (1.0e-10) is the
+      # acceptance gate.
+      relative: 1.0e-12
+      absolute: 1.0e-14
+    solver: "analytical"
+
+  comparison:
+    reference: "Letter Eq. (6) basis-independence claim; cbg/effective_hamiltonian.py module docstring; cbg/basis.py su_d_generator_basis docstring; per-case anchors in frozen_parameters.model.test_cases[i].reference"
+    target_observable: "K_basis_difference"
+    error_metric: "relative_frobenius"
+    threshold: 1.0e-10
+
+# ─── Acceptance criterion ─────────────────────────────────────────────────────
+
+acceptance_criterion:
+  reference: "Letter Eq. (6) basis-independence claim; CL-2026-005 v0.4 Entry 1.A; Sail v0.5 §9 DG-2 universal-default structural-identity check"
+  observable: "K_basis_difference"
+  error_metric: "relative_frobenius"
+  threshold: 1.0e-10
+  projection_scheme: null
+  rationale: |
+    PASS iff every test case in frozen_parameters.model.test_cases
+    satisfies BOTH of the following:
+
+      (1) HPTA precondition holds (pseudo-Kraus cases only):
+            ||sum_j gamma_j E_j^dagger E_j||_F <= 1.0e-14
+          For Lindblad-form cases (basis_independence_lindblad_traceless,
+          basis_independence_lindblad_lamb_shift), HPTA is automatic by
+          construction (Lindblad form with traceless jumps + commutator
+          with H is HPTA; no separate residual to check). For the
+          pseudo-Kraus case (basis_independence_pseudo_kraus_sigma_z),
+          this gate is identical to B1's HPTA gate and is satisfied
+          as an algebraic identity by the inherited fixture.
+
+      (2) Cross-basis structural identity holds:
+            ||K(matrix_unit) - K(comparison_basis)||_F / max(||K(matrix_unit)||_F, 1) <= 1.0e-10
+          where K(matrix_unit) = K_from_generator(L, matrix_unit_basis(d))
+          and K(comparison_basis) = K_from_generator(L, su_d_generator_basis(d))
+          (for d = 2: the normalized Pauli basis), both evaluated on
+          the same generator L built from the case's fixture-defining
+          fields. The max(_, 1) guard keeps the metric well-defined
+          when K(matrix_unit) = 0; for the frozen fixtures, all three
+          give nonzero K, so this guard is inert here.
+
+    Per-case PASS conditions, mapped to Entry 1.A:
+
+      - basis_independence_pseudo_kraus_sigma_z: confirms basis-
+        independence on a non-trivial pseudo-Kraus L. Failure here
+        would indicate that cbg.effective_hamiltonian.K_from_generator
+        depends on the basis choice — i.e., either the implementation
+        of the basis sum is inconsistent with Letter Eq. (6) or
+        cbg.basis.su_d_generator_basis returns a non-orthonormal
+        result.
+
+      - basis_independence_lindblad_traceless: confirms basis-
+        independence on a canonical-Lindblad L with traceless jumps.
+        Failure would localise the same class of bug in a different
+        fixture (canonical Lindblad rather than pseudo-Kraus).
+
+      - basis_independence_lindblad_lamb_shift: confirms basis-
+        independence on a Lindblad L whose K carries a Lamb-shift
+        correction (K = ((omega + 2*delta_LS)/2)*sigma_z), exercising
+        the algebraic identity at a slightly different K magnitude.
+        Failure here with the traceless case passing would indicate
+        an issue specific to the Lamb-shift fixture's parameter
+        substitution.
+
+    Independence from K's value. B3 does NOT re-verify the values
+    of K already established by A1 v0.1.1 (PASS, 2026-04-30) and
+    B1 v0.1.0 (PASS, 2026-05-01). The runner is expected to compute
+    K under both bases and compare the two outputs to each other,
+    NOT to a reference K value. This is deliberate: B3 tests
+    basis-independence in isolation, so a regression in the basis
+    sum or in the su(d)-generator basis builder cannot be masked by
+    a coincident regression in fixture evaluation.
+
+    Out of scope for Card B3 v0.1.0:
+      - Cross-dimension cross-basis (d > 2): B3 freezes d = 2.
+      - Multi-basis pairwise comparison (more than one alternate
+        basis per case): single comparison_basis per case at v0.1.0.
+      - Off-diagonal pseudo-Kraus fixtures: B2's territory; not
+        re-tested here. (B3 could in principle reuse a B2 fixture
+        once B2 PASSes; that is a future card surface, not v0.1.0.)
+      - Coherent-displacement (Entries 3.B.3, 4.B.2): unrelated;
+        Council-gated.
+
+# ─── Result block ─────────────────────────────────────────────────────────────
+
+result:
+  verdict: null
+  evidence: []
+  commit_hash: ""
+  runner_version: ""
+  notes: ""
+
+# ─── Failure-mode log ─────────────────────────────────────────────────────────
+
+failure_mode_log: []
+
+# ─── Stewardship flag ─────────────────────────────────────────────────────────
+
+stewardship_flag:
+  status: "unflagged"
+  rationale: ""
+  data_source: ""
+  search_performed: ""

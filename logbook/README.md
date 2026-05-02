@@ -75,9 +75,10 @@ Both exceptions are bookkeeping completions of explicit gaps, not substantive re
 | 2026-05-01 | `dg-2-b1-pass` | structural | DG-2 Card B1 v0.1.0 PASS — diagonal pseudo-Kraus runner confirms Entry 1.B.3 at machine precision; three test_cases all error=0.0, HPTA residuals below 1e-14; does not constitute full DG-2 PASS |
 | 2026-05-01 | `hayden-sorce-transcription-v0.1.1-bumped` | structural | Transcription v0.1.0 → v0.1.1: §4b adds off-diagonal pseudo-Kraus generalization (Letter-derived consequence, source-content unchanged); §7a adds off-diagonal candidate fixture; opens admissible path for off-diagonal Entry 1.B.3 / Entry 1.D card; no code change, no card freeze, no DG status change |
 | 2026-05-01 | `dg-2-b2-card-frozen` | structural | DG-2 Card B2 v0.1.0 frozen against transcription v0.1.1; three off-diagonal HPTA + Hermitian-omega fixtures freeze the off-diagonal half of Entry 1.B.3 + Entry 1.D; new card surface (pseudo_kraus_offdiag_operators / pseudo_kraus_offdiag_omega); no runner handlers yet (cards-first), no DG status change |
+| 2026-05-01 | `dg-2-b3-card-frozen` | structural | DG-2 Card B3 v0.1.0 frozen — cross-basis structural-identity check (Entry 1.A basis-independence; Sail v0.5 §9 DG-2 universal default); three test_cases reuse A1 / B1 frozen fixtures and assert K agreement under matrix_unit vs su_d_generator (d=2 normalized Pauli) bases; no runner handlers, no su_d_generator builder yet (cards-first), no DG status change |
 
 (This index is updated atomically when new entries are added.)
 
 ---
 
-*Last updated: 2026-05-01 (DG-2 Card B2 frozen). CC-BY-4.0 (see ../LICENSE-docs).*
+*Last updated: 2026-05-01 (DG-2 Card B3 frozen). CC-BY-4.0 (see ../LICENSE-docs).*
