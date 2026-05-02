@@ -1,0 +1,2 @@
+- [DG-2 progress and remaining blockers](project_dg2_blockers.md) — B1 PASS as of 2026-05-01; off-diagonal + displacement gaps + cross-basis check still open
+- [Cards-first discipline](feedback_cards_first_discipline.md) — validated workflow for DG-* deliverables; cards frozen at implementation start
