@@ -1,0 +1,45 @@
+{
+  "card_id": "B2",
+  "card_version": "v0.1.0",
+  "card_path": "benchmarks/benchmark_cards/B2_pseudo-kraus-offdiagonal_v0.1.0.yaml",
+  "schema_version": "v0.1.2",
+  "ledger_entry": "CL-2026-005 v0.4 Entry 1.B.3 (off-diagonal half), Entry 1.D",
+  "verdict": "PASS",
+  "runner_version": "0.1.0",
+  "computed_at_utc": "2026-05-04T06:16:46.332380+00:00",
+  "test_case_results": [
+    {
+      "name": "offdiag_omega_imaginary_sigma_z",
+      "passed": true,
+      "error": 0.0,
+      "threshold": 1e-10,
+      "hpta_residual": 0.0,
+      "hpta_threshold": 1e-14,
+      "hermiticity_residual": 0.0,
+      "hermiticity_threshold": 1e-14,
+      "notes": ""
+    },
+    {
+      "name": "offdiag_omega_imaginary_sigma_x",
+      "passed": true,
+      "error": 0.0,
+      "threshold": 1e-10,
+      "hpta_residual": 0.0,
+      "hpta_threshold": 1e-14,
+      "hermiticity_residual": 0.0,
+      "hermiticity_threshold": 1e-14,
+      "notes": ""
+    },
+    {
+      "name": "offdiag_omega_diagonal_only",
+      "passed": true,
+      "error": 0.0,
+      "threshold": 1e-10,
+      "hpta_residual": 0.0,
+      "hpta_threshold": 1e-14,
+      "hermiticity_residual": 0.0,
+      "hermiticity_threshold": 1e-14,
+      "notes": ""
+    }
+  ]
+}

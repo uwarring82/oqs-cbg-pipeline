@@ -168,6 +168,8 @@ class TestCaseResult:
     notes: str = ""
     hpta_residual: Optional[float] = None  # populated for pseudo-Kraus handlers; None for Lindblad-form handlers
     hpta_threshold: Optional[float] = None  # absolute Frobenius bound; None when no HPTA gate applies
+    hermiticity_residual: Optional[float] = None  # populated for off-diagonal pseudo-Kraus (B2); None elsewhere
+    hermiticity_threshold: Optional[float] = None  # absolute Frobenius bound; None when no Hermiticity gate applies
 
 
 @dataclass
@@ -465,17 +467,20 @@ def _build_lindblad_generator(
 
 def _handler_canonical_lindblad_traceless(
     case: Dict[str, Any], d: int,
-) -> Tuple[Callable[[np.ndarray], np.ndarray], np.ndarray, Optional[float]]:
+) -> Tuple[
+    Callable[[np.ndarray], np.ndarray], np.ndarray,
+    Optional[float], Optional[float],
+]:
     """Card A1 v0.1.1 test_case canonical_lindblad_traceless (Entry 1.B.1).
 
     H = (omega/2)*sigma_z (traceless); jumps sqrt(gamma_*) * sigma_∓.
     Expected K = H per the dissipator-with-traceless-jumps property.
     Operates only at d=2.
 
-    Returns (L, K_expected, None). The trailing None signals that no HPTA
-    precondition gate applies — Lindblad form with traceless jumps is HPTA
-    by construction at the protocol level (the dissipator's adjoint identity
-    is the standard `sum_i V_i^dagger V_i` anti-commutator term).
+    Returns (L, K_expected, None, None). The trailing Nones signal that
+    no HPTA precondition gate and no Hermiticity-of-omega gate apply —
+    Lindblad form with traceless jumps is HPTA by construction, and the
+    handler does not carry an omega coefficient matrix.
     """
     if d != 2:
         raise NotImplementedError(
@@ -492,12 +497,15 @@ def _handler_canonical_lindblad_traceless(
         np.sqrt(gamma_plus) * _SIGMA_PLUS,
     ]
     L = _build_lindblad_generator(H, jumps)
-    return L, H, None
+    return L, H, None, None
 
 
 def _handler_markovian_weak_coupling_lamb_shift(
     case: Dict[str, Any], d: int,
-) -> Tuple[Callable[[np.ndarray], np.ndarray], np.ndarray, Optional[float]]:
+) -> Tuple[
+    Callable[[np.ndarray], np.ndarray], np.ndarray,
+    Optional[float], Optional[float],
+]:
     """Card A1 v0.1.1 test_case markovian_weak_coupling_lamb_shift (Entry 1.B.2).
 
     H = ((omega + 2*delta_LS)/2)*sigma_z (system + Lamb shift, combined);
@@ -505,8 +513,8 @@ def _handler_markovian_weak_coupling_lamb_shift(
     coherent term recovered).
     Operates only at d=2.
 
-    Returns (L, K_expected, None). See canonical_lindblad_traceless above
-    for why the trailing None.
+    Returns (L, K_expected, None, None). See canonical_lindblad_traceless
+    above for why the trailing Nones.
     """
     if d != 2:
         raise NotImplementedError(
@@ -520,7 +528,7 @@ def _handler_markovian_weak_coupling_lamb_shift(
     H = 0.5 * (omega + 2.0 * delta_LS) * _SIGMA_Z
     jumps = [np.sqrt(gamma) * _SIGMA_MINUS]
     L = _build_lindblad_generator(H, jumps)
-    return L, H, None
+    return L, H, None, None
 
 
 # ─── Symbolic-operator parser (pseudo-Kraus handlers, B1) ───────────────────
@@ -685,7 +693,10 @@ def _make_pseudo_kraus_handler(
     expected_K: Callable[[Dict[str, Any]], np.ndarray],
 ) -> Callable[
     [Dict[str, Any], int],
-    Tuple[Callable[[np.ndarray], np.ndarray], np.ndarray, float],
+    Tuple[
+        Callable[[np.ndarray], np.ndarray], np.ndarray,
+        float, Optional[float],
+    ],
 ]:
     """Return a handler for a pseudo-Kraus algebraic_map test_case.
 
@@ -697,11 +708,17 @@ def _make_pseudo_kraus_handler(
       4. Computes the HPTA residual ||sum_j gamma_j E_j^dagger E_j||_F.
       5. Calls ``expected_K(case)`` to obtain K_expected for this case.
 
-    Returns (L, K_expected, hpta_residual).
+    Returns (L, K_expected, hpta_residual, None). The trailing None is
+    the Hermiticity-of-omega slot — diagonal pseudo-Kraus has real
+    coefficients (the 1×1 / vector form is trivially Hermitian, and the
+    runner has no omega matrix to gate on).
     """
     def handler(
         case: Dict[str, Any], d: int,
-    ) -> Tuple[Callable[[np.ndarray], np.ndarray], np.ndarray, float]:
+    ) -> Tuple[
+        Callable[[np.ndarray], np.ndarray], np.ndarray,
+        float, Optional[float],
+    ]:
         if d != 2:
             raise NotImplementedError(
                 f"pseudo-Kraus handler: only d=2 supported (Card B1 v0.1.0); "
@@ -715,7 +732,7 @@ def _make_pseudo_kraus_handler(
         L = _build_pseudo_kraus_generator(operators, coefficients)
         residual = _hpta_residual(operators, coefficients)
         K_expected = expected_K(case)
-        return L, K_expected, residual
+        return L, K_expected, residual, None
     return handler
 
 
@@ -736,6 +753,241 @@ def _expected_K_pseudo_kraus_diagonal_sigma_x(case: Dict[str, Any]) -> np.ndarra
 
 def _expected_K_pseudo_kraus_traceless_jumps(case: Dict[str, Any]) -> np.ndarray:
     """K = 0; transcription §5 'every V_i traceless => H_HS = 0'."""
+    return np.zeros((2, 2), dtype=complex)
+
+
+# ─── Off-diagonal pseudo-Kraus support (B2) ─────────────────────────────────
+#
+# Card B2's pseudo_kraus_offdiag_omega field carries a 2D list of symbolic
+# strings (e.g. "1.0", "1j * beta", "-1j * beta") that must reduce to
+# complex scalars under the case's parameters. The same AST whitelist as
+# B1's operator parser applies (Constant / Name / numeric BinOp / UnaryOp /
+# sqrt(...)), but the namespace excludes operator identifiers — an omega
+# entry must be scalar-typed, so I / sigma_x / ... in scope would be a
+# category error. _eval_complex_scalar_expression enforces the scalar
+# discipline by stripping the operator namespace before evaluation.
+
+
+def _eval_complex_scalar_expression(
+    expr: str, parameters: Dict[str, Any],
+) -> complex:
+    """Evaluate a complex-scalar expression in a parameters-only namespace.
+
+    Used by B2's pseudo_kraus_offdiag_omega entries (and any future card
+    surface that needs scalar coefficients without operator identifiers
+    in scope). Reuses the AST whitelist from _eval_operator_expression
+    but keeps the namespace narrow: only the case's `parameters`, the
+    `sqrt` builtin, and numeric / complex literals.
+
+    Parameters
+    ----------
+    expr : str
+        Symbolic scalar expression. Identifiers must come from the
+        ``parameters`` dict; ``sqrt`` is the only allowed function call;
+        numeric and complex literals (e.g. 1j, -1.0) are permitted.
+    parameters : dict
+        Per-case named parameters.
+
+    Returns
+    -------
+    complex
+        The evaluated scalar, coerced to complex.
+
+    Raises
+    ------
+    ValueError
+        If the expression contains forbidden AST nodes, calls to
+        functions other than sqrt, parameter names shadowing sqrt, or
+        identifiers not in ``parameters``.
+    """
+    namespace: Dict[str, Any] = dict(parameters)
+    for pname in parameters:
+        if pname in _ALLOWED_FUNCTION_NAMES:
+            raise ValueError(
+                f"_eval_complex_scalar_expression: parameter name {pname!r} "
+                f"shadows a reserved function name; rename in the card's "
+                f"parameters block"
+            )
+    namespace["sqrt"] = np.sqrt
+
+    try:
+        tree = ast.parse(expr, mode="eval")
+    except SyntaxError as e:
+        raise ValueError(
+            f"_eval_complex_scalar_expression: cannot parse expression "
+            f"{expr!r}: {e}"
+        ) from e
+
+    for node in ast.walk(tree):
+        if not isinstance(node, _ALLOWED_AST_NODES):
+            raise ValueError(
+                f"_eval_complex_scalar_expression: forbidden AST node "
+                f"{type(node).__name__} in expression {expr!r}"
+            )
+        if isinstance(node, ast.Call):
+            if not (isinstance(node.func, ast.Name)
+                    and node.func.id in _ALLOWED_FUNCTION_NAMES):
+                raise ValueError(
+                    f"_eval_complex_scalar_expression: only calls to "
+                    f"{sorted(_ALLOWED_FUNCTION_NAMES)} are permitted; "
+                    f"got call in expression {expr!r}"
+                )
+        if isinstance(node, ast.Name) and node.id not in namespace:
+            raise ValueError(
+                f"_eval_complex_scalar_expression: unknown identifier "
+                f"{node.id!r} in expression {expr!r}; available: "
+                f"{sorted(namespace.keys())}"
+            )
+
+    value = eval(  # noqa: S307 — restricted namespace + AST whitelist enforced above
+        compile(tree, "<scalar-expression>", "eval"),
+        {"__builtins__": {}},
+        namespace,
+    )
+    return complex(value)
+
+
+def _parse_offdiag_omega(
+    rows: List[List[str]], parameters: Dict[str, Any],
+) -> np.ndarray:
+    """Parse a 2D list of complex-scalar string expressions into an n×n array.
+
+    Validates that the input is square (rows of equal length); the
+    Hermiticity check happens at the runner level via _hermiticity_residual.
+    """
+    n = len(rows)
+    omega = np.zeros((n, n), dtype=complex)
+    for i, row in enumerate(rows):
+        if len(row) != n:
+            raise ValueError(
+                f"_parse_offdiag_omega: row {i} has length {len(row)}; "
+                f"expected square matrix of size {n}×{n}"
+            )
+        for j, entry in enumerate(row):
+            omega[i, j] = _eval_complex_scalar_expression(entry, parameters)
+    return omega
+
+
+def _hermiticity_residual(omega: np.ndarray) -> float:
+    """Absolute Frobenius norm of omega - omega^dagger."""
+    return float(np.linalg.norm(omega - omega.conj().T, ord="fro"))
+
+
+def _build_offdiag_pseudo_kraus_generator(
+    operators: List[np.ndarray], omega: np.ndarray,
+) -> Callable[[np.ndarray], np.ndarray]:
+    """Build L(rho) = sum_{i,j} omega_{ij} V_i rho V_j^dagger.
+
+    Caller is responsible for Hermiticity of omega and HPTA
+    (sum_{i,j} omega_{ij} V_j^dagger V_i = 0). This function does not
+    validate; the runner gates on those preconditions before evaluating
+    the K comparison.
+    """
+    n = len(operators)
+
+    def L(rho: np.ndarray) -> np.ndarray:
+        out = np.zeros_like(rho, dtype=complex)
+        for i in range(n):
+            V_i = operators[i]
+            for j in range(n):
+                V_j_dag = operators[j].conj().T
+                out += omega[i, j] * (V_i @ rho @ V_j_dag)
+        return out
+    return L
+
+
+def _offdiag_hpta_residual(
+    operators: List[np.ndarray], omega: np.ndarray,
+) -> float:
+    """Absolute Frobenius norm of sum_{i,j} omega_{ij} V_j^dagger V_i."""
+    n = len(operators)
+    d = operators[0].shape[0]
+    acc = np.zeros((d, d), dtype=complex)
+    for i in range(n):
+        V_i = operators[i]
+        for j in range(n):
+            V_j_dag = operators[j].conj().T
+            acc += omega[i, j] * (V_j_dag @ V_i)
+    return float(np.linalg.norm(acc, ord="fro"))
+
+
+def _make_offdiag_pseudo_kraus_handler(
+    expected_K: Callable[[Dict[str, Any]], np.ndarray],
+) -> Callable[
+    [Dict[str, Any], int],
+    Tuple[
+        Callable[[np.ndarray], np.ndarray], np.ndarray,
+        float, float,
+    ],
+]:
+    """Return a handler for an off-diagonal pseudo-Kraus algebraic_map test_case.
+
+    The returned handler:
+      1. Parses ``case["pseudo_kraus_offdiag_operators"]`` against the
+         d=2 operator namespace augmented with ``case["parameters"]``.
+      2. Parses ``case["pseudo_kraus_offdiag_omega"]`` (2D list of
+         strings) against the parameters-only scalar namespace.
+      3. Computes the Hermiticity residual ||omega - omega^dagger||_F.
+      4. Builds L(rho) = sum_{i,j} omega_{ij} V_i rho V_j^dagger.
+      5. Computes the HPTA residual ||sum_{i,j} omega_{ij} V_j^dagger V_i||_F.
+      6. Calls ``expected_K(case)`` to obtain K_expected for this case.
+
+    Returns (L, K_expected, hpta_residual, hermiticity_residual).
+    """
+    def handler(
+        case: Dict[str, Any], d: int,
+    ) -> Tuple[
+        Callable[[np.ndarray], np.ndarray], np.ndarray,
+        float, float,
+    ]:
+        if d != 2:
+            raise NotImplementedError(
+                f"off-diagonal pseudo-Kraus handler: only d=2 supported "
+                f"(Card B2 v0.1.0); got d={d}"
+            )
+        params = case.get("parameters") or {}
+        op_exprs = case["pseudo_kraus_offdiag_operators"]
+        omega_rows = case["pseudo_kraus_offdiag_omega"]
+        operators = [_eval_operator_expression(e, params, d) for e in op_exprs]
+        omega = _parse_offdiag_omega(omega_rows, params)
+        if omega.shape[0] != len(operators):
+            raise ValueError(
+                f"off-diagonal pseudo-Kraus handler: omega is "
+                f"{omega.shape[0]}×{omega.shape[0]} but {len(operators)} "
+                f"V_i operators were provided; sizes must match"
+            )
+        hermiticity = _hermiticity_residual(omega)
+        L = _build_offdiag_pseudo_kraus_generator(operators, omega)
+        hpta = _offdiag_hpta_residual(operators, omega)
+        K_expected = expected_K(case)
+        return L, K_expected, hpta, hermiticity
+    return handler
+
+
+# Per-test-case K_expected closures for B2, derived from transcription §4b:
+#
+#   H_HS^off-diag = (1/2id) sum_{i,j} omega_{ij}
+#                          (Tr(V_i) V_j^dagger - Tr(V_j^dagger) V_i)
+#
+# Each fixture's per-term derivation is recorded in the YAML's
+# expected_outcome and §7a; here we encode the closed-form result.
+
+def _expected_K_offdiag_omega_imaginary_sigma_z(case: Dict[str, Any]) -> np.ndarray:
+    """K = beta * sigma_z; transcription §7a worked fixture at the case's beta."""
+    beta = float(case["parameters"]["beta"])
+    return beta * _SIGMA_Z
+
+
+def _expected_K_offdiag_omega_imaginary_sigma_x(case: Dict[str, Any]) -> np.ndarray:
+    """K = -beta * sigma_x; sigma_x analog of §7a at the case's beta."""
+    beta = float(case["parameters"]["beta"])
+    return -beta * _SIGMA_X
+
+
+def _expected_K_offdiag_omega_diagonal_only(case: Dict[str, Any]) -> np.ndarray:
+    """K = 0; degenerate sub-case where omega's off-diagonal entries vanish
+    and the V_i pair (I, sigma_z) gives Tr-cancellation in the (1,1) summand
+    and a traceless-V in the (2,2) summand."""
     return np.zeros((2, 2), dtype=complex)
 
 
@@ -769,33 +1021,48 @@ _BASIS_BUILDERS: Dict[str, Callable[[int], List[np.ndarray]]] = {
 def _make_basis_independence_handler(
     base_handler: Callable[
         [Dict[str, Any], int],
-        Tuple[Callable[[np.ndarray], np.ndarray], np.ndarray, Optional[float]],
+        Tuple[
+            Callable[[np.ndarray], np.ndarray], np.ndarray,
+            Optional[float], Optional[float],
+        ],
     ],
 ) -> Callable[
     [Dict[str, Any], int],
-    Tuple[Callable[[np.ndarray], np.ndarray], None, Optional[float]],
+    Tuple[
+        Callable[[np.ndarray], np.ndarray], None,
+        Optional[float], Optional[float],
+    ],
 ]:
     """Wrap an A1 / B1 handler to drop K_expected for B3 cross-basis use.
 
     The wrapped handler builds L identically to the source-card handler
     (so the parser / Lindblad-builder logic is reused unchanged) and
-    returns (L, None, hpta_residual). The None in the second slot is
-    the runner's signal to switch to the cross-basis comparison branch.
+    returns (L, None, hpta_residual, hermiticity_residual). The None in
+    the second slot is the runner's signal to switch to the cross-basis
+    comparison branch; the trailing slots pass through whatever the
+    source handler surfaced.
     """
     def handler(
         case: Dict[str, Any], d: int,
-    ) -> Tuple[Callable[[np.ndarray], np.ndarray], None, Optional[float]]:
-        L, _K_expected, hpta_residual = base_handler(case, d)
-        return L, None, hpta_residual
+    ) -> Tuple[
+        Callable[[np.ndarray], np.ndarray], None,
+        Optional[float], Optional[float],
+    ]:
+        L, _K_expected, hpta_residual, hermiticity_residual = base_handler(case, d)
+        return L, None, hpta_residual, hermiticity_residual
     return handler
 
 
 # Registry: test_case name → handler. Adding a new test_case to a card
-# requires registering its handler here. Lindblad-form handlers (A1) return
-# (L, K_expected, None); pseudo-Kraus handlers (B1) return
-# (L, K_expected, hpta_residual). Basis-independence handlers (B3) return
-# (L, None, hpta_residual_or_None) — K_expected None signals the runner to
-# use the cross-basis comparison branch instead of the K-value branch.
+# requires registering its handler here. Handlers return a 4-tuple:
+# (L, K_expected_or_None, hpta_residual_or_None, hermiticity_residual_or_None).
+#   - Lindblad-form (A1): (L, K, None, None)
+#   - Diagonal pseudo-Kraus (B1): (L, K, hpta, None)
+#   - Off-diagonal pseudo-Kraus (B2): (L, K, hpta, hermiticity)
+#   - Basis-independence (B3): (L, None, hpta_or_None, hermiticity_or_None)
+# K_expected = None is the runner's signal to take the cross-basis comparison
+# branch (B3); the trailing residual slots gate the runner's precondition
+# checks.
 _TEST_CASE_HANDLERS: Dict[
     str,
     Callable[
@@ -803,6 +1070,7 @@ _TEST_CASE_HANDLERS: Dict[
         Tuple[
             Callable[[np.ndarray], np.ndarray],
             Optional[np.ndarray],
+            Optional[float],
             Optional[float],
         ],
     ],
@@ -815,6 +1083,12 @@ _TEST_CASE_HANDLERS: Dict[
         _make_pseudo_kraus_handler(_expected_K_pseudo_kraus_diagonal_sigma_x),
     "pseudo_kraus_traceless_jumps":
         _make_pseudo_kraus_handler(_expected_K_pseudo_kraus_traceless_jumps),
+    "offdiag_omega_imaginary_sigma_z":
+        _make_offdiag_pseudo_kraus_handler(_expected_K_offdiag_omega_imaginary_sigma_z),
+    "offdiag_omega_imaginary_sigma_x":
+        _make_offdiag_pseudo_kraus_handler(_expected_K_offdiag_omega_imaginary_sigma_x),
+    "offdiag_omega_diagonal_only":
+        _make_offdiag_pseudo_kraus_handler(_expected_K_offdiag_omega_diagonal_only),
     "basis_independence_pseudo_kraus_sigma_z":
         _make_basis_independence_handler(
             _make_pseudo_kraus_handler(_expected_K_pseudo_kraus_diagonal_sigma_z)
@@ -891,10 +1165,36 @@ def _run_algebraic_map(card: BenchmarkCard) -> CardResult:
                 f"reporting.benchmark_card._TEST_CASE_HANDLERS."
             )
         handler = _TEST_CASE_HANDLERS[name]
-        L, K_expected, hpta_residual = handler(case, d)
+        L, K_expected, hpta_residual, hermiticity_residual = handler(case, d)
+
+        # Hermiticity-of-omega precondition gate — applies only to handlers
+        # that surface a non-None residual (off-diagonal pseudo-Kraus B2
+        # cases). Checked first because Hermiticity is the structural
+        # precondition for HPTA itself: a non-Hermitian omega makes the
+        # HPTA residual ill-typed (it can be non-zero anti-Hermitian) and
+        # the K comparison downstream meaningless. Short-circuit with a
+        # clear diagnostic.
+        if hermiticity_residual is not None and hermiticity_residual > abs_tol:
+            test_case_results.append(TestCaseResult(
+                name=name,
+                passed=False,
+                error=hermiticity_residual,
+                threshold=abs_tol,
+                notes=(
+                    f"Hermiticity precondition failed: "
+                    f"||omega - omega^dagger||_F = {hermiticity_residual:.3e} "
+                    f"> absolute tolerance {abs_tol:.3e}. "
+                    f"HPTA and K comparison skipped."
+                ),
+                hpta_residual=hpta_residual,
+                hpta_threshold=abs_tol if hpta_residual is not None else None,
+                hermiticity_residual=hermiticity_residual,
+                hermiticity_threshold=abs_tol,
+            ))
+            continue
 
         # HPTA precondition gate — applies only to handlers that surface a
-        # non-None residual (pseudo-Kraus B1 cases). The threshold is
+        # non-None residual (pseudo-Kraus B1 / B2 cases). The threshold is
         # numerical.integration_tolerance.absolute, the same bound the card
         # cites in acceptance_criterion.rationale. A failure here means the
         # fixture is not a valid pseudo-Kraus generator and the K comparison
@@ -913,6 +1213,8 @@ def _run_algebraic_map(card: BenchmarkCard) -> CardResult:
                 ),
                 hpta_residual=hpta_residual,
                 hpta_threshold=abs_tol,
+                hermiticity_residual=hermiticity_residual,
+                hermiticity_threshold=abs_tol if hermiticity_residual is not None else None,
             ))
             continue
 
@@ -965,6 +1267,8 @@ def _run_algebraic_map(card: BenchmarkCard) -> CardResult:
             threshold=threshold,
             hpta_residual=hpta_residual,
             hpta_threshold=abs_tol if hpta_residual is not None else None,
+            hermiticity_residual=hermiticity_residual,
+            hermiticity_threshold=abs_tol if hermiticity_residual is not None else None,
         ))
 
     all_passed = all(r.passed for r in test_case_results)

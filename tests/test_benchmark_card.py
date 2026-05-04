@@ -39,6 +39,7 @@ A4_PATH = CARDS_DIR / "A4_sigma-x-thermal_v0.1.1.yaml"
 
 # DG-2 cards.
 B1_PATH = CARDS_DIR / "B1_pseudo-kraus-diagonal_v0.1.0.yaml"
+B2_PATH = CARDS_DIR / "B2_pseudo-kraus-offdiagonal_v0.1.0.yaml"
 B3_PATH = CARDS_DIR / "B3_cross-basis-structural-identity_v0.1.0.yaml"
 
 # Superseded cards retained for audit-trail tests.
@@ -694,6 +695,194 @@ def test_a1_results_carry_no_hpta_fields():
         assert tcr.hpta_threshold is None
 
 
+# ─── B2 off-diagonal pseudo-Kraus end-to-end ────────────────────────────────
+
+
+def test_eval_complex_scalar_expression_parses_imaginary_param():
+    """1j * beta with beta=0.5 evaluates to 0.5j."""
+    val = bc._eval_complex_scalar_expression("1j * beta", {"beta": 0.5})
+    assert val == 0.5j
+
+
+def test_eval_complex_scalar_expression_parses_negation_and_conjugate_pair():
+    """-1j * beta with beta=0.5 evaluates to -0.5j (the conjugate of 1j*beta)."""
+    val = bc._eval_complex_scalar_expression("-1j * beta", {"beta": 0.5})
+    assert val == -0.5j
+
+
+def test_eval_complex_scalar_expression_handles_real_literal():
+    val = bc._eval_complex_scalar_expression("1.0", {})
+    assert val == complex(1.0)
+
+
+def test_eval_complex_scalar_expression_rejects_operator_identifier():
+    """The scalar parser must NOT have I / sigma_x in scope — those would
+    be a category error in an omega entry."""
+    with pytest.raises(ValueError, match="unknown identifier"):
+        bc._eval_complex_scalar_expression("I", {})
+    with pytest.raises(ValueError, match="unknown identifier"):
+        bc._eval_complex_scalar_expression("sigma_z", {})
+
+
+def test_eval_complex_scalar_expression_rejects_unknown_identifier():
+    with pytest.raises(ValueError, match="unknown identifier"):
+        bc._eval_complex_scalar_expression("missing_param", {})
+
+
+def test_eval_complex_scalar_expression_rejects_attribute_access():
+    with pytest.raises(ValueError, match="forbidden AST node|unknown identifier"):
+        bc._eval_complex_scalar_expression("(1.0).real", {})
+
+
+def test_eval_complex_scalar_expression_rejects_non_sqrt_call():
+    with pytest.raises(ValueError, match="only calls to|unknown identifier"):
+        bc._eval_complex_scalar_expression("exp(1)", {})
+
+
+def test_parse_offdiag_omega_returns_hermitian_matrix_for_canonical_fixture():
+    """The first B2 fixture's omega = [[1, iβ], [-iβ, -1]] is Hermitian
+    (omega - omega^dagger == 0) for any real β."""
+    omega = bc._parse_offdiag_omega(
+        [["1.0", "1j * beta"], ["-1j * beta", "-1.0"]], {"beta": 0.5}
+    )
+    assert omega.shape == (2, 2)
+    assert bc._hermiticity_residual(omega) == 0.0
+
+
+def test_parse_offdiag_omega_rejects_non_square():
+    with pytest.raises(ValueError, match="square matrix"):
+        bc._parse_offdiag_omega(
+            [["1.0", "0.0"], ["0.0", "0.0", "0.0"]], {}
+        )
+
+
+def test_hermiticity_residual_detects_non_hermitian_omega():
+    """A real-asymmetric omega has non-zero Frobenius norm of omega - omega^dag."""
+    omega = np.array([[1.0, 2.0], [3.0, 4.0]], dtype=complex)
+    res = bc._hermiticity_residual(omega)
+    # ||omega - omega^T||_F = ||[[0, -1], [1, 0]]||_F = sqrt(2)
+    assert res == pytest.approx(np.sqrt(2.0))
+
+
+def test_load_card_b2_succeeds():
+    card = bc.load_card(B2_PATH)
+    assert card.card_id == "B2"
+    assert card.dg_target == "DG-2"
+    assert card.version == "v0.1.0"
+    assert card.model_kind == "algebraic_map"
+
+
+def test_run_card_b2_passes_all_three_test_cases():
+    """Card B2 v0.1.0's three off-diagonal pseudo-Kraus test_cases all PASS
+    at machine precision; both Hermiticity-of-omega and HPTA preconditions
+    hold as algebraic identities (residual 0.0 exactly)."""
+    card = bc.load_card(B2_PATH)
+    result = bc.run_card(card)
+    assert result.verdict == "PASS"
+    assert len(result.test_case_results) == 3
+    names = {r.name for r in result.test_case_results}
+    assert names == {
+        "offdiag_omega_imaginary_sigma_z",
+        "offdiag_omega_imaginary_sigma_x",
+        "offdiag_omega_diagonal_only",
+    }
+    for tcr in result.test_case_results:
+        assert tcr.passed
+        assert tcr.error <= card.threshold
+        assert tcr.hpta_residual is not None
+        assert tcr.hpta_threshold is not None
+        assert tcr.hpta_residual <= tcr.hpta_threshold
+        assert tcr.hermiticity_residual is not None
+        assert tcr.hermiticity_threshold is not None
+        assert tcr.hermiticity_residual <= tcr.hermiticity_threshold
+
+
+def test_run_card_b2_sigma_z_recovers_beta_sigma_z():
+    """The σ_z fixture (β=0.5) reproduces K = 0.5 σ_z at exactly zero error
+    — algebraic tautology between matrix-unit basis sum and §4b H_HS^off-diag."""
+    card = bc.load_card(B2_PATH)
+    result = bc.run_card(card)
+    tcr = next(r for r in result.test_case_results
+               if r.name == "offdiag_omega_imaginary_sigma_z")
+    assert tcr.error == 0.0
+
+
+def test_run_card_b2_sigma_x_recovers_minus_beta_sigma_x():
+    """The σ_x analog (β=0.5) reproduces K = -0.5 σ_x at exactly zero error
+    — confirms the off-diagonal handler does not silently prefer σ_z."""
+    card = bc.load_card(B2_PATH)
+    result = bc.run_card(card)
+    tcr = next(r for r in result.test_case_results
+               if r.name == "offdiag_omega_imaginary_sigma_x")
+    assert tcr.error == 0.0
+
+
+def test_run_card_b2_diagonal_only_gives_zero_K():
+    """omega = diag(1, -1) on (V_1=I, V_2=σ_z) collapses to K = 0 — the
+    off-diagonal handler degenerates correctly when off-diagonal entries
+    vanish."""
+    card = bc.load_card(B2_PATH)
+    result = bc.run_card(card)
+    tcr = next(r for r in result.test_case_results
+               if r.name == "offdiag_omega_diagonal_only")
+    assert tcr.error == 0.0
+    assert tcr.hpta_residual == 0.0
+    assert tcr.hermiticity_residual == 0.0
+
+
+def test_b2_test_case_handlers_all_registered():
+    card = bc.load_card(B2_PATH)
+    for case in card.frozen_parameters["model"]["test_cases"]:
+        assert case["name"] in bc._TEST_CASE_HANDLERS
+
+
+def test_run_card_b2_hermiticity_gate_short_circuits_on_violation():
+    """A non-Hermitian omega triggers the Hermiticity precondition gate;
+    HPTA and K comparison are skipped and the failure carries a diagnostic
+    note plus the Hermiticity-residual fields."""
+    raw = _load_raw(B2_PATH)
+    case = raw["frozen_parameters"]["model"]["test_cases"][0]
+    # Break Hermiticity by making omega_21 not the conjugate of omega_12.
+    case["pseudo_kraus_offdiag_omega"] = [
+        ["1.0", "1j * beta"],
+        ["1j * beta", "-1.0"],  # should be -1j * beta to be Hermitian
+    ]
+    card = bc._data_to_card(raw)
+    result = bc._run_algebraic_map(card)
+    tcr = next(r for r in result.test_case_results
+               if r.name == "offdiag_omega_imaginary_sigma_z")
+    assert not tcr.passed
+    assert tcr.hermiticity_residual is not None
+    assert tcr.hermiticity_residual > tcr.hermiticity_threshold
+    assert "Hermiticity precondition failed" in tcr.notes
+
+
+def test_run_card_b2_hpta_gate_short_circuits_with_hermitian_omega_but_no_hpta():
+    """A Hermitian omega that does NOT satisfy HPTA (sum_{ij} omega_{ij}
+    V_j^dag V_i ≠ 0) triggers the HPTA gate after Hermiticity passes —
+    confirming gate ordering and that a Hermitian-but-not-HPTA fixture is
+    still rejected with a HPTA-specific diagnostic."""
+    raw = _load_raw(B2_PATH)
+    case = raw["frozen_parameters"]["model"]["test_cases"][0]
+    # Replace omega with a Hermitian matrix that is NOT HPTA: diag(1, 1) on
+    # (V_1=I, V_2=σ_z) gives sum = I + σ_z² = 2I ≠ 0.
+    case["pseudo_kraus_offdiag_omega"] = [
+        ["1.0", "0.0"],
+        ["0.0", "1.0"],
+    ]
+    card = bc._data_to_card(raw)
+    result = bc._run_algebraic_map(card)
+    tcr = next(r for r in result.test_case_results
+               if r.name == "offdiag_omega_imaginary_sigma_z")
+    assert not tcr.passed
+    # Hermiticity passed (diag is trivially Hermitian) — residual recorded.
+    assert tcr.hermiticity_residual == 0.0
+    # HPTA failed.
+    assert tcr.hpta_residual is not None
+    assert tcr.hpta_residual > tcr.hpta_threshold
+    assert "HPTA precondition failed" in tcr.notes
+
+
 # ─── B3 cross-basis structural identity end-to-end ───────────────────────────
 
 
@@ -761,7 +950,7 @@ def test_b3_basis_independence_handler_returns_none_K_expected():
     d = card.system_dimension
     for case in card.frozen_parameters["model"]["test_cases"]:
         handler = bc._TEST_CASE_HANDLERS[case["name"]]
-        L, K_expected, _hpta = handler(case, d)
+        L, K_expected, _hpta, _hermiticity = handler(case, d)
         assert callable(L)
         assert K_expected is None
 

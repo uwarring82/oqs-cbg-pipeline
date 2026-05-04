@@ -68,7 +68,7 @@ date: "2026-05-01"
 dg_target: "DG-2"
 ledger_entry: "CL-2026-005 v0.4 Entry 1.B.3 (off-diagonal half), Entry 1.D"
 model: "closed_form_algebraic"
-status: "frozen-awaiting-run"
+status: "pass"
 license: "CC-BY-4.0 (LICENSE-docs)"
 
 # ─── Gauge block ──────────────────────────────────────────────────────────────
@@ -310,11 +310,25 @@ acceptance_criterion:
 # ─── Result block ─────────────────────────────────────────────────────────────
 
 result:
-  verdict: null
-  evidence: []
+  verdict: "PASS"
+  evidence:
+    - "benchmarks/results/B2_pseudo-kraus-offdiagonal_v0.1.0_result.json"
   commit_hash: ""
-  runner_version: ""
-  notes: ""
+  runner_version: "0.1.0"
+  notes: |
+    Verdict computed by reporting.benchmark_card.run_card via the
+    algebraic_map handler registry; off-diagonal pseudo-Kraus handler
+    factory parses pseudo_kraus_offdiag_operators with the existing
+    AST operator parser (B1's namespace) and pseudo_kraus_offdiag_omega
+    via the new _eval_complex_scalar_expression scalar parser
+    (parameters-only namespace; operator identifiers excluded as a
+    category-error guard). The runner gates Hermiticity-of-omega first,
+    then HPTA, then evaluates the K comparison via Letter Eq. (7). All
+    three test_cases returned error = 0.0 (machine precision; well below
+    the 1.0e-10 threshold) with Hermiticity = 0.0 and HPTA = 0.0 as
+    algebraic identities for the frozen β = 0.5 fixtures. Entry 1.B.3
+    off-diagonal half + Entry 1.D structural prediction reproduced.
+    Re-runnable via pytest tests/test_benchmark_card.py.
 
 # ─── Failure-mode log ─────────────────────────────────────────────────────────
 
