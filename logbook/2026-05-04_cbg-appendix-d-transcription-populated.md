@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-04
 **Type:** structural
-**Triggering commit:** (to be populated on commit)
+**Triggering commit:** 331448784b8a203f8ecbdbfe24f11e58ce85c201
 **Triggering evidence:** `transcriptions/colla-breuer-gasbarri-2025_appendix-d_v0.0.1.md`; `transcriptions/README.md`; A. Colla, H.-P. Breuer, G. Gasbarri, *Phys. Rev. A* **112**, L050203 (2025), DOI `10.1103/n5nl-gn1y`, arXiv `2506.04097`
 
 ## Summary
