@@ -54,9 +54,11 @@ rm -f "${OUTPUT_DIR}/.buildinfo"
 
 # GitHub Pages applies Jekyll by default and strips any path beginning
 # with "_". Sphinx puts assets in _static/, source listings in _modules/,
-# etc. — without this marker file, every CSS / JS / image referenced by
-# the API site would silently 404 once deployed. Empty file is the
-# canonical "disable Jekyll processing" signal documented by GitHub.
+# etc. — without this marker file at the Pages publishing root, every
+# CSS / JS / image referenced by the API site silently 404s once deployed.
+# Keep the api-local marker too so the subtree is self-describing when
+# opened or copied on its own.
+touch "${REPO_ROOT}/.nojekyll"
 touch "${OUTPUT_DIR}/.nojekyll"
 
 echo ">>> Done. Open ${OUTPUT_DIR}/index.html or browse via the landing page."
