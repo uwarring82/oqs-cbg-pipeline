@@ -1,2 +1,2 @@
-- [DG-2 progress and remaining blockers](project_dg2_blockers.md) — B1 + B3 PASS as of 2026-05-04; B2 (off-diagonal) wiring + Council-gated displacement gap remain
+- [DG-2 progress and remaining blockers](project_dg2_blockers.md) — DG-2 PARTIAL: 3 of 4 PASS as of 2026-05-04 (B1 + B2 + B3); only Council-gated coherent-displacement track remains
 - [Cards-first discipline](feedback_cards_first_discipline.md) — validated workflow for DG-* deliverables; cards frozen at implementation start
