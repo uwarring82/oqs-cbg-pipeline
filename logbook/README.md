@@ -82,9 +82,10 @@ Both exceptions are bookkeeping completions of explicit gaps, not substantive re
 | 2026-05-04 | `cbg-appendix-d-transcription-populated` | structural | Colla-Breuer-Gasbarri Appendix-D-routed transcription populated and classified underdetermined: source material contains spin-system parity algebra but no displacement-profile convention; Act 2 remains required over §3.1-§3.4 |
 | 2026-05-04 | `dg-2-b4-conv-registry-card-frozen` | structural | DG-2 Card B4-conv-registry v0.1.0 frozen — first card under Council Act 2 (c)-discipline; four test_cases tag the four cleared displacement profiles (delta-omega_c, delta-omega_S, sqrt-J, gaussian) for Entry 3.B.3 (pure-dephasing); cbg/displacement_profiles.py module added with REGISTERED_PROFILES; reporting/benchmark_card.py _DISPLACEMENT_PROFILES wired; runner extension for coherent-displaced bath_state.family deferred to verdict commit (cards-first); 21 new tests; no DG status change |
 | 2026-05-04 | `dg-2-b5-conv-registry-card-frozen` | structural | DG-2 Card B5-conv-registry v0.1.0 frozen — σ_x sibling of B4 under the same Council-cleared profile registry; four test_cases tag the same four cleared displacement profiles for Entry 4.B.2 (eigenbasis rotation under σ_x coupling); verdict criterion is absolute Euclidean error on (σ_x, σ_y) transverse vector of K(t), distinguishing from A4 v0.1.1's thermal "zero rotation" check; runner handlers shared with B4 verdict commit (cards-first); 3 new tests; no DG status change |
+| 2026-05-04 | `dg-2-b4-conv-registry-pass` | structural | DG-2 Card B4-conv-registry v0.1.0 PASS — first card under post-Act-2 (c)-discipline reaches verdict; cbg.cumulants.D_bar_1 dispatches on the cleared profile registry; cbg.tcl_recursion.K_total_displaced_on_grid added; _run_dynamical carve-out lifted; four (pure_dephasing, displaced_bath_*) handlers registered; all four profiles PASS at machine precision (≤ 8.9e-16) by the parity-class theorem of Eq. (A.39); B5 still pending v0.2.0 supersedure (prediction-text correction) before its verdict; envelope unchanged at DG-2 PARTIAL 3/4 |
 
 (This index is updated atomically when new entries are added.)
 
 ---
 
-*Last updated: 2026-05-04 (DG-2 Card B5-conv-registry frozen — σ_x sibling of B4). CC-BY-4.0 (see ../LICENSE-docs).*
+*Last updated: 2026-05-04 (DG-2 Card B4-conv-registry PASS). CC-BY-4.0 (see ../LICENSE-docs).*

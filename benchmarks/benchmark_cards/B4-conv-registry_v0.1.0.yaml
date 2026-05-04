@@ -317,7 +317,7 @@ result:
   verdict: "PASS"
   evidence:
     - "benchmarks/results/B4-conv-registry_v0.1.0_result.json"
-  commit_hash: ""
+  commit_hash: "62e44d0c2d1475f0195e06caba2c81a63add9882"
   runner_version: "0.1.0"
   notes: |
     Verdict computed by reporting.benchmark_card.run_card via the
