@@ -42,6 +42,7 @@ B1_PATH = CARDS_DIR / "B1_pseudo-kraus-diagonal_v0.1.0.yaml"
 B2_PATH = CARDS_DIR / "B2_pseudo-kraus-offdiagonal_v0.1.0.yaml"
 B3_PATH = CARDS_DIR / "B3_cross-basis-structural-identity_v0.1.0.yaml"
 B4_PATH = CARDS_DIR / "B4-conv-registry_v0.1.0.yaml"
+B5_PATH = CARDS_DIR / "B5-conv-registry_v0.1.0.yaml"
 
 # Superseded cards retained for audit-trail tests.
 A1_V010_PATH = CARDS_DIR / "A1_closed-form-K_v0.1.0.yaml"
@@ -1031,3 +1032,38 @@ def test_displacement_profiles_registry_has_act2_cleared_keys():
         "sqrt-J",
         "gaussian",
     }
+
+
+# ─── B5-conv-registry frozen-awaiting-run (σ_x sibling) ──────────────────────
+
+
+def test_load_card_b5_succeeds():
+    """Card B5-conv-registry v0.1.0 loads cleanly at frozen-awaiting-run."""
+    card = bc.load_card(B5_PATH)
+    assert card.card_id == "B5-conv-registry"
+    assert card.dg_target == "DG-2"
+    assert card.version == "v0.1.0"
+    assert card.status == "frozen-awaiting-run"
+    assert card.model == "spin_boson_sigma_x"
+    assert card.model_kind == "dynamical"
+
+
+def test_b5_test_cases_carry_same_registry_profiles_as_b4():
+    """B5 must tag the SAME four cleared profiles as B4 (same Council-cleared
+    registry; the σ_x sibling shares the registry surface)."""
+    b4 = bc.load_card(B4_PATH)
+    b5 = bc.load_card(B5_PATH)
+    b4_profiles = {c["bath_state"]["displacement_profile"]
+                   for c in b4.frozen_parameters["model"]["test_cases"]}
+    b5_profiles = {c["bath_state"]["displacement_profile"]
+                   for c in b5.frozen_parameters["model"]["test_cases"]}
+    assert b4_profiles == b5_profiles
+
+
+def test_run_card_b5_routes_to_standing_carve_out():
+    """B5 is frozen-awaiting-run; running it must hit the standing
+    coherent_displaced carve-out (the σ_x runner handler doesn't exist yet
+    — it's verdict-commit work shared with B4)."""
+    card = bc.load_card(B5_PATH)
+    with pytest.raises(NotImplementedError, match="coherent_displaced"):
+        bc.run_card(card)
