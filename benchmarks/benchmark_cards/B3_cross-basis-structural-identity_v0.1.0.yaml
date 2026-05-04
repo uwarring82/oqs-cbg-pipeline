@@ -273,7 +273,7 @@ result:
   verdict: "PASS"
   evidence:
     - "benchmarks/results/B3_cross-basis-structural-identity_v0.1.0_result.json"
-  commit_hash: ""
+  commit_hash: "b46a4e42d689a562297bbf31ee3bd245fc265395"
   runner_version: "0.1.0"
   notes: |
     Verdict computed by reporting.benchmark_card.run_card via the
