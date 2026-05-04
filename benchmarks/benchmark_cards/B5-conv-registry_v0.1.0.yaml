@@ -50,7 +50,8 @@ date: "2026-05-04"
 dg_target: "DG-2"
 ledger_entry: "CL-2026-005 v0.4 Entry 4.B.2"
 model: "spin_boson_sigma_x"
-status: "frozen-awaiting-run"
+status: "superseded"
+superseded_by: "B5-conv-registry_v0.2.0.yaml"
 license: "CC-BY-4.0 (LICENSE-docs)"
 
 # ─── Gauge block ──────────────────────────────────────────────────────────────

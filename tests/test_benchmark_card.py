@@ -42,7 +42,8 @@ B1_PATH = CARDS_DIR / "B1_pseudo-kraus-diagonal_v0.1.0.yaml"
 B2_PATH = CARDS_DIR / "B2_pseudo-kraus-offdiagonal_v0.1.0.yaml"
 B3_PATH = CARDS_DIR / "B3_cross-basis-structural-identity_v0.1.0.yaml"
 B4_PATH = CARDS_DIR / "B4-conv-registry_v0.1.0.yaml"
-B5_PATH = CARDS_DIR / "B5-conv-registry_v0.1.0.yaml"
+B5_V010_PATH = CARDS_DIR / "B5-conv-registry_v0.1.0.yaml"
+B5_PATH = CARDS_DIR / "B5-conv-registry_v0.2.0.yaml"
 
 # Superseded cards retained for audit-trail tests.
 A1_V010_PATH = CARDS_DIR / "A1_closed-form-K_v0.1.0.yaml"
@@ -1062,14 +1063,25 @@ def test_displacement_profiles_registry_has_act2_cleared_keys():
 
 
 def test_load_card_b5_succeeds():
-    """Card B5-conv-registry v0.1.0 loads cleanly at frozen-awaiting-run."""
+    """Card B5-conv-registry v0.2.0 loads cleanly at frozen-awaiting-run
+    (the v0.1.0 predecessor was superseded same-day for a card-design
+    prediction-text correction)."""
     card = bc.load_card(B5_PATH)
     assert card.card_id == "B5-conv-registry"
     assert card.dg_target == "DG-2"
-    assert card.version == "v0.1.0"
+    assert card.version == "v0.2.0"
     assert card.status == "frozen-awaiting-run"
     assert card.model == "spin_boson_sigma_x"
     assert card.model_kind == "dynamical"
+    assert card.supersedes == "B5-conv-registry_v0.1.0.yaml"
+
+
+def test_load_card_b5_v010_superseded():
+    """The v0.1.0 predecessor is retained at HEAD with status: superseded
+    per SCHEMA.md §Card lifecycle."""
+    card = bc.load_card(B5_V010_PATH)
+    assert card.status == "superseded"
+    assert card.superseded_by == "B5-conv-registry_v0.2.0.yaml"
 
 
 def test_b5_test_cases_carry_same_registry_profiles_as_b4():
