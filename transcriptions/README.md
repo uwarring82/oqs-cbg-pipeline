@@ -9,7 +9,7 @@ Transcriptions are operational artefacts. They do not modify the Ledger, Sail, v
 | Transcription | Version | Status | Purpose |
 |---|---|---|---|
 | [Hayden-Sorce 2022 pseudo-Kraus formula](hayden-sorce-2022_pseudokraus_v0.1.1.md) | v0.1.1 | in-use (current) | Adds off-diagonal pseudo-Kraus coverage (§4b, §7a) to the v0.1.0 single-index/diagonal content, repatriating both halves of CL-2026-005 Entry 1.B.3 plus Entry 1.D's off-diagonal generalization claim into the DG-2 path. Source content unchanged from v0.1.0; off-diagonal expression is a Letter-derived consequence. |
-| [Colla–Breuer–Gasbarri Letter Appendix D](colla-breuer-gasbarri-2025_appendix-d_v0.0.1.md) | v0.0.1 | SCAFFOLD — not yet populated | Gates Council Act 2 deliberation on the displacement-mode convention for CL-2026-005 v0.4 Entries 3.B.3 + 4.B.2 per [subsidiary briefing v0.2.0](../ledger/CL-2026-005_v0.4_council-briefing_displacement-convention.md) §3.5. Verbatim transcription of Appendix D, classification of whether the Appendix pins a convention, and mapping to the briefing's §3.1–§3.4 candidates. Steward action; not yet performed. |
+| [Colla–Breuer–Gasbarri Letter Appendix D](colla-breuer-gasbarri-2025_appendix-d_v0.0.1.md) | v0.0.1 | POPULATED — underdetermined; awaiting Act 2 §4.3 handling selection over §3.1–§3.4 | Gates Council Act 2 deliberation on the displacement-mode convention for CL-2026-005 v0.4 Entries 3.B.3 + 4.B.2 per [subsidiary briefing v0.2.0](../ledger/CL-2026-005_v0.4_council-briefing_displacement-convention.md) §3.5. The Appendix-D-routed source material has been transcribed from the arXiv/APS Letter source; it contains spin-system parity algebra but no displacement-profile convention, so all §3.1–§3.4 candidates remain silent-compatible and Council Act 2 remains required. |
 
 ### Superseded transcriptions (retained for audit)
 
@@ -31,4 +31,4 @@ A transcription carries no independent scientific authority. Its authority is li
 
 ---
 
-*Last updated: 2026-05-04 (Colla–Breuer–Gasbarri Letter Appendix D scaffold added). CC-BY-4.0 (see ../LICENSE-docs).*
+*Last updated: 2026-05-04 (Colla–Breuer–Gasbarri Appendix-D-routed transcription populated; classification underdetermined). CC-BY-4.0 (see ../LICENSE-docs).*
