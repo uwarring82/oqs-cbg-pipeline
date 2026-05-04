@@ -424,21 +424,28 @@ def test_run_card_a4_v011_passes_thermal_case():
     assert tcr.threshold == card.threshold
 
 
-def test_run_card_a3_v010_displaced_case_routes_to_dg2():
-    """The superseded A3 v0.1.0 has a coherent_displaced test_case; running
-    it surfaces the operationalisability carve-out via the routing message.
-
-    Audit-trail test: confirms the runner correctly refuses to evaluate the
-    deferred case rather than silently producing a misleading verdict."""
+def test_run_card_a3_v010_legacy_displaced_shape_now_rejected():
+    """The superseded A3 v0.1.0 has a coherent_displaced test_case in the
+    legacy shape (`displacement_amplitude` only, no `displacement_profile`).
+    Pre-Council-Act-2 the runner raised NotImplementedError with the
+    standing v0.1.4 carve-out message; post-Council-Act-2 (2026-05-04, this
+    repo at this commit) the runner lifts the family carve-out and
+    dispatches into D_bar_1, which raises ValueError on the missing
+    displacement_profile key — surfacing the schema gap that A3 v0.1.0's
+    supersedure to v0.1.1 was performed to address. The verdict-trail-
+    preservation property holds: the superseded card still surfaces the
+    gap that motivated its supersedure, just under a different (post-
+    clearance) error type."""
     card = bc.load_card(A3_V010_PATH)
-    with pytest.raises(NotImplementedError, match="v0.1.4"):
+    with pytest.raises(ValueError, match="displacement_profile"):
         bc.run_card(card)
 
 
-def test_run_card_a4_v010_displaced_case_routes_to_dg2():
-    """A4 v0.1.0 displaced case routes to DG-2, parallel to A3 v0.1.0."""
+def test_run_card_a4_v010_legacy_displaced_shape_now_rejected():
+    """A4 v0.1.0 displaced legacy shape rejected post-Council-Act-2,
+    parallel to A3 v0.1.0."""
     card = bc.load_card(A4_V010_PATH)
-    with pytest.raises(NotImplementedError, match="v0.1.4"):
+    with pytest.raises(ValueError, match="displacement_profile"):
         bc.run_card(card)
 
 
@@ -977,12 +984,12 @@ def test_b3_basis_builders_registry_contains_expected_keys():
 
 
 def test_load_card_b4_succeeds():
-    """Card B4-conv-registry v0.1.0 loads cleanly at frozen-awaiting-run."""
+    """Card B4-conv-registry v0.1.0 loads cleanly post-verdict."""
     card = bc.load_card(B4_PATH)
     assert card.card_id == "B4-conv-registry"
     assert card.dg_target == "DG-2"
     assert card.version == "v0.1.0"
-    assert card.status == "frozen-awaiting-run"
+    assert card.status == "pass"
     assert card.model == "pure_dephasing"
     assert card.model_kind == "dynamical"
 
@@ -1014,13 +1021,30 @@ def test_b4_displacement_profile_keys_are_in_runner_registry():
         )
 
 
-def test_run_card_b4_routes_to_standing_carve_out():
-    """B4 is frozen-awaiting-run; running it must hit the standing
-    coherent_displaced carve-out (the runner has no handler for the new
-    bath_state.family yet — that's verdict-commit work)."""
+def test_run_card_b4_passes_all_four_profiles():
+    """Post-verdict-commit: B4-conv-registry runs to PASS for all four
+    Council-cleared profiles. Errors at machine precision because under
+    σ_z coupling the parity-class theorem (Eq. (A.39)) makes K_2's σ_z
+    contribution exactly zero, so the perturbative expansion at order
+    ≤ N_card = 2 reduces to K_0 + K_1 = (ω/2 + D̄_1) σ_z, matching the
+    predicted shift 2 D̄_1(t) exactly."""
     card = bc.load_card(B4_PATH)
-    with pytest.raises(NotImplementedError, match="coherent_displaced"):
-        bc.run_card(card)
+    result = bc.run_card(card)
+    assert result.verdict == "PASS"
+    names = {tcr.name for tcr in result.test_case_results}
+    assert names == {
+        "displaced_bath_delta_omega_c",
+        "displaced_bath_delta_omega_S",
+        "displaced_bath_sqrt_J",
+        "displaced_bath_gaussian",
+    }
+    for tcr in result.test_case_results:
+        assert tcr.passed
+        # All four profiles land at machine precision
+        # (≤ 1e-12, well below the 1e-4 threshold).
+        assert tcr.error < 1e-12, (
+            f"{tcr.name}: expected machine-precision error; got {tcr.error:.3e}"
+        )
 
 
 def test_displacement_profiles_registry_has_act2_cleared_keys():
@@ -1060,10 +1084,13 @@ def test_b5_test_cases_carry_same_registry_profiles_as_b4():
     assert b4_profiles == b5_profiles
 
 
-def test_run_card_b5_routes_to_standing_carve_out():
-    """B5 is frozen-awaiting-run; running it must hit the standing
-    coherent_displaced carve-out (the σ_x runner handler doesn't exist yet
-    — it's verdict-commit work shared with B4)."""
+def test_run_card_b5_routes_to_handler_not_found():
+    """B5 is frozen-awaiting-run; B4's verdict commit lifted the family-
+    level coherent_displaced carve-out, but B5's per-test-case dynamical
+    handlers under (spin_boson_sigma_x, displaced_bath_*) are not yet
+    registered. Running B5 therefore hits TestCaseHandlerNotFoundError —
+    the next layer of the cards-first carve-out — until B5's verdict
+    commit registers its σ_x-specific handlers."""
     card = bc.load_card(B5_PATH)
-    with pytest.raises(NotImplementedError, match="coherent_displaced"):
+    with pytest.raises(bc.TestCaseHandlerNotFoundError, match="spin_boson_sigma_x"):
         bc.run_card(card)

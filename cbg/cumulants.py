@@ -52,8 +52,13 @@ from __future__ import annotations
 from typing import Any, Dict
 
 import numpy as np
+from scipy import integrate
 
-from cbg.bath_correlations import bath_two_point_thermal_array
+from cbg.bath_correlations import bath_two_point_thermal_array, ohmic_spectral_density
+from cbg.displacement_profiles import (
+    DisplacementProfile,
+    REGISTERED_PROFILES,
+)
 
 
 # ─── First generalised cumulant D̄_1(t) ─────────────────────────────────────
@@ -107,21 +112,217 @@ def D_bar_1(
     if family == "thermal":
         return np.zeros_like(t_grid, dtype=complex)
     if family == "coherent_displaced":
-        raise NotImplementedError(
-            "D_bar_1: coherent_displaced bath state has an unresolved "
-            "convention gap at DG-1. The card spec carries "
-            "`displacement_amplitude` but no displacement-mode frequency "
-            "or envelope; ⟨B(t)⟩ is a model-specific assembly. "
-            "Resolution paths: (1) encode the convention in "
-            "cbg.models.<model>.bath_first_moment(...); "
-            "(2) supersede Cards A3/A4 to defer the displaced sub-claims "
-            "to DG-2 (parallel to Entry 1.B.3 deferral). "
-            "See cbg.cumulants module docstring for the full rationale."
+        return _D_bar_1_coherent_displaced(
+            t_grid, bath_state=bath_state, spectral_density=spectral_density,
         )
     raise NotImplementedError(
-        f"D_bar_1: bath_state.family {family!r} not implemented at DG-1. "
+        f"D_bar_1: bath_state.family {family!r} not implemented. "
         f"Supported: 'thermal' (zero by symmetry); 'coherent_displaced' "
-        f"(stubbed pending convention)."
+        f"(dispatches on bath_state.displacement_profile via the "
+        f"Council-Act-2-cleared registry per subsidiary briefing v0.3.0)."
+    )
+
+
+# ─── coherent-displaced D̄_1 dispatch (Council Act 2 cleared, 2026-05-04) ────
+
+
+def _D_bar_1_coherent_displaced(
+    t_grid: np.ndarray,
+    *,
+    bath_state: Dict[str, Any],
+    spectral_density: Dict[str, Any] | None,
+) -> np.ndarray:
+    """⟨B(t)⟩ for a coherent-displaced bosonic bath under one of the four
+    Council-cleared displacement-mode profiles (subsidiary briefing v0.3.0
+    §3.1–§3.4; Council Act 2 verdict 2026-05-04 — see
+    ``ledger/CL-2026-005_v0.4_council-deliberation_act2_2026-05-04.md``).
+
+    Convention adopted at v0.1.0:
+
+        ⟨B(t)⟩ = ∫_0^∞ dω √J(ω) [α(ω) e^{-iωt} + α(ω)* e^{+iωt}]
+
+    where α(ω) is the spectral displacement profile from the cleared
+    registry. For real α(ω), this reduces to
+
+        ⟨B(t)⟩ = 2 ∫_0^∞ dω √J(ω) α(ω) cos(ωt)
+
+    and is real-valued. The four profiles dispatch as:
+
+      - delta-omega_c (kind="delta", omega=ω_c, amplitude=α₀):
+            ⟨B(t)⟩ = 2 α₀ √J(ω_c) cos(ω_c t)
+      - delta-omega_S (kind="delta", omega=ω_S, amplitude=α₀):
+            ⟨B(t)⟩ = 2 α₀ √J(ω_S) cos(ω_S t)
+      - sqrt-J (kind="broadband", α(ω) = α₀ √J(ω)):
+            ⟨B(t)⟩ = 2 α₀ ∫ J(ω) cos(ωt) dω
+      - gaussian (kind="gaussian", α(ω) = α₀ exp(−(ω−ω_d)²/(2Δω²))):
+            ⟨B(t)⟩ = 2 α₀ ∫ √J(ω) exp(−(ω−ω_d)²/(2Δω²)) cos(ωt) dω
+
+    The δ-function profiles evaluate at machine precision; the broadband
+    and Gaussian profiles use scipy.integrate.quad with weight='cos' for
+    accuracy on the oscillatory integrand. Quadrature accuracy bounds
+    the verdict accuracy in the broadband / Gaussian fixtures.
+
+    Parameters
+    ----------
+    t_grid : ndarray, shape (n,)
+        Time-points at which to tabulate ⟨B(t)⟩.
+    bath_state : dict
+        Card per-case bath_state mapping. Required keys: family =
+        "coherent_displaced"; displacement_profile (one of the cleared
+        registry keys); parameters (profile-specific).
+    spectral_density : dict
+        Card bath_spectral_density mapping. Required keys: family =
+        "ohmic"; coupling_strength (= α); cutoff_frequency (= ω_c).
+
+    Returns
+    -------
+    ndarray, shape (n,), dtype complex
+        ⟨B(t_grid)⟩.
+
+    Raises
+    ------
+    NotImplementedError
+        If displacement_profile is not in REGISTERED_PROFILES (the
+        registry-clearance-gate per subsidiary briefing v0.3.0 §6.1) or
+        if spectral_density.family is not "ohmic".
+    ValueError
+        If bath_state lacks displacement_profile, parameters, or the
+        spectral_density block is missing.
+    """
+    if spectral_density is None:
+        raise ValueError(
+            "_D_bar_1_coherent_displaced: spectral_density is required "
+            "for the coherent-displaced branch"
+        )
+    sd_family = spectral_density.get("family")
+    if sd_family != "ohmic":
+        raise NotImplementedError(
+            f"_D_bar_1_coherent_displaced: spectral_density.family "
+            f"{sd_family!r} not implemented; only 'ohmic' is supported "
+            f"at v0.1.0."
+        )
+
+    profile_name = bath_state.get("displacement_profile")
+    if profile_name is None:
+        raise ValueError(
+            "_D_bar_1_coherent_displaced: bath_state must carry "
+            "'displacement_profile' (one of the Council-cleared registry "
+            "keys per subsidiary briefing v0.3.0 §3.1–§3.4)"
+        )
+    if profile_name not in REGISTERED_PROFILES:
+        raise NotImplementedError(
+            f"_D_bar_1_coherent_displaced: displacement_profile "
+            f"{profile_name!r} is not in the Council-cleared registry. "
+            f"Known keys (subsidiary briefing v0.3.0 §3.1–§3.4): "
+            f"{sorted(REGISTERED_PROFILES.keys())}. Adding new profiles "
+            f"requires fresh Council clearance per the §6.1 registry-"
+            f"clearance-gate."
+        )
+
+    params = bath_state.get("parameters") or {}
+    alpha_sd = float(spectral_density["coupling_strength"])
+    omega_c = float(spectral_density["cutoff_frequency"])
+
+    # Build the DisplacementProfile via the registered constructor. For
+    # sqrt-J the constructor takes a callable J built from the spec.
+    if profile_name == "sqrt-J":
+        def J(w: float) -> float:
+            return float(ohmic_spectral_density(w, alpha_sd, omega_c))
+        profile = REGISTERED_PROFILES[profile_name](
+            alpha_0=params["alpha_0"], J=J,
+        )
+    else:
+        profile = REGISTERED_PROFILES[profile_name](**params)
+
+    return _evaluate_displaced_first_cumulant(
+        t_grid, profile, alpha_sd=alpha_sd, omega_c=omega_c,
+    )
+
+
+# Numerical-quadrature upper limit (multiples of ω_c). Beyond this, the
+# ohmic exp(-ω/ω_c) factor is below 1e-13; conservative for both broadband
+# and gaussian (the latter has its own envelope cutoff).
+_QUAD_UPPER_FACTOR = 30.0
+_QUAD_LIMIT = 200
+
+
+def _evaluate_displaced_first_cumulant(
+    t_grid: np.ndarray,
+    profile: DisplacementProfile,
+    *,
+    alpha_sd: float,
+    omega_c: float,
+) -> np.ndarray:
+    """Compute ⟨B(t)⟩ on the time grid for a given DisplacementProfile.
+
+    Dispatches on profile.kind. The two δ-function profiles evaluate in
+    closed form (single-frequency cosine times √J at the centre); the
+    broadband and gaussian profiles use scipy.integrate.quad with
+    weight='cos' for oscillatory accuracy.
+    """
+    t_grid = np.asarray(t_grid, dtype=float)
+    upper = _QUAD_UPPER_FACTOR * omega_c
+
+    if profile.kind == "delta":
+        omega_0 = profile.params["omega"]
+        amplitude = profile.params["amplitude"]  # α₀
+        J_at_omega_0 = float(ohmic_spectral_density(omega_0, alpha_sd, omega_c))
+        prefactor = 2.0 * amplitude * np.sqrt(J_at_omega_0)
+        return (prefactor * np.cos(omega_0 * t_grid)).astype(complex)
+
+    if profile.kind == "broadband":
+        # α(ω) = α_0 √J(ω); ⟨B(t)⟩ = 2 α_0 ∫ J(ω) cos(ωt) dω
+        alpha_0 = profile.params["alpha_0"]
+
+        def amplitude(omega: float) -> float:
+            if omega <= 0.0:
+                return 0.0
+            return float(ohmic_spectral_density(omega, alpha_sd, omega_c))
+
+        result = np.zeros_like(t_grid, dtype=complex)
+        for i, t in enumerate(t_grid):
+            if t == 0.0:
+                integral, _ = integrate.quad(
+                    amplitude, 0.0, upper, limit=_QUAD_LIMIT,
+                )
+            else:
+                integral, _ = integrate.quad(
+                    amplitude, 0.0, upper,
+                    weight="cos", wvar=float(t), limit=_QUAD_LIMIT,
+                )
+            result[i] = 2.0 * alpha_0 * integral
+        return result
+
+    if profile.kind == "gaussian":
+        # α(ω) = α_0 exp(-(ω-ω_d)²/(2Δω²)); ⟨B(t)⟩ = 2 α_0 ∫ √J(ω) α(ω)/α_0 cos(ωt) dω
+        alpha_0 = profile.params["alpha_0"]
+        omega_d = profile.params["omega_d"]
+        Delta_omega = profile.params["Delta_omega"]
+
+        def amplitude(omega: float) -> float:
+            if omega <= 0.0:
+                return 0.0
+            J_w = float(ohmic_spectral_density(omega, alpha_sd, omega_c))
+            envelope = float(np.exp(-((omega - omega_d) ** 2) / (2.0 * Delta_omega ** 2)))
+            return float(np.sqrt(J_w)) * envelope
+
+        result = np.zeros_like(t_grid, dtype=complex)
+        for i, t in enumerate(t_grid):
+            if t == 0.0:
+                integral, _ = integrate.quad(
+                    amplitude, 0.0, upper, limit=_QUAD_LIMIT,
+                )
+            else:
+                integral, _ = integrate.quad(
+                    amplitude, 0.0, upper,
+                    weight="cos", wvar=float(t), limit=_QUAD_LIMIT,
+                )
+            result[i] = 2.0 * alpha_0 * integral
+        return result
+
+    raise NotImplementedError(
+        f"_evaluate_displaced_first_cumulant: profile.kind {profile.kind!r} "
+        f"not implemented. Known kinds: 'delta', 'broadband', 'gaussian'."
     )
 
 

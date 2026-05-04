@@ -40,21 +40,52 @@ def test_D_bar_1_thermal_returns_complex_dtype():
     assert result.dtype == complex
 
 
-def test_D_bar_1_coherent_displaced_raises_with_convention_message():
-    """Displaced bath state stubs out with explicit convention-gap routing."""
+def test_D_bar_1_coherent_displaced_legacy_shape_raises():
+    """Legacy bath_state shape (no `displacement_profile` key, e.g. the
+    superseded A3 v0.1.0 displaced case) raises ValueError post-Council-
+    Act-2: the registry-clearance-gate (subsidiary briefing v0.3.0 §6.1)
+    requires every coherent-displaced bath_state to carry one of the four
+    cleared registry keys."""
     t = np.linspace(0.0, 5.0, 11)
     bs = {"family": "coherent_displaced", "temperature": 0.0,
           "displacement_amplitude": 1.0}
     sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
-    with pytest.raises(NotImplementedError, match="convention"):
+    with pytest.raises(ValueError, match="displacement_profile"):
         cumulants.D_bar_1(t, bath_state=bs, spectral_density=sd)
+
+
+def test_D_bar_1_coherent_displaced_with_cleared_profile_succeeds():
+    """Post-Council-Act-2: a bath_state tagging a cleared profile produces
+    a non-zero ⟨B(t)⟩ — verified for delta-omega_c via the closed-form
+    prediction 2 α₀ √J(ω_c) cos(ω_c t)."""
+    t = np.linspace(0.0, 1.0, 5)
+    bs = {"family": "coherent_displaced",
+          "displacement_profile": "delta-omega_c",
+          "parameters": {"alpha_0": 1.0, "omega_c": 10.0}}
+    sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
+    result = cumulants.D_bar_1(t, bath_state=bs, spectral_density=sd)
+    # Closed form: 2 · 1 · √(0.05·10·exp(-1)) · cos(10·t)
+    prefactor = 2.0 * np.sqrt(0.05 * 10.0 * np.exp(-1.0))
+    expected = prefactor * np.cos(10.0 * t).astype(complex)
+    np.testing.assert_allclose(result, expected, atol=1e-12)
 
 
 def test_D_bar_1_unknown_family_raises():
     t = np.linspace(0.0, 5.0, 11)
     bs = {"family": "squeezed_vacuum"}
-    with pytest.raises(NotImplementedError, match="DG-1"):
+    with pytest.raises(NotImplementedError, match="not implemented"):
         cumulants.D_bar_1(t, bath_state=bs, spectral_density=None)
+
+
+def test_D_bar_1_unregistered_displacement_profile_raises():
+    """The §6.1 registry-clearance-gate refuses ad-hoc profile additions."""
+    t = np.linspace(0.0, 5.0, 11)
+    bs = {"family": "coherent_displaced",
+          "displacement_profile": "lorentzian",  # not in registry
+          "parameters": {}}
+    sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
+    with pytest.raises(NotImplementedError, match="registry-clearance-gate"):
+        cumulants.D_bar_1(t, bath_state=bs, spectral_density=sd)
 
 
 def test_D_bar_1_2d_t_grid_raises():
@@ -144,11 +175,14 @@ def test_D_bar_n1_thermal_returns_zero_scalar():
     np.testing.assert_array_equal(result, np.array([0.0 + 0.0j]))
 
 
-def test_D_bar_n1_displaced_propagates_convention_error():
+def test_D_bar_n1_displaced_legacy_shape_raises():
+    """The generic D_bar dispatch propagates the same ValueError as D_bar_1
+    when a coherent_displaced bath_state lacks the displacement_profile key
+    (legacy A3 v0.1.0 shape; rejected post-Council-Act-2)."""
     bs = {"family": "coherent_displaced", "temperature": 0.0,
           "displacement_amplitude": 1.0}
     sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
-    with pytest.raises(NotImplementedError, match="convention"):
+    with pytest.raises(ValueError, match="displacement_profile"):
         cumulants.D_bar((1.0,), (), bath_state=bs, spectral_density=sd)
 
 
@@ -215,14 +249,21 @@ def test_D_bar_1_composes_with_a3_thermal():
     np.testing.assert_array_equal(result, np.zeros(11, dtype=complex))
 
 
-def test_D_bar_1_a3_displaced_case_surfaces_convention_gap():
-    """A3 v0.1.0's coherent_displaced test case surfaces the convention gap."""
+def test_D_bar_1_a3_displaced_case_legacy_shape_now_rejected():
+    """Audit-trail test: A3 v0.1.0's superseded coherent_displaced test case
+    has the legacy shape (`displacement_amplitude` only, no
+    `displacement_profile`). Post-Council-Act-2 (2026-05-04), this shape
+    is rejected with ValueError requiring the registry-clearance-gate
+    profile key. The superseded card itself is unchanged in tree;
+    re-attempting it now surfaces the schema gap rather than the
+    pre-clearance convention gap."""
     a3 = yaml.safe_load((CARDS_DIR / "A3_pure-dephasing_v0.1.0.yaml").read_text())
     sd = a3["frozen_parameters"]["model"]["bath_spectral_density"]
     bs = a3["frozen_parameters"]["model"]["test_cases"][1]["bath_state"]
     assert bs["family"] == "coherent_displaced"
+    assert "displacement_profile" not in bs  # legacy shape
     t = np.linspace(0.0, 5.0, 11)
-    with pytest.raises(NotImplementedError, match="convention"):
+    with pytest.raises(ValueError, match="displacement_profile"):
         cumulants.D_bar_1(t, bath_state=bs, spectral_density=sd)
 
 

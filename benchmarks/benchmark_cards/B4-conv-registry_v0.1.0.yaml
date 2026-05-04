@@ -49,7 +49,7 @@ date: "2026-05-04"
 dg_target: "DG-2"
 ledger_entry: "CL-2026-005 v0.4 Entry 3.B.3"
 model: "pure_dephasing"
-status: "frozen-awaiting-run"
+status: "pass"
 license: "CC-BY-4.0 (LICENSE-docs)"
 
 # ─── Gauge block ──────────────────────────────────────────────────────────────
@@ -314,11 +314,46 @@ acceptance_criterion:
 # ─── Result block ─────────────────────────────────────────────────────────────
 
 result:
-  verdict: null
-  evidence: []
+  verdict: "PASS"
+  evidence:
+    - "benchmarks/results/B4-conv-registry_v0.1.0_result.json"
   commit_hash: ""
-  runner_version: ""
-  notes: ""
+  runner_version: "0.1.0"
+  notes: |
+    Verdict computed by reporting.benchmark_card.run_card via the
+    dynamical handler under handling (c) (Council Act 2, 2026-05-04).
+    Wiring landed in this verdict commit:
+      * cbg.cumulants.D_bar_1 dispatches on bath_state.displacement_profile,
+        resolving through the Council-cleared registry (cbg.displacement_
+        profiles.REGISTERED_PROFILES). The four registered profiles
+        (delta-omega_c, delta-omega_S, sqrt-J, gaussian) compute ⟨B(t)⟩
+        in closed form (δ-function) or via scipy.integrate.quad with
+        weight='cos' (broadband / gaussian).
+      * cbg.tcl_recursion.K_total_displaced_on_grid built; reuses the
+        thermal n=0,2 path (D̄_2 invariant under displacement) and adds
+        L_1_displaced_at_time for the n=1 contribution (-i D̄_1(t) [A, X]
+        in Schrödinger picture).
+      * reporting.benchmark_card._run_dynamical lifts the standing
+        coherent_displaced carve-out and dispatches to
+        K_total_displaced_on_grid; four B4 handlers registered under
+        (pure_dephasing, displaced_bath_*) keys.
+    All four test_cases returned error at machine precision — well below
+    the 1.0e-4 threshold. Per-fixture max_t |actual_shift - predicted_shift|:
+      * displaced_bath_delta_omega_c:  2.220e-16
+      * displaced_bath_delta_omega_S:  1.110e-16
+      * displaced_bath_sqrt_J:         5.551e-17
+      * displaced_bath_gaussian:       8.882e-16
+    The machine-precision agreement is structural: under σ_z coupling, the
+    parity-class theorem of Letter end-matter Eq. (A.39) (transcription
+    §2.2) makes K_2's σ_z coefficient exactly zero (K_2 ∝ identity, which
+    is stripped by the K_from_generator traceless projection); so the
+    perturbative expansion at order ≤ N_card = 2 reduces to
+    K_0 + K_1 = (ω/2 + D̄_1) σ_z, matching the predicted shift 2 D̄_1(t)
+    exactly (no numerical-quadrature dependence at the verdict-comparison
+    layer; quadrature accuracy enters only in computing D̄_1 itself for
+    the broadband / Gaussian profiles, but the SAME D̄_1 array is used for
+    both actual and predicted, so its error cancels). Re-runnable via
+    `pytest tests/test_benchmark_card.py::test_run_card_b4_passes_all_four_profiles`.
 
 # ─── Failure-mode log ─────────────────────────────────────────────────────────
 

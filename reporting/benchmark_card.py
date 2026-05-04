@@ -45,9 +45,10 @@ import numpy as np
 import yaml
 
 from cbg.basis import matrix_unit_basis, su_d_generator_basis, verify_orthonormality
+from cbg.cumulants import D_bar_1 as _cumulants_D_bar_1
 from cbg.displacement_profiles import REGISTERED_PROFILES as _CBG_REGISTERED_PROFILES
 from cbg.effective_hamiltonian import K_from_generator
-from cbg.tcl_recursion import K_total_thermal_on_grid
+from cbg.tcl_recursion import K_total_displaced_on_grid, K_total_thermal_on_grid
 from models import pure_dephasing, spin_boson_sigma_x
 from numerical.tensor_ops import anticommutator, commutator
 from numerical.time_grid import build_time_grid
@@ -1318,6 +1319,8 @@ _MODEL_FACTORIES: Dict[str, Callable[[Dict[str, Any]], Tuple[np.ndarray, np.ndar
 
 def _dyn_handler_pure_dephasing_thermal(
     K_array: np.ndarray, t_grid: np.ndarray, threshold: float, H_S: np.ndarray,
+    bath_state: Optional[Dict[str, Any]] = None,
+    spectral_density: Optional[Dict[str, Any]] = None,
 ) -> Tuple[bool, float]:
     """Card A3 v0.1.1 thermal_bath PASS condition.
 
@@ -1350,6 +1353,8 @@ def _dyn_handler_pure_dephasing_thermal(
 
 def _dyn_handler_sigma_x_thermal(
     K_array: np.ndarray, t_grid: np.ndarray, threshold: float, H_S: np.ndarray,
+    bath_state: Optional[Dict[str, Any]] = None,
+    spectral_density: Optional[Dict[str, Any]] = None,
 ) -> Tuple[bool, float]:
     """Card A4 v0.1.1 thermal_bath PASS condition.
 
@@ -1372,15 +1377,87 @@ def _dyn_handler_sigma_x_thermal(
     return max_transverse <= threshold, max_transverse
 
 
+# ─── Coherent-displaced dynamical handlers (Council Act 2 cleared, 2026-05-04) ─
+#
+# B4-conv-registry v0.1.0 verifies CL-2026-005 v0.4 Entry 3.B.3 under the
+# four cleared displacement profiles. Per the parity-class theorem of Letter
+# end-matter Eq. (A.39) (transcription §2.2): under σ_z coupling, K(t) is
+# proportional to σ_z under any bath state. The non-thermal signature is
+# the time-dependent shift ω_r(t) − ω, which under the perturbative
+# expansion at N_card = 2 is exactly K_1(t)'s σ_z coefficient times 2 —
+# i.e. 2 D̄_1(t) — because K_2 contributes only the identity term that is
+# stripped by the K_from_generator traceless projection.
+#
+# Verdict gate: max_t |shift_actual(t) − shift_predicted(t)| ≤ threshold
+# AND max_t shape_residual(t) ≤ threshold (K(t) ∝ σ_z preserved).
+
+
+def _dyn_handler_pure_dephasing_displaced(
+    K_array: np.ndarray, t_grid: np.ndarray, threshold: float, H_S: np.ndarray,
+    bath_state: Optional[Dict[str, Any]] = None,
+    spectral_density: Optional[Dict[str, Any]] = None,
+) -> Tuple[bool, float]:
+    """Card B4-conv-registry v0.1.0 displaced-pure-dephasing PASS condition.
+
+    Per fixture (one of four cleared profiles), gates BOTH:
+      (1) shape: K(t) ∝ σ_z (parity-class theorem holds for σ_z coupling
+          under any bath state). max_t shape_residual ≤ threshold.
+      (2) shift: max_t |omega_r(t) - omega - shift_predicted(t)| ≤ threshold,
+          where shift_predicted(t) = 2 · D̄_1(t).real for the registered
+          profile.
+
+    Returns (passed, max(shape_residual, shift_error)).
+    """
+    if bath_state is None or spectral_density is None:
+        raise ValueError(
+            "_dyn_handler_pure_dephasing_displaced: bath_state + "
+            "spectral_density are required"
+        )
+
+    omega = float(2.0 * H_S[0, 0].real)
+    shift_predicted = 2.0 * np.real(_cumulants_D_bar_1(
+        np.asarray(t_grid, dtype=float),
+        bath_state=bath_state, spectral_density=spectral_density,
+    ))
+    max_shape_residual = 0.0
+    max_shift_err = 0.0
+    for i, K_t in enumerate(K_array):
+        # B.1: K(t) ∝ σ_z (shape residual)
+        coeff = 0.5 * np.trace(_SIGMA_Z @ K_t).real
+        proj = coeff * _SIGMA_Z
+        diff_norm = float(np.linalg.norm(K_t - proj, ord="fro"))
+        K_norm = float(np.linalg.norm(K_t, ord="fro"))
+        shape_residual = diff_norm / K_norm if K_norm > 0 else 0.0
+        max_shape_residual = max(max_shape_residual, shape_residual)
+        # B.3: actual shift versus predicted shift
+        omega_r = float(np.trace(_SIGMA_Z @ K_t).real)
+        shift_actual = omega_r - omega
+        max_shift_err = max(max_shift_err, abs(shift_actual - shift_predicted[i]))
+    error = max(max_shape_residual, max_shift_err)
+    return error <= threshold, error
+
+
 # Dynamical test-case handler registry: keyed by (card.model, test_case_name).
 # The model qualifier in the key is what distinguishes A3.thermal_bath from
 # A4.thermal_bath (both have the same test_case name but different physics).
+# DG-2 (post-Council-Act-2) extends the registry with the four B4-conv-registry
+# fixtures under the pure_dephasing model — one per cleared displacement
+# profile. The σ_x sibling (B5-conv-registry) handlers under
+# spin_boson_sigma_x are deferred to a separate verdict commit.
 _DYNAMICAL_TEST_CASE_HANDLERS: Dict[
     Tuple[str, str],
-    Callable[[np.ndarray, np.ndarray, float, np.ndarray], Tuple[bool, float]],
+    Callable[..., Tuple[bool, float]],
 ] = {
     ("pure_dephasing", "thermal_bath"): _dyn_handler_pure_dephasing_thermal,
     ("spin_boson_sigma_x", "thermal_bath"): _dyn_handler_sigma_x_thermal,
+    ("pure_dephasing", "displaced_bath_delta_omega_c"):
+        _dyn_handler_pure_dephasing_displaced,
+    ("pure_dephasing", "displaced_bath_delta_omega_S"):
+        _dyn_handler_pure_dephasing_displaced,
+    ("pure_dephasing", "displaced_bath_sqrt_J"):
+        _dyn_handler_pure_dephasing_displaced,
+    ("pure_dephasing", "displaced_bath_gaussian"):
+        _dyn_handler_pure_dephasing_displaced,
 }
 
 
@@ -1426,20 +1503,28 @@ def _run_dynamical(card: BenchmarkCard) -> CardResult:
     for case in fp["model"]["test_cases"]:
         bs = case["bath_state"]
         bs_family = bs.get("family")
-        if bs_family != "thermal":
+        if bs_family == "thermal":
+            K_array = K_total_thermal_on_grid(
+                N_card, grid.times, H_S, A,
+                bath_state=bs, spectral_density=sd,
+            )
+        elif bs_family == "coherent_displaced":
+            # Council Act 2 (2026-05-04) lifted the standing carve-out under
+            # handling (c) (convention-agnostic registry encoding); the
+            # displaced K_total dispatches on the per-fixture
+            # ``displacement_profile`` registry key.
+            K_array = K_total_displaced_on_grid(
+                N_card, grid.times, H_S, A,
+                bath_state=bs, spectral_density=sd,
+            )
+        else:
             raise NotImplementedError(
                 f"_run_dynamical: bath_state.family {bs_family!r} not "
-                f"supported at DG-1. Cards A3 / A4 coherent_displaced "
-                f"sub-cases (Entries 3.B.3, 4.B.2) are deferred to DG-2 "
-                f"per DG-1 work plan v0.1.4 §1.1 operationalisability "
-                f"carve-out (displacement convention not specified). "
-                f"Only 'thermal' is supported at this version."
+                f"supported. Known: 'thermal' (DG-1); 'coherent_displaced' "
+                f"(Council Act 2 cleared 2026-05-04 under handling (c) — "
+                f"see ledger/CL-2026-005_v0.4_council-deliberation_act2_"
+                f"2026-05-04.md)."
             )
-
-        K_array = K_total_thermal_on_grid(
-            N_card, grid.times, H_S, A,
-            bath_state=bs, spectral_density=sd,
-        )
 
         handler_key = (card.model, case["name"])
         handler = _DYNAMICAL_TEST_CASE_HANDLERS.get(handler_key)
@@ -1449,7 +1534,10 @@ def _run_dynamical(card: BenchmarkCard) -> CardResult:
                 f"(model={card.model!r}, test_case={case['name']!r}). "
                 f"Known: {sorted(_DYNAMICAL_TEST_CASE_HANDLERS.keys())}"
             )
-        passed, error = handler(K_array, grid.times, threshold, H_S)
+        passed, error = handler(
+            K_array, grid.times, threshold, H_S,
+            bath_state=bs, spectral_density=sd,
+        )
         test_case_results.append(TestCaseResult(
             name=case["name"],
             passed=passed,

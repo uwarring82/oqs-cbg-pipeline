@@ -46,7 +46,7 @@ import numpy as np
 from scipy.linalg import expm
 
 from cbg.basis import matrix_unit_basis
-from cbg.cumulants import D_bar_2
+from cbg.cumulants import D_bar_1, D_bar_2
 from cbg.effective_hamiltonian import K_from_generator
 
 
@@ -278,6 +278,171 @@ def K_n_thermal_on_grid(
             n, t_idx, t_grid, H_S, A, D_bar_2_array=D
         )
         K[t_idx] = K_from_generator(L_n_apply, basis)
+    return K
+
+
+# ─── Displaced-bath L_n / K_n / K_total (Council Act 2 cleared, 2026-05-04) ──
+#
+# The displaced-bath path is structurally similar to the thermal path: K_0
+# (bare Liouvillian) and K_2 (TCL2 dissipator) are unchanged because D̄_2
+# (the connected two-point) is invariant under coherent displacement. The
+# only change is K_1, which is non-zero in the displaced case where
+# D̄_1(t) ≠ 0:
+#
+#   L_1^S[X](t) = -i D̄_1(t) [A, X]    (Schrödinger picture)
+#
+# Applying Letter Eq. (6) to L_1^S gives K_1(t) = D̄_1(t) · (A − Tr(A)/d · I).
+# For traceless A (σ_z, σ_x), K_1(t) = D̄_1(t) · A. The runner extracts
+# K_1 via K_from_generator without bypassing the basis-summation pipeline
+# — preserving the cards-first audit boundary.
+
+
+def L_1_displaced_at_time(
+    t_idx: int,
+    coupling_operator: np.ndarray,
+    D_bar_1_array: np.ndarray,
+) -> Callable[[np.ndarray], np.ndarray]:
+    """Schrödinger-picture L_1 generator at t_grid[t_idx] for a coherent-
+    displaced bath.
+
+    L_1^S[X](t) = -i D̄_1(t) [A, X]
+
+    Parameters
+    ----------
+    t_idx : int
+        Index into the time grid at which D̄_1 is evaluated.
+    coupling_operator : ndarray
+        System coupling operator A, shape (d, d).
+    D_bar_1_array : ndarray
+        Precomputed ⟨B(t)⟩ on the time grid; produced by
+        cbg.cumulants.D_bar_1 with the case's bath_state and
+        spectral_density.
+
+    Returns
+    -------
+    callable (X: (d, d) ndarray) -> (d, d) ndarray
+    """
+    A = np.asarray(coupling_operator, dtype=complex)
+    d_bar_1_t = complex(D_bar_1_array[t_idx])
+
+    def L_1_apply(X: np.ndarray) -> np.ndarray:
+        X = np.asarray(X, dtype=complex)
+        return -1j * d_bar_1_t * (A @ X - X @ A)
+
+    return L_1_apply
+
+
+def K_total_displaced_on_grid(
+    N_card: int,
+    t_grid: np.ndarray,
+    system_hamiltonian: np.ndarray,
+    coupling_operator: np.ndarray,
+    *,
+    bath_state: Dict[str, Any],
+    spectral_density: Dict[str, Any],
+    basis: list | None = None,
+) -> np.ndarray:
+    """Compute K(t) = Σ_{n=0}^{N_card} K_n(t) for a coherent-displaced bath.
+
+    Reuses ``L_n_thermal_at_time`` for n = 0 (bare Liouvillian, bath-state-
+    independent) and n = 2 (TCL2 dissipator, D̄_2 invariant under
+    displacement). For n = 1, dispatches to ``L_1_displaced_at_time``
+    using the per-profile D̄_1 array from ``cbg.cumulants.D_bar_1`` (which
+    routes through the Council-cleared displacement-profile registry).
+
+    Parameters
+    ----------
+    N_card : int
+        Perturbative cap (must be in {0, 1, 2} per the existing thermal
+        path's range; v0.1.0 cards use N_card = 2).
+    t_grid : ndarray, shape (n_t,)
+        Time points.
+    system_hamiltonian, coupling_operator : ndarray, shape (d, d)
+    bath_state : dict
+        Must have family == "coherent_displaced" and include the
+        ``displacement_profile`` key per the §6.1 registry-clearance-gate.
+    spectral_density : dict
+        Card bath_spectral_density (ohmic at v0.1.0).
+    basis : list of (d, d) ndarrays, optional
+        HS-orthonormal basis for Letter Eq. (6); defaults to matrix_unit.
+
+    Returns
+    -------
+    ndarray, shape (n_t, d, d), dtype complex
+        K(t_grid) under the displaced bath.
+
+    Raises
+    ------
+    ValueError
+        If N_card is not a non-negative integer.
+    NotImplementedError
+        If N_card > 2 (DG-2-recursion territory; out of scope).
+    """
+    if not isinstance(N_card, int) or isinstance(N_card, bool) or N_card < 0:
+        raise ValueError(
+            f"K_total_displaced_on_grid: N_card must be a non-negative integer; "
+            f"got {N_card!r}"
+        )
+    if N_card > 2:
+        raise NotImplementedError(
+            f"K_total_displaced_on_grid: N_card={N_card} not implemented at "
+            f"v0.1.0. K_n at orders n >= 3 is out of scope (future K_2-K_4 "
+            f"numerical-recursion plan)."
+        )
+    if bath_state.get("family") != "coherent_displaced":
+        raise ValueError(
+            f"K_total_displaced_on_grid: bath_state.family must be "
+            f"'coherent_displaced'; got {bath_state.get('family')!r}. "
+            f"For thermal, use K_total_thermal_on_grid."
+        )
+
+    H_S = np.asarray(system_hamiltonian, dtype=complex)
+    A = np.asarray(coupling_operator, dtype=complex)
+    t_grid = np.asarray(t_grid, dtype=float)
+    d = H_S.shape[0]
+
+    if basis is None:
+        basis = matrix_unit_basis(d)
+
+    # Precompute D̄_1 (per-profile) and D̄_2 (thermal-baseline; invariant
+    # under displacement). D̄_2 needs a temperature; for an unspecified
+    # vacuum-baseline displaced state the natural choice is T = 0, but
+    # the bath_state may carry a temperature override (e.g. for
+    # thermal-on-top-of-displaced studies). At v0.1.0 cards do not set
+    # temperature on coherent_displaced bath_states; default to 0.
+    D_bar_1_array = D_bar_1(
+        t_grid, bath_state=bath_state, spectral_density=spectral_density,
+    ) if N_card >= 1 else None
+
+    # For D̄_2 we forward to the existing connected-two-point evaluator
+    # at the spec's temperature (or T=0 default). The evaluator already
+    # handles bath_state.family == "coherent_displaced" by treating the
+    # connected part as the thermal baseline (see cbg.bath_correlations
+    # module docstring).
+    D_bar_2_array = None
+    if N_card >= 2:
+        bs_for_d2 = dict(bath_state)
+        if "temperature" not in bs_for_d2:
+            bs_for_d2["temperature"] = 0.0
+        D_bar_2_array = D_bar_2(
+            t_grid, bath_state=bs_for_d2, spectral_density=spectral_density,
+        )
+
+    K = np.zeros((len(t_grid), d, d), dtype=complex)
+    for t_idx in range(len(t_grid)):
+        # n = 0: bare Liouvillian (bath-state-independent).
+        L0 = L_n_thermal_at_time(0, t_idx, t_grid, H_S, A)
+        K[t_idx] += K_from_generator(L0, basis)
+        # n = 1: displaced contribution.
+        if N_card >= 1:
+            L1 = L_1_displaced_at_time(t_idx, A, D_bar_1_array)
+            K[t_idx] += K_from_generator(L1, basis)
+        # n = 2: TCL2 dissipator (D̄_2 invariant; same as thermal).
+        if N_card >= 2:
+            L2 = L_n_thermal_at_time(
+                2, t_idx, t_grid, H_S, A, D_bar_2_array=D_bar_2_array,
+            )
+            K[t_idx] += K_from_generator(L2, basis)
     return K
 
 
