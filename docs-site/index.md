@@ -29,7 +29,7 @@ passed any Decision Gate.
 | Gate | Status | Anchor |
 |---|---|---|
 | DG-1 | **PASS** (2026-04-30; tag `v0.2.0`) | Cards [A1](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/A1_closed-form-K_v0.1.1.yaml), [A3](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/A3_pure-dephasing_v0.1.1.yaml), [A4](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/A4_sigma-x-thermal_v0.1.1.yaml) |
-| DG-2 | **PARTIAL** — 1 PASS / 2 frozen / 1 Council-gated | [B1 PASS](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B1_pseudo-kraus-diagonal_v0.1.0.yaml); [B2 frozen](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B2_pseudo-kraus-offdiagonal_v0.1.0.yaml); [B3 frozen](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B3_cross-basis-structural-identity_v0.1.0.yaml); displacement-convention track Council-gated |
+| DG-2 | **PASS** — 4 of 4 sub-claims under Council-cleared registry (2026-05-04) | [B1](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B1_pseudo-kraus-diagonal_v0.1.0.yaml) (Entry 1.B.3 diagonal); [B2](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B2_pseudo-kraus-offdiagonal_v0.1.0.yaml) (Entry 1.B.3 off-diagonal + Entry 1.D); [B3](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B3_cross-basis-structural-identity_v0.1.0.yaml) (Entry 1.A basis-independence); [B4-conv-registry](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B4-conv-registry_v0.1.0.yaml) (Entry 3.B.3) + [B5-conv-registry v0.2.0](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B5-conv-registry_v0.2.0.yaml) (Entry 4.B.2), each under all four Council-cleared displacement profiles. K₂–K₄ numerical recursion at order ≥ 4 = future plan. |
 | DG-3 / DG-4 / DG-5 | NOT YET ATTEMPTED | — |
 
 ## Packages
@@ -49,9 +49,11 @@ reporting
 
 - [Source on GitHub](https://github.com/uwarring82/oqs-cbg-pipeline)
 - [Benchmark cards](https://github.com/uwarring82/oqs-cbg-pipeline/tree/main/benchmarks/benchmark_cards) — frozen verification artifacts
+- [Validity envelope](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/docs/validity_envelope.md) — authoritative DG status
+- [Subsidiary Council briefing v0.3.0](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/ledger/CL-2026-005_v0.4_council-briefing_displacement-convention.md) — Council-cleared displacement-profile registry (handling (c))
 - [Hayden–Sorce transcription v0.1.1](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/transcriptions/hayden-sorce-2022_pseudokraus_v0.1.1.md)
+- [Colla–Breuer–Gasbarri Appendix-D-routed transcription v0.0.1](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/transcriptions/colla-breuer-gasbarri-2025_appendix-d_v0.0.1.md)
 - [Logbook](https://github.com/uwarring82/oqs-cbg-pipeline/tree/main/logbook) — append-only repository event log
-- [Validity envelope](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/docs/validity_envelope.md)
 - [DG-1 work plan v0.1.4](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/plans/dg-1-work-plan_v0.1.4.md)
 
 ## Building these pages

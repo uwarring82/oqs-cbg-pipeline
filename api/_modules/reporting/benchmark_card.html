@@ -343,9 +343,11 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">cbg.basis</span><span class="w"> </span><span class="kn">import</span> <span class="n">matrix_unit_basis</span><span class="p">,</span> <span class="n">verify_orthonormality</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cbg.basis</span><span class="w"> </span><span class="kn">import</span> <span class="n">matrix_unit_basis</span><span class="p">,</span> <span class="n">su_d_generator_basis</span><span class="p">,</span> <span class="n">verify_orthonormality</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cbg.cumulants</span><span class="w"> </span><span class="kn">import</span> <span class="n">D_bar_1</span> <span class="k">as</span> <span class="n">_cumulants_D_bar_1</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cbg.displacement_profiles</span><span class="w"> </span><span class="kn">import</span> <span class="n">REGISTERED_PROFILES</span> <span class="k">as</span> <span class="n">_CBG_REGISTERED_PROFILES</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">cbg.effective_hamiltonian</span><span class="w"> </span><span class="kn">import</span> <span class="n">K_from_generator</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">cbg.tcl_recursion</span><span class="w"> </span><span class="kn">import</span> <span class="n">K_total_thermal_on_grid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cbg.tcl_recursion</span><span class="w"> </span><span class="kn">import</span> <span class="n">K_total_displaced_on_grid</span><span class="p">,</span> <span class="n">K_total_thermal_on_grid</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">models</span><span class="w"> </span><span class="kn">import</span> <span class="n">pure_dephasing</span><span class="p">,</span> <span class="n">spin_boson_sigma_x</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">numerical.tensor_ops</span><span class="w"> </span><span class="kn">import</span> <span class="n">anticommutator</span><span class="p">,</span> <span class="n">commutator</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">numerical.time_grid</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_time_grid</span>
@@ -480,7 +482,9 @@
     <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">notes</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="n">hpta_residual</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># populated for pseudo-Kraus handlers; None for Lindblad-form handlers</span>
-    <span class="n">hpta_threshold</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># absolute Frobenius bound; None when no HPTA gate applies</span></div>
+    <span class="n">hpta_threshold</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># absolute Frobenius bound; None when no HPTA gate applies</span>
+    <span class="n">hermiticity_residual</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># populated for off-diagonal pseudo-Kraus (B2); None elsewhere</span>
+    <span class="n">hermiticity_threshold</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># absolute Frobenius bound; None when no Hermiticity gate applies</span></div>
 
 
 
@@ -791,17 +795,20 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_handler_canonical_lindblad_traceless</span><span class="p">(</span>
     <span class="n">case</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">d</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span>
+    <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+<span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Card A1 v0.1.1 test_case canonical_lindblad_traceless (Entry 1.B.1).</span>
 
 <span class="sd">    H = (omega/2)*sigma_z (traceless); jumps sqrt(gamma_*) * sigma_∓.</span>
 <span class="sd">    Expected K = H per the dissipator-with-traceless-jumps property.</span>
 <span class="sd">    Operates only at d=2.</span>
 
-<span class="sd">    Returns (L, K_expected, None). The trailing None signals that no HPTA</span>
-<span class="sd">    precondition gate applies — Lindblad form with traceless jumps is HPTA</span>
-<span class="sd">    by construction at the protocol level (the dissipator&#39;s adjoint identity</span>
-<span class="sd">    is the standard `sum_i V_i^dagger V_i` anti-commutator term).</span>
+<span class="sd">    Returns (L, K_expected, None, None). The trailing Nones signal that</span>
+<span class="sd">    no HPTA precondition gate and no Hermiticity-of-omega gate apply —</span>
+<span class="sd">    Lindblad form with traceless jumps is HPTA by construction, and the</span>
+<span class="sd">    handler does not carry an omega coefficient matrix.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">d</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
@@ -818,12 +825,15 @@
         <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">gamma_plus</span><span class="p">)</span> <span class="o">*</span> <span class="n">_SIGMA_PLUS</span><span class="p">,</span>
     <span class="p">]</span>
     <span class="n">L</span> <span class="o">=</span> <span class="n">_build_lindblad_generator</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">jumps</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">L</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">L</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_handler_markovian_weak_coupling_lamb_shift</span><span class="p">(</span>
     <span class="n">case</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">d</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span>
+    <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+<span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Card A1 v0.1.1 test_case markovian_weak_coupling_lamb_shift (Entry 1.B.2).</span>
 
 <span class="sd">    H = ((omega + 2*delta_LS)/2)*sigma_z (system + Lamb shift, combined);</span>
@@ -831,8 +841,8 @@
 <span class="sd">    coherent term recovered).</span>
 <span class="sd">    Operates only at d=2.</span>
 
-<span class="sd">    Returns (L, K_expected, None). See canonical_lindblad_traceless above</span>
-<span class="sd">    for why the trailing None.</span>
+<span class="sd">    Returns (L, K_expected, None, None). See canonical_lindblad_traceless</span>
+<span class="sd">    above for why the trailing Nones.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">d</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
@@ -846,7 +856,7 @@
     <span class="n">H</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">omega</span> <span class="o">+</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">delta_LS</span><span class="p">)</span> <span class="o">*</span> <span class="n">_SIGMA_Z</span>
     <span class="n">jumps</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">gamma</span><span class="p">)</span> <span class="o">*</span> <span class="n">_SIGMA_MINUS</span><span class="p">]</span>
     <span class="n">L</span> <span class="o">=</span> <span class="n">_build_lindblad_generator</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">jumps</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">L</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">L</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
 
 <span class="c1"># ─── Symbolic-operator parser (pseudo-Kraus handlers, B1) ───────────────────</span>
@@ -1011,7 +1021,10 @@
     <span class="n">expected_K</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span>
     <span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">int</span><span class="p">],</span>
-    <span class="n">Tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+    <span class="n">Tuple</span><span class="p">[</span>
+        <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="nb">float</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="p">],</span>
 <span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a handler for a pseudo-Kraus algebraic_map test_case.</span>
 
@@ -1023,11 +1036,17 @@
 <span class="sd">      4. Computes the HPTA residual ||sum_j gamma_j E_j^dagger E_j||_F.</span>
 <span class="sd">      5. Calls ``expected_K(case)`` to obtain K_expected for this case.</span>
 
-<span class="sd">    Returns (L, K_expected, hpta_residual).</span>
+<span class="sd">    Returns (L, K_expected, hpta_residual, None). The trailing None is</span>
+<span class="sd">    the Hermiticity-of-omega slot — diagonal pseudo-Kraus has real</span>
+<span class="sd">    coefficients (the 1×1 / vector form is trivially Hermitian, and the</span>
+<span class="sd">    runner has no omega matrix to gate on).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">handler</span><span class="p">(</span>
         <span class="n">case</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">d</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span>
+        <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="nb">float</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="p">]:</span>
         <span class="k">if</span> <span class="n">d</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;pseudo-Kraus handler: only d=2 supported (Card B1 v0.1.0); &quot;</span>
@@ -1041,7 +1060,7 @@
         <span class="n">L</span> <span class="o">=</span> <span class="n">_build_pseudo_kraus_generator</span><span class="p">(</span><span class="n">operators</span><span class="p">,</span> <span class="n">coefficients</span><span class="p">)</span>
         <span class="n">residual</span> <span class="o">=</span> <span class="n">_hpta_residual</span><span class="p">(</span><span class="n">operators</span><span class="p">,</span> <span class="n">coefficients</span><span class="p">)</span>
         <span class="n">K_expected</span> <span class="o">=</span> <span class="n">expected_K</span><span class="p">(</span><span class="n">case</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">L</span><span class="p">,</span> <span class="n">K_expected</span><span class="p">,</span> <span class="n">residual</span>
+        <span class="k">return</span> <span class="n">L</span><span class="p">,</span> <span class="n">K_expected</span><span class="p">,</span> <span class="n">residual</span><span class="p">,</span> <span class="kc">None</span>
     <span class="k">return</span> <span class="n">handler</span>
 
 
@@ -1065,16 +1084,348 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
 
 
+<span class="c1"># ─── Off-diagonal pseudo-Kraus support (B2) ─────────────────────────────────</span>
+<span class="c1">#</span>
+<span class="c1"># Card B2&#39;s pseudo_kraus_offdiag_omega field carries a 2D list of symbolic</span>
+<span class="c1"># strings (e.g. &quot;1.0&quot;, &quot;1j * beta&quot;, &quot;-1j * beta&quot;) that must reduce to</span>
+<span class="c1"># complex scalars under the case&#39;s parameters. The same AST whitelist as</span>
+<span class="c1"># B1&#39;s operator parser applies (Constant / Name / numeric BinOp / UnaryOp /</span>
+<span class="c1"># sqrt(...)), but the namespace excludes operator identifiers — an omega</span>
+<span class="c1"># entry must be scalar-typed, so I / sigma_x / ... in scope would be a</span>
+<span class="c1"># category error. _eval_complex_scalar_expression enforces the scalar</span>
+<span class="c1"># discipline by stripping the operator namespace before evaluation.</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_eval_complex_scalar_expression</span><span class="p">(</span>
+    <span class="n">expr</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Evaluate a complex-scalar expression in a parameters-only namespace.</span>
+
+<span class="sd">    Used by B2&#39;s pseudo_kraus_offdiag_omega entries (and any future card</span>
+<span class="sd">    surface that needs scalar coefficients without operator identifiers</span>
+<span class="sd">    in scope). Reuses the AST whitelist from _eval_operator_expression</span>
+<span class="sd">    but keeps the namespace narrow: only the case&#39;s `parameters`, the</span>
+<span class="sd">    `sqrt` builtin, and numeric / complex literals.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    expr : str</span>
+<span class="sd">        Symbolic scalar expression. Identifiers must come from the</span>
+<span class="sd">        ``parameters`` dict; ``sqrt`` is the only allowed function call;</span>
+<span class="sd">        numeric and complex literals (e.g. 1j, -1.0) are permitted.</span>
+<span class="sd">    parameters : dict</span>
+<span class="sd">        Per-case named parameters.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    complex</span>
+<span class="sd">        The evaluated scalar, coerced to complex.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the expression contains forbidden AST nodes, calls to</span>
+<span class="sd">        functions other than sqrt, parameter names shadowing sqrt, or</span>
+<span class="sd">        identifiers not in ``parameters``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">namespace</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">pname</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">pname</span> <span class="ow">in</span> <span class="n">_ALLOWED_FUNCTION_NAMES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;_eval_complex_scalar_expression: parameter name </span><span class="si">{</span><span class="n">pname</span><span class="si">!r}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;shadows a reserved function name; rename in the card&#39;s &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;parameters block&quot;</span>
+            <span class="p">)</span>
+    <span class="n">namespace</span><span class="p">[</span><span class="s2">&quot;sqrt&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;eval&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">SyntaxError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;_eval_complex_scalar_expression: cannot parse expression &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">expr</span><span class="si">!r}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">ast</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">_ALLOWED_AST_NODES</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;_eval_complex_scalar_expression: forbidden AST node &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">node</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> in expression </span><span class="si">{</span><span class="n">expr</span><span class="si">!r}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">ast</span><span class="o">.</span><span class="n">Call</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="n">ast</span><span class="o">.</span><span class="n">Name</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="n">id</span> <span class="ow">in</span> <span class="n">_ALLOWED_FUNCTION_NAMES</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;_eval_complex_scalar_expression: only calls to &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">_ALLOWED_FUNCTION_NAMES</span><span class="p">)</span><span class="si">}</span><span class="s2"> are permitted; &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;got call in expression </span><span class="si">{</span><span class="n">expr</span><span class="si">!r}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">ast</span><span class="o">.</span><span class="n">Name</span><span class="p">)</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">namespace</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;_eval_complex_scalar_expression: unknown identifier &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="si">!r}</span><span class="s2"> in expression </span><span class="si">{</span><span class="n">expr</span><span class="si">!r}</span><span class="s2">; available: &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">namespace</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+    <span class="n">value</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span>  <span class="c1"># noqa: S307 — restricted namespace + AST whitelist enforced above</span>
+        <span class="nb">compile</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="s2">&quot;&lt;scalar-expression&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;eval&quot;</span><span class="p">),</span>
+        <span class="p">{</span><span class="s2">&quot;__builtins__&quot;</span><span class="p">:</span> <span class="p">{}},</span>
+        <span class="n">namespace</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="nb">complex</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_offdiag_omega</span><span class="p">(</span>
+    <span class="n">rows</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">parameters</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a 2D list of complex-scalar string expressions into an n×n array.</span>
+
+<span class="sd">    Validates that the input is square (rows of equal length); the</span>
+<span class="sd">    Hermiticity check happens at the runner level via _hermiticity_residual.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
+    <span class="n">omega</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;_parse_offdiag_omega: row </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> has length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">)</span><span class="si">}</span><span class="s2">; &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;expected square matrix of size </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">×</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">entry</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+            <span class="n">omega</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">_eval_complex_scalar_expression</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">omega</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_hermiticity_residual</span><span class="p">(</span><span class="n">omega</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Absolute Frobenius norm of omega - omega^dagger.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">omega</span> <span class="o">-</span> <span class="n">omega</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s2">&quot;fro&quot;</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_offdiag_pseudo_kraus_generator</span><span class="p">(</span>
+    <span class="n">operators</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">omega</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build L(rho) = sum_{i,j} omega_{ij} V_i rho V_j^dagger.</span>
+
+<span class="sd">    Caller is responsible for Hermiticity of omega and HPTA</span>
+<span class="sd">    (sum_{i,j} omega_{ij} V_j^dagger V_i = 0). This function does not</span>
+<span class="sd">    validate; the runner gates on those preconditions before evaluating</span>
+<span class="sd">    the K comparison.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">operators</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">L</span><span class="p">(</span><span class="n">rho</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">V_i</span> <span class="o">=</span> <span class="n">operators</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                <span class="n">V_j_dag</span> <span class="o">=</span> <span class="n">operators</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
+                <span class="n">out</span> <span class="o">+=</span> <span class="n">omega</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">V_i</span> <span class="o">@</span> <span class="n">rho</span> <span class="o">@</span> <span class="n">V_j_dag</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+    <span class="k">return</span> <span class="n">L</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_offdiag_hpta_residual</span><span class="p">(</span>
+    <span class="n">operators</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">omega</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Absolute Frobenius norm of sum_{i,j} omega_{ij} V_j^dagger V_i.&quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">operators</span><span class="p">)</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">operators</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">acc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">V_i</span> <span class="o">=</span> <span class="n">operators</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">V_j_dag</span> <span class="o">=</span> <span class="n">operators</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">acc</span> <span class="o">+=</span> <span class="n">omega</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">V_j_dag</span> <span class="o">@</span> <span class="n">V_i</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">acc</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s2">&quot;fro&quot;</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_make_offdiag_pseudo_kraus_handler</span><span class="p">(</span>
+    <span class="n">expected_K</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span>
+    <span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="n">Tuple</span><span class="p">[</span>
+        <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a handler for an off-diagonal pseudo-Kraus algebraic_map test_case.</span>
+
+<span class="sd">    The returned handler:</span>
+<span class="sd">      1. Parses ``case[&quot;pseudo_kraus_offdiag_operators&quot;]`` against the</span>
+<span class="sd">         d=2 operator namespace augmented with ``case[&quot;parameters&quot;]``.</span>
+<span class="sd">      2. Parses ``case[&quot;pseudo_kraus_offdiag_omega&quot;]`` (2D list of</span>
+<span class="sd">         strings) against the parameters-only scalar namespace.</span>
+<span class="sd">      3. Computes the Hermiticity residual ||omega - omega^dagger||_F.</span>
+<span class="sd">      4. Builds L(rho) = sum_{i,j} omega_{ij} V_i rho V_j^dagger.</span>
+<span class="sd">      5. Computes the HPTA residual ||sum_{i,j} omega_{ij} V_j^dagger V_i||_F.</span>
+<span class="sd">      6. Calls ``expected_K(case)`` to obtain K_expected for this case.</span>
+
+<span class="sd">    Returns (L, K_expected, hpta_residual, hermiticity_residual).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handler</span><span class="p">(</span>
+        <span class="n">case</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">d</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span>
+        <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="p">]:</span>
+        <span class="k">if</span> <span class="n">d</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;off-diagonal pseudo-Kraus handler: only d=2 supported &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(Card B2 v0.1.0); got d=</span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">case</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;parameters&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="n">op_exprs</span> <span class="o">=</span> <span class="n">case</span><span class="p">[</span><span class="s2">&quot;pseudo_kraus_offdiag_operators&quot;</span><span class="p">]</span>
+        <span class="n">omega_rows</span> <span class="o">=</span> <span class="n">case</span><span class="p">[</span><span class="s2">&quot;pseudo_kraus_offdiag_omega&quot;</span><span class="p">]</span>
+        <span class="n">operators</span> <span class="o">=</span> <span class="p">[</span><span class="n">_eval_operator_expression</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">op_exprs</span><span class="p">]</span>
+        <span class="n">omega</span> <span class="o">=</span> <span class="n">_parse_offdiag_omega</span><span class="p">(</span><span class="n">omega_rows</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">omega</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">operators</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;off-diagonal pseudo-Kraus handler: omega is &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">omega</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">×</span><span class="si">{</span><span class="n">omega</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> but </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">operators</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;V_i operators were provided; sizes must match&quot;</span>
+            <span class="p">)</span>
+        <span class="n">hermiticity</span> <span class="o">=</span> <span class="n">_hermiticity_residual</span><span class="p">(</span><span class="n">omega</span><span class="p">)</span>
+        <span class="n">L</span> <span class="o">=</span> <span class="n">_build_offdiag_pseudo_kraus_generator</span><span class="p">(</span><span class="n">operators</span><span class="p">,</span> <span class="n">omega</span><span class="p">)</span>
+        <span class="n">hpta</span> <span class="o">=</span> <span class="n">_offdiag_hpta_residual</span><span class="p">(</span><span class="n">operators</span><span class="p">,</span> <span class="n">omega</span><span class="p">)</span>
+        <span class="n">K_expected</span> <span class="o">=</span> <span class="n">expected_K</span><span class="p">(</span><span class="n">case</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">L</span><span class="p">,</span> <span class="n">K_expected</span><span class="p">,</span> <span class="n">hpta</span><span class="p">,</span> <span class="n">hermiticity</span>
+    <span class="k">return</span> <span class="n">handler</span>
+
+
+<span class="c1"># Per-test-case K_expected closures for B2, derived from transcription §4b:</span>
+<span class="c1">#</span>
+<span class="c1">#   H_HS^off-diag = (1/2id) sum_{i,j} omega_{ij}</span>
+<span class="c1">#                          (Tr(V_i) V_j^dagger - Tr(V_j^dagger) V_i)</span>
+<span class="c1">#</span>
+<span class="c1"># Each fixture&#39;s per-term derivation is recorded in the YAML&#39;s</span>
+<span class="c1"># expected_outcome and §7a; here we encode the closed-form result.</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_expected_K_offdiag_omega_imaginary_sigma_z</span><span class="p">(</span><span class="n">case</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;K = beta * sigma_z; transcription §7a worked fixture at the case&#39;s beta.&quot;&quot;&quot;</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">case</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">][</span><span class="s2">&quot;beta&quot;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">_SIGMA_Z</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_expected_K_offdiag_omega_imaginary_sigma_x</span><span class="p">(</span><span class="n">case</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;K = -beta * sigma_x; sigma_x analog of §7a at the case&#39;s beta.&quot;&quot;&quot;</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">case</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">][</span><span class="s2">&quot;beta&quot;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">beta</span> <span class="o">*</span> <span class="n">_SIGMA_X</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_expected_K_offdiag_omega_diagonal_only</span><span class="p">(</span><span class="n">case</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;K = 0; degenerate sub-case where omega&#39;s off-diagonal entries vanish</span>
+<span class="sd">    and the V_i pair (I, sigma_z) gives Tr-cancellation in the (1,1) summand</span>
+<span class="sd">    and a traceless-V in the (2,2) summand.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+
+
+<span class="c1"># ─── Basis-builder registry (cross-basis runner, B3) ────────────────────────</span>
+<span class="c1">#</span>
+<span class="c1"># Card B3 v0.1.0&#39;s per-case `comparison_basis` field names a Hilbert–Schmidt</span>
+<span class="c1"># orthonormal basis to compare against the matrix-unit reference. The runner</span>
+<span class="c1"># resolves the name through this registry; adding a new comparison_basis</span>
+<span class="c1"># value (e.g. &quot;hermitian_basis&quot;) requires registering its builder here.</span>
+
+<span class="n">_BASIS_BUILDERS</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;matrix_unit&quot;</span><span class="p">:</span> <span class="n">matrix_unit_basis</span><span class="p">,</span>
+    <span class="s2">&quot;su_d_generator&quot;</span><span class="p">:</span> <span class="n">su_d_generator_basis</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="c1"># ─── Displacement-profile registry (Council Act 2 cleared, 2026-05-04) ──────</span>
+<span class="c1">#</span>
+<span class="c1"># The displacement-mode profiles α(ω) for the coherent-displaced bath state</span>
+<span class="c1"># appearing in CL-2026-005 v0.4 Entries 3.B.3 + 4.B.2 are Council-cleared</span>
+<span class="c1"># under handling (c) of the subsidiary briefing v0.3.0 §4.3 (deliberation</span>
+<span class="c1"># transcript: ledger/CL-2026-005_v0.4_council-deliberation_act2_2026-05-04.md).</span>
+<span class="c1"># The four cleared profile keys at v0.1.0 are:</span>
+<span class="c1">#</span>
+<span class="c1">#   delta-omega_c      single-mode at bath cutoff ω_c          (§3.1)</span>
+<span class="c1">#   delta-omega_S      single-mode at system Bohr ω_S          (§3.2)</span>
+<span class="c1">#   sqrt-J             broadband ∝ √(J(ω))                     (§3.3)</span>
+<span class="c1">#   gaussian           Gaussian envelope (ω_d, Δω)             (§3.4)</span>
+<span class="c1">#</span>
+<span class="c1"># Adding or removing entries requires fresh Council clearance per the</span>
+<span class="c1"># subsidiary briefing v0.3.0 §6.1 registry-clearance-gate; the registry is</span>
+<span class="c1"># not open to ad-hoc Steward-discretion modifications.</span>
+<span class="c1">#</span>
+<span class="c1"># This runner-level registry imports the constructors verbatim from</span>
+<span class="c1"># cbg.displacement_profiles.REGISTERED_PROFILES to maintain a single source</span>
+<span class="c1"># of truth for the cleared set. The B4-conv-registry_v0.1.0 card&#39;s</span>
+<span class="c1"># per-test-case ``displacement_profile`` field resolves through this dict.</span>
+
+<span class="n">_DISPLACEMENT_PROFILES</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">_CBG_REGISTERED_PROFILES</span><span class="p">)</span>
+
+
+<span class="c1"># ─── Basis-independence handler factory (B3) ────────────────────────────────</span>
+<span class="c1">#</span>
+<span class="c1"># B3&#39;s three test_cases reuse known-good fixtures from A1 / B1 — see</span>
+<span class="c1"># B3 v0.1.0 YAML `frozen_parameters.model.test_cases[i].reference`. Each B3</span>
+<span class="c1"># handler delegates fixture-to-L construction to the corresponding A1 / B1</span>
+<span class="c1"># handler, then discards the K_expected slot: B3 verifies basis-independence</span>
+<span class="c1"># of K_from_generator on the generated L, not the value of K (that is owned</span>
+<span class="c1"># by A1 / B1 and already PASS).</span>
+<span class="c1">#</span>
+<span class="c1"># A B3 handler returns (L, None, hpta_residual_or_None). The None in the</span>
+<span class="c1"># K_expected slot signals to the runner that the case carries a</span>
+<span class="c1"># `comparison_basis` and must use the cross-basis comparison branch.</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_make_basis_independence_handler</span><span class="p">(</span>
+    <span class="n">base_handler</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span>
+        <span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">Tuple</span><span class="p">[</span>
+            <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+            <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="p">],</span>
+    <span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span>
+    <span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="n">Tuple</span><span class="p">[</span>
+        <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="p">],</span>
+<span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrap an A1 / B1 handler to drop K_expected for B3 cross-basis use.</span>
+
+<span class="sd">    The wrapped handler builds L identically to the source-card handler</span>
+<span class="sd">    (so the parser / Lindblad-builder logic is reused unchanged) and</span>
+<span class="sd">    returns (L, None, hpta_residual, hermiticity_residual). The None in</span>
+<span class="sd">    the second slot is the runner&#39;s signal to switch to the cross-basis</span>
+<span class="sd">    comparison branch; the trailing slots pass through whatever the</span>
+<span class="sd">    source handler surfaced.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handler</span><span class="p">(</span>
+        <span class="n">case</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">d</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span>
+        <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="p">]:</span>
+        <span class="n">L</span><span class="p">,</span> <span class="n">_K_expected</span><span class="p">,</span> <span class="n">hpta_residual</span><span class="p">,</span> <span class="n">hermiticity_residual</span> <span class="o">=</span> <span class="n">base_handler</span><span class="p">(</span><span class="n">case</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">L</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">hpta_residual</span><span class="p">,</span> <span class="n">hermiticity_residual</span>
+    <span class="k">return</span> <span class="n">handler</span>
+
+
 <span class="c1"># Registry: test_case name → handler. Adding a new test_case to a card</span>
-<span class="c1"># requires registering its handler here. Lindblad-form handlers (A1) return</span>
-<span class="c1"># (L, K_expected, None); pseudo-Kraus handlers (B1) return</span>
-<span class="c1"># (L, K_expected, hpta_residual). The runner discriminates by checking</span>
-<span class="c1"># whether the third element is None.</span>
+<span class="c1"># requires registering its handler here. Handlers return a 4-tuple:</span>
+<span class="c1"># (L, K_expected_or_None, hpta_residual_or_None, hermiticity_residual_or_None).</span>
+<span class="c1">#   - Lindblad-form (A1): (L, K, None, None)</span>
+<span class="c1">#   - Diagonal pseudo-Kraus (B1): (L, K, hpta, None)</span>
+<span class="c1">#   - Off-diagonal pseudo-Kraus (B2): (L, K, hpta, hermiticity)</span>
+<span class="c1">#   - Basis-independence (B3): (L, None, hpta_or_None, hermiticity_or_None)</span>
+<span class="c1"># K_expected = None is the runner&#39;s signal to take the cross-basis comparison</span>
+<span class="c1"># branch (B3); the trailing residual slots gate the runner&#39;s precondition</span>
+<span class="c1"># checks.</span>
 <span class="n">_TEST_CASE_HANDLERS</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span>
     <span class="nb">str</span><span class="p">,</span>
     <span class="n">Callable</span><span class="p">[</span>
         <span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">int</span><span class="p">],</span>
-        <span class="n">Tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span>
+        <span class="n">Tuple</span><span class="p">[</span>
+            <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+            <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+            <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+            <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="p">],</span>
     <span class="p">],</span>
 <span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;canonical_lindblad_traceless&quot;</span><span class="p">:</span> <span class="n">_handler_canonical_lindblad_traceless</span><span class="p">,</span>
@@ -1085,6 +1436,20 @@
         <span class="n">_make_pseudo_kraus_handler</span><span class="p">(</span><span class="n">_expected_K_pseudo_kraus_diagonal_sigma_x</span><span class="p">),</span>
     <span class="s2">&quot;pseudo_kraus_traceless_jumps&quot;</span><span class="p">:</span>
         <span class="n">_make_pseudo_kraus_handler</span><span class="p">(</span><span class="n">_expected_K_pseudo_kraus_traceless_jumps</span><span class="p">),</span>
+    <span class="s2">&quot;offdiag_omega_imaginary_sigma_z&quot;</span><span class="p">:</span>
+        <span class="n">_make_offdiag_pseudo_kraus_handler</span><span class="p">(</span><span class="n">_expected_K_offdiag_omega_imaginary_sigma_z</span><span class="p">),</span>
+    <span class="s2">&quot;offdiag_omega_imaginary_sigma_x&quot;</span><span class="p">:</span>
+        <span class="n">_make_offdiag_pseudo_kraus_handler</span><span class="p">(</span><span class="n">_expected_K_offdiag_omega_imaginary_sigma_x</span><span class="p">),</span>
+    <span class="s2">&quot;offdiag_omega_diagonal_only&quot;</span><span class="p">:</span>
+        <span class="n">_make_offdiag_pseudo_kraus_handler</span><span class="p">(</span><span class="n">_expected_K_offdiag_omega_diagonal_only</span><span class="p">),</span>
+    <span class="s2">&quot;basis_independence_pseudo_kraus_sigma_z&quot;</span><span class="p">:</span>
+        <span class="n">_make_basis_independence_handler</span><span class="p">(</span>
+            <span class="n">_make_pseudo_kraus_handler</span><span class="p">(</span><span class="n">_expected_K_pseudo_kraus_diagonal_sigma_z</span><span class="p">)</span>
+        <span class="p">),</span>
+    <span class="s2">&quot;basis_independence_lindblad_traceless&quot;</span><span class="p">:</span>
+        <span class="n">_make_basis_independence_handler</span><span class="p">(</span><span class="n">_handler_canonical_lindblad_traceless</span><span class="p">),</span>
+    <span class="s2">&quot;basis_independence_lindblad_lamb_shift&quot;</span><span class="p">:</span>
+        <span class="n">_make_basis_independence_handler</span><span class="p">(</span><span class="n">_handler_markovian_weak_coupling_lamb_shift</span><span class="p">),</span>
 <span class="p">}</span>
 
 
@@ -1156,10 +1521,36 @@
                 <span class="sa">f</span><span class="s2">&quot;reporting.benchmark_card._TEST_CASE_HANDLERS.&quot;</span>
             <span class="p">)</span>
         <span class="n">handler</span> <span class="o">=</span> <span class="n">_TEST_CASE_HANDLERS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
-        <span class="n">L</span><span class="p">,</span> <span class="n">K_expected</span><span class="p">,</span> <span class="n">hpta_residual</span> <span class="o">=</span> <span class="n">handler</span><span class="p">(</span><span class="n">case</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+        <span class="n">L</span><span class="p">,</span> <span class="n">K_expected</span><span class="p">,</span> <span class="n">hpta_residual</span><span class="p">,</span> <span class="n">hermiticity_residual</span> <span class="o">=</span> <span class="n">handler</span><span class="p">(</span><span class="n">case</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+
+        <span class="c1"># Hermiticity-of-omega precondition gate — applies only to handlers</span>
+        <span class="c1"># that surface a non-None residual (off-diagonal pseudo-Kraus B2</span>
+        <span class="c1"># cases). Checked first because Hermiticity is the structural</span>
+        <span class="c1"># precondition for HPTA itself: a non-Hermitian omega makes the</span>
+        <span class="c1"># HPTA residual ill-typed (it can be non-zero anti-Hermitian) and</span>
+        <span class="c1"># the K comparison downstream meaningless. Short-circuit with a</span>
+        <span class="c1"># clear diagnostic.</span>
+        <span class="k">if</span> <span class="n">hermiticity_residual</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">hermiticity_residual</span> <span class="o">&gt;</span> <span class="n">abs_tol</span><span class="p">:</span>
+            <span class="n">test_case_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">TestCaseResult</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">passed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">error</span><span class="o">=</span><span class="n">hermiticity_residual</span><span class="p">,</span>
+                <span class="n">threshold</span><span class="o">=</span><span class="n">abs_tol</span><span class="p">,</span>
+                <span class="n">notes</span><span class="o">=</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Hermiticity precondition failed: &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;||omega - omega^dagger||_F = </span><span class="si">{</span><span class="n">hermiticity_residual</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;&gt; absolute tolerance </span><span class="si">{</span><span class="n">abs_tol</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">. &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;HPTA and K comparison skipped.&quot;</span>
+                <span class="p">),</span>
+                <span class="n">hpta_residual</span><span class="o">=</span><span class="n">hpta_residual</span><span class="p">,</span>
+                <span class="n">hpta_threshold</span><span class="o">=</span><span class="n">abs_tol</span> <span class="k">if</span> <span class="n">hpta_residual</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">hermiticity_residual</span><span class="o">=</span><span class="n">hermiticity_residual</span><span class="p">,</span>
+                <span class="n">hermiticity_threshold</span><span class="o">=</span><span class="n">abs_tol</span><span class="p">,</span>
+            <span class="p">))</span>
+            <span class="k">continue</span>
 
         <span class="c1"># HPTA precondition gate — applies only to handlers that surface a</span>
-        <span class="c1"># non-None residual (pseudo-Kraus B1 cases). The threshold is</span>
+        <span class="c1"># non-None residual (pseudo-Kraus B1 / B2 cases). The threshold is</span>
         <span class="c1"># numerical.integration_tolerance.absolute, the same bound the card</span>
         <span class="c1"># cites in acceptance_criterion.rationale. A failure here means the</span>
         <span class="c1"># fixture is not a valid pseudo-Kraus generator and the K comparison</span>
@@ -1178,18 +1569,52 @@
                 <span class="p">),</span>
                 <span class="n">hpta_residual</span><span class="o">=</span><span class="n">hpta_residual</span><span class="p">,</span>
                 <span class="n">hpta_threshold</span><span class="o">=</span><span class="n">abs_tol</span><span class="p">,</span>
+                <span class="n">hermiticity_residual</span><span class="o">=</span><span class="n">hermiticity_residual</span><span class="p">,</span>
+                <span class="n">hermiticity_threshold</span><span class="o">=</span><span class="n">abs_tol</span> <span class="k">if</span> <span class="n">hermiticity_residual</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
             <span class="p">))</span>
             <span class="k">continue</span>
 
         <span class="n">K_computed</span> <span class="o">=</span> <span class="n">K_from_generator</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
 
-        <span class="n">diff_norm</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">K_computed</span> <span class="o">-</span> <span class="n">K_expected</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s2">&quot;fro&quot;</span><span class="p">))</span>
-        <span class="n">ref_norm</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">K_expected</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s2">&quot;fro&quot;</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">ref_norm</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="n">error</span> <span class="o">=</span> <span class="n">diff_norm</span> <span class="o">/</span> <span class="n">ref_norm</span>
+        <span class="n">comparison_basis_name</span> <span class="o">=</span> <span class="n">case</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;comparison_basis&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">comparison_basis_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Cross-basis structural-identity branch (B3 v0.1.0): compare K</span>
+            <span class="c1"># under the matrix-unit reference against K under the named</span>
+            <span class="c1"># alternate basis. The handler must have surfaced K_expected = None</span>
+            <span class="c1"># to land here (the basis-independence factory enforces that).</span>
+            <span class="k">if</span> <span class="n">K_expected</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;_run_algebraic_map: test_case </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> has comparison_basis &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">comparison_basis_name</span><span class="si">!r}</span><span class="s2"> but its handler returned a non-None &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;K_expected; cross-basis cases must surface K_expected = None&quot;</span>
+                <span class="p">)</span>
+            <span class="n">alt_builder</span> <span class="o">=</span> <span class="n">_BASIS_BUILDERS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">comparison_basis_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">alt_builder</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">SchemaValidationError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;_run_algebraic_map: test_case </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> requests &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;comparison_basis </span><span class="si">{</span><span class="n">comparison_basis_name</span><span class="si">!r}</span><span class="s2">; no builder &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;registered. Known: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">_BASIS_BUILDERS</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="n">alt_basis</span> <span class="o">=</span> <span class="n">alt_builder</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">verify_orthonormality</span><span class="p">(</span><span class="n">alt_basis</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;comparison_basis </span><span class="si">{</span><span class="n">comparison_basis_name</span><span class="si">!r}</span><span class="s2"> (d=</span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2">) failed &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;orthonormality precondition; cross-basis comparison is &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;meaningless against a non-orthonormal basis&quot;</span>
+                <span class="p">)</span>
+            <span class="n">K_alt</span> <span class="o">=</span> <span class="n">K_from_generator</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">alt_basis</span><span class="p">)</span>
+            <span class="n">diff_norm</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">K_computed</span> <span class="o">-</span> <span class="n">K_alt</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s2">&quot;fro&quot;</span><span class="p">))</span>
+            <span class="n">ref_norm</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">K_computed</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s2">&quot;fro&quot;</span><span class="p">))</span>
+            <span class="n">error</span> <span class="o">=</span> <span class="n">diff_norm</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">ref_norm</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># If K_expected is zero, fall back to absolute Frobenius norm</span>
-            <span class="n">error</span> <span class="o">=</span> <span class="n">diff_norm</span>
+            <span class="c1"># K-value branch (A1, B1): compare K_computed against K_expected.</span>
+            <span class="n">diff_norm</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">K_computed</span> <span class="o">-</span> <span class="n">K_expected</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s2">&quot;fro&quot;</span><span class="p">))</span>
+            <span class="n">ref_norm</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">K_expected</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s2">&quot;fro&quot;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">ref_norm</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="n">error</span> <span class="o">=</span> <span class="n">diff_norm</span> <span class="o">/</span> <span class="n">ref_norm</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># If K_expected is zero, fall back to absolute Frobenius norm</span>
+                <span class="n">error</span> <span class="o">=</span> <span class="n">diff_norm</span>
 
         <span class="n">test_case_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">TestCaseResult</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
@@ -1198,6 +1623,8 @@
             <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span>
             <span class="n">hpta_residual</span><span class="o">=</span><span class="n">hpta_residual</span><span class="p">,</span>
             <span class="n">hpta_threshold</span><span class="o">=</span><span class="n">abs_tol</span> <span class="k">if</span> <span class="n">hpta_residual</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">hermiticity_residual</span><span class="o">=</span><span class="n">hermiticity_residual</span><span class="p">,</span>
+            <span class="n">hermiticity_threshold</span><span class="o">=</span><span class="n">abs_tol</span> <span class="k">if</span> <span class="n">hermiticity_residual</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
         <span class="p">))</span>
 
     <span class="n">all_passed</span> <span class="o">=</span> <span class="nb">all</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">passed</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">test_case_results</span><span class="p">)</span>
@@ -1221,6 +1648,8 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_dyn_handler_pure_dephasing_thermal</span><span class="p">(</span>
     <span class="n">K_array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">t_grid</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">H_S</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">bath_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">spectral_density</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Card A3 v0.1.1 thermal_bath PASS condition.</span>
 
@@ -1253,6 +1682,8 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_dyn_handler_sigma_x_thermal</span><span class="p">(</span>
     <span class="n">K_array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">t_grid</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">H_S</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">bath_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">spectral_density</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Card A4 v0.1.1 thermal_bath PASS condition.</span>
 
@@ -1275,15 +1706,150 @@
     <span class="k">return</span> <span class="n">max_transverse</span> <span class="o">&lt;=</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">max_transverse</span>
 
 
+<span class="c1"># ─── Coherent-displaced dynamical handlers (Council Act 2 cleared, 2026-05-04) ─</span>
+<span class="c1">#</span>
+<span class="c1"># B4-conv-registry v0.1.0 verifies CL-2026-005 v0.4 Entry 3.B.3 under the</span>
+<span class="c1"># four cleared displacement profiles. Per the parity-class theorem of Letter</span>
+<span class="c1"># end-matter Eq. (A.39) (transcription §2.2): under σ_z coupling, K(t) is</span>
+<span class="c1"># proportional to σ_z under any bath state. The non-thermal signature is</span>
+<span class="c1"># the time-dependent shift ω_r(t) − ω, which under the perturbative</span>
+<span class="c1"># expansion at N_card = 2 is exactly K_1(t)&#39;s σ_z coefficient times 2 —</span>
+<span class="c1"># i.e. 2 D̄_1(t) — because K_2 contributes only the identity term that is</span>
+<span class="c1"># stripped by the K_from_generator traceless projection.</span>
+<span class="c1">#</span>
+<span class="c1"># Verdict gate: max_t |shift_actual(t) − shift_predicted(t)| ≤ threshold</span>
+<span class="c1"># AND max_t shape_residual(t) ≤ threshold (K(t) ∝ σ_z preserved).</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_dyn_handler_pure_dephasing_displaced</span><span class="p">(</span>
+    <span class="n">K_array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">t_grid</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">H_S</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">bath_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">spectral_density</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Card B4-conv-registry v0.1.0 displaced-pure-dephasing PASS condition.</span>
+
+<span class="sd">    Per fixture (one of four cleared profiles), gates BOTH:</span>
+<span class="sd">      (1) shape: K(t) ∝ σ_z (parity-class theorem holds for σ_z coupling</span>
+<span class="sd">          under any bath state). max_t shape_residual ≤ threshold.</span>
+<span class="sd">      (2) shift: max_t |omega_r(t) - omega - shift_predicted(t)| ≤ threshold,</span>
+<span class="sd">          where shift_predicted(t) = 2 · D̄_1(t).real for the registered</span>
+<span class="sd">          profile.</span>
+
+<span class="sd">    Returns (passed, max(shape_residual, shift_error)).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">bath_state</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">spectral_density</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;_dyn_handler_pure_dephasing_displaced: bath_state + &quot;</span>
+            <span class="s2">&quot;spectral_density are required&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">omega</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">H_S</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
+    <span class="n">shift_predicted</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">_cumulants_D_bar_1</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t_grid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span> <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+    <span class="p">))</span>
+    <span class="n">max_shape_residual</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">max_shift_err</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">K_t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">K_array</span><span class="p">):</span>
+        <span class="c1"># B.1: K(t) ∝ σ_z (shape residual)</span>
+        <span class="n">coeff</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">_SIGMA_Z</span> <span class="o">@</span> <span class="n">K_t</span><span class="p">)</span><span class="o">.</span><span class="n">real</span>
+        <span class="n">proj</span> <span class="o">=</span> <span class="n">coeff</span> <span class="o">*</span> <span class="n">_SIGMA_Z</span>
+        <span class="n">diff_norm</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">K_t</span> <span class="o">-</span> <span class="n">proj</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s2">&quot;fro&quot;</span><span class="p">))</span>
+        <span class="n">K_norm</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">K_t</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s2">&quot;fro&quot;</span><span class="p">))</span>
+        <span class="n">shape_residual</span> <span class="o">=</span> <span class="n">diff_norm</span> <span class="o">/</span> <span class="n">K_norm</span> <span class="k">if</span> <span class="n">K_norm</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.0</span>
+        <span class="n">max_shape_residual</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_shape_residual</span><span class="p">,</span> <span class="n">shape_residual</span><span class="p">)</span>
+        <span class="c1"># B.3: actual shift versus predicted shift</span>
+        <span class="n">omega_r</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">_SIGMA_Z</span> <span class="o">@</span> <span class="n">K_t</span><span class="p">)</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
+        <span class="n">shift_actual</span> <span class="o">=</span> <span class="n">omega_r</span> <span class="o">-</span> <span class="n">omega</span>
+        <span class="n">max_shift_err</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_shift_err</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">shift_actual</span> <span class="o">-</span> <span class="n">shift_predicted</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    <span class="n">error</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_shape_residual</span><span class="p">,</span> <span class="n">max_shift_err</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">error</span> <span class="o">&lt;=</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">error</span>
+
+
+<span class="c1"># ─── B5-conv-registry v0.2.0 σ_x displaced handler ────────────────────────────</span>
+<span class="c1">#</span>
+<span class="c1"># Schrödinger-picture L_1^S[X](t) = -i D̄_1(t) [σ_x, X] extracts via Letter</span>
+<span class="c1"># Eq. (6) to K_1(t) = D̄_1(t) · σ_x — a constant-direction transverse</span>
+<span class="c1"># contribution along σ_x with zero σ_y component at order ≤ N_card = 2</span>
+<span class="c1"># (parity-class theorem of Letter end-matter Eq. (A.43)-(A.45) sends K_2</span>
+<span class="c1"># to the diagonal subspace; σ_y component is exactly zero in the displaced</span>
+<span class="c1"># case at this order). Predicted: (b_pred, c_pred) = (D̄_1(t), 0).</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_dyn_handler_sigma_x_displaced</span><span class="p">(</span>
+    <span class="n">K_array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">t_grid</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">H_S</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">bath_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">spectral_density</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Card B5-conv-registry v0.2.0 displaced-σ_x PASS condition.</span>
+
+<span class="sd">    Per fixture (one of four cleared profiles), gates the Schrödinger-</span>
+<span class="sd">    picture predicted transverse vector (D̄_1(t), 0):</span>
+<span class="sd">      b_actual(t) := 0.5 trace(σ_x · K(t))   should equal D̄_1(t)</span>
+<span class="sd">      c_actual(t) := 0.5 trace(σ_y · K(t))   should equal 0</span>
+<span class="sd">      transverse_error(t) := sqrt((b_actual - D̄_1)² + c_actual²)</span>
+<span class="sd">    Verdict: max_t transverse_error(t) ≤ threshold.</span>
+
+<span class="sd">    The σ_z coefficient d(t) is NOT gated — Entry 4.B.2 explicitly allows</span>
+<span class="sd">    an energy-level shift; only the transverse channels are constrained.</span>
+
+<span class="sd">    The same D̄_1 array is consumed by both the runner&#39;s K_1 computation</span>
+<span class="sd">    (via cbg.tcl_recursion.K_total_displaced_on_grid → L_1_displaced_at_time)</span>
+<span class="sd">    and the predicted σ_x channel here, so quadrature error in the</span>
+<span class="sd">    broadband / Gaussian profiles cancels at the verdict-comparison</span>
+<span class="sd">    layer (parallels B4&#39;s structural-precision pattern).</span>
+
+<span class="sd">    Returns (passed, max_transverse_error).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">bath_state</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">spectral_density</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;_dyn_handler_sigma_x_displaced: bath_state + spectral_density &quot;</span>
+            <span class="s2">&quot;are required&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">b_predicted</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">_cumulants_D_bar_1</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t_grid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span> <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+    <span class="p">))</span>
+    <span class="n">max_transverse_err</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">K_t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">K_array</span><span class="p">):</span>
+        <span class="n">b_actual</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">_SIGMA_X</span> <span class="o">@</span> <span class="n">K_t</span><span class="p">)</span><span class="o">.</span><span class="n">real</span>
+        <span class="n">c_actual</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">_SIGMA_Y</span> <span class="o">@</span> <span class="n">K_t</span><span class="p">)</span><span class="o">.</span><span class="n">real</span>
+        <span class="n">transverse_err</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">b_actual</span> <span class="o">-</span> <span class="n">b_predicted</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">c_actual</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="p">))</span>
+        <span class="n">max_transverse_err</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_transverse_err</span><span class="p">,</span> <span class="n">transverse_err</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">max_transverse_err</span> <span class="o">&lt;=</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">max_transverse_err</span>
+
+
 <span class="c1"># Dynamical test-case handler registry: keyed by (card.model, test_case_name).</span>
 <span class="c1"># The model qualifier in the key is what distinguishes A3.thermal_bath from</span>
 <span class="c1"># A4.thermal_bath (both have the same test_case name but different physics).</span>
+<span class="c1"># DG-2 (post-Council-Act-2) extends the registry with the four B4-conv-registry</span>
+<span class="c1"># fixtures under pure_dephasing AND the four B5-conv-registry v0.2.0 fixtures</span>
+<span class="c1"># under spin_boson_sigma_x — one per cleared displacement profile in each.</span>
 <span class="n">_DYNAMICAL_TEST_CASE_HANDLERS</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span>
     <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
-    <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
+    <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
 <span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
     <span class="p">(</span><span class="s2">&quot;pure_dephasing&quot;</span><span class="p">,</span> <span class="s2">&quot;thermal_bath&quot;</span><span class="p">):</span> <span class="n">_dyn_handler_pure_dephasing_thermal</span><span class="p">,</span>
     <span class="p">(</span><span class="s2">&quot;spin_boson_sigma_x&quot;</span><span class="p">,</span> <span class="s2">&quot;thermal_bath&quot;</span><span class="p">):</span> <span class="n">_dyn_handler_sigma_x_thermal</span><span class="p">,</span>
+    <span class="p">(</span><span class="s2">&quot;pure_dephasing&quot;</span><span class="p">,</span> <span class="s2">&quot;displaced_bath_delta_omega_c&quot;</span><span class="p">):</span>
+        <span class="n">_dyn_handler_pure_dephasing_displaced</span><span class="p">,</span>
+    <span class="p">(</span><span class="s2">&quot;pure_dephasing&quot;</span><span class="p">,</span> <span class="s2">&quot;displaced_bath_delta_omega_S&quot;</span><span class="p">):</span>
+        <span class="n">_dyn_handler_pure_dephasing_displaced</span><span class="p">,</span>
+    <span class="p">(</span><span class="s2">&quot;pure_dephasing&quot;</span><span class="p">,</span> <span class="s2">&quot;displaced_bath_sqrt_J&quot;</span><span class="p">):</span>
+        <span class="n">_dyn_handler_pure_dephasing_displaced</span><span class="p">,</span>
+    <span class="p">(</span><span class="s2">&quot;pure_dephasing&quot;</span><span class="p">,</span> <span class="s2">&quot;displaced_bath_gaussian&quot;</span><span class="p">):</span>
+        <span class="n">_dyn_handler_pure_dephasing_displaced</span><span class="p">,</span>
+    <span class="p">(</span><span class="s2">&quot;spin_boson_sigma_x&quot;</span><span class="p">,</span> <span class="s2">&quot;displaced_bath_delta_omega_c&quot;</span><span class="p">):</span>
+        <span class="n">_dyn_handler_sigma_x_displaced</span><span class="p">,</span>
+    <span class="p">(</span><span class="s2">&quot;spin_boson_sigma_x&quot;</span><span class="p">,</span> <span class="s2">&quot;displaced_bath_delta_omega_S&quot;</span><span class="p">):</span>
+        <span class="n">_dyn_handler_sigma_x_displaced</span><span class="p">,</span>
+    <span class="p">(</span><span class="s2">&quot;spin_boson_sigma_x&quot;</span><span class="p">,</span> <span class="s2">&quot;displaced_bath_sqrt_J&quot;</span><span class="p">):</span>
+        <span class="n">_dyn_handler_sigma_x_displaced</span><span class="p">,</span>
+    <span class="p">(</span><span class="s2">&quot;spin_boson_sigma_x&quot;</span><span class="p">,</span> <span class="s2">&quot;displaced_bath_gaussian&quot;</span><span class="p">):</span>
+        <span class="n">_dyn_handler_sigma_x_displaced</span><span class="p">,</span>
 <span class="p">}</span>
 
 
@@ -1329,20 +1895,28 @@
     <span class="k">for</span> <span class="n">case</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">][</span><span class="s2">&quot;test_cases&quot;</span><span class="p">]:</span>
         <span class="n">bs</span> <span class="o">=</span> <span class="n">case</span><span class="p">[</span><span class="s2">&quot;bath_state&quot;</span><span class="p">]</span>
         <span class="n">bs_family</span> <span class="o">=</span> <span class="n">bs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;family&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">bs_family</span> <span class="o">!=</span> <span class="s2">&quot;thermal&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">bs_family</span> <span class="o">==</span> <span class="s2">&quot;thermal&quot;</span><span class="p">:</span>
+            <span class="n">K_array</span> <span class="o">=</span> <span class="n">K_total_thermal_on_grid</span><span class="p">(</span>
+                <span class="n">N_card</span><span class="p">,</span> <span class="n">grid</span><span class="o">.</span><span class="n">times</span><span class="p">,</span> <span class="n">H_S</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span>
+                <span class="n">bath_state</span><span class="o">=</span><span class="n">bs</span><span class="p">,</span> <span class="n">spectral_density</span><span class="o">=</span><span class="n">sd</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">bs_family</span> <span class="o">==</span> <span class="s2">&quot;coherent_displaced&quot;</span><span class="p">:</span>
+            <span class="c1"># Council Act 2 (2026-05-04) lifted the standing carve-out under</span>
+            <span class="c1"># handling (c) (convention-agnostic registry encoding); the</span>
+            <span class="c1"># displaced K_total dispatches on the per-fixture</span>
+            <span class="c1"># ``displacement_profile`` registry key.</span>
+            <span class="n">K_array</span> <span class="o">=</span> <span class="n">K_total_displaced_on_grid</span><span class="p">(</span>
+                <span class="n">N_card</span><span class="p">,</span> <span class="n">grid</span><span class="o">.</span><span class="n">times</span><span class="p">,</span> <span class="n">H_S</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span>
+                <span class="n">bath_state</span><span class="o">=</span><span class="n">bs</span><span class="p">,</span> <span class="n">spectral_density</span><span class="o">=</span><span class="n">sd</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;_run_dynamical: bath_state.family </span><span class="si">{</span><span class="n">bs_family</span><span class="si">!r}</span><span class="s2"> not &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;supported at DG-1. Cards A3 / A4 coherent_displaced &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;sub-cases (Entries 3.B.3, 4.B.2) are deferred to DG-2 &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;per DG-1 work plan v0.1.4 §1.1 operationalisability &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;carve-out (displacement convention not specified). &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;Only &#39;thermal&#39; is supported at this version.&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;supported. Known: &#39;thermal&#39; (DG-1); &#39;coherent_displaced&#39; &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(Council Act 2 cleared 2026-05-04 under handling (c) — &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;see ledger/CL-2026-005_v0.4_council-deliberation_act2_&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;2026-05-04.md).&quot;</span>
             <span class="p">)</span>
-
-        <span class="n">K_array</span> <span class="o">=</span> <span class="n">K_total_thermal_on_grid</span><span class="p">(</span>
-            <span class="n">N_card</span><span class="p">,</span> <span class="n">grid</span><span class="o">.</span><span class="n">times</span><span class="p">,</span> <span class="n">H_S</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span>
-            <span class="n">bath_state</span><span class="o">=</span><span class="n">bs</span><span class="p">,</span> <span class="n">spectral_density</span><span class="o">=</span><span class="n">sd</span><span class="p">,</span>
-        <span class="p">)</span>
 
         <span class="n">handler_key</span> <span class="o">=</span> <span class="p">(</span><span class="n">card</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">case</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span>
         <span class="n">handler</span> <span class="o">=</span> <span class="n">_DYNAMICAL_TEST_CASE_HANDLERS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">handler_key</span><span class="p">)</span>
@@ -1352,7 +1926,10 @@
                 <span class="sa">f</span><span class="s2">&quot;(model=</span><span class="si">{</span><span class="n">card</span><span class="o">.</span><span class="n">model</span><span class="si">!r}</span><span class="s2">, test_case=</span><span class="si">{</span><span class="n">case</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">!r}</span><span class="s2">). &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;Known: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">_DYNAMICAL_TEST_CASE_HANDLERS</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
-        <span class="n">passed</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="n">handler</span><span class="p">(</span><span class="n">K_array</span><span class="p">,</span> <span class="n">grid</span><span class="o">.</span><span class="n">times</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">H_S</span><span class="p">)</span>
+        <span class="n">passed</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="n">handler</span><span class="p">(</span>
+            <span class="n">K_array</span><span class="p">,</span> <span class="n">grid</span><span class="o">.</span><span class="n">times</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">H_S</span><span class="p">,</span>
+            <span class="n">bath_state</span><span class="o">=</span><span class="n">bs</span><span class="p">,</span> <span class="n">spectral_density</span><span class="o">=</span><span class="n">sd</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="n">test_case_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">TestCaseResult</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">case</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span>
             <span class="n">passed</span><span class="o">=</span><span class="n">passed</span><span class="p">,</span>

@@ -345,7 +345,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">expm</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">cbg.basis</span><span class="w"> </span><span class="kn">import</span> <span class="n">matrix_unit_basis</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">cbg.cumulants</span><span class="w"> </span><span class="kn">import</span> <span class="n">D_bar_2</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cbg.cumulants</span><span class="w"> </span><span class="kn">import</span> <span class="n">D_bar_1</span><span class="p">,</span> <span class="n">D_bar_2</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">cbg.effective_hamiltonian</span><span class="w"> </span><span class="kn">import</span> <span class="n">K_from_generator</span>
 
 
@@ -585,6 +585,177 @@
             <span class="n">n</span><span class="p">,</span> <span class="n">t_idx</span><span class="p">,</span> <span class="n">t_grid</span><span class="p">,</span> <span class="n">H_S</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">D_bar_2_array</span><span class="o">=</span><span class="n">D</span>
         <span class="p">)</span>
         <span class="n">K</span><span class="p">[</span><span class="n">t_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">K_from_generator</span><span class="p">(</span><span class="n">L_n_apply</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">K</span></div>
+
+
+
+<span class="c1"># ─── Displaced-bath L_n / K_n / K_total (Council Act 2 cleared, 2026-05-04) ──</span>
+<span class="c1">#</span>
+<span class="c1"># The displaced-bath path is structurally similar to the thermal path: K_0</span>
+<span class="c1"># (bare Liouvillian) and K_2 (TCL2 dissipator) are unchanged because D̄_2</span>
+<span class="c1"># (the connected two-point) is invariant under coherent displacement. The</span>
+<span class="c1"># only change is K_1, which is non-zero in the displaced case where</span>
+<span class="c1"># D̄_1(t) ≠ 0:</span>
+<span class="c1">#</span>
+<span class="c1">#   L_1^S[X](t) = -i D̄_1(t) [A, X]    (Schrödinger picture)</span>
+<span class="c1">#</span>
+<span class="c1"># Applying Letter Eq. (6) to L_1^S gives K_1(t) = D̄_1(t) · (A − Tr(A)/d · I).</span>
+<span class="c1"># For traceless A (σ_z, σ_x), K_1(t) = D̄_1(t) · A. The runner extracts</span>
+<span class="c1"># K_1 via K_from_generator without bypassing the basis-summation pipeline</span>
+<span class="c1"># — preserving the cards-first audit boundary.</span>
+
+
+<div class="viewcode-block" id="L_1_displaced_at_time">
+<a class="viewcode-back" href="../../cbg.html#cbg.tcl_recursion.L_1_displaced_at_time">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">L_1_displaced_at_time</span><span class="p">(</span>
+    <span class="n">t_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">coupling_operator</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">D_bar_1_array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Schrödinger-picture L_1 generator at t_grid[t_idx] for a coherent-</span>
+<span class="sd">    displaced bath.</span>
+
+<span class="sd">    L_1^S[X](t) = -i D̄_1(t) [A, X]</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    t_idx : int</span>
+<span class="sd">        Index into the time grid at which D̄_1 is evaluated.</span>
+<span class="sd">    coupling_operator : ndarray</span>
+<span class="sd">        System coupling operator A, shape (d, d).</span>
+<span class="sd">    D_bar_1_array : ndarray</span>
+<span class="sd">        Precomputed ⟨B(t)⟩ on the time grid; produced by</span>
+<span class="sd">        cbg.cumulants.D_bar_1 with the case&#39;s bath_state and</span>
+<span class="sd">        spectral_density.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    callable (X: (d, d) ndarray) -&gt; (d, d) ndarray</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coupling_operator</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+    <span class="n">d_bar_1_t</span> <span class="o">=</span> <span class="nb">complex</span><span class="p">(</span><span class="n">D_bar_1_array</span><span class="p">[</span><span class="n">t_idx</span><span class="p">])</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">L_1_apply</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">d_bar_1_t</span> <span class="o">*</span> <span class="p">(</span><span class="n">A</span> <span class="o">@</span> <span class="n">X</span> <span class="o">-</span> <span class="n">X</span> <span class="o">@</span> <span class="n">A</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">L_1_apply</span></div>
+
+
+
+<div class="viewcode-block" id="K_total_displaced_on_grid">
+<a class="viewcode-back" href="../../cbg.html#cbg.tcl_recursion.K_total_displaced_on_grid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">K_total_displaced_on_grid</span><span class="p">(</span>
+    <span class="n">N_card</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">t_grid</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">system_hamiltonian</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">coupling_operator</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">bath_state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">spectral_density</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">basis</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute K(t) = Σ_{n=0}^{N_card} K_n(t) for a coherent-displaced bath.</span>
+
+<span class="sd">    Reuses ``L_n_thermal_at_time`` for n = 0 (bare Liouvillian, bath-state-</span>
+<span class="sd">    independent) and n = 2 (TCL2 dissipator, D̄_2 invariant under</span>
+<span class="sd">    displacement). For n = 1, dispatches to ``L_1_displaced_at_time``</span>
+<span class="sd">    using the per-profile D̄_1 array from ``cbg.cumulants.D_bar_1`` (which</span>
+<span class="sd">    routes through the Council-cleared displacement-profile registry).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    N_card : int</span>
+<span class="sd">        Perturbative cap (must be in {0, 1, 2} per the existing thermal</span>
+<span class="sd">        path&#39;s range; v0.1.0 cards use N_card = 2).</span>
+<span class="sd">    t_grid : ndarray, shape (n_t,)</span>
+<span class="sd">        Time points.</span>
+<span class="sd">    system_hamiltonian, coupling_operator : ndarray, shape (d, d)</span>
+<span class="sd">    bath_state : dict</span>
+<span class="sd">        Must have family == &quot;coherent_displaced&quot; and include the</span>
+<span class="sd">        ``displacement_profile`` key per the §6.1 registry-clearance-gate.</span>
+<span class="sd">    spectral_density : dict</span>
+<span class="sd">        Card bath_spectral_density (ohmic at v0.1.0).</span>
+<span class="sd">    basis : list of (d, d) ndarrays, optional</span>
+<span class="sd">        HS-orthonormal basis for Letter Eq. (6); defaults to matrix_unit.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ndarray, shape (n_t, d, d), dtype complex</span>
+<span class="sd">        K(t_grid) under the displaced bath.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If N_card is not a non-negative integer.</span>
+<span class="sd">    NotImplementedError</span>
+<span class="sd">        If N_card &gt; 2 (DG-2-recursion territory; out of scope).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">N_card</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">N_card</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="n">N_card</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;K_total_displaced_on_grid: N_card must be a non-negative integer; &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="n">N_card</span><span class="si">!r}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">N_card</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;K_total_displaced_on_grid: N_card=</span><span class="si">{</span><span class="n">N_card</span><span class="si">}</span><span class="s2"> not implemented at &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;v0.1.0. K_n at orders n &gt;= 3 is out of scope (future K_2-K_4 &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;numerical-recursion plan).&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">bath_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;family&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;coherent_displaced&quot;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;K_total_displaced_on_grid: bath_state.family must be &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;&#39;coherent_displaced&#39;; got </span><span class="si">{</span><span class="n">bath_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;family&#39;</span><span class="p">)</span><span class="si">!r}</span><span class="s2">. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;For thermal, use K_total_thermal_on_grid.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">H_S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">system_hamiltonian</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coupling_operator</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+    <span class="n">t_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t_grid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">H_S</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">basis</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">basis</span> <span class="o">=</span> <span class="n">matrix_unit_basis</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+    <span class="c1"># Precompute D̄_1 (per-profile) and D̄_2 (thermal-baseline; invariant</span>
+    <span class="c1"># under displacement). D̄_2 needs a temperature; for an unspecified</span>
+    <span class="c1"># vacuum-baseline displaced state the natural choice is T = 0, but</span>
+    <span class="c1"># the bath_state may carry a temperature override (e.g. for</span>
+    <span class="c1"># thermal-on-top-of-displaced studies). At v0.1.0 cards do not set</span>
+    <span class="c1"># temperature on coherent_displaced bath_states; default to 0.</span>
+    <span class="n">D_bar_1_array</span> <span class="o">=</span> <span class="n">D_bar_1</span><span class="p">(</span>
+        <span class="n">t_grid</span><span class="p">,</span> <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span> <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">if</span> <span class="n">N_card</span> <span class="o">&gt;=</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="c1"># For D̄_2 we forward to the existing connected-two-point evaluator</span>
+    <span class="c1"># at the spec&#39;s temperature (or T=0 default). The evaluator already</span>
+    <span class="c1"># handles bath_state.family == &quot;coherent_displaced&quot; by treating the</span>
+    <span class="c1"># connected part as the thermal baseline (see cbg.bath_correlations</span>
+    <span class="c1"># module docstring).</span>
+    <span class="n">D_bar_2_array</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">N_card</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">bs_for_d2</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">bath_state</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;temperature&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">bs_for_d2</span><span class="p">:</span>
+            <span class="n">bs_for_d2</span><span class="p">[</span><span class="s2">&quot;temperature&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">D_bar_2_array</span> <span class="o">=</span> <span class="n">D_bar_2</span><span class="p">(</span>
+            <span class="n">t_grid</span><span class="p">,</span> <span class="n">bath_state</span><span class="o">=</span><span class="n">bs_for_d2</span><span class="p">,</span> <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">t_grid</span><span class="p">),</span> <span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">t_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t_grid</span><span class="p">)):</span>
+        <span class="c1"># n = 0: bare Liouvillian (bath-state-independent).</span>
+        <span class="n">L0</span> <span class="o">=</span> <span class="n">L_n_thermal_at_time</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">t_idx</span><span class="p">,</span> <span class="n">t_grid</span><span class="p">,</span> <span class="n">H_S</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
+        <span class="n">K</span><span class="p">[</span><span class="n">t_idx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">K_from_generator</span><span class="p">(</span><span class="n">L0</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
+        <span class="c1"># n = 1: displaced contribution.</span>
+        <span class="k">if</span> <span class="n">N_card</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">L1</span> <span class="o">=</span> <span class="n">L_1_displaced_at_time</span><span class="p">(</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">D_bar_1_array</span><span class="p">)</span>
+            <span class="n">K</span><span class="p">[</span><span class="n">t_idx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">K_from_generator</span><span class="p">(</span><span class="n">L1</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
+        <span class="c1"># n = 2: TCL2 dissipator (D̄_2 invariant; same as thermal).</span>
+        <span class="k">if</span> <span class="n">N_card</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">L2</span> <span class="o">=</span> <span class="n">L_n_thermal_at_time</span><span class="p">(</span>
+                <span class="mi">2</span><span class="p">,</span> <span class="n">t_idx</span><span class="p">,</span> <span class="n">t_grid</span><span class="p">,</span> <span class="n">H_S</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">D_bar_2_array</span><span class="o">=</span><span class="n">D_bar_2_array</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">K</span><span class="p">[</span><span class="n">t_idx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">K_from_generator</span><span class="p">(</span><span class="n">L2</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">K</span></div>
 
 
