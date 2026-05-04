@@ -313,7 +313,7 @@ result:
   verdict: "PASS"
   evidence:
     - "benchmarks/results/B2_pseudo-kraus-offdiagonal_v0.1.0_result.json"
-  commit_hash: ""
+  commit_hash: "9febfed7389f0ee94d8ecf083af6a7883e291623"
   runner_version: "0.1.0"
   notes: |
     Verdict computed by reporting.benchmark_card.run_card via the

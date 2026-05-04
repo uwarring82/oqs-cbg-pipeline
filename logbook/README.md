@@ -77,9 +77,10 @@ Both exceptions are bookkeeping completions of explicit gaps, not substantive re
 | 2026-05-01 | `dg-2-b2-card-frozen` | structural | DG-2 Card B2 v0.1.0 frozen against transcription v0.1.1; three off-diagonal HPTA + Hermitian-omega fixtures freeze the off-diagonal half of Entry 1.B.3 + Entry 1.D; new card surface (pseudo_kraus_offdiag_operators / pseudo_kraus_offdiag_omega); no runner handlers yet (cards-first), no DG status change |
 | 2026-05-01 | `dg-2-b3-card-frozen` | structural | DG-2 Card B3 v0.1.0 frozen — cross-basis structural-identity check (Entry 1.A basis-independence; Sail v0.5 §9 DG-2 universal default); three test_cases reuse A1 / B1 frozen fixtures and assert K agreement under matrix_unit vs su_d_generator (d=2 normalized Pauli) bases; no runner handlers, no su_d_generator builder yet (cards-first), no DG status change |
 | 2026-05-04 | `dg-2-b3-pass` | structural | DG-2 Card B3 v0.1.0 PASS — cross-basis structural-identity runner confirms Entry 1.A basis-independence at machine precision; three test_cases all error <= 1.57e-16 under matrix_unit vs su_d_generator (d=2); su_d_generator_basis stub filled, basis-independence handler factory added; does not constitute full DG-2 PASS |
+| 2026-05-04 | `dg-2-b2-pass` | structural | DG-2 Card B2 v0.1.0 PASS — off-diagonal pseudo-Kraus runner confirms Entry 1.B.3 off-diagonal half + Entry 1.D at error = 0.0 across all three β=0.5 fixtures; Hermiticity-of-omega + HPTA gates enforced; 3 of 4 DG-2 sub-claims now PASS, only Council-gated coherent-displacement track remains |
 
 (This index is updated atomically when new entries are added.)
 
 ---
 
-*Last updated: 2026-05-04 (DG-2 Card B3 PASS). CC-BY-4.0 (see ../LICENSE-docs).*
+*Last updated: 2026-05-04 (DG-2 Card B2 PASS — 3 of 4 DG-2 sub-claims). CC-BY-4.0 (see ../LICENSE-docs).*
