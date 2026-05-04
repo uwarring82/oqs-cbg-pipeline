@@ -80,9 +80,10 @@ Both exceptions are bookkeeping completions of explicit gaps, not substantive re
 | 2026-05-04 | `dg-2-b2-pass` | structural | DG-2 Card B2 v0.1.0 PASS — off-diagonal pseudo-Kraus runner confirms Entry 1.B.3 off-diagonal half + Entry 1.D at error = 0.0 across all three β=0.5 fixtures; Hermiticity-of-omega + HPTA gates enforced; 3 of 4 DG-2 sub-claims now PASS, only Council-gated coherent-displacement track remains |
 | 2026-05-04 | `dg-2-partial-envelope` | dg-pass | Validity envelope updated to DG-2 PARTIAL (3 of 4 sub-claims PASS) — Entry 1.A basis-independence + Entry 1.B.3 diagonal + Entry 1.B.3 off-diagonal/Entry 1.D verified via Cards B1+B2+B3; Entries 3.B.3, 4.B.2 remain Council-gated; DG-1 row's stale Entry 1.B.3 deferral removed; citation of Entries 1.A, 1.B.3, 1.D now supported at v0.2.0+ with attribution to Hayden-Sorce gauge and d=2 basis-independence scope |
 | 2026-05-04 | `cbg-appendix-d-transcription-populated` | structural | Colla-Breuer-Gasbarri Appendix-D-routed transcription populated and classified underdetermined: source material contains spin-system parity algebra but no displacement-profile convention; Act 2 remains required over §3.1-§3.4 |
+| 2026-05-04 | `dg-2-b4-conv-registry-card-frozen` | structural | DG-2 Card B4-conv-registry v0.1.0 frozen — first card under Council Act 2 (c)-discipline; four test_cases tag the four cleared displacement profiles (delta-omega_c, delta-omega_S, sqrt-J, gaussian) for Entry 3.B.3 (pure-dephasing); cbg/displacement_profiles.py module added with REGISTERED_PROFILES; reporting/benchmark_card.py _DISPLACEMENT_PROFILES wired; runner extension for coherent-displaced bath_state.family deferred to verdict commit (cards-first); 21 new tests; no DG status change |
 
 (This index is updated atomically when new entries are added.)
 
 ---
 
-*Last updated: 2026-05-04 (CBG Appendix-D-routed transcription populated — underdetermined). CC-BY-4.0 (see ../LICENSE-docs).*
+*Last updated: 2026-05-04 (DG-2 Card B4-conv-registry frozen). CC-BY-4.0 (see ../LICENSE-docs).*
