@@ -1,0 +1,39 @@
+{
+  "card_id": "B3",
+  "card_version": "v0.1.0",
+  "card_path": "benchmarks/benchmark_cards/B3_cross-basis-structural-identity_v0.1.0.yaml",
+  "schema_version": "v0.1.2",
+  "ledger_entry": "CL-2026-005 v0.4 Entry 1.A",
+  "verdict": "PASS",
+  "runner_version": "0.1.0",
+  "computed_at_utc": "2026-05-04T05:54:44.623392+00:00",
+  "test_case_results": [
+    {
+      "name": "basis_independence_pseudo_kraus_sigma_z",
+      "passed": true,
+      "error": 1.5700924586837752e-16,
+      "threshold": 1e-10,
+      "hpta_residual": 3.1401849173675503e-16,
+      "hpta_threshold": 1e-14,
+      "notes": ""
+    },
+    {
+      "name": "basis_independence_lindblad_traceless",
+      "passed": true,
+      "error": 1.5700924586837752e-16,
+      "threshold": 1e-10,
+      "hpta_residual": null,
+      "hpta_threshold": null,
+      "notes": ""
+    },
+    {
+      "name": "basis_independence_lindblad_lamb_shift",
+      "passed": true,
+      "error": 0.0,
+      "threshold": 1e-10,
+      "hpta_residual": null,
+      "hpta_threshold": null,
+      "notes": ""
+    }
+  ]
+}

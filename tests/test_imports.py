@@ -75,6 +75,8 @@ def test_stubs_raise_notimplementederror():
     # Removed (now implemented; see per-module test files):
     #   - basis.matrix_unit_basis              (DG-1 Phase C.1; tests/test_basis.py)
     #   - basis.verify_orthonormality          (DG-1 Phase C.1; tests/test_basis.py)
+    #   - basis.su_d_generator_basis           (DG-2 Card B3 v0.1.0; tests/test_basis.py;
+    #                                           d=2 only at v0.1.0, higher d still raises NotImplementedError)
     #   - effective_hamiltonian.K_from_generator
     #     (DG-1 Phase C.3; tests/test_effective_hamiltonian.py)
     #   - pure_dephasing.hamiltonian           (DG-1 Phase C.9; tests/test_pure_dephasing.py)
@@ -82,7 +84,8 @@ def test_stubs_raise_notimplementederror():
     #   - spin_boson_sigma_x.hamiltonian
     #     (DG-1 Phase C.10; tests/test_spin_boson_sigma_x.py)
     cases = [
-        (basis.su_d_generator_basis, (2,), {}),
+        # su_d_generator_basis at d > 2 still stubbed pending higher-d freeze.
+        (basis.su_d_generator_basis, (3,), {}),
         (effective_hamiltonian.K_perturbative, (2,), {}),
         (diagnostics.perturbative_order_norms, ([],), {}),
         (diagnostics.tcl_invertibility_distance, (None,), {}),

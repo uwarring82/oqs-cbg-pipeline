@@ -70,14 +70,50 @@ def matrix_unit_basis(d: int) -> List[np.ndarray]:
 def su_d_generator_basis(d: int) -> List[np.ndarray]:
     """Generators of su(d) plus the identity, normalised for Hilbert–Schmidt.
 
-    Used in Letter Eq. (B.10). DG-2 territory (cross-basis verification);
-    not exercised by DG-1 cards.
+    For d = 2, returns the normalised Pauli basis
+
+        {I/√2, σ_x/√2, σ_y/√2, σ_z/√2}
+
+    which spans the 4-dimensional operator space at d = 2 and satisfies
+    Tr(F_α† F_β) = δ_αβ. Used in Letter Eq. (B.10) and exercised by Card
+    B3 v0.1.0 as the alternate basis in the DG-2 universal-default
+    cross-basis structural-identity check (Sail v0.5 §9 DG-2).
+
+    Higher dimensions are not implemented at this version; B3 v0.1.0
+    freezes d = 2 only, and a higher-d cross-basis fixture set is a
+    separate freeze.
+
+    The returned list is ordered with identity first, then σ_x, σ_y,
+    σ_z (the standard SU(2) generator ordering).
+
+    Args:
+        d: System Hilbert-space dimension. Must equal 2 at v0.1.0.
+
+    Returns:
+        List of d² numpy arrays of shape (d, d), dtype complex.
+
+    Raises:
+        ValueError: if d is not a positive integer.
+        NotImplementedError: if d != 2.
     """
-    raise NotImplementedError(
-        "su_d_generator_basis: not implemented at DG-1. "
-        "Cross-basis verification is the DG-2 universal-default "
-        "structural-identity check per Sail v0.5 §9 DG-2."
-    )
+    if not isinstance(d, (int, np.integer)) or d < 1:
+        raise ValueError(f"d must be a positive integer, got {d!r}")
+    if d != 2:
+        raise NotImplementedError(
+            f"su_d_generator_basis: only d=2 implemented at v0.1.0; got d={d}. "
+            "Higher-d cross-basis fixtures are a separate DG-2 freeze."
+        )
+    inv_sqrt2 = 1.0 / np.sqrt(2.0)
+    I = np.eye(2, dtype=complex)
+    sigma_x = np.array([[0, 1], [1, 0]], dtype=complex)
+    sigma_y = np.array([[0, -1j], [1j, 0]], dtype=complex)
+    sigma_z = np.array([[1, 0], [0, -1]], dtype=complex)
+    return [
+        inv_sqrt2 * I,
+        inv_sqrt2 * sigma_x,
+        inv_sqrt2 * sigma_y,
+        inv_sqrt2 * sigma_z,
+    ]
 
 
 def verify_orthonormality(basis: List[np.ndarray],

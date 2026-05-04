@@ -39,6 +39,7 @@ A4_PATH = CARDS_DIR / "A4_sigma-x-thermal_v0.1.1.yaml"
 
 # DG-2 cards.
 B1_PATH = CARDS_DIR / "B1_pseudo-kraus-diagonal_v0.1.0.yaml"
+B3_PATH = CARDS_DIR / "B3_cross-basis-structural-identity_v0.1.0.yaml"
 
 # Superseded cards retained for audit-trail tests.
 A1_V010_PATH = CARDS_DIR / "A1_closed-form-K_v0.1.0.yaml"
@@ -691,3 +692,91 @@ def test_a1_results_carry_no_hpta_fields():
     for tcr in result.test_case_results:
         assert tcr.hpta_residual is None
         assert tcr.hpta_threshold is None
+
+
+# ─── B3 cross-basis structural identity end-to-end ───────────────────────────
+
+
+def test_load_card_b3_succeeds():
+    card = bc.load_card(B3_PATH)
+    assert card.card_id == "B3"
+    assert card.dg_target == "DG-2"
+    assert card.version == "v0.1.0"
+    assert card.status == "pass"
+    assert card.model_kind == "algebraic_map"
+
+
+def test_run_card_b3_passes_all_three_test_cases():
+    """Card B3 v0.1.0's three cross-basis test_cases all PASS: K computed
+    under the matrix-unit reference and under the su(d)-generator (normalized
+    Pauli) basis agree to machine precision on each fixture."""
+    card = bc.load_card(B3_PATH)
+    result = bc.run_card(card)
+    assert result.verdict == "PASS"
+    assert len(result.test_case_results) == 3
+    names = {r.name for r in result.test_case_results}
+    assert names == {
+        "basis_independence_pseudo_kraus_sigma_z",
+        "basis_independence_lindblad_traceless",
+        "basis_independence_lindblad_lamb_shift",
+    }
+    for tcr in result.test_case_results:
+        assert tcr.passed
+        assert tcr.error <= card.threshold
+        # Cross-basis identity is exact in exact arithmetic; numerical
+        # round-off is bounded by ~1e-15 for d=2.
+        assert tcr.error < 1e-12
+
+
+def test_run_card_b3_pseudo_kraus_carries_hpta_fields():
+    """The pseudo-Kraus B3 case inherits B1's HPTA gate (algebraic identity);
+    Lindblad-form B3 cases carry no HPTA residual."""
+    card = bc.load_card(B3_PATH)
+    result = bc.run_card(card)
+    pk = next(r for r in result.test_case_results
+              if r.name == "basis_independence_pseudo_kraus_sigma_z")
+    assert pk.hpta_residual is not None
+    assert pk.hpta_threshold is not None
+    assert pk.hpta_residual <= pk.hpta_threshold
+
+    for name in ("basis_independence_lindblad_traceless",
+                 "basis_independence_lindblad_lamb_shift"):
+        tcr = next(r for r in result.test_case_results if r.name == name)
+        assert tcr.hpta_residual is None
+        assert tcr.hpta_threshold is None
+
+
+def test_b3_test_case_handlers_all_registered():
+    """Every test_case name in Card B3 v0.1.0 has a registered handler."""
+    card = bc.load_card(B3_PATH)
+    for case in card.frozen_parameters["model"]["test_cases"]:
+        assert case["name"] in bc._TEST_CASE_HANDLERS
+
+
+def test_b3_basis_independence_handler_returns_none_K_expected():
+    """B3 handlers must surface K_expected = None — the runner's signal to
+    take the cross-basis comparison branch instead of comparing to a
+    K-value reference."""
+    card = bc.load_card(B3_PATH)
+    d = card.system_dimension
+    for case in card.frozen_parameters["model"]["test_cases"]:
+        handler = bc._TEST_CASE_HANDLERS[case["name"]]
+        L, K_expected, _hpta = handler(case, d)
+        assert callable(L)
+        assert K_expected is None
+
+
+def test_b3_unknown_comparison_basis_raises(monkeypatch=None):
+    """A test_case requesting a comparison_basis with no registered builder
+    surfaces a clear SchemaValidationError."""
+    raw = _load_raw(B3_PATH)
+    raw["frozen_parameters"]["model"]["test_cases"][0]["comparison_basis"] = "imaginary_basis"
+    card = bc._data_to_card(raw)
+    with pytest.raises(bc.SchemaValidationError, match="imaginary_basis"):
+        bc._run_algebraic_map(card)
+
+
+def test_b3_basis_builders_registry_contains_expected_keys():
+    """Sanity check on the registry: matrix_unit + su_d_generator are wired."""
+    assert "matrix_unit" in bc._BASIS_BUILDERS
+    assert "su_d_generator" in bc._BASIS_BUILDERS

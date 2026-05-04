@@ -44,7 +44,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 import numpy as np
 import yaml
 
-from cbg.basis import matrix_unit_basis, verify_orthonormality
+from cbg.basis import matrix_unit_basis, su_d_generator_basis, verify_orthonormality
 from cbg.effective_hamiltonian import K_from_generator
 from cbg.tcl_recursion import K_total_thermal_on_grid
 from models import pure_dephasing, spin_boson_sigma_x
@@ -739,16 +739,72 @@ def _expected_K_pseudo_kraus_traceless_jumps(case: Dict[str, Any]) -> np.ndarray
     return np.zeros((2, 2), dtype=complex)
 
 
+# ─── Basis-builder registry (cross-basis runner, B3) ────────────────────────
+#
+# Card B3 v0.1.0's per-case `comparison_basis` field names a Hilbert–Schmidt
+# orthonormal basis to compare against the matrix-unit reference. The runner
+# resolves the name through this registry; adding a new comparison_basis
+# value (e.g. "hermitian_basis") requires registering its builder here.
+
+_BASIS_BUILDERS: Dict[str, Callable[[int], List[np.ndarray]]] = {
+    "matrix_unit": matrix_unit_basis,
+    "su_d_generator": su_d_generator_basis,
+}
+
+
+# ─── Basis-independence handler factory (B3) ────────────────────────────────
+#
+# B3's three test_cases reuse known-good fixtures from A1 / B1 — see
+# B3 v0.1.0 YAML `frozen_parameters.model.test_cases[i].reference`. Each B3
+# handler delegates fixture-to-L construction to the corresponding A1 / B1
+# handler, then discards the K_expected slot: B3 verifies basis-independence
+# of K_from_generator on the generated L, not the value of K (that is owned
+# by A1 / B1 and already PASS).
+#
+# A B3 handler returns (L, None, hpta_residual_or_None). The None in the
+# K_expected slot signals to the runner that the case carries a
+# `comparison_basis` and must use the cross-basis comparison branch.
+
+
+def _make_basis_independence_handler(
+    base_handler: Callable[
+        [Dict[str, Any], int],
+        Tuple[Callable[[np.ndarray], np.ndarray], np.ndarray, Optional[float]],
+    ],
+) -> Callable[
+    [Dict[str, Any], int],
+    Tuple[Callable[[np.ndarray], np.ndarray], None, Optional[float]],
+]:
+    """Wrap an A1 / B1 handler to drop K_expected for B3 cross-basis use.
+
+    The wrapped handler builds L identically to the source-card handler
+    (so the parser / Lindblad-builder logic is reused unchanged) and
+    returns (L, None, hpta_residual). The None in the second slot is
+    the runner's signal to switch to the cross-basis comparison branch.
+    """
+    def handler(
+        case: Dict[str, Any], d: int,
+    ) -> Tuple[Callable[[np.ndarray], np.ndarray], None, Optional[float]]:
+        L, _K_expected, hpta_residual = base_handler(case, d)
+        return L, None, hpta_residual
+    return handler
+
+
 # Registry: test_case name → handler. Adding a new test_case to a card
 # requires registering its handler here. Lindblad-form handlers (A1) return
 # (L, K_expected, None); pseudo-Kraus handlers (B1) return
-# (L, K_expected, hpta_residual). The runner discriminates by checking
-# whether the third element is None.
+# (L, K_expected, hpta_residual). Basis-independence handlers (B3) return
+# (L, None, hpta_residual_or_None) — K_expected None signals the runner to
+# use the cross-basis comparison branch instead of the K-value branch.
 _TEST_CASE_HANDLERS: Dict[
     str,
     Callable[
         [Dict[str, Any], int],
-        Tuple[Callable[[np.ndarray], np.ndarray], np.ndarray, Optional[float]],
+        Tuple[
+            Callable[[np.ndarray], np.ndarray],
+            Optional[np.ndarray],
+            Optional[float],
+        ],
     ],
 ] = {
     "canonical_lindblad_traceless": _handler_canonical_lindblad_traceless,
@@ -759,6 +815,14 @@ _TEST_CASE_HANDLERS: Dict[
         _make_pseudo_kraus_handler(_expected_K_pseudo_kraus_diagonal_sigma_x),
     "pseudo_kraus_traceless_jumps":
         _make_pseudo_kraus_handler(_expected_K_pseudo_kraus_traceless_jumps),
+    "basis_independence_pseudo_kraus_sigma_z":
+        _make_basis_independence_handler(
+            _make_pseudo_kraus_handler(_expected_K_pseudo_kraus_diagonal_sigma_z)
+        ),
+    "basis_independence_lindblad_traceless":
+        _make_basis_independence_handler(_handler_canonical_lindblad_traceless),
+    "basis_independence_lindblad_lamb_shift":
+        _make_basis_independence_handler(_handler_markovian_weak_coupling_lamb_shift),
 }
 
 
@@ -854,13 +918,45 @@ def _run_algebraic_map(card: BenchmarkCard) -> CardResult:
 
         K_computed = K_from_generator(L, basis)
 
-        diff_norm = float(np.linalg.norm(K_computed - K_expected, ord="fro"))
-        ref_norm = float(np.linalg.norm(K_expected, ord="fro"))
-        if ref_norm > 0.0:
-            error = diff_norm / ref_norm
+        comparison_basis_name = case.get("comparison_basis")
+        if comparison_basis_name is not None:
+            # Cross-basis structural-identity branch (B3 v0.1.0): compare K
+            # under the matrix-unit reference against K under the named
+            # alternate basis. The handler must have surfaced K_expected = None
+            # to land here (the basis-independence factory enforces that).
+            if K_expected is not None:
+                raise RuntimeError(
+                    f"_run_algebraic_map: test_case {name!r} has comparison_basis "
+                    f"{comparison_basis_name!r} but its handler returned a non-None "
+                    f"K_expected; cross-basis cases must surface K_expected = None"
+                )
+            alt_builder = _BASIS_BUILDERS.get(comparison_basis_name)
+            if alt_builder is None:
+                raise SchemaValidationError(
+                    f"_run_algebraic_map: test_case {name!r} requests "
+                    f"comparison_basis {comparison_basis_name!r}; no builder "
+                    f"registered. Known: {sorted(_BASIS_BUILDERS.keys())}"
+                )
+            alt_basis = alt_builder(d)
+            if not verify_orthonormality(alt_basis):
+                raise RuntimeError(
+                    f"comparison_basis {comparison_basis_name!r} (d={d}) failed "
+                    f"orthonormality precondition; cross-basis comparison is "
+                    f"meaningless against a non-orthonormal basis"
+                )
+            K_alt = K_from_generator(L, alt_basis)
+            diff_norm = float(np.linalg.norm(K_computed - K_alt, ord="fro"))
+            ref_norm = float(np.linalg.norm(K_computed, ord="fro"))
+            error = diff_norm / max(ref_norm, 1.0)
         else:
-            # If K_expected is zero, fall back to absolute Frobenius norm
-            error = diff_norm
+            # K-value branch (A1, B1): compare K_computed against K_expected.
+            diff_norm = float(np.linalg.norm(K_computed - K_expected, ord="fro"))
+            ref_norm = float(np.linalg.norm(K_expected, ord="fro"))
+            if ref_norm > 0.0:
+                error = diff_norm / ref_norm
+            else:
+                # If K_expected is zero, fall back to absolute Frobenius norm
+                error = diff_norm
 
         test_case_results.append(TestCaseResult(
             name=name,
