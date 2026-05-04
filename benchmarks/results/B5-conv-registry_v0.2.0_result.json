@@ -1,0 +1,44 @@
+{
+  "card_id": "B5-conv-registry",
+  "card_version": "v0.2.0",
+  "card_path": "benchmarks/benchmark_cards/B5-conv-registry_v0.2.0.yaml",
+  "schema_version": "v0.1.2",
+  "ledger_entry": "CL-2026-005 v0.4 Entry 4.B.2",
+  "verdict": "PASS",
+  "runner_version": "0.1.0",
+  "computed_at_utc": "2026-05-04T15:48:12.713723+00:00",
+  "test_case_results": [
+    {
+      "name": "displaced_bath_delta_omega_c",
+      "passed": true,
+      "error": 0.0,
+      "threshold": 0.0001,
+      "displacement_profile": "delta-omega_c",
+      "notes": ""
+    },
+    {
+      "name": "displaced_bath_delta_omega_S",
+      "passed": true,
+      "error": 0.0,
+      "threshold": 0.0001,
+      "displacement_profile": "delta-omega_S",
+      "notes": ""
+    },
+    {
+      "name": "displaced_bath_sqrt_J",
+      "passed": true,
+      "error": 0.0,
+      "threshold": 0.0001,
+      "displacement_profile": "sqrt-J",
+      "notes": ""
+    },
+    {
+      "name": "displaced_bath_gaussian",
+      "passed": true,
+      "error": 0.0,
+      "threshold": 0.0001,
+      "displacement_profile": "gaussian",
+      "notes": ""
+    }
+  ]
+}

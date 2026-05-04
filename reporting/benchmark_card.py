@@ -1437,13 +1437,68 @@ def _dyn_handler_pure_dephasing_displaced(
     return error <= threshold, error
 
 
+# ─── B5-conv-registry v0.2.0 σ_x displaced handler ────────────────────────────
+#
+# Schrödinger-picture L_1^S[X](t) = -i D̄_1(t) [σ_x, X] extracts via Letter
+# Eq. (6) to K_1(t) = D̄_1(t) · σ_x — a constant-direction transverse
+# contribution along σ_x with zero σ_y component at order ≤ N_card = 2
+# (parity-class theorem of Letter end-matter Eq. (A.43)-(A.45) sends K_2
+# to the diagonal subspace; σ_y component is exactly zero in the displaced
+# case at this order). Predicted: (b_pred, c_pred) = (D̄_1(t), 0).
+
+
+def _dyn_handler_sigma_x_displaced(
+    K_array: np.ndarray, t_grid: np.ndarray, threshold: float, H_S: np.ndarray,
+    bath_state: Optional[Dict[str, Any]] = None,
+    spectral_density: Optional[Dict[str, Any]] = None,
+) -> Tuple[bool, float]:
+    """Card B5-conv-registry v0.2.0 displaced-σ_x PASS condition.
+
+    Per fixture (one of four cleared profiles), gates the Schrödinger-
+    picture predicted transverse vector (D̄_1(t), 0):
+      b_actual(t) := 0.5 trace(σ_x · K(t))   should equal D̄_1(t)
+      c_actual(t) := 0.5 trace(σ_y · K(t))   should equal 0
+      transverse_error(t) := sqrt((b_actual - D̄_1)² + c_actual²)
+    Verdict: max_t transverse_error(t) ≤ threshold.
+
+    The σ_z coefficient d(t) is NOT gated — Entry 4.B.2 explicitly allows
+    an energy-level shift; only the transverse channels are constrained.
+
+    The same D̄_1 array is consumed by both the runner's K_1 computation
+    (via cbg.tcl_recursion.K_total_displaced_on_grid → L_1_displaced_at_time)
+    and the predicted σ_x channel here, so quadrature error in the
+    broadband / Gaussian profiles cancels at the verdict-comparison
+    layer (parallels B4's structural-precision pattern).
+
+    Returns (passed, max_transverse_error).
+    """
+    if bath_state is None or spectral_density is None:
+        raise ValueError(
+            "_dyn_handler_sigma_x_displaced: bath_state + spectral_density "
+            "are required"
+        )
+
+    b_predicted = np.real(_cumulants_D_bar_1(
+        np.asarray(t_grid, dtype=float),
+        bath_state=bath_state, spectral_density=spectral_density,
+    ))
+    max_transverse_err = 0.0
+    for i, K_t in enumerate(K_array):
+        b_actual = 0.5 * np.trace(_SIGMA_X @ K_t).real
+        c_actual = 0.5 * np.trace(_SIGMA_Y @ K_t).real
+        transverse_err = float(np.sqrt(
+            (b_actual - b_predicted[i]) ** 2 + c_actual ** 2
+        ))
+        max_transverse_err = max(max_transverse_err, transverse_err)
+    return max_transverse_err <= threshold, max_transverse_err
+
+
 # Dynamical test-case handler registry: keyed by (card.model, test_case_name).
 # The model qualifier in the key is what distinguishes A3.thermal_bath from
 # A4.thermal_bath (both have the same test_case name but different physics).
 # DG-2 (post-Council-Act-2) extends the registry with the four B4-conv-registry
-# fixtures under the pure_dephasing model — one per cleared displacement
-# profile. The σ_x sibling (B5-conv-registry) handlers under
-# spin_boson_sigma_x are deferred to a separate verdict commit.
+# fixtures under pure_dephasing AND the four B5-conv-registry v0.2.0 fixtures
+# under spin_boson_sigma_x — one per cleared displacement profile in each.
 _DYNAMICAL_TEST_CASE_HANDLERS: Dict[
     Tuple[str, str],
     Callable[..., Tuple[bool, float]],
@@ -1458,6 +1513,14 @@ _DYNAMICAL_TEST_CASE_HANDLERS: Dict[
         _dyn_handler_pure_dephasing_displaced,
     ("pure_dephasing", "displaced_bath_gaussian"):
         _dyn_handler_pure_dephasing_displaced,
+    ("spin_boson_sigma_x", "displaced_bath_delta_omega_c"):
+        _dyn_handler_sigma_x_displaced,
+    ("spin_boson_sigma_x", "displaced_bath_delta_omega_S"):
+        _dyn_handler_sigma_x_displaced,
+    ("spin_boson_sigma_x", "displaced_bath_sqrt_J"):
+        _dyn_handler_sigma_x_displaced,
+    ("spin_boson_sigma_x", "displaced_bath_gaussian"):
+        _dyn_handler_sigma_x_displaced,
 }
 
 

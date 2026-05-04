@@ -1063,14 +1063,14 @@ def test_displacement_profiles_registry_has_act2_cleared_keys():
 
 
 def test_load_card_b5_succeeds():
-    """Card B5-conv-registry v0.2.0 loads cleanly at frozen-awaiting-run
+    """Card B5-conv-registry v0.2.0 loads cleanly post-verdict
     (the v0.1.0 predecessor was superseded same-day for a card-design
     prediction-text correction)."""
     card = bc.load_card(B5_PATH)
     assert card.card_id == "B5-conv-registry"
     assert card.dg_target == "DG-2"
     assert card.version == "v0.2.0"
-    assert card.status == "frozen-awaiting-run"
+    assert card.status == "pass"
     assert card.model == "spin_boson_sigma_x"
     assert card.model_kind == "dynamical"
     assert card.supersedes == "B5-conv-registry_v0.1.0.yaml"
@@ -1096,13 +1096,25 @@ def test_b5_test_cases_carry_same_registry_profiles_as_b4():
     assert b4_profiles == b5_profiles
 
 
-def test_run_card_b5_routes_to_handler_not_found():
-    """B5 is frozen-awaiting-run; B4's verdict commit lifted the family-
-    level coherent_displaced carve-out, but B5's per-test-case dynamical
-    handlers under (spin_boson_sigma_x, displaced_bath_*) are not yet
-    registered. Running B5 therefore hits TestCaseHandlerNotFoundError —
-    the next layer of the cards-first carve-out — until B5's verdict
-    commit registers its σ_x-specific handlers."""
+def test_run_card_b5_passes_all_four_profiles():
+    """Post-verdict-commit: B5-conv-registry v0.2.0 runs to PASS for all
+    four Council-cleared profiles. Errors at 0.0 exactly because the
+    same D̄_1 array drives both the runner's K_1 computation and the
+    predicted σ_x channel (single source of truth), so b_actual - b_pred
+    = 0 floating-point-exactly; the σ_y channel is zero by the parity-
+    class theorem of Eq. (A.43)-(A.45)."""
     card = bc.load_card(B5_PATH)
-    with pytest.raises(bc.TestCaseHandlerNotFoundError, match="spin_boson_sigma_x"):
-        bc.run_card(card)
+    result = bc.run_card(card)
+    assert result.verdict == "PASS"
+    names = {tcr.name for tcr in result.test_case_results}
+    assert names == {
+        "displaced_bath_delta_omega_c",
+        "displaced_bath_delta_omega_S",
+        "displaced_bath_sqrt_J",
+        "displaced_bath_gaussian",
+    }
+    for tcr in result.test_case_results:
+        assert tcr.passed
+        assert tcr.error == 0.0, (
+            f"{tcr.name}: expected exact-zero structural error; got {tcr.error:.3e}"
+        )

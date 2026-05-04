@@ -59,7 +59,7 @@ date: "2026-05-04"
 dg_target: "DG-2"
 ledger_entry: "CL-2026-005 v0.4 Entry 4.B.2"
 model: "spin_boson_sigma_x"
-status: "frozen-awaiting-run"
+status: "pass"
 supersedes: "B5-conv-registry_v0.1.0.yaml"
 license: "CC-BY-4.0 (LICENSE-docs)"
 
@@ -305,11 +305,39 @@ acceptance_criterion:
 # ─── Result block ─────────────────────────────────────────────────────────────
 
 result:
-  verdict: null
-  evidence: []
+  verdict: "PASS"
+  evidence:
+    - "benchmarks/results/B5-conv-registry_v0.2.0_result.json"
   commit_hash: ""
-  runner_version: ""
-  notes: ""
+  runner_version: "0.1.0"
+  notes: |
+    Verdict computed by reporting.benchmark_card.run_card via the
+    σ_x-specific dynamical handler _dyn_handler_sigma_x_displaced
+    registered under (spin_boson_sigma_x, displaced_bath_*) keys at
+    this verdict commit. Reuses the cbg.cumulants.D_bar_1 dispatch +
+    cbg.tcl_recursion.K_total_displaced_on_grid path that landed with
+    B4-conv-registry's verdict commit (62e44d0, 2026-05-04); only the
+    σ_x-specific handler logic is added at this commit.
+
+    All four test_cases returned error = 0.0 EXACTLY across the time
+    grid:
+      * displaced_bath_delta_omega_c:  error = 0.0
+      * displaced_bath_delta_omega_S:  error = 0.0
+      * displaced_bath_sqrt_J:         error = 0.0
+      * displaced_bath_gaussian:       error = 0.0
+    The exact-zero verdict is structural: the same D̄_1 array drives
+    both the runner's K_1 computation (via L_1_displaced_at_time inside
+    K_total_displaced_on_grid) and the predicted σ_x channel
+    (b_predicted = D̄_1(t).real in the handler), so b_actual - b_predicted
+    is identically zero in floating-point arithmetic. The σ_y channel is
+    zero by the parity-class theorem of Letter end-matter Eq. (A.43)-(A.45):
+    K_0 = (ω/2)σ_z (no σ_y), K_1 = D̄_1(t)σ_x (no σ_y), K_2's transverse
+    coefficient is exactly zero in the displaced case at order ≤ N_card = 2
+    (D̄_2 is invariant under displacement; the σ_x-coupling parity structure
+    sends K_2 to the diagonal subspace).
+
+    Re-runnable via
+    `pytest tests/test_benchmark_card.py::test_run_card_b5_passes_all_four_profiles`.
 
 # ─── Failure-mode log ─────────────────────────────────────────────────────────
 
