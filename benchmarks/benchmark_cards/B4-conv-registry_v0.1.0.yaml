@@ -1,0 +1,364 @@
+# DG-2 Benchmark Card B4-conv-registry — Coherently-displaced bath, pure-dephasing
+#
+# Anchor: CL-2026-005 v0.4 Entry 3.B.3 (time-dependent shift in non-thermal
+#         bath); subsidiary briefing v0.3.0 §3.1–§3.4 + §6 + §6.1;
+#         Letter Eq. (19), Letter end-matter "Contributions to K in spin
+#         systems" (Ledger/briefing route name: Appendix D);
+#         transcriptions/colla-breuer-gasbarri-2025_appendix-d_v0.0.1.md
+#         (POPULATED — underdetermined);
+#         SCHEMA.md v0.1.2
+# Phase: B (frozen-awaiting-run)
+#
+# This card operationalises CL-2026-005 v0.4 Entry 3.B.3 (time-dependent
+# shift in a non-thermal coherently-displaced bath) under the four
+# Council-cleared displacement-mode profiles (subsidiary briefing v0.3.0
+# §3.1–§3.4). Council Act 2 (2026-05-04) adopted handling (c) (convention-
+# agnostic registry encoding); each test_case below carries a per-fixture
+# ``displacement_profile`` tag selecting one cleared profile, plus the
+# explicit profile parameter values per the (c)-discipline transposition
+# of the (b)-attestation items 3-4 (subsidiary briefing v0.3.0 §7).
+#
+# This card covers Entry 3.B.3 ONLY (pure_dephasing model with σ_z
+# coupling). Entry 4.B.2 (eigenbasis rotation under σ_x coupling) is the
+# territory of a sibling card (provisional name B5-conv-registry) under
+# the spin_boson_sigma_x model; that freeze is a separate work step.
+#
+# model_kind: dynamical with test_cases (four coherent-displaced cases at
+# v0.1.0, one per cleared profile).
+# perturbative_order: 2 (N_card per DG-1 work plan v0.1.4 §1.2; B.1 + B.3
+# are second-order observables under the pure-dephasing parity-class
+# theorem — see Letter end-matter / transcribed Eq. (A.39) for the
+# parity structure).
+#
+# Cards-first / Risk #6 audit boundary: this card is frozen at status
+# ``frozen-awaiting-run`` BEFORE any runner extension exists for
+# bath_state.family == "coherent_displaced" (the existing dynamical
+# runner raises NotImplementedError with the standing carve-out message
+# at this combination). The corresponding runner wiring — extension of
+# cbg.cumulants.D_bar_1 to dispatch on DisplacementProfile.kind, and a
+# new dynamical handler in reporting.benchmark_card._DYNAMICAL_TEST_CASE_HANDLERS
+# keyed on (model, test_case_name) — is verdict-commit work bounded by
+# the acceptance criterion below.
+
+# ─── Top-level metadata ───────────────────────────────────────────────────────
+
+schema_version: "v0.1.2"
+card_id: "B4-conv-registry"
+version: "v0.1.0"
+date: "2026-05-04"
+dg_target: "DG-2"
+ledger_entry: "CL-2026-005 v0.4 Entry 3.B.3"
+model: "pure_dephasing"
+status: "frozen-awaiting-run"
+license: "CC-BY-4.0 (LICENSE-docs)"
+
+# ─── Gauge block ──────────────────────────────────────────────────────────────
+
+gauge:
+  gauge: "hayden-sorce-minimal-dissipation"
+  coordinate_dependent: true
+  direct_observable: false
+  gauge_alignment_required_for_comparison:
+    - "hmf"
+    - "polaron"
+    - "mori"
+
+# ─── Frozen parameters ────────────────────────────────────────────────────────
+
+frozen_parameters:
+
+  model:
+    model_kind: "dynamical"
+    system_dimension: 2
+    system_hamiltonian: "(omega / 2) * sigma_z"
+    coupling_operator: "sigma_z"
+    bath_type: "bosonic_linear"
+    bath_spectral_density:
+      family: "ohmic"
+      cutoff_frequency: 10.0       # omega-units; matches A3 v0.1.1 for cross-card consistency
+      coupling_strength: 0.05      # ohmic dimensionless coupling alpha; matches A3 v0.1.1
+    # bath_state omitted at model level: per-case override below.
+    # System Bohr frequency: omega = 1.0 in omega-units (i.e. ω_S = 1.0
+    # in the same units as ω_c = 10.0). This matches A3 v0.1.1.
+    parameters:
+      omega: 1.0                   # system Bohr frequency ω_S (referenced by delta_omega_S fixture)
+    test_cases:
+
+      - name: "displaced_bath_delta_omega_c"
+        description: |
+          Coherently-displaced bosonic bath under the §3.1 cleared profile
+          (registry key ``delta-omega_c``): a single bath mode at the cutoff
+          frequency ω_c is displaced by α_0. The first cumulant D̄_1(t)
+          reduces to a single-frequency oscillation at ω_c; under pure-
+          dephasing dynamics this manifests as a non-zero, oscillating
+          ω_r(t) - ω at orders 1 ≤ n ≤ N_card.
+        bath_state:
+          family: "coherent_displaced"
+          displacement_profile: "delta-omega_c"
+          parameters:
+            alpha_0: 1.0              # displacement amplitude (real); not Hasse-matched
+            omega_c: 10.0             # bath cutoff frequency; matches bath_spectral_density.cutoff_frequency
+        expected_outcome: |
+          K(t) ∝ σ_z (parity-class theorem of Letter end-matter Eq. (A.39):
+          for A = σ_z under any bath state, only odd-order contributions
+          to K_n survive and they are all proportional to σ_z; transcription
+          §2.2 records this verbatim). The shift ω_r(t) - ω is non-zero
+          and acquires a single-frequency oscillation at ω_c, computable
+          in closed form from the δ-function profile via the perturbative
+          expansion of D̄_1(t) entering K_1 (and higher odd orders). The
+          predicted shift, evaluated by the runner at each grid point t,
+          serves as the comparison reference for B.3.
+        verifies:
+          - "Entry 3.B.1 (no environment-induced eigenbasis rotation) under coherent-displaced bath"
+          - "Entry 3.B.3 (time-dependent shift in non-thermal bath) under §3.1 / delta-omega_c profile"
+        reference: "Letter Eq. (19); Letter end-matter Eq. (A.39); CL-2026-005 v0.4 Entry 3.B.1, 3.B.3; subsidiary briefing v0.3.0 §3.1; transcriptions/colla-breuer-gasbarri-2025_appendix-d_v0.0.1.md §2.2"
+        notes: |
+          Per (c)-discipline transposition (subsidiary briefing v0.3.0 §7,
+          Council Act 2 verdict): parameter values disclosed explicitly.
+          Hasse et al. (Nat. Commun. 16, 2502 (2025)) used a near-resonant
+          motional-mode displacement; this fixture's central frequency
+          ω_c = 10.0 is the bath cutoff (well above any system frequency)
+          and is *not* Hasse-matched. No (c)-transposition disclosure
+          required at this fixture.
+
+      - name: "displaced_bath_delta_omega_S"
+        description: |
+          Coherently-displaced bosonic bath under the §3.2 cleared profile
+          (registry key ``delta-omega_S``): a single bath mode at the
+          system Bohr frequency ω_S = ω is displaced by α_0. Maximises
+          resonant interaction with the system; the predicted shift
+          oscillates at ω_S (system frequency).
+        bath_state:
+          family: "coherent_displaced"
+          displacement_profile: "delta-omega_S"
+          parameters:
+            alpha_0: 1.0              # displacement amplitude (real); not Hasse-matched
+            omega_S: 1.0              # system Bohr frequency; equal to model parameter omega
+        expected_outcome: |
+          K(t) ∝ σ_z (Eq. (A.39) parity-class theorem). The shift
+          ω_r(t) - ω is non-zero and acquires a single-frequency
+          oscillation at ω_S = ω; the per-fixture predicted shift
+          follows the same δ-function closed form as the delta-omega_c
+          case but evaluated at ω = ω_S. Resonant fixture: tests the
+          parity-class theorem most sharply.
+        verifies:
+          - "Entry 3.B.1 under coherent-displaced bath"
+          - "Entry 3.B.3 under §3.2 / delta-omega_S profile"
+        reference: "Letter Eq. (19); Letter end-matter Eq. (A.39); CL-2026-005 v0.4 Entry 3.B.1, 3.B.3; subsidiary briefing v0.3.0 §3.2; transcriptions/colla-breuer-gasbarri-2025_appendix-d_v0.0.1.md §2.2"
+        notes: |
+          Per (c)-discipline transposition: parameter values disclosed
+          explicitly. Hasse et al. (2025) operated near a single
+          motional-mode resonance; the resonant character qualitatively
+          parallels this fixture's choice ω_d = ω_S, but the absolute
+          frequency in Hasse et al. (a trapped-ion motional-mode
+          frequency in MHz) and this fixture's ω_S = 1.0 (in
+          dimensionless ω-units, no MHz mapping declared) differ by
+          many orders of magnitude on any common dimensional scale. No
+          (c)-transposition disclosure required at this fixture beyond
+          this note.
+
+      - name: "displaced_bath_sqrt_J"
+        description: |
+          Coherently-displaced bosonic bath under the §3.3 cleared profile
+          (registry key ``sqrt-J``): broadband displacement matched to
+          √J(ω) on the bath spectrum. Physically natural for a
+          "coherently-displaced thermal-perturbation analog" picture;
+          D̄_1(t) is then an integral over the bath spectrum with a
+          fixed envelope. Verdict accuracy is bounded by the numerical-
+          quadrature tolerance, not by machine precision.
+        bath_state:
+          family: "coherent_displaced"
+          displacement_profile: "sqrt-J"
+          parameters:
+            alpha_0: 1.0              # displacement-amplitude prefactor; J supplied by bath_spectral_density (ohmic)
+        expected_outcome: |
+          K(t) ∝ σ_z (Eq. (A.39) parity-class theorem). The shift
+          ω_r(t) - ω is non-zero and acquires the J-shaped envelope's
+          time response, evaluated by quadrature over the ohmic
+          spectral density (cutoff_frequency = 10.0, coupling_strength
+          = 0.05). The per-fixture predicted shift is an integral over
+          the bath spectrum at each grid time t; the runner computes
+          this quadrature against the same J(ω) the cumulants module
+          uses.
+        verifies:
+          - "Entry 3.B.1 under coherent-displaced bath"
+          - "Entry 3.B.3 under §3.3 / sqrt-J profile"
+        reference: "Letter Eq. (19); Letter end-matter Eq. (A.39); CL-2026-005 v0.4 Entry 3.B.1, 3.B.3; subsidiary briefing v0.3.0 §3.3; transcriptions/colla-breuer-gasbarri-2025_appendix-d_v0.0.1.md §2.2"
+        notes: |
+          Per (c)-discipline transposition: parameter values disclosed
+          explicitly. Hasse et al. (2025) used a δ-function-like single-
+          mode displacement, NOT a J-matched broadband displacement;
+          this fixture's profile shape is structurally distinct and
+          cannot match Hasse et al.'s setup at any parameter values.
+          No (c)-transposition disclosure required.
+
+      - name: "displaced_bath_gaussian"
+        description: |
+          Coherently-displaced bosonic bath under the §3.4 cleared profile
+          (registry key ``gaussian``): Gaussian envelope at ω_d with
+          width Δω. Most general of the four registered profiles;
+          reduces to delta-omega_c as Δω → 0 with ω_d = ω_c, and to
+          delta-omega_S as Δω → 0 with ω_d = ω_S.
+        bath_state:
+          family: "coherent_displaced"
+          displacement_profile: "gaussian"
+          parameters:
+            alpha_0: 1.0              # displacement-amplitude prefactor
+            omega_d: 5.0              # envelope centre; mid-cutoff (between ω_S = 1 and ω_c = 10), not Hasse-matched
+            Delta_omega: 2.0          # envelope width; order-unity; well-resolvable on the time grid
+        expected_outcome: |
+          K(t) ∝ σ_z (Eq. (A.39) parity-class theorem). The shift
+          ω_r(t) - ω is non-zero and acquires the Gaussian envelope's
+          frequency-domain shape via D̄_1(t)'s integral; the per-fixture
+          predicted shift is computed by quadrature over the Gaussian
+          weight at each grid time t.
+        verifies:
+          - "Entry 3.B.1 under coherent-displaced bath"
+          - "Entry 3.B.3 under §3.4 / gaussian profile"
+        reference: "Letter Eq. (19); Letter end-matter Eq. (A.39); CL-2026-005 v0.4 Entry 3.B.1, 3.B.3; subsidiary briefing v0.3.0 §3.4; transcriptions/colla-breuer-gasbarri-2025_appendix-d_v0.0.1.md §2.2"
+        notes: |
+          Per (c)-discipline transposition: parameter values disclosed
+          explicitly. Hasse et al. (2025) operated on a near-δ-function
+          single-mode displacement, NOT a Gaussian envelope; this
+          fixture's profile shape is structurally distinct. ω_d = 5.0
+          (mid-cutoff) is deliberately *not* set to ω_S = 1.0 (which
+          would specialise toward delta-omega_S in the Δω → 0 limit)
+          and not set to ω_c = 10.0 (which would specialise toward
+          delta-omega_c). No (c)-transposition disclosure required.
+
+  truncation:
+    perturbative_order: 2          # N_card per DG-1 work plan v0.1.4 §1.2
+    basis: "matrix_unit"           # cross-basis verification is B3's territory
+    bath_mode_cutoff: 1024         # discretisation of the continuous ohmic spectral density (matches A3 v0.1.1)
+
+  numerical:
+    time_grid:
+      t_start: 0.0                 # 1/omega units
+      t_end: 20.0                  # 20 * (1/omega); matches A3 v0.1.1 for cross-card consistency
+      n_points: 200                # 0.1 * (1/omega) spacing; resolves bath cutoff scale
+      scheme: "uniform"
+    integration_tolerance:
+      relative: 1.0e-8             # looser than A3 v0.1.1's 1.0e-10 to accommodate quadrature error in §3.3 / §3.4 fixtures
+      absolute: 1.0e-10
+    solver: "scipy_dop853"
+
+  comparison:
+    reference: "Letter Eq. (19); Letter end-matter Eq. (A.39); CL-2026-005 v0.4 Entry 3.B.3; subsidiary briefing v0.3.0 §3.1–§3.4 + §6.1; transcriptions/colla-breuer-gasbarri-2025_appendix-d_v0.0.1.md"
+    target_observable: "K(t) shift = omega_r(t) - omega per registered profile"
+    error_metric: "max_t_absolute"  # max over the time grid of |actual_shift - predicted_shift|
+    threshold: 1.0e-4              # uniform bound across profiles; δ-function profiles will land tighter (≤ 1e-8); broadband / Gaussian bounded by quadrature accuracy
+
+# ─── Acceptance criterion ─────────────────────────────────────────────────────
+
+acceptance_criterion:
+  reference: "Letter Eq. (19); Letter end-matter Eq. (A.39); CL-2026-005 v0.4 Entry 3.B.3; subsidiary briefing v0.3.0; deliberation transcripts (Act 1 + Act 2)"
+  observable: "K(t) shift omega_r(t) - omega vs profile-derived predicted shift"
+  error_metric: "max_t_absolute"
+  threshold: 1.0e-4
+  projection_scheme: null
+  rationale: |
+    PASS iff every test case in frozen_parameters.model.test_cases
+    satisfies BOTH per-case derived-observable conditions on K(t):
+
+    Define, for each computed K(t) at every n ∈ [1, ..., n_points]:
+
+      shape_residual(t)   := ||K(t) - 0.5 * trace(sigma_z * K(t)) * sigma_z||_F
+                             / max(||K(t)||_F, eps)
+      omega_r(t)          := trace(sigma_z * K(t))
+      shift_actual(t)     := omega_r(t) - omega
+      shift_predicted(t)  := profile-derived predicted shift, computed
+                             from the test_case's displacement_profile
+                             registry key + parameters via the
+                             perturbative expansion of D̄_1(t) entering
+                             K_1 (and higher odd orders ≤ N_card),
+                             dispatched on DisplacementProfile.kind.
+
+    Per-case PASS conditions, mapped to Entry 3.B sub-claims:
+
+      - B.1 (K ∝ sigma_z under coherent-displaced bath; Eq. (A.39)
+        parity-class theorem holds for any bath state when A = sigma_z):
+        max_t shape_residual(t) <= 1.0e-4.
+      - B.3 (time-dependent shift in non-thermal bath, profile-aware):
+        max_t |shift_actual(t) - shift_predicted(t)| <= 1.0e-4.
+
+    PASS for the card requires both conditions for every test_case.
+    The card's overall verdict reports per-profile verdicts atomically
+    without aggregation — under handling (c) (Council Act 2 verdict),
+    each fixture's verdict is its own; one profile's failure does not
+    cascade to the others.
+
+    Per-profile expectations on the verdict accuracy:
+      - delta-omega_c, delta-omega_S: closed-form predicted shift
+        computable to machine precision; per-fixture max_t shift error
+        expected ≤ 1.0e-8 (well below threshold).
+      - sqrt-J, gaussian: predicted shift computed via numerical
+        quadrature over the bath spectrum; per-fixture max_t shift
+        error bounded by quadrature accuracy. Threshold 1.0e-4 is
+        chosen to accommodate the quadrature-error budget at
+        bath_mode_cutoff = 1024; tighter quadrature would tighten the
+        achievable error.
+
+    Out of scope for Card B4-conv-registry v0.1.0:
+      - Entry 4.B.2 (eigenbasis rotation under σ_x coupling): sibling-
+        card territory under the spin_boson_sigma_x model; separate
+        freeze.
+      - Profiles outside the four cleared registry keys: registry
+        additions require fresh Council clearance per subsidiary
+        briefing v0.3.0 §6.1 registry-clearance-gate.
+      - Cross-basis verification: B3's territory.
+      - Higher orders (N > N_card = 2): future K_2-K_4 numerical-
+        recursion plan; out of scope for this clearance.
+      - Failure-envelope sweeps in coupling_strength or alpha_0: DG-4
+        territory.
+
+# ─── Result block ─────────────────────────────────────────────────────────────
+
+result:
+  verdict: null
+  evidence: []
+  commit_hash: ""
+  runner_version: ""
+  notes: ""
+
+# ─── Failure-mode log ─────────────────────────────────────────────────────────
+
+failure_mode_log: []
+
+# ─── Stewardship flag ─────────────────────────────────────────────────────────
+
+stewardship_flag:
+  status: "unflagged"
+  rationale: |
+    Council Act 2 (2026-05-04, transcript:
+    ledger/CL-2026-005_v0.4_council-deliberation_act2_2026-05-04.md)
+    cleared the displacement-mode profile registry under handling (c)
+    (convention-agnostic registry encoding) of the subsidiary briefing
+    v0.3.0 §4.3. The four cleared profiles at v0.1.0 — delta-omega_c,
+    delta-omega_S, sqrt-J, gaussian — are the initial admissible set
+    over which this card's test_cases are tagged. Adding or removing
+    profiles requires fresh Council clearance per subsidiary briefing
+    v0.3.0 §6.1 registry-clearance-gate; the registry is not open to
+    Steward-discretion modifications.
+
+    The Steward (U. Warring) is a co-author of Hasse et al. (Nat.
+    Commun. 16, 2502 (2025); CL-2026-005 v0.4 Entry 6 anchor), which
+    uses coherently-displaced motional states. Under handling (c) the
+    Steward does not select a single convention (the Council cleared
+    the registry as a set); the (b)-attestation five-item template is
+    NOT triggered. Per the (c)-transposition discipline (subsidiary
+    briefing v0.3.0 §7), per-fixture parameter values are recorded
+    explicitly in this card's test_cases.[].notes blocks; (b)-attestation
+    items 3-4 (Hasse et al. comparison + numerical distance metric)
+    transpose to those per-fixture notes when a fixture's parameter
+    values quantitatively match Hasse et al.'s experimental setup.
+
+    Initial v0.1.0 fixture parameter values: NONE quantitatively match
+    Hasse et al.'s setup at this freeze. The δ-function fixtures
+    (delta-omega_c at ω_c = 10.0; delta-omega_S at ω_S = 1.0) are
+    set to repository-internal dimensionless ω-units with no MHz
+    mapping declared; the broadband and Gaussian fixtures use profile
+    shapes structurally distinct from Hasse et al.'s δ-function-like
+    single-mode displacement. No per-fixture (c)-transposition
+    disclosure beyond the standing notes is required at v0.1.0.
+  data_source: ""
+  search_performed: ""

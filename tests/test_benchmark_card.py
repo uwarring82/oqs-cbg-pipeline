@@ -41,6 +41,7 @@ A4_PATH = CARDS_DIR / "A4_sigma-x-thermal_v0.1.1.yaml"
 B1_PATH = CARDS_DIR / "B1_pseudo-kraus-diagonal_v0.1.0.yaml"
 B2_PATH = CARDS_DIR / "B2_pseudo-kraus-offdiagonal_v0.1.0.yaml"
 B3_PATH = CARDS_DIR / "B3_cross-basis-structural-identity_v0.1.0.yaml"
+B4_PATH = CARDS_DIR / "B4-conv-registry_v0.1.0.yaml"
 
 # Superseded cards retained for audit-trail tests.
 A1_V010_PATH = CARDS_DIR / "A1_closed-form-K_v0.1.0.yaml"
@@ -969,3 +970,64 @@ def test_b3_basis_builders_registry_contains_expected_keys():
     """Sanity check on the registry: matrix_unit + su_d_generator are wired."""
     assert "matrix_unit" in bc._BASIS_BUILDERS
     assert "su_d_generator" in bc._BASIS_BUILDERS
+
+
+# ─── B4-conv-registry frozen-awaiting-run ────────────────────────────────────
+
+
+def test_load_card_b4_succeeds():
+    """Card B4-conv-registry v0.1.0 loads cleanly at frozen-awaiting-run."""
+    card = bc.load_card(B4_PATH)
+    assert card.card_id == "B4-conv-registry"
+    assert card.dg_target == "DG-2"
+    assert card.version == "v0.1.0"
+    assert card.status == "frozen-awaiting-run"
+    assert card.model == "pure_dephasing"
+    assert card.model_kind == "dynamical"
+
+
+def test_b4_test_cases_carry_displacement_profile_tags():
+    """All four B4 test_cases tag a Council-cleared displacement profile."""
+    card = bc.load_card(B4_PATH)
+    cases = card.frozen_parameters["model"]["test_cases"]
+    assert len(cases) == 4
+    profile_keys = {case["bath_state"]["displacement_profile"] for case in cases}
+    # The four Council-cleared keys at v0.1.0 (Act 2, 2026-05-04).
+    assert profile_keys == {"delta-omega_c", "delta-omega_S", "sqrt-J", "gaussian"}
+
+
+def test_b4_displacement_profile_keys_are_in_runner_registry():
+    """Every B4 fixture's profile key must resolve in _DISPLACEMENT_PROFILES.
+
+    Per the §6.1 registry-clearance-gate, this binds the card-level profile
+    declarations to the runner-level cleared registry — a card cannot tag a
+    profile that is not in the cleared set.
+    """
+    card = bc.load_card(B4_PATH)
+    for case in card.frozen_parameters["model"]["test_cases"]:
+        profile_key = case["bath_state"]["displacement_profile"]
+        assert profile_key in bc._DISPLACEMENT_PROFILES, (
+            f"Test case {case['name']!r} declares profile {profile_key!r} "
+            f"which is not in the Council-cleared _DISPLACEMENT_PROFILES "
+            f"registry. Known: {sorted(bc._DISPLACEMENT_PROFILES.keys())}"
+        )
+
+
+def test_run_card_b4_routes_to_standing_carve_out():
+    """B4 is frozen-awaiting-run; running it must hit the standing
+    coherent_displaced carve-out (the runner has no handler for the new
+    bath_state.family yet — that's verdict-commit work)."""
+    card = bc.load_card(B4_PATH)
+    with pytest.raises(NotImplementedError, match="coherent_displaced"):
+        bc.run_card(card)
+
+
+def test_displacement_profiles_registry_has_act2_cleared_keys():
+    """Sanity check on the runner-level registry: exactly the four Council
+    Act 2 cleared keys at v0.1.0 (subsidiary briefing v0.3.0 §3.1–§3.4)."""
+    assert set(bc._DISPLACEMENT_PROFILES.keys()) == {
+        "delta-omega_c",
+        "delta-omega_S",
+        "sqrt-J",
+        "gaussian",
+    }

@@ -45,6 +45,7 @@ import numpy as np
 import yaml
 
 from cbg.basis import matrix_unit_basis, su_d_generator_basis, verify_orthonormality
+from cbg.displacement_profiles import REGISTERED_PROFILES as _CBG_REGISTERED_PROFILES
 from cbg.effective_hamiltonian import K_from_generator
 from cbg.tcl_recursion import K_total_thermal_on_grid
 from models import pure_dephasing, spin_boson_sigma_x
@@ -1002,6 +1003,31 @@ _BASIS_BUILDERS: Dict[str, Callable[[int], List[np.ndarray]]] = {
     "matrix_unit": matrix_unit_basis,
     "su_d_generator": su_d_generator_basis,
 }
+
+
+# ─── Displacement-profile registry (Council Act 2 cleared, 2026-05-04) ──────
+#
+# The displacement-mode profiles α(ω) for the coherent-displaced bath state
+# appearing in CL-2026-005 v0.4 Entries 3.B.3 + 4.B.2 are Council-cleared
+# under handling (c) of the subsidiary briefing v0.3.0 §4.3 (deliberation
+# transcript: ledger/CL-2026-005_v0.4_council-deliberation_act2_2026-05-04.md).
+# The four cleared profile keys at v0.1.0 are:
+#
+#   delta-omega_c      single-mode at bath cutoff ω_c          (§3.1)
+#   delta-omega_S      single-mode at system Bohr ω_S          (§3.2)
+#   sqrt-J             broadband ∝ √(J(ω))                     (§3.3)
+#   gaussian           Gaussian envelope (ω_d, Δω)             (§3.4)
+#
+# Adding or removing entries requires fresh Council clearance per the
+# subsidiary briefing v0.3.0 §6.1 registry-clearance-gate; the registry is
+# not open to ad-hoc Steward-discretion modifications.
+#
+# This runner-level registry imports the constructors verbatim from
+# cbg.displacement_profiles.REGISTERED_PROFILES to maintain a single source
+# of truth for the cleared set. The B4-conv-registry_v0.1.0 card's
+# per-test-case ``displacement_profile`` field resolves through this dict.
+
+_DISPLACEMENT_PROFILES: Dict[str, Callable[..., Any]] = dict(_CBG_REGISTERED_PROFILES)
 
 
 # ─── Basis-independence handler factory (B3) ────────────────────────────────
