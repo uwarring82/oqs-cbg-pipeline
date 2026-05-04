@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-04
 **Type:** dg-pass (PARTIAL)
-**Triggering commit:** (to be populated on commit)
+**Triggering commit:** 9e78353cf0754c1fab3aa16a7db0ee7248661b08
 **Triggering evidence:**
 - Card B1 v0.1.0 PASS (verdict commit `4502863`, 2026-05-01) — diagonal Entry 1.B.3
 - Card B2 v0.1.0 PASS (verdict commit `9febfed`, 2026-05-04) — off-diagonal Entry 1.B.3 + Entry 1.D
