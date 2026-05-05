@@ -80,6 +80,13 @@ Run the smoke tests:
 pytest tests/ -v
 ```
 
+Two runnable Jupyter notebooks demonstrate the passed Decision Gate verdicts end-to-end:
+
+- [`examples/dg1_walkthrough.ipynb`](examples/dg1_walkthrough.ipynb) — DG-1 PASS (Cards A1, A3): closed-form K and pure-dephasing K(t).
+- [`examples/dg2_structural.ipynb`](examples/dg2_structural.ipynb) — DG-2 structural sub-claims PASS (Cards B3, B4): basis-independence on a dissipative generator, and the coherently-displaced bath under one Council-cleared registry profile.
+
+See [`examples/README.md`](examples/README.md) for the index.
+
 For a guided introduction aimed at PhD students, open [`cbg-tutorial-for-phd-students_v0.2.html`](cbg-tutorial-for-phd-students_v0.2.html). For the full validated surface and the structural-identity benchmark cards that anchor each Decision Gate, see [`benchmarks/benchmark_cards/`](benchmarks/benchmark_cards/) and [`docs/validity_envelope.md`](docs/validity_envelope.md).
 
 ## Anchor chain

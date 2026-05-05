@@ -21,6 +21,12 @@ Anchor: Sail v0.5; Ledger CL-2026-005 v0.4.
   same check strictly on the repository.
 
 ### Added
+- `examples/` directory with two runnable Jupyter notebooks demonstrating the
+  passed Decision Gate verdicts end-to-end:
+  `dg1_walkthrough.ipynb` (Cards A1, A3) and `dg2_structural.ipynb`
+  (Cards B3, B4 under the `delta-omega_S` displacement profile).
+  Both execute cleanly under `nbclient`; numerics agree with the frozen card
+  results at machine precision.
 - `[tool.black]`, `[tool.ruff]`, and `[tool.mypy]` configuration in
   `pyproject.toml` (declared dev tools now have shared defaults; not enforced
   in CI).
