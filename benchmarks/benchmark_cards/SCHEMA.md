@@ -2,8 +2,8 @@
 
 **Layer:** Repository operational specification (co-located with cards)
 **Anchor:** Sail v0.5 §11 (parameter-freezing protocol mandate); [`docs/benchmark_protocol.md`](../../docs/benchmark_protocol.md) §1 (gauge annotation), §4 (parameter freezing); [DG-1 work plan v0.1.2](../../plans/dg-1-work-plan_v0.1.2.md) §4 Phase A
-**Schema version:** v0.1.2
-**Last updated:** 2026-04-30
+**Schema version:** v0.1.3
+**Last updated:** 2026-05-05
 
 ---
 
@@ -70,7 +70,7 @@ The order is conventional rather than load-bearing for parsers, but required for
 | `dg_target` | string | yes | One of `DG-1`, `DG-2`, `DG-3`, `DG-4`, `DG-5`. The Decision Gate the card contributes to. |
 | `ledger_entry` | string | yes | Anchor of the form `<ledger-id> v<version> Entry <N>` (e.g. `CL-2026-005 v0.4 Entry 1`). |
 | `model` | string | yes | Identifier of the system–environment model (e.g. `pure_dephasing`, `spin_boson_sigma_x`, `closed_form_algebraic`). For models implemented in [`models/`](../../models/), the model name matches the module file's basename. |
-| `status` | string | yes | One of `frozen-awaiting-run`, `pass`, `fail`, `conditional`, `superseded`. The single-hyphenated tokens are intentional: parsers must accept them as opaque enum values, not as compound descriptors. See §[Status values](#status-values). |
+| `status` | string | yes | One of `frozen-awaiting-run`, `pass`, `fail`, `conditional`, `superseded`, `scope-definition`. The single-hyphenated tokens are intentional: parsers must accept them as opaque enum values, not as compound descriptors. See §[Status values](#status-values). |
 | `supersedes` | string | optional | Filename of the card this card replaces (e.g. `A3_pure-dephasing_v0.1.0.yaml`). Absent on first-issue cards. |
 | `superseded_by` | string | optional | Filename of the card that replaces this card. Appended only when a successor exists. One of the narrow post-Phase-D edits permitted; see §[Supersedure](#supersedure). |
 | `license` | string | yes | Card prose is documentation; license is `CC-BY-4.0 (LICENSE-docs)`. |
@@ -80,6 +80,7 @@ The order is conventional rather than load-bearing for parsers, but required for
 - **`frozen-awaiting-run`** — card committed with `frozen_parameters` and `acceptance_criterion` populated; `result` empty. The state at end of [DG-1 work plan v0.1.2](../../plans/dg-1-work-plan_v0.1.2.md) Phase B.
 - **`pass`** / **`fail`** / **`conditional`** — verdict reached. The card's `result.verdict` field carries the matching upper-case form (`PASS`, `FAIL`, `CONDITIONAL`); the top-level `status` mirrors it in lower-case for filename/display consistency.
 - **`superseded`** — a successor card has replaced this one. The verdict (if any) is retained as historical record; `superseded_by:` is populated.
+- **`scope-definition`** — a design-target card whose preconditions are not yet met (e.g. the model API is stubbed, a competing-framework reference is not yet implemented, or a required runner branch does not exist). The card freezes the *intended* parameter scaffold and acceptance criterion so that future implementation work is bounded and auditable. `result` is empty (as with `frozen-awaiting-run`). A scope-definition card transitions to `frozen-awaiting-run` once its preconditions are satisfied; that transition requires supersedure (new version with updated `failure_mode_log`).
 
 The token `frozen-awaiting-run` is a single hyphenated identifier. It is **not** "`frozen, awaiting run`" or "`frozen awaiting run`"; YAML linters and downstream tools rely on the single-token form.
 
@@ -197,6 +198,27 @@ PASS for a dynamical card with `test_cases` requires every entry to satisfy its 
 | `threshold` | number | yes | Pass threshold under the named metric (e.g. `1.0e-10`). |
 | `projection_scheme` | string | optional | Required for non-TCL methods (Sail §2 representation commitment); absent for native TCL outputs. |
 
+#### `frozen_parameters.sweep` (optional)
+
+Present on failure-envelope and convergence-study cards (DG-4). The sweep range is frozen *before* the run; post-hoc range tightening is prohibited by [`docs/benchmark_protocol.md`](../../docs/benchmark_protocol.md) §4.
+
+```yaml
+sweep:
+  parameter_name: "coupling_strength"
+  parameter_path: "model.bath_spectral_density.coupling_strength"
+  sweep_range:
+    start: 0.05
+    end: 1.0
+    n_points: 20
+    scheme: "log_uniform"   # one of: uniform, log_uniform, chebyshev, log
+```
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `parameter_name` | string | yes | Human-readable name of the swept parameter. |
+| `parameter_path` | string | yes | Dot-notation path into `frozen_parameters` locating the swept field (e.g. `model.bath_spectral_density.coupling_strength`). |
+| `sweep_range` | mapping | yes | Sub-fields: `start` (number), `end` (number), `n_points` (positive integer), `scheme` (`uniform`, `log_uniform`, `chebyshev`, `log`, …). |
+
 ### Acceptance-criterion block
 
 The acceptance-criterion block is a *human-readable* restatement of the comparison rule, in addition to the structured `frozen_parameters.comparison` fields. It exists because the structured fields cannot capture, e.g., the conditional sweep logic for Card A3 ("zero shift in thermal case AND nonzero shift in displaced case").
@@ -300,7 +322,7 @@ These rules apply to **committed cards**. They do *not* apply to [`_template.yam
 
 1. **All required top-level keys present** (per §[Top-level shape](#top-level-shape)), including `schema_version`.
 2. **`status` is one of the enumerated values.**
-3. **`status: frozen-awaiting-run` ⇒ `result.verdict` is `null`, `result.evidence` is `[]`, `result.commit_hash` is `""`, `result.runner_version` is `""`.**
+3. **`status ∈ {frozen-awaiting-run, scope-definition}` ⇒ `result.verdict` is `null`, `result.evidence` is `[]`, `result.commit_hash` is `""`, `result.runner_version` is `""`.**
 4. **`status ∈ {pass, fail, conditional}` ⇒ `result.verdict ∈ {PASS, FAIL, CONDITIONAL}` matching `status` (case-folded), `result.runner_version` is non-empty, every path in `result.evidence` exists in the same commit. `result.commit_hash` is either the empty string `""` (between the verdict commit and the self-referential follow-up commit) or a 40-character hex string (after the follow-up).**
 5. **`status: superseded` ⇒ `superseded_by` is populated.**
 6. **`gauge` block matches the verbatim form in §[Gauge block](#gauge-block)** (no value substitutions permitted at DG-1; alternative gauges are a future schema bump).
@@ -316,6 +338,8 @@ These rules apply to **committed cards**. They do *not* apply to [`_template.yam
 15. **When `test_cases` is present (under any `model_kind`), each entry has at minimum `name`, `description`, `expected_outcome`, `reference`.**
 15a. **`model_kind == algebraic_map` ⇒ `test_cases` is required and non-empty; `system_hamiltonian`/`coupling_operator`/`bath_type` are absent or empty.**
 16. **`numerical.time_grid` is required when `model_kind == dynamical`** (this is the dynamical-side restatement of rule 14, reiterated under `numerical` for runner-implementation clarity).
+17. **`frozen_parameters.sweep` is optional. When present, `sweep.parameter_name`, `sweep.parameter_path`, and `sweep.sweep_range` are required, and `sweep.sweep_range.scheme` is one of the enumerated values.**
+18. **`status: scope-definition` ⇒ the card carries explicit `failure_mode_log` or `result.notes` recording the preconditions that are not yet met.**
 
 ## Card lifecycle
 
@@ -359,7 +383,8 @@ A schema bump never invalidates already-committed cards: cards retain the schema
 
 - **v0.1.0 (2026-04-30, drafted, never committed).** Initial Phase A draft. Single `frozen_parameters.model` shape presuming a dynamical system–bath model with required `system_hamiltonian`, `coupling_operator`, `bath_type`; `numerical.time_grid` unconditionally required. Superseded by v0.1.1 within Phase A; never reached HEAD.
 - **v0.1.1 (2026-04-30, superseded by v0.1.2 within Phase A/B).** Added `model_kind:` discriminator (`dynamical` vs `algebraic_map`). Under `algebraic_map`: `system_hamiltonian`/`coupling_operator`/`bath_type` and `numerical.time_grid` become optional, and a `test_cases:` list is recognized with at-minimum `name`/`description`/`expected_outcome`/`reference` per entry. Validation rules 13–16 added. Surfaced by Phase B preview drafting of Card A1: Letter Eqs. (6)–(7) define an algebraic-map check on multiple L specifications, not a dynamical evolution. MINOR bump (not PATCH) because new fields and validation rules are added; non-breaking because `model_kind: dynamical` matches the v0.1.0 shape exactly. Reached HEAD; Card A1 was authored under v0.1.1.
-- **v0.1.2 (2026-04-30, this revision).** Generalized `test_cases:` to be optionally usable under `model_kind: dynamical` for parameter sweeps (a single physical model run under multiple variants of a swept parameter, typically `bath_state`, with each variant testing a different B-prediction). Relaxed `bath_state` requirement: when `test_cases` provides per-case `bath_state` for every entry, the model-level field may be omitted. Validation rules 14a, 15a added; rule 14 narrowed (model-level requirements) and rule 15 generalized (applies to test_cases under any `model_kind`). Added §Test cases for dynamical cards subsection. Surfaced by Phase B preview drafting of Card A3: Entry 3.B targets two distinct bath states (thermal vs. coherently displaced) under one card, exercising B.1 in both cases, B.2 in thermal, B.3 in displaced. MINOR bump because new fields, new subsection, and new validation rules are added; non-breaking because v0.1.1 cards (Card A1, `model_kind: algebraic_map` with `test_cases`) continue to validate unchanged under v0.1.2 (the test_cases generalization is additive). Same cards-first-surfaces-schema-issues pattern as v0.1.0 → v0.1.1.
+- **v0.1.2 (2026-04-30, superseded by v0.1.3).** Generalized `test_cases:` to be optionally usable under `model_kind: dynamical` for parameter sweeps (a single physical model run under multiple variants of a swept parameter, typically `bath_state`, with each variant testing a different B-prediction). Relaxed `bath_state` requirement: when `test_cases` provides per-case `bath_state` for every entry, the model-level field may be omitted. Validation rules 14a, 15a added; rule 14 narrowed (model-level requirements) and rule 15 generalized (applies to test_cases under any `model_kind`). Added §Test cases for dynamical cards subsection. Surfaced by Phase B preview drafting of Card A3: Entry 3.B targets two distinct bath states (thermal vs. coherently displaced) under one card, exercising B.1 in both cases, B.2 in thermal, B.3 in displaced. MINOR bump because new fields, new subsection, and new validation rules are added; non-breaking because v0.1.1 cards (Card A1, `model_kind: algebraic_map` with `test_cases`) continue to validate unchanged under v0.1.2 (the test_cases generalization is additive). Same cards-first-surfaces-schema-issues pattern as v0.1.0 → v0.1.1.
+- **v0.1.3 (2026-05-05, this revision).** Added `frozen_parameters.sweep:` block for DG-4 failure-envelope and convergence-study cards (Rule 17). Added `scope-definition` status value for cards whose preconditions are not yet met (e.g. model API is stubbed, competing-framework reference missing). Expanded Rule 2 (status enum), Rule 3 (empty-result precondition), and added Rule 18 (scope-definition notes requirement). Surfaced by Phase B drafting of Cards D1 (coupling-strength sweep) and E1 (Fano-Anderson scope definition): D1 needed a machine-readable sweep specification, and E1 needed a status that distinguished "intentionally not runnable" from "frozen awaiting implementation". MINOR bump because new fields, new status value, and new validation rules are added; non-breaking because v0.1.2 cards (no sweep block, status `frozen-awaiting-run`) continue to validate unchanged under v0.1.3 (the additions are additive). Same cards-first-surfaces-schema-issues pattern as prior bumps.
 
 ## Worked example pointer
 
