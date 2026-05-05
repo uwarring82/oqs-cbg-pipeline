@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-05
 **Type:** structural
-**Triggering commit:** _placeholder_
+**Triggering commit:** b34143d
 **Triggering evidence:**
 - [`benchmarks/exact_finite_env.py`](../benchmarks/exact_finite_env.py): `build_pure_dephasing_displaced_total` builder for the discrete coherent-displacement fixture.
 - [`benchmarks/qutip_reference.py`](../benchmarks/qutip_reference.py): `_propagate_pure_dephasing_displaced_delta_omega_c` handler with time-dependent Lamb-shift Hamiltonian.
