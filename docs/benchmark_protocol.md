@@ -2,7 +2,7 @@
 
 **Layer:** Repository protective scaffolding
 **Anchor:** Sail v0.5 §11 (four explicit content requirements)
-**Last updated:** 2026-05-05 (DG-3/4/5 scoping pass)
+**Last updated:** 2026-05-05 (DG-3 Phase C partial implementation status)
 
 ---
 
@@ -66,7 +66,7 @@ Current status (mirrors `validity_envelope.md`):
 
 | Pair | Implementation readiness | Failure-asymmetry clearance |
 |---|---|---|
-| `exact_finite_env.py` + `qutip_reference.py` | NOT YET IMPLEMENTED | NOT CLEARED |
+| `exact_finite_env.py` + `qutip_reference.py` | PARTIAL — C1 `thermal_bath_cross_method` implemented and runner-wired; C1 displaced and C2 handlers deferred | NOT CLEARED at DG level; method classes are distinct (`finite-system` vs `solver-default`), but full frozen-card coverage is incomplete and third-method clearance remains deferred |
 
 DG-3 *implementation-ready pass* requires only the first column. DG-3 *failure-asymmetry-cleared pass* requires both. Reports must explicitly state which level of pass is being claimed.
 
@@ -76,10 +76,10 @@ Two DG-3 cross-method cards are frozen:
 
 | Card | Model | Methods compared | Status |
 |---|---|---|---|
-| C1 | pure_dephasing | exact_finite_env vs qutip_reference | frozen-awaiting-run |
-| C2 | spin_boson_sigma_x | exact_finite_env vs qutip_reference | frozen-awaiting-run |
+| C1 | pure_dephasing | exact_finite_env vs qutip_reference | frozen-awaiting-run; thermal case runs to clean FAIL (`error ≈ 0.548 > 1.0e-6`), displaced case deferred |
+| C2 | spin_boson_sigma_x | exact_finite_env vs qutip_reference | frozen-awaiting-run; handlers deferred |
 
-Cards inherit frozen parameters from their DG-1/DG-2 siblings (A3/B4 and A4/B5) to preserve cross-card comparability. The runner does not yet have a cross-method comparison branch; that wiring is Phase C work per `plans/dg-3-work-plan_v0.1.0.md`.
+Cards inherit frozen parameters from their DG-1/DG-2 siblings (A3/B4 and A4/B5) to preserve cross-card comparability. The runner now has a DG-3 cross-method comparison branch (`reporting.benchmark_card._run_cross_method`) and an explicit `_CROSS_METHOD_TEST_CASE_HANDLERS` registry. Phase C is therefore partially complete for the C1 thermal fixture, but Phase D verdict blocks are not yet admissible for the full frozen cards because the deferred C1 displaced and C2 handlers still raise `NotImplementedError`.
 
 ## 4. DG-4 status tracking
 

@@ -44,6 +44,10 @@ B4_PATH = CARDS_DIR / "B4-conv-registry_v0.1.0.yaml"
 B5_V010_PATH = CARDS_DIR / "B5-conv-registry_v0.1.0.yaml"
 B5_PATH = CARDS_DIR / "B5-conv-registry_v0.2.0.yaml"
 
+# DG-3 cards.
+C1_PATH = CARDS_DIR / "C1_cross-method-pure-dephasing_v0.1.0.yaml"
+C2_PATH = CARDS_DIR / "C2_cross-method-spin-boson_v0.1.0.yaml"
+
 # Superseded cards retained for audit-trail tests.
 A1_V010_PATH = CARDS_DIR / "A1_closed-form-K_v0.1.0.yaml"
 A3_V010_PATH = CARDS_DIR / "A3_pure-dephasing_v0.1.0.yaml"
@@ -56,6 +60,31 @@ A4_V010_PATH = CARDS_DIR / "A4_sigma-x-thermal_v0.1.0.yaml"
 def _load_raw(path: Path) -> dict:
     with open(path) as f:
         return yaml.safe_load(f)
+
+
+def _single_case_card(
+    path: Path,
+    case_name: str,
+    *,
+    t_end: float = 5.0,
+    n_points: int = 41,
+) -> bc.BenchmarkCard:
+    """Return an in-memory single-case clone with a smaller time grid.
+
+    The real C1/C2 cards freeze a 200-point grid for verdict work. Runner
+    unit tests use the same card surface but a reduced grid to keep the
+    finite-environment reference quick.
+    """
+    data = copy.deepcopy(_load_raw(path))
+    cases = data["frozen_parameters"]["model"]["test_cases"]
+    selected = [case for case in cases if case["name"] == case_name]
+    assert len(selected) == 1
+    data["frozen_parameters"]["model"]["test_cases"] = selected
+    time_grid = data["frozen_parameters"]["numerical"]["time_grid"]
+    time_grid["t_end"] = t_end
+    time_grid["n_points"] = n_points
+    bc.validate_card_data(data)
+    return bc._data_to_card(data)
 
 
 @pytest.fixture
@@ -93,6 +122,22 @@ def test_load_card_a4_succeeds():
     card = bc.load_card(A4_PATH)
     assert card.card_id == "A4"
     assert card.version == "v0.1.1"
+    assert card.model_kind == "dynamical"
+
+
+def test_load_card_c1_succeeds():
+    card = bc.load_card(C1_PATH)
+    assert card.card_id == "C1"
+    assert card.dg_target == "DG-3"
+    assert card.model == "pure_dephasing"
+    assert card.model_kind == "dynamical"
+
+
+def test_load_card_c2_succeeds():
+    card = bc.load_card(C2_PATH)
+    assert card.card_id == "C2"
+    assert card.dg_target == "DG-3"
+    assert card.model == "spin_boson_sigma_x"
     assert card.model_kind == "dynamical"
 
 
@@ -582,6 +627,62 @@ def test_run_card_dynamical_uses_correct_runner_version():
     card = bc.load_card(A3_PATH)
     result = bc.run_card(card)
     assert result.runner_version == bc.__version__
+
+
+# ─── Runner: DG-3 cross-method cards ────────────────────────────────────────
+
+
+def test_c1_c2_cross_method_test_cases_have_explicit_handlers():
+    """Every frozen DG-3 test_case lands in the cross-method registry.
+
+    Some handlers are intentionally deferred and raise NotImplementedError,
+    but the registry entry itself is explicit so cards-first gaps surface
+    with a specific route rather than a generic missing-handler error.
+    """
+    for path in (C1_PATH, C2_PATH):
+        card = bc.load_card(path)
+        for case in card.frozen_parameters["model"]["test_cases"]:
+            assert (card.model, case["name"]) in bc._CROSS_METHOD_TEST_CASE_HANDLERS
+
+
+def test_run_card_c1_thermal_scope_returns_fail_verdict():
+    """C1 pure_dephasing × thermal_bath now runs both reference methods.
+
+    The expected Phase C outcome is a clean FAIL: the finite-bath exact
+    reference has recurrences, while the QuTiP reference is Markovian, so
+    their inter-method discrepancy is far above C1's 1e-6 threshold.
+    """
+    card = _single_case_card(C1_PATH, "thermal_bath_cross_method")
+    result = bc.run_card(card)
+    assert result.verdict == "FAIL"
+    assert result.runner_version == bc.__version__
+    assert len(result.test_case_results) == 1
+    tcr = result.test_case_results[0]
+    assert tcr.name == "thermal_bath_cross_method"
+    assert not tcr.passed
+    assert tcr.error > card.threshold
+    assert tcr.threshold == card.threshold
+    assert "exact_finite_env finite-system" in tcr.notes
+    assert "qutip_reference solver-default" in tcr.notes
+
+
+def test_run_card_c1_displaced_scope_is_deferred():
+    card = _single_case_card(C1_PATH, "displaced_bath_delta_omega_c_cross_method")
+    with pytest.raises(NotImplementedError, match="pure_dephasing coherent_displaced"):
+        bc.run_card(card)
+
+
+def test_run_card_c2_thermal_scope_is_deferred():
+    card = _single_case_card(C2_PATH, "thermal_bath_cross_method")
+    with pytest.raises(NotImplementedError, match="spin_boson_sigma_x thermal"):
+        bc.run_card(card)
+
+
+def test_cross_method_relative_frobenius_shape_mismatch_raises():
+    a = np.zeros((2, 2, 2), dtype=complex)
+    b = np.zeros((3, 2, 2), dtype=complex)
+    with pytest.raises(ValueError, match="shape mismatch"):
+        bc._inter_method_relative_frobenius(a, b)
 
 
 # ─── Runner: gauge tampering aborts before computation ──────────────────────

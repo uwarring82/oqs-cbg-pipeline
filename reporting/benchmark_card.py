@@ -11,25 +11,26 @@ A4 depend on:
                                 against the 18 schema rules.
     verify_gauge_annotation   — Enforce the canonical Hayden–Sorce
                                 minimal-dissipation gauge block.
-    run_card(card)            — Dispatch by model_kind. algebraic_map
-                                cards (A1) run via Letter Eq. (6) on
-                                the registered test-case handlers;
-                                dynamical cards (A3, A4) run via the
-                                TCL2 thermal-bath path through
-                                cbg.tcl_recursion (thermal-only at
-                                DG-1; coherent_displaced is deferred to
-                                DG-2 per plan v0.1.4 §1.1).
+    run_card(card)            — Dispatch by DG target / model_kind.
+                                algebraic_map cards (A1, B1–B3) run via
+                                Letter Eq. (6) on registered handlers;
+                                structural dynamical cards (A3, A4, B4,
+                                B5) run via the TCL2 paths through
+                                cbg.tcl_recursion; DG-3 dynamical cards
+                                run through the cross-method reference
+                                branch.
     populate_result           — Mutate the in-memory card with the
                                 verdict + metadata. Disk serialisation
                                 is deferred (Phase D verdict commit needs
                                 a comment-preserving YAML library).
 
-Test-case handlers live in two registries — _TEST_CASE_HANDLERS for
-algebraic_map cards (keyed by test_cases[i].name) and
-_DYNAMICAL_TEST_CASE_HANDLERS for dynamical cards (keyed by
-(card.model, test_cases[i].name)). New test cases require new entries;
-the registries make the runner-side support surface explicit and
-auditable.
+Test-case handlers live in explicit registries — _TEST_CASE_HANDLERS for
+algebraic_map cards (keyed by test_cases[i].name),
+_DYNAMICAL_TEST_CASE_HANDLERS for TCL structural dynamical cards, and
+_CROSS_METHOD_TEST_CASE_HANDLERS for DG-3 reference-method comparisons
+(the last two keyed by (card.model, test_cases[i].name)). New test cases
+require new entries; the registries make the runner-side support surface
+explicit and auditable.
 
 Anchor: SCHEMA.md v0.1.3; DG-1 work plan v0.1.4 §4 Phase C rows C.4 and C.10.
 """
@@ -45,6 +46,7 @@ from typing import Any
 import numpy as np
 import yaml
 
+from benchmarks import exact_finite_env, qutip_reference
 from cbg.basis import matrix_unit_basis, su_d_generator_basis, verify_orthonormality
 from cbg.cumulants import D_bar_1 as _cumulants_D_bar_1
 from cbg.displacement_profiles import REGISTERED_PROFILES as _CBG_REGISTERED_PROFILES
@@ -1268,15 +1270,17 @@ _TEST_CASE_HANDLERS: dict[
 def run_card(card: BenchmarkCard) -> CardResult:
     """Run a benchmark card to verdict.
 
-    Dispatches by model_kind. algebraic_map cards (A1) run end-to-end
-    using cbg.basis + cbg.effective_hamiltonian + numerical.tensor_ops.
-    dynamical cards (A3, A4) raise NotImplementedError pointing at the
-    yet-unimplemented C.5–C.10 modules.
+    Dispatches by DG target / model_kind. DG-3 cards use the dedicated
+    cross-method branch; algebraic_map cards run end-to-end using
+    cbg.basis + cbg.effective_hamiltonian + numerical.tensor_ops; other
+    dynamical cards use the TCL structural-identity runner.
 
     Verifies the gauge annotation before any computation; raises
     GaugeAnnotationError if the canonical block has been tampered with.
     """
     verify_gauge_annotation(card)
+    if card.dg_target == "DG-3":
+        return _run_cross_method(card)
     if card.model_kind == "algebraic_map":
         return _run_algebraic_map(card)
     if card.model_kind == "dynamical":
@@ -1666,6 +1670,232 @@ _DYNAMICAL_TEST_CASE_HANDLERS: dict[
     ("spin_boson_sigma_x", "displaced_bath_sqrt_J"): _dyn_handler_sigma_x_displaced,
     ("spin_boson_sigma_x", "displaced_bath_gaussian"): _dyn_handler_sigma_x_displaced,
 }
+
+
+# ─── DG-3 cross-method runner (Cards C1, C2) ────────────────────────────────
+
+CrossMethodHandler = Callable[
+    [dict[str, Any], np.ndarray, dict[str, Any], dict[str, Any]],
+    tuple[np.ndarray, np.ndarray, str],
+]
+
+
+def _cross_method_model_spec(
+    card_model_spec: dict[str, Any],
+    case: dict[str, Any],
+) -> dict[str, Any]:
+    """Merge model-level card fields with a per-case bath_state.
+
+    C1/C2 keep ``bath_state`` under each test_case so thermal and displaced
+    fixtures can coexist. The reference modules expect a single model_spec
+    mapping with ``bath_state`` at top level, matching the Phase B module
+    tests.
+    """
+    model_spec = {k: v for k, v in card_model_spec.items() if k != "test_cases"}
+    model_spec["bath_state"] = case["bath_state"]
+    return model_spec
+
+
+def _inter_method_relative_frobenius(
+    rho_a: np.ndarray,
+    rho_b: np.ndarray,
+) -> float:
+    """Card C1/C2 inter-method relative Frobenius error.
+
+    error = max_t ||rho_a(t) - rho_b(t)||_F
+            / max(||rho_a(t)||_F, ||rho_b(t)||_F, eps)
+    """
+    rho_a = np.asarray(rho_a, dtype=complex)
+    rho_b = np.asarray(rho_b, dtype=complex)
+    if rho_a.shape != rho_b.shape:
+        raise ValueError(
+            "_inter_method_relative_frobenius: trajectory shape mismatch; "
+            f"got {rho_a.shape} and {rho_b.shape}"
+        )
+    if rho_a.ndim != 3 or rho_a.shape[1] != rho_a.shape[2]:
+        raise ValueError(
+            "_inter_method_relative_frobenius: expected shape "
+            f"(n_times, d, d); got {rho_a.shape}"
+        )
+    diff = rho_a - rho_b
+    n_times = rho_a.shape[0]
+    diff_norm = np.linalg.norm(diff.reshape(n_times, -1), axis=1)
+    norm_a = np.linalg.norm(rho_a.reshape(n_times, -1), axis=1)
+    norm_b = np.linalg.norm(rho_b.reshape(n_times, -1), axis=1)
+    denom = np.maximum(np.maximum(norm_a, norm_b), np.finfo(float).eps)
+    return float(np.max(diff_norm / denom))
+
+
+def _validate_density_trajectory(
+    *,
+    method_name: str,
+    case_name: str,
+    rho_t: np.ndarray,
+    n_times: int,
+    system_dimension: int,
+) -> None:
+    """Validate the common reduced-density-matrix trajectory contract."""
+    expected_shape = (n_times, system_dimension, system_dimension)
+    if rho_t.shape != expected_shape:
+        raise ValueError(
+            f"{method_name} returned shape {rho_t.shape} for {case_name!r}; "
+            f"expected {expected_shape}"
+        )
+    if not np.all(np.isfinite(rho_t)):
+        raise ValueError(f"{method_name} returned non-finite values for {case_name!r}")
+
+
+def _cross_handler_pure_dephasing_thermal(
+    model_spec: dict[str, Any],
+    t_grid: np.ndarray,
+    _numerical: dict[str, Any],
+    _truncation: dict[str, Any],
+) -> tuple[np.ndarray, np.ndarray, str]:
+    """C1 thermal-bath cross-method handler.
+
+    Runs the Phase B finite-system reference against the Phase B QuTiP
+    Markov reference on the same merged model specification. The exact
+    helper defaults intentionally encode the Phase B scope: 4 log-spaced
+    bosonic modes with 4 Fock levels per mode (joint dimension 512).
+    """
+    H_total, rho_initial, system_dim, bath_dim = (
+        exact_finite_env.build_pure_dephasing_thermal_total(model_spec)
+    )
+    rho_exact = exact_finite_env.propagate(
+        H_total,
+        rho_initial,
+        t_grid,
+        system_dim=system_dim,
+        bath_dim=bath_dim,
+    )
+    rho_qutip = qutip_reference.reference_propagate(model_spec, t_grid)
+    notes = (
+        "exact_finite_env finite-system reference "
+        f"(system_dim={system_dim}, bath_dim={bath_dim}); "
+        "qutip_reference solver-default Markov reference."
+    )
+    return rho_exact, rho_qutip, notes
+
+
+def _deferred_cross_method_handler(reason: str) -> CrossMethodHandler:
+    """Return a handler that fail-closes with the Phase B deferred-scope route."""
+
+    def handler(
+        _model_spec: dict[str, Any],
+        _t_grid: np.ndarray,
+        _numerical: dict[str, Any],
+        _truncation: dict[str, Any],
+    ) -> tuple[np.ndarray, np.ndarray, str]:
+        raise NotImplementedError(
+            f"_run_cross_method: {reason}. Next deferred handler: implement "
+            "matching support in benchmarks.exact_finite_env and "
+            "benchmarks.qutip_reference, then register it in "
+            "reporting.benchmark_card._CROSS_METHOD_TEST_CASE_HANDLERS."
+        )
+
+    return handler
+
+
+_CROSS_METHOD_TEST_CASE_HANDLERS: dict[tuple[str, str], CrossMethodHandler] = {
+    ("pure_dephasing", "thermal_bath_cross_method"): _cross_handler_pure_dephasing_thermal,
+    (
+        "pure_dephasing",
+        "displaced_bath_delta_omega_c_cross_method",
+    ): _deferred_cross_method_handler(
+        "pure_dephasing coherent_displaced cross-method fixture is deferred "
+        "after the C1 thermal scope"
+    ),
+    ("spin_boson_sigma_x", "thermal_bath_cross_method"): _deferred_cross_method_handler(
+        "spin_boson_sigma_x thermal cross-method fixture is deferred after "
+        "the pure_dephasing thermal baseline"
+    ),
+    (
+        "spin_boson_sigma_x",
+        "displaced_bath_delta_omega_c_cross_method",
+    ): _deferred_cross_method_handler(
+        "spin_boson_sigma_x coherent_displaced cross-method fixture is "
+        "deferred after the sigma_x thermal fixture"
+    ),
+}
+
+
+def _run_cross_method(card: BenchmarkCard) -> CardResult:
+    """Run a DG-3 cross-method card by comparing two reference trajectories."""
+    if card.model_kind != "dynamical":
+        raise NotImplementedError(
+            f"_run_cross_method: DG-3 runner currently supports only "
+            f"model_kind='dynamical'; got {card.model_kind!r}"
+        )
+
+    comparison = card.frozen_parameters["comparison"]
+    metric = comparison.get("error_metric")
+    if metric != "inter_method_relative_frobenius":
+        raise NotImplementedError(
+            f"_run_cross_method: error_metric {metric!r} not supported. "
+            "Known: 'inter_method_relative_frobenius'."
+        )
+
+    fp = card.frozen_parameters
+    grid = build_time_grid(fp["numerical"]["time_grid"])
+    threshold = card.threshold
+    system_dimension = card.system_dimension
+    test_case_results: list[TestCaseResult] = []
+
+    for case in fp["model"]["test_cases"]:
+        name = case["name"]
+        handler_key = (card.model, name)
+        handler = _CROSS_METHOD_TEST_CASE_HANDLERS.get(handler_key)
+        if handler is None:
+            raise TestCaseHandlerNotFoundError(
+                f"_run_cross_method: no handler registered for "
+                f"(model={card.model!r}, test_case={name!r}). "
+                f"Known: {sorted(_CROSS_METHOD_TEST_CASE_HANDLERS.keys())}"
+            )
+
+        model_spec = _cross_method_model_spec(fp["model"], case)
+        rho_exact, rho_qutip, notes = handler(
+            model_spec,
+            grid.times,
+            fp["numerical"],
+            fp["truncation"],
+        )
+        _validate_density_trajectory(
+            method_name="exact_finite_env",
+            case_name=name,
+            rho_t=rho_exact,
+            n_times=grid.times.size,
+            system_dimension=system_dimension,
+        )
+        _validate_density_trajectory(
+            method_name="qutip_reference",
+            case_name=name,
+            rho_t=rho_qutip,
+            n_times=grid.times.size,
+            system_dimension=system_dimension,
+        )
+        error = _inter_method_relative_frobenius(rho_exact, rho_qutip)
+        test_case_results.append(
+            TestCaseResult(
+                name=name,
+                passed=error <= threshold,
+                error=error,
+                threshold=threshold,
+                notes=notes,
+            )
+        )
+
+    all_passed = all(r.passed for r in test_case_results)
+    verdict = "PASS" if all_passed else "FAIL"
+    return CardResult(
+        card_id=card.card_id,
+        verdict=verdict,
+        test_case_results=test_case_results,
+        runner_version=__version__,
+        notes=(
+            "DG-3 cross-method branch: exact_finite_env (finite-system) "
+            "vs qutip_reference (solver-default)."
+        ),
+    )
 
 
 def _run_dynamical(card: BenchmarkCard) -> CardResult:
