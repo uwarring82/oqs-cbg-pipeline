@@ -45,9 +45,16 @@ def test_sail_vendored():
 
 
 def test_cbg_imports():
-    """The cbg package must import without error at v0.1.0."""
+    """The cbg package must import without error and expose anchor metadata."""
+    import re
     import cbg
-    assert cbg.__version__ == "0.1.0"
+
+    # __version__ is sourced from package metadata (pyproject.toml). It must be
+    # a non-empty PEP 440-style identifier; we do not pin a literal value here
+    # because the version is bumped per release without test churn.
+    assert isinstance(cbg.__version__, str) and cbg.__version__
+    assert re.match(r"^\d+\.\d+", cbg.__version__) or cbg.__version__ == "0.0.0+unknown"
+
     assert cbg.__sail_version__ == "0.5"
     assert cbg.__ledger_anchor__ == "CL-2026-005_v0.4"
 

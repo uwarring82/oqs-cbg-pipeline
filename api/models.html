@@ -381,9 +381,11 @@ DG-2+ work and may carry <code class="docutils literal notranslate"><span class=
 <section id="module-models.pure_dephasing">
 <span id="models-pure-dephasing"></span><h2><code class="docutils literal notranslate"><span class="pre">models.pure_dephasing</span></code><a class="headerlink" href="#module-models.pure_dephasing" title="Link to this heading">#</a></h2>
 <p>models.pure_dephasing — Spin under pure dephasing, A = sigma_z.</p>
-<p>Reproduces CL-2026-005 v0.4 Entry 3 (DG-1 thermal sub-case via Card A3
-v0.1.1; Entry 3.B.3 displaced sub-case deferred to DG-2 per plan v0.1.4
-§1.1):</p>
+<p>Reproduces CL-2026-005 v0.4 Entry 3 within the current validity envelope:
+the DG-1 thermal sub-case is covered by Card A3 v0.1.1, and the
+coherent-displaced Entry 3.B.3 structural sub-claim is covered by
+Card B4-conv-registry v0.1.0 under the Council-cleared displacement
+profile registry.</p>
 <blockquote>
 <div><p>For H_S = (omega/2) sigma_z and A = sigma_z, K(t) = (omega_r(t)/2) sigma_z;
 even-order contributions vanish; odd-order contributions are proportional
@@ -400,7 +402,7 @@ vanish, hence K(t) = (omega/2) sigma_z (no renormalisation, recovers
 Łuczka 1990 / Doll 2008 / Leggett 1987).</p></li>
 </ul>
 </dd>
-<dt>DG-1 scope (this module, C.9):</dt><dd><ul class="simple">
+<dt>Implemented scope:</dt><dd><ul class="simple">
 <li><p>hamiltonian(omega): H_S = (omega/2) sigma_z.</p></li>
 <li><p>coupling_operator(): A = sigma_z.</p></li>
 <li><p>system_arrays_from_spec(model_spec): runner-facing factory; reads
@@ -417,7 +419,7 @@ runner factory hardcodes omega = 1.0; future cards that wish to override
 should add a <cite>parameters: {omega: …}</cite> block at model level (not
 currently supported by the schema’s model block — would be a v0.1.x
 schema extension).</p>
-<p>Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.4 §4 Phase C row C.9.</p>
+<p>Anchor: SCHEMA.md v0.1.2; Cards A3 and B4-conv-registry.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="models.pure_dephasing.hamiltonian">
 <span class="sig-prename descclassname"><span class="pre">models.pure_dephasing.</span></span><span class="sig-name descname"><span class="pre">hamiltonian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">omega</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/pure_dephasing.html#hamiltonian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.pure_dephasing.hamiltonian" title="Link to this definition">#</a></dt>
@@ -478,9 +480,11 @@ and A = sigma_z.</p>
 <section id="module-models.spin_boson_sigma_x">
 <span id="models-spin-boson-sigma-x"></span><h2><code class="docutils literal notranslate"><span class="pre">models.spin_boson_sigma_x</span></code><a class="headerlink" href="#module-models.spin_boson_sigma_x" title="Link to this heading">#</a></h2>
 <p>models.spin_boson_sigma_x — Unbiased spin-boson, A = sigma_x, thermal bath.</p>
-<p>Reproduces CL-2026-005 v0.4 Entry 4 (DG-1 thermal sub-case via Card A4
-v0.1.1; Entry 4.B.2 displaced sub-case deferred to DG-2 per plan v0.1.4
-§1.1):</p>
+<p>Reproduces CL-2026-005 v0.4 Entry 4 within the current validity envelope:
+the DG-1 thermal sub-case is covered by Card A4 v0.1.1, and the
+coherent-displaced Entry 4.B.2 structural sub-claim is covered by
+Card B5-conv-registry v0.2.0 under the Council-cleared displacement
+profile registry.</p>
 <blockquote>
 <div><p>For H_S = (omega/2) sigma_z, A = sigma_x, thermal bosonic bath:
 odd-order contributions to K vanish; even orders are diagonal in
@@ -497,7 +501,7 @@ parity-class theorem of Letter Eqs. (D.4)-(D.6)).</p>
 <dt>Numerical anchor:</dt><dd><p>Gatto, Colla, Breuer, Thoss, PRA 110, 032210 (2024) had reported
 numerical evidence; the present Letter provides the analytic proof.</p>
 </dd>
-<dt>DG-1 scope (this module, C.10):</dt><dd><ul class="simple">
+<dt>Implemented scope:</dt><dd><ul class="simple">
 <li><p>hamiltonian(omega, omegas=None, gs=None): H_S = (omega/2) sigma_z.
 The omegas / gs arguments are kept in the signature for backward
 compatibility with the original v0.1.0 stub (which anticipated
@@ -514,7 +518,7 @@ sigma_x-coupling form.</p></li>
 </dl>
 <p>Convention: same omega-units convention as models.pure_dephasing
 (omega = 1.0 by default; see that module’s docstring).</p>
-<p>Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.4 §4 Phase C row C.10.</p>
+<p>Anchor: SCHEMA.md v0.1.2; Cards A4 and B5-conv-registry.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="models.spin_boson_sigma_x.hamiltonian">
 <span class="sig-prename descclassname"><span class="pre">models.spin_boson_sigma_x.</span></span><span class="sig-name descname"><span class="pre">hamiltonian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">omega</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">omegas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/spin_boson_sigma_x.html#hamiltonian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.spin_boson_sigma_x.hamiltonian" title="Link to this definition">#</a></dt>

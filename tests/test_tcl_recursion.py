@@ -1,4 +1,4 @@
-"""Behaviour tests for cbg.tcl_recursion (DG-1 Phase C.8).
+"""Behaviour tests for cbg.tcl_recursion low-order runner paths.
 
 Covers:
 - interaction_picture helper at canonical points.
@@ -151,9 +151,9 @@ def test_L_2_at_t0_returns_zero():
     np.testing.assert_allclose(L_2(sigma_x), np.zeros((2, 2), dtype=complex), atol=1e-12)
 
 
-def test_L_2_n_3_raises():
+def test_L_2_n_3_raises_pending_recursion():
     t = _coarse_t_grid()
-    with pytest.raises(NotImplementedError, match="DG-2"):
+    with pytest.raises(NotImplementedError, match="pending fourth-order"):
         tr.L_n_thermal_at_time(3, 5, t, _hs(), sigma_x, D_bar_2_array=None)
 
 
@@ -295,9 +295,9 @@ def test_K_total_negative_N_card_raises():
         )
 
 
-def test_K_total_N_card_3_raises_dg2():
+def test_K_total_N_card_3_raises_pending_recursion():
     t = _coarse_t_grid()
-    with pytest.raises(NotImplementedError, match="DG-2"):
+    with pytest.raises(NotImplementedError, match="pending fourth-order"):
         tr.K_total_thermal_on_grid(
             3, t, _hs(), sigma_x,
             bath_state=_thermal_state(),
@@ -305,13 +305,12 @@ def test_K_total_N_card_3_raises_dg2():
         )
 
 
-def test_K_n_non_thermal_raises_dg2_with_routing_message():
-    """The displaced bath at order >= 1 routes to the operationalisability
-    carve-out (plan v0.1.4 §1.1)."""
+def test_K_n_non_thermal_points_to_displaced_entry_point():
+    """The thermal-only path points displaced cards to the displaced runner."""
     t = _coarse_t_grid()
     bs = {"family": "coherent_displaced", "temperature": 0.0,
           "displacement_amplitude": 1.0}
-    with pytest.raises(NotImplementedError, match="v0.1.4"):
+    with pytest.raises(NotImplementedError, match="K_total_displaced_on_grid"):
         tr.K_n_thermal_on_grid(
             2, t, _hs(), sigma_x,
             bath_state=bs,
@@ -338,15 +337,15 @@ def test_L_n_shim_thermal_n_2_dispatches_to_thermal_at_time():
     np.testing.assert_allclose(via_shim(X), via_direct(X), atol=1e-12)
 
 
-def test_L_n_shim_n_3_raises_dg2():
-    with pytest.raises(NotImplementedError, match="DG-2"):
+def test_L_n_shim_n_3_raises_pending_recursion():
+    with pytest.raises(NotImplementedError, match="pending fourth-order"):
         tr.L_n(n=3, t_idx=0, t_grid=_coarse_t_grid(),
                system_hamiltonian=_hs(), coupling_operator=sigma_x)
 
 
-def test_L_n_shim_non_thermal_raises_dg2():
+def test_L_n_shim_non_thermal_points_to_displaced_entry_point():
     bs = {"family": "coherent_displaced", "displacement_amplitude": 1.0}
-    with pytest.raises(NotImplementedError, match="v0.1.4"):
+    with pytest.raises(NotImplementedError, match="K_total_displaced_on_grid"):
         tr.L_n(n=2, t_idx=5, t_grid=_coarse_t_grid(),
                system_hamiltonian=_hs(), coupling_operator=sigma_x,
                bath_state=bs)
@@ -360,8 +359,8 @@ def test_L_n_shim_missing_required_kwargs_raises():
 # ─── Stubbed: canonical_lindblad_form ──────────────────────────────────────
 
 
-def test_canonical_lindblad_form_remains_stubbed_at_dg1():
-    with pytest.raises(NotImplementedError, match="DG-2"):
+def test_canonical_lindblad_form_remains_pending():
+    with pytest.raises(NotImplementedError, match="not implemented"):
         tr.canonical_lindblad_form(lambda X: X)
 
 

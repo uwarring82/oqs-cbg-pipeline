@@ -305,11 +305,13 @@
 <span class="sd">    K = (1 / 2id) Σ_α [F_α†, L[F_α]]                       (Letter Eq. (6))</span>
 <span class="sd">    K = (1 / 2id) Σ_{j,k} [|j⟩⟨k|, L[|k⟩⟨j|]]              (Letter Eq. (7))</span>
 
-<span class="sd">and (DG-2 territory, stubbed) the recursive perturbative series</span>
+<span class="sd">and records the pending recursive perturbative series surface</span>
 
 <span class="sd">    K(t) = Σ_n λ^n K_n(t)                                    (Letter Eq. (15))</span>
 
-<span class="sd">with K_n given by Letter Eq. (16) (companion paper Eq. (45)).</span>
+<span class="sd">with K_n given by Letter Eq. (16) (companion paper Eq. (45)). The full</span>
+<span class="sd">K_2-K_4 recursive computation at perturbative_order &gt;= 4 is not yet</span>
+<span class="sd">implemented.</span>
 
 <span class="sd">Output discipline (per Sail v0.5 §4):</span>
 <span class="sd">    All outputs of this module are COORDINATE-DEPENDENT under the chosen</span>
@@ -317,9 +319,10 @@
 <span class="sd">    table presenting K(t) must carry the coordinate-choice annotation</span>
 <span class="sd">    template from docs/benchmark_protocol.md §1.</span>
 
-<span class="sd">DG status (per docs/validity_envelope.md):</span>
-<span class="sd">    DG-1 (Letter Eqs. (6)-(7) numerically reproduced)        NOT YET ATTEMPTED</span>
-<span class="sd">    DG-2 (Recursive K_n at fourth order with structural ID)  NOT YET ATTEMPTED</span>
+<span class="sd">Validation status (per docs/validity_envelope.md):</span>
+<span class="sd">    DG-1 formula implementation                             PASS</span>
+<span class="sd">    DG-2 structural sub-claims                              PASS</span>
+<span class="sd">    DG-2 fourth-order K_2-K_4 recursion proper              PENDING</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span>
@@ -412,17 +415,15 @@
 
 <span class="sd">    Returns a list of K_n functions of t, in increasing order.</span>
 
-<span class="sd">    DG-2 requires this function to satisfy at least one non-trivial</span>
-<span class="sd">    structural constraint at each computed order:</span>
-<span class="sd">        - basis-independence (universal default), and/or</span>
-<span class="sd">        - parity rule (Letter Eqs. (23)-(24)) for spin systems, and/or</span>
-<span class="sd">        - vanishing pattern (Letter Appendix D) for symmetric couplings, and/or</span>
-<span class="sd">        - model-appropriate constraints declared in the benchmark card.</span>
+<span class="sd">    Pending full implementation. When implemented, this function must</span>
+<span class="sd">    satisfy the structural constraints declared by the relevant benchmark</span>
+<span class="sd">    card, including basis-independence where applicable.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-        <span class="s2">&quot;K_perturbative: not implemented at DG-1 Phase C.3. &quot;</span>
-        <span class="s2">&quot;Recursive K_n requires cbg.cumulants (Phase C.7) and &quot;</span>
-        <span class="s2">&quot;cbg.tcl_recursion (Phase C.8); will land in those phases.&quot;</span>
+        <span class="s2">&quot;K_perturbative: full recursive K_n computation is not implemented &quot;</span>
+        <span class="s2">&quot;in this metadata version. DG-2 structural sub-claims are verified &quot;</span>
+        <span class="s2">&quot;via benchmark cards, but K_2-K_4 recursion at perturbative_order &quot;</span>
+        <span class="s2">&quot;&gt;= 4 remains pending.&quot;</span>
     <span class="p">)</span></div>
 
 </pre></div>

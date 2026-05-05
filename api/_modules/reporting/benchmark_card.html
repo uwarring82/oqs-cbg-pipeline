@@ -1854,22 +1854,18 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_run_dynamical</span><span class="p">(</span><span class="n">card</span><span class="p">:</span> <span class="n">BenchmarkCard</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CardResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a dynamical card. Thermal-only at DG-1.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a dynamical card.</span>
 
 <span class="sd">    Pipeline:</span>
 <span class="sd">        1. Build (H_S, A) from card.model via _MODEL_FACTORIES dispatch.</span>
 <span class="sd">        2. Build the time grid from frozen_parameters.numerical.time_grid.</span>
 <span class="sd">        3. For each test_case:</span>
-<span class="sd">              a. Verify bath_state.family == &quot;thermal&quot; (others raise with</span>
-<span class="sd">                 carve-out routing per plan v0.1.4 §1.1).</span>
+<span class="sd">              a. Dispatch on the registered (model, test_case_name) handler.</span>
 <span class="sd">              b. Compute K_total = K_0 + K_1 + ... + K_{N_card} on the grid</span>
-<span class="sd">                 via cbg.tcl_recursion.K_total_thermal_on_grid.</span>
-<span class="sd">              c. Apply the per-(model, test_case_name) handler from</span>
-<span class="sd">                 _DYNAMICAL_TEST_CASE_HANDLERS to derive the verdict.</span>
-
-<span class="sd">    Coherent-displaced bath states are deferred to DG-2 per the</span>
-<span class="sd">    operationalisability carve-out (Cards A3 v0.1.0 / A4 v0.1.0 had those</span>
-<span class="sd">    cases; v0.1.1 cards retain only thermal_bath).</span>
+<span class="sd">                 through the thermal or Council-cleared coherent-displaced</span>
+<span class="sd">                 low-order entry point.</span>
+<span class="sd">              c. Apply the per-(model, test_case_name) handler to derive</span>
+<span class="sd">                 the verdict.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">fp</span> <span class="o">=</span> <span class="n">card</span><span class="o">.</span><span class="n">frozen_parameters</span>
 

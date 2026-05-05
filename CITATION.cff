@@ -2,20 +2,23 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it as below, and respect the citation prohibitions in docs/do_not_cite_as.md."
 title: "oqs-cbg-pipeline: Numerical implementation of the Colla–Breuer–Gasbarri minimal-dissipation effective-Hamiltonian framework"
 abstract: >-
-  Sail-internal repository implementing the basis-independent operational
-  expression and recursive perturbative expansion for the effective Hamiltonian
-  K(t) of non-Markovian open quantum systems under the Hayden–Sorce
-  minimal-dissipation gauge. Anchored to Council-cleared Breakwater Ledger
-  entry CL-2026-005 v0.4. Outputs are coordinate-dependent under the chosen
-  gauge; see docs/do_not_cite_as.md for citation prohibitions.
+  Sail-internal repository implementing and benchmarking the currently
+  validated surface of the Colla-Breuer-Gasbarri effective-Hamiltonian
+  construction for non-Markovian open quantum systems under the Hayden-Sorce
+  minimal-dissipation gauge. DG-1 has passed; DG-2 structural sub-claims have
+  passed under the Council-cleared displacement-profile registry; the literal
+  fourth-order K_2-K_4 recursive computation remains pending. Anchored to
+  Council-cleared Breakwater Ledger entry CL-2026-005 v0.4. Outputs are
+  coordinate-dependent under the chosen gauge; see docs/do_not_cite_as.md for
+  citation prohibitions.
 type: software
 authors:
   - family-names: Warring
     given-names: Ulrich
     affiliation: "Physikalisches Institut, Albert-Ludwigs-Universität Freiburg"
     # ORCID to be added at first non-trivial release
-version: 0.1.0
-date-released: 2026-04-29
+version: 0.3.0.dev0
+date-released: 2026-05-04
 license: MIT
 license-url: "https://opensource.org/licenses/MIT"
 repository-code: "https://github.com/uwarring82/oqs-cbg-pipeline"

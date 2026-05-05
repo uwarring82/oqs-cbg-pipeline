@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "oqs-cbg-pipeline"
-version = "0.1.0"
+version = "0.3.0.dev0"
 description = "Numerical implementation of the Colla–Breuer–Gasbarri minimal-dissipation effective-Hamiltonian framework for non-Markovian open quantum systems."
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -48,3 +48,22 @@ packages = ["cbg", "models", "numerical", "benchmarks", "reporting"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501"]  # line length is governed by black
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+check_untyped_defs = false

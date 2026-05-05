@@ -1,9 +1,11 @@
 """
 models.pure_dephasing — Spin under pure dephasing, A = sigma_z.
 
-Reproduces CL-2026-005 v0.4 Entry 3 (DG-1 thermal sub-case via Card A3
-v0.1.1; Entry 3.B.3 displaced sub-case deferred to DG-2 per plan v0.1.4
-§1.1):
+Reproduces CL-2026-005 v0.4 Entry 3 within the current validity envelope:
+the DG-1 thermal sub-case is covered by Card A3 v0.1.1, and the
+coherent-displaced Entry 3.B.3 structural sub-claim is covered by
+Card B4-conv-registry v0.1.0 under the Council-cleared displacement
+profile registry.
     For H_S = (omega/2) sigma_z and A = sigma_z, K(t) = (omega_r(t)/2) sigma_z;
     even-order contributions vanish; odd-order contributions are proportional
     to sigma_z. For thermal Fock-diagonal initial bath states, omega_r(t) = omega
@@ -17,7 +19,7 @@ Structural constraints declared for DG-2:
       vanish, hence K(t) = (omega/2) sigma_z (no renormalisation, recovers
       Łuczka 1990 / Doll 2008 / Leggett 1987).
 
-DG-1 scope (this module, C.9):
+Implemented scope:
     - hamiltonian(omega): H_S = (omega/2) sigma_z.
     - coupling_operator(): A = sigma_z.
     - system_arrays_from_spec(model_spec): runner-facing factory; reads
@@ -33,7 +35,7 @@ should add a `parameters: {omega: ...}` block at model level (not
 currently supported by the schema's model block — would be a v0.1.x
 schema extension).
 
-Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.4 §4 Phase C row C.9.
+Anchor: SCHEMA.md v0.1.2; Cards A3 and B4-conv-registry.
 """
 
 from __future__ import annotations

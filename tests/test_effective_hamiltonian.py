@@ -206,7 +206,7 @@ def test_K_from_generator_inconsistent_shapes_raises():
 # ─── K_perturbative: still stubbed at C.3 ────────────────────────────────────
 
 
-def test_K_perturbative_still_stubbed_at_c3():
-    """K_perturbative remains stubbed; recursion lands in Phase C.7/C.8."""
-    with pytest.raises(NotImplementedError, match="C.3"):
+def test_K_perturbative_full_recursion_still_pending():
+    """K_perturbative remains stubbed; K_2-K_4 recursion is pending."""
+    with pytest.raises(NotImplementedError, match="K_2-K_4"):
         effective_hamiltonian.K_perturbative(2)

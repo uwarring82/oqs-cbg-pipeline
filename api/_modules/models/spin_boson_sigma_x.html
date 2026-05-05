@@ -300,9 +300,11 @@
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">models.spin_boson_sigma_x — Unbiased spin-boson, A = sigma_x, thermal bath.</span>
 
-<span class="sd">Reproduces CL-2026-005 v0.4 Entry 4 (DG-1 thermal sub-case via Card A4</span>
-<span class="sd">v0.1.1; Entry 4.B.2 displaced sub-case deferred to DG-2 per plan v0.1.4</span>
-<span class="sd">§1.1):</span>
+<span class="sd">Reproduces CL-2026-005 v0.4 Entry 4 within the current validity envelope:</span>
+<span class="sd">the DG-1 thermal sub-case is covered by Card A4 v0.1.1, and the</span>
+<span class="sd">coherent-displaced Entry 4.B.2 structural sub-claim is covered by</span>
+<span class="sd">Card B5-conv-registry v0.2.0 under the Council-cleared displacement</span>
+<span class="sd">profile registry.</span>
 <span class="sd">    For H_S = (omega/2) sigma_z, A = sigma_x, thermal bosonic bath:</span>
 <span class="sd">    odd-order contributions to K vanish; even orders are diagonal in</span>
 <span class="sd">    sigma_z. Eigenbasis of H_S is NOT rotated by the interaction (the</span>
@@ -317,7 +319,7 @@
 <span class="sd">    Gatto, Colla, Breuer, Thoss, PRA 110, 032210 (2024) had reported</span>
 <span class="sd">    numerical evidence; the present Letter provides the analytic proof.</span>
 
-<span class="sd">DG-1 scope (this module, C.10):</span>
+<span class="sd">Implemented scope:</span>
 <span class="sd">    - hamiltonian(omega, omegas=None, gs=None): H_S = (omega/2) sigma_z.</span>
 <span class="sd">      The omegas / gs arguments are kept in the signature for backward</span>
 <span class="sd">      compatibility with the original v0.1.0 stub (which anticipated</span>
@@ -333,7 +335,7 @@
 <span class="sd">Convention: same omega-units convention as models.pure_dephasing</span>
 <span class="sd">(omega = 1.0 by default; see that module&#39;s docstring).</span>
 
-<span class="sd">Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.4 §4 Phase C row C.10.</span>
+<span class="sd">Anchor: SCHEMA.md v0.1.2; Cards A4 and B5-conv-registry.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>

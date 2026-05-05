@@ -1,9 +1,11 @@
 """
 models.spin_boson_sigma_x — Unbiased spin-boson, A = sigma_x, thermal bath.
 
-Reproduces CL-2026-005 v0.4 Entry 4 (DG-1 thermal sub-case via Card A4
-v0.1.1; Entry 4.B.2 displaced sub-case deferred to DG-2 per plan v0.1.4
-§1.1):
+Reproduces CL-2026-005 v0.4 Entry 4 within the current validity envelope:
+the DG-1 thermal sub-case is covered by Card A4 v0.1.1, and the
+coherent-displaced Entry 4.B.2 structural sub-claim is covered by
+Card B5-conv-registry v0.2.0 under the Council-cleared displacement
+profile registry.
     For H_S = (omega/2) sigma_z, A = sigma_x, thermal bosonic bath:
     odd-order contributions to K vanish; even orders are diagonal in
     sigma_z. Eigenbasis of H_S is NOT rotated by the interaction (the
@@ -18,7 +20,7 @@ Numerical anchor:
     Gatto, Colla, Breuer, Thoss, PRA 110, 032210 (2024) had reported
     numerical evidence; the present Letter provides the analytic proof.
 
-DG-1 scope (this module, C.10):
+Implemented scope:
     - hamiltonian(omega, omegas=None, gs=None): H_S = (omega/2) sigma_z.
       The omegas / gs arguments are kept in the signature for backward
       compatibility with the original v0.1.0 stub (which anticipated
@@ -34,7 +36,7 @@ DG-1 scope (this module, C.10):
 Convention: same omega-units convention as models.pure_dephasing
 (omega = 1.0 by default; see that module's docstring).
 
-Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.4 §4 Phase C row C.10.
+Anchor: SCHEMA.md v0.1.2; Cards A4 and B5-conv-registry.
 """
 
 from __future__ import annotations

@@ -15,4 +15,4 @@ module; it lives in cbg/bath_correlations.py for that reason.
 
 
 def reference_propagate(model_spec, t_grid, solver_options=None):
-    raise NotImplementedError("not implemented at v0.1.0")
+    raise NotImplementedError("not implemented in the current metadata version")

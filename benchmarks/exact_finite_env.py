@@ -11,4 +11,4 @@ Failure-mode class: finite-system (per docs/benchmark_protocol.md §2).
 
 
 def propagate(H_total, rho_initial, t_grid):
-    raise NotImplementedError("not implemented at v0.1.0")
+    raise NotImplementedError("not implemented in the current metadata version")

@@ -40,12 +40,12 @@ VALID_CAUSE_LABELS = frozenset({
 
 def perturbative_order_norms(K_n_list):
     """Return the operator norm ||K_n|| for each computed order n."""
-    raise NotImplementedError("not implemented at v0.1.0")
+    raise NotImplementedError("not implemented in the current metadata version")
 
 
 def tcl_invertibility_distance(Lambda_t):
     """Return ||Λ_t - id||; values approaching 1 trigger a TCL singularity warning."""
-    raise NotImplementedError("not implemented at v0.1.0")
+    raise NotImplementedError("not implemented in the current metadata version")
 
 
 def basis_independence_check(generator, basis_a, basis_b, tol=1e-8):
@@ -54,4 +54,4 @@ def basis_independence_check(generator, basis_a, basis_b, tol=1e-8):
     Computes K via Letter Eq. (6) under two different bases and verifies
     agreement to within `tol`. Returns (passed: bool, residual: float).
     """
-    raise NotImplementedError("not implemented at v0.1.0")
+    raise NotImplementedError("not implemented in the current metadata version")

@@ -415,19 +415,22 @@ Hayden–Sorce minimal-dissipation gauge.</p>
 K = (1 / 2id) Σ_{j,k} [<a href="#id1"><span class="problematic" id="id2">|j⟩⟨k|</span></a>, L[<a href="#id3"><span class="problematic" id="id4">|k⟩⟨j|</span></a>]]              (Letter Eq. (7))</p>
 </dd>
 </dl>
-<p>and (DG-2 territory, stubbed) the recursive perturbative series</p>
+<p>and records the pending recursive perturbative series surface</p>
 <blockquote>
 <div><p>K(t) = Σ_n λ^n K_n(t)                                    (Letter Eq. (15))</p>
 </div></blockquote>
-<p>with K_n given by Letter Eq. (16) (companion paper Eq. (45)).</p>
+<p>with K_n given by Letter Eq. (16) (companion paper Eq. (45)). The full
+K_2-K_4 recursive computation at perturbative_order &gt;= 4 is not yet
+implemented.</p>
 <dl class="simple">
 <dt>Output discipline (per Sail v0.5 §4):</dt><dd><p>All outputs of this module are COORDINATE-DEPENDENT under the chosen
 gauge. They are not directly observable Hamiltonians. Any plot or
 table presenting K(t) must carry the coordinate-choice annotation
 template from docs/benchmark_protocol.md §1.</p>
 </dd>
-<dt>DG status (per docs/validity_envelope.md):</dt><dd><p>DG-1 (Letter Eqs. (6)-(7) numerically reproduced)        NOT YET ATTEMPTED
-DG-2 (Recursive K_n at fourth order with structural ID)  NOT YET ATTEMPTED</p>
+<dt>Validation status (per docs/validity_envelope.md):</dt><dd><p>DG-1 formula implementation                             PASS
+DG-2 structural sub-claims                              PASS
+DG-2 fourth-order K_2-K_4 recursion proper              PENDING</p>
 </dd>
 </dl>
 <dl class="py function">
@@ -484,16 +487,9 @@ representative.</p>
 <span class="sig-prename descclassname"><span class="pre">cbg.effective_hamiltonian.</span></span><span class="sig-name descname"><span class="pre">K_perturbative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/effective_hamiltonian.html#K_perturbative"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.effective_hamiltonian.K_perturbative" title="Link to this definition">#</a></dt>
 <dd><p>Compute K_n(t) for n = 0, 1, …, <cite>order</cite> per Letter Eq. (16).</p>
 <p>Returns a list of K_n functions of t, in increasing order.</p>
-<p>DG-2 requires this function to satisfy at least one non-trivial
-structural constraint at each computed order:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>basis-independence (universal default), and/or</p></li>
-<li><p>parity rule (Letter Eqs. (23)-(24)) for spin systems, and/or</p></li>
-<li><p>vanishing pattern (Letter Appendix D) for symmetric couplings, and/or</p></li>
-<li><p>model-appropriate constraints declared in the benchmark card.</p></li>
-</ul>
-</div></blockquote>
+<p>Pending full implementation. When implemented, this function must
+satisfy the structural constraints declared by the relevant benchmark
+card, including basis-independence where applicable.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
@@ -638,48 +634,21 @@ Kronecker delta; False otherwise.</p>
 <section id="module-cbg.tcl_recursion">
 <span id="cbg-tcl-recursion"></span><h2><code class="docutils literal notranslate"><span class="pre">cbg.tcl_recursion</span></code><a class="headerlink" href="#module-cbg.tcl_recursion" title="Link to this heading">#</a></h2>
 <p>cbg.tcl_recursion — Recursive construction of the TCL generator L_t.</p>
-<p>Implements the recursion described in Companion Eqs. (19)-(28),
-yielding L_t = Σ_n λ^n L_n in canonical generalised-Lindblad form
-with traceless jump operators at every order.</p>
+<p>Implements the runner-facing low-order TCL terms used by the frozen
+benchmark cards. The full Companion Eqs. (19)-(28) recursion yielding
+L_t = Σ_n λ^n L_n in canonical generalised-Lindblad form at arbitrary
+order remains pending.</p>
 <p>The recursion uses the generalised cumulants D̄(τ_1^k, s_1^{n-k})
 which are evaluated in cbg.cumulants (NOT a Nakajima-Zwanzig
 memory kernel — TCL is time-local; see bath_correlations.py docstring).</p>
-<dl>
-<dt>DG-1 scope (this module, C.8):</dt><dd><ul>
-<li><p>L_n at orders n in {0, 1, 2}, thermal Gaussian bath only
-(D̄_1 = 0; the displaced-bath case is deferred to DG-2 per the
-operationalisability carve-out in plan v0.1.4 §1.1).</p></li>
-<li><p>L_0[X] = -i [H_S, X].</p></li>
-<li><p>L_1[X] = 0 (thermal: ⟨B⟩ = 0).</p></li>
-<li><dl class="simple">
-<dt>L_2[X](t) = -∫_0^t du {C(t-u) [A, A_I(u-t) X]</dt><dd><ul class="simple">
-<li><p>C(t-u)* [X A_I(u-t), A]}</p></li>
-</ul>
-</dd>
-</dl>
-<p>where C(τ) is the connected bath two-point at the spec’s
-temperature (cbg.cumulants.D_bar_2) and A_I(τ) = e^{iH_S τ} A
-e^{-iH_S τ} is the interaction-picture coupling operator.</p>
-</li>
-<li><p>K_n_thermal_on_grid: extracts K_n(t) at every t in t_grid by
-applying Letter Eq. (6) to L_n[F_α](t) for each basis element
-F_α (cbg.basis + cbg.effective_hamiltonian.K_from_generator).</p></li>
-<li><p>K_total_thermal_on_grid: sums K_0 + K_1 + … + K_{N_card} at
-every t in t_grid; the runner-facing entry point.</p></li>
-</ul>
-</dd>
-<dt>DG-2 scope (stubbed):</dt><dd><ul class="simple">
-<li><p>L_n at orders n &gt;= 3 (full Companion Eq. (28) recursion).</p></li>
-<li><p>Non-thermal bath states (D̄_1 ≠ 0); requires the displacement
-convention deferred per plan v0.1.4 §1.1.</p></li>
-<li><p>canonical_lindblad_form: full K + dissipator decomposition with
-traceless jump operators (Companion Eq. (43)). DG-1 cards only
-need K (via Letter Eq. (6) extraction); the dissipator side is
-DG-2.</p></li>
-</ul>
-</dd>
-</dl>
-<p>Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.4 §4 Phase C row C.8.</p>
+<p>Implemented runner-facing scope covers L_n at orders n in {0, 1, 2}
+for thermal Gaussian baths, K_n_thermal_on_grid / K_total_thermal_on_grid,
+and K_total_displaced_on_grid for the Council-cleared coherent-displaced
+DG-2 structural cards B4/B5 at perturbative_order &lt;= 2.</p>
+<p>Pending scope covers L_n at orders n &gt;= 3 (full Companion Eq. (28)
+recursion) and canonical_lindblad_form, the full K + dissipator
+decomposition with traceless jump operators (Companion Eq. (43)).</p>
+<p>Anchor: SCHEMA.md v0.1.2; benchmark cards A3/A4/B4/B5.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="cbg.tcl_recursion.interaction_picture">
 <span class="sig-prename descclassname"><span class="pre">cbg.tcl_recursion.</span></span><span class="sig-name descname"><span class="pre">interaction_picture</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">H_S</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/tcl_recursion.html#interaction_picture"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.tcl_recursion.interaction_picture" title="Link to this definition">#</a></dt>
@@ -727,7 +696,7 @@ per matrix entry).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Perturbative order; one of 0, 1, 2 at DG-1.</p></li>
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Perturbative order; one of 0, 1, 2 in the implemented low-order path.</p></li>
 <li><p><strong>t_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Index into t_grid at which to evaluate L_n.</p></li>
 <li><p><strong>t_grid</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>n_t</em><em>,</em><em>)</em>) – Time points; must satisfy t_grid[0] = 0 for the integral lower
 bound to be the physical t_start = 0 (the cards’ convention).</p></li>
@@ -746,7 +715,7 @@ construct.</p></li>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><strong>NotImplementedError</strong></a> – For n &gt;= 3 (DG-2 territory).</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><strong>NotImplementedError</strong></a> – For n &gt;= 3 (pending fourth-order-recursion work).</p></li>
 <li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – For invalid arguments.</p></li>
 </ul>
 </dd>
@@ -763,7 +732,8 @@ a caller-supplied HS-orthonormal basis).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Perturbative order; one of 0, 1, 2 at DG-1.</p></li>
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Perturbative order; one of 0, 1, 2 in the currently implemented
+thermal path.</p></li>
 <li><p><strong>t_grid</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>n_t</em><em>,</em><em>)</em>) – Time points.</p></li>
 <li><p><strong>system_hamiltonian</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>d</em><em>, </em><em>d</em><em>)</em>) – H_S and A.</p></li>
 <li><p><strong>coupling_operator</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>d</em><em>, </em><em>d</em><em>)</em>) – H_S and A.</p></li>
@@ -782,8 +752,9 @@ matrix-unit basis at the system dimension d.</p></li>
 <dd class="field-odd"><p>ndarray, shape (n_t, d, d), dtype complex</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><strong>NotImplementedError</strong></a> – If bath_state.family is not “thermal” (non-thermal bath at orders
-    ≥ 1 requires the displacement convention deferred per plan v0.1.4).</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><strong>NotImplementedError</strong></a> – If bath_state.family is not “thermal” in this thermal-only path.
+    Use K_total_displaced_on_grid for Council-cleared coherent-
+    displaced benchmark-card cases.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -862,7 +833,8 @@ on the time grid, ready for comparison against a card’s expected_outcome.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>N_card</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Perturbative cap from the card’s frozen_parameters.truncation
-.perturbative_order; must be in {0, 1, 2} at DG-1.</p></li>
+.perturbative_order; must be in {0, 1, 2} for the implemented
+low-order path.</p></li>
 <li><p><strong>t_grid</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
 <li><p><strong>system_hamiltonian</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
 <li><p><strong>coupling_operator</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
@@ -905,10 +877,10 @@ on the time grid, ready for comparison against a card’s expected_outcome.</p>
 <dt class="sig sig-object py" id="cbg.tcl_recursion.L_n">
 <span class="sig-prename descclassname"><span class="pre">cbg.tcl_recursion.</span></span><span class="sig-name descname"><span class="pre">L_n</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/tcl_recursion.html#L_n"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.tcl_recursion.L_n" title="Link to this definition">#</a></dt>
 <dd><p>Compute the n-th order TCL generator term per Companion Eq. (28).</p>
-<p>DG-1 thin wrapper: routes to L_n_thermal_at_time when called with
+<p>Thin wrapper: routes to L_n_thermal_at_time when called with
 the canonical (t_idx, t_grid, system_hamiltonian, coupling_operator,
 D_bar_2_array) kwargs and a thermal bath state. Other configurations
-raise NotImplementedError with explicit DG-2 routing.</p>
+raise NotImplementedError with explicit pending-recursion routing.</p>
 <p>Callers should generally prefer L_n_thermal_at_time (explicit
 parameters) or K_n_thermal_on_grid (higher-level batched form) over
 this generic-stub shim.</p>
@@ -924,9 +896,9 @@ this generic-stub shim.</p>
 <span class="sig-prename descclassname"><span class="pre">cbg.tcl_recursion.</span></span><span class="sig-name descname"><span class="pre">canonical_lindblad_form</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">L_generator</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/tcl_recursion.html#canonical_lindblad_form"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.tcl_recursion.canonical_lindblad_form" title="Link to this definition">#</a></dt>
 <dd><p>Decompose L into K (Hamiltonian part) + canonical dissipator with
 traceless jump operators, per Companion Eq. (43).</p>
-<p>DG-1 only needs K (via Letter Eq. (6); use cbg.effective_hamiltonian.
-K_from_generator). The full K + traceless-dissipator decomposition is
-DG-2 territory and stays stubbed here.</p>
+<p>Current benchmark-card runners only need K (via Letter Eq. (6); use
+cbg.effective_hamiltonian.K_from_generator). The full K + traceless-
+dissipator decomposition remains pending.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>L_generator</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><em>Callable</em></a>)</p>

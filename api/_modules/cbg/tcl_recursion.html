@@ -300,41 +300,25 @@
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">cbg.tcl_recursion — Recursive construction of the TCL generator L_t.</span>
 
-<span class="sd">Implements the recursion described in Companion Eqs. (19)-(28),</span>
-<span class="sd">yielding L_t = Σ_n λ^n L_n in canonical generalised-Lindblad form</span>
-<span class="sd">with traceless jump operators at every order.</span>
+<span class="sd">Implements the runner-facing low-order TCL terms used by the frozen</span>
+<span class="sd">benchmark cards. The full Companion Eqs. (19)-(28) recursion yielding</span>
+<span class="sd">L_t = Σ_n λ^n L_n in canonical generalised-Lindblad form at arbitrary</span>
+<span class="sd">order remains pending.</span>
 
 <span class="sd">The recursion uses the generalised cumulants D̄(τ_1^k, s_1^{n-k})</span>
 <span class="sd">which are evaluated in cbg.cumulants (NOT a Nakajima-Zwanzig</span>
 <span class="sd">memory kernel — TCL is time-local; see bath_correlations.py docstring).</span>
 
-<span class="sd">DG-1 scope (this module, C.8):</span>
-<span class="sd">    - L_n at orders n in {0, 1, 2}, thermal Gaussian bath only</span>
-<span class="sd">      (D̄_1 = 0; the displaced-bath case is deferred to DG-2 per the</span>
-<span class="sd">      operationalisability carve-out in plan v0.1.4 §1.1).</span>
-<span class="sd">    - L_0[X] = -i [H_S, X].</span>
-<span class="sd">    - L_1[X] = 0 (thermal: ⟨B⟩ = 0).</span>
-<span class="sd">    - L_2[X](t) = -∫_0^t du {C(t-u) [A, A_I(u-t) X]</span>
-<span class="sd">                              + C(t-u)* [X A_I(u-t), A]}</span>
-<span class="sd">      where C(τ) is the connected bath two-point at the spec&#39;s</span>
-<span class="sd">      temperature (cbg.cumulants.D_bar_2) and A_I(τ) = e^{iH_S τ} A</span>
-<span class="sd">      e^{-iH_S τ} is the interaction-picture coupling operator.</span>
-<span class="sd">    - K_n_thermal_on_grid: extracts K_n(t) at every t in t_grid by</span>
-<span class="sd">      applying Letter Eq. (6) to L_n[F_α](t) for each basis element</span>
-<span class="sd">      F_α (cbg.basis + cbg.effective_hamiltonian.K_from_generator).</span>
-<span class="sd">    - K_total_thermal_on_grid: sums K_0 + K_1 + ... + K_{N_card} at</span>
-<span class="sd">      every t in t_grid; the runner-facing entry point.</span>
+<span class="sd">Implemented runner-facing scope covers L_n at orders n in {0, 1, 2}</span>
+<span class="sd">for thermal Gaussian baths, K_n_thermal_on_grid / K_total_thermal_on_grid,</span>
+<span class="sd">and K_total_displaced_on_grid for the Council-cleared coherent-displaced</span>
+<span class="sd">DG-2 structural cards B4/B5 at perturbative_order &lt;= 2.</span>
 
-<span class="sd">DG-2 scope (stubbed):</span>
-<span class="sd">    - L_n at orders n &gt;= 3 (full Companion Eq. (28) recursion).</span>
-<span class="sd">    - Non-thermal bath states (D̄_1 ≠ 0); requires the displacement</span>
-<span class="sd">      convention deferred per plan v0.1.4 §1.1.</span>
-<span class="sd">    - canonical_lindblad_form: full K + dissipator decomposition with</span>
-<span class="sd">      traceless jump operators (Companion Eq. (43)). DG-1 cards only</span>
-<span class="sd">      need K (via Letter Eq. (6) extraction); the dissipator side is</span>
-<span class="sd">      DG-2.</span>
+<span class="sd">Pending scope covers L_n at orders n &gt;= 3 (full Companion Eq. (28)</span>
+<span class="sd">recursion) and canonical_lindblad_form, the full K + dissipator</span>
+<span class="sd">decomposition with traceless jump operators (Companion Eq. (43)).</span>
 
-<span class="sd">Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.4 §4 Phase C row C.8.</span>
+<span class="sd">Anchor: SCHEMA.md v0.1.2; benchmark cards A3/A4/B4/B5.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -410,7 +394,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    n : int</span>
-<span class="sd">        Perturbative order; one of 0, 1, 2 at DG-1.</span>
+<span class="sd">        Perturbative order; one of 0, 1, 2 in the implemented low-order path.</span>
 <span class="sd">    t_idx : int</span>
 <span class="sd">        Index into t_grid at which to evaluate L_n.</span>
 <span class="sd">    t_grid : ndarray, shape (n_t,)</span>
@@ -431,7 +415,7 @@
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    NotImplementedError</span>
-<span class="sd">        For n &gt;= 3 (DG-2 territory).</span>
+<span class="sd">        For n &gt;= 3 (pending fourth-order-recursion work).</span>
 <span class="sd">    ValueError</span>
 <span class="sd">        For invalid arguments.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -441,8 +425,8 @@
 
     <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="c1"># Thermal Gaussian bath: D̄_1 = 0 → L_1 = 0 identically.</span>
-        <span class="c1"># (For non-thermal bath, L_1 would carry a ⟨B(t)⟩-driven term.</span>
-        <span class="c1"># Deferred to DG-2 per plan v0.1.4 §1.1.)</span>
+        <span class="c1"># For coherent-displaced benchmark-card cases, use</span>
+        <span class="c1"># K_total_displaced_on_grid, which carries the D̄_1-driven term.</span>
         <span class="k">return</span> <span class="k">lambda</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">))</span>
 
     <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
@@ -500,9 +484,8 @@
         <span class="k">return</span> <span class="n">L_2_apply</span>
 
     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;L_n_thermal_at_time: n=</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> not implemented at DG-1. K_n at &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;orders n &gt;= 3 is DG-2 territory per Sail v0.5 §9 DG-2 and &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;DG-1 work plan v0.1.4 §1.2.&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;L_n_thermal_at_time: n=</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> not implemented. K_n at orders &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;n &gt;= 3 is pending fourth-order-recursion work.&quot;</span>
     <span class="p">)</span></div>
 
 
@@ -531,7 +514,8 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    n : int</span>
-<span class="sd">        Perturbative order; one of 0, 1, 2 at DG-1.</span>
+<span class="sd">        Perturbative order; one of 0, 1, 2 in the currently implemented</span>
+<span class="sd">        thermal path.</span>
 <span class="sd">    t_grid : ndarray, shape (n_t,)</span>
 <span class="sd">        Time points.</span>
 <span class="sd">    system_hamiltonian, coupling_operator : ndarray, shape (d, d)</span>
@@ -551,17 +535,18 @@
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    NotImplementedError</span>
-<span class="sd">        If bath_state.family is not &quot;thermal&quot; (non-thermal bath at orders</span>
-<span class="sd">        ≥ 1 requires the displacement convention deferred per plan v0.1.4).</span>
+<span class="sd">        If bath_state.family is not &quot;thermal&quot; in this thermal-only path.</span>
+<span class="sd">        Use K_total_displaced_on_grid for Council-cleared coherent-</span>
+<span class="sd">        displaced benchmark-card cases.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">family</span> <span class="o">=</span> <span class="n">bath_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;family&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">family</span> <span class="o">!=</span> <span class="s2">&quot;thermal&quot;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;K_n_thermal_on_grid: bath_state.family </span><span class="si">{</span><span class="n">family</span><span class="si">!r}</span><span class="s2"> at &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;n=</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> requires the displacement convention deferred to &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;DG-2 per DG-1 work plan v0.1.4 §1.1. Only &#39;thermal&#39; is &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;supported at DG-1 (D̄_1 = 0 by Gaussian symmetry).&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;n=</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> is not supported by this thermal-only path. Use &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;K_total_displaced_on_grid for Council-cleared coherent-&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;displaced benchmark-card cases.&quot;</span>
             <span class="p">)</span>
 
     <span class="n">H_S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">system_hamiltonian</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
@@ -698,8 +683,8 @@
         <span class="p">)</span>
     <span class="k">if</span> <span class="n">N_card</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;K_total_displaced_on_grid: N_card=</span><span class="si">{</span><span class="n">N_card</span><span class="si">}</span><span class="s2"> not implemented at &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;v0.1.0. K_n at orders n &gt;= 3 is out of scope (future K_2-K_4 &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;K_total_displaced_on_grid: N_card=</span><span class="si">{</span><span class="n">N_card</span><span class="si">}</span><span class="s2"> not implemented. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;K_n at orders n &gt;= 3 is out of scope (future K_2-K_4 &quot;</span>
             <span class="sa">f</span><span class="s2">&quot;numerical-recursion plan).&quot;</span>
         <span class="p">)</span>
     <span class="k">if</span> <span class="n">bath_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;family&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;coherent_displaced&quot;</span><span class="p">:</span>
@@ -721,7 +706,7 @@
     <span class="c1"># under displacement). D̄_2 needs a temperature; for an unspecified</span>
     <span class="c1"># vacuum-baseline displaced state the natural choice is T = 0, but</span>
     <span class="c1"># the bath_state may carry a temperature override (e.g. for</span>
-    <span class="c1"># thermal-on-top-of-displaced studies). At v0.1.0 cards do not set</span>
+    <span class="c1"># thermal-on-top-of-displaced studies). Current cards do not set</span>
     <span class="c1"># temperature on coherent_displaced bath_states; default to 0.</span>
     <span class="n">D_bar_1_array</span> <span class="o">=</span> <span class="n">D_bar_1</span><span class="p">(</span>
         <span class="n">t_grid</span><span class="p">,</span> <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span> <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
@@ -782,7 +767,8 @@
 <span class="sd">    ----------</span>
 <span class="sd">    N_card : int</span>
 <span class="sd">        Perturbative cap from the card&#39;s frozen_parameters.truncation</span>
-<span class="sd">        .perturbative_order; must be in {0, 1, 2} at DG-1.</span>
+<span class="sd">        .perturbative_order; must be in {0, 1, 2} for the implemented</span>
+<span class="sd">        low-order path.</span>
 <span class="sd">    t_grid, system_hamiltonian, coupling_operator, bath_state,</span>
 <span class="sd">    spectral_density, basis : as in K_n_thermal_on_grid.</span>
 
@@ -798,9 +784,8 @@
         <span class="p">)</span>
     <span class="k">if</span> <span class="n">N_card</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;K_total_thermal_on_grid: N_card=</span><span class="si">{</span><span class="n">N_card</span><span class="si">}</span><span class="s2"> not implemented at &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;DG-1. K_n at orders n &gt;= 3 is DG-2 territory per Sail v0.5 &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;§9 DG-2 and DG-1 work plan v0.1.4 §1.2.&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;K_total_thermal_on_grid: N_card=</span><span class="si">{</span><span class="n">N_card</span><span class="si">}</span><span class="s2"> not implemented. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;K_n at orders n &gt;= 3 is pending fourth-order-recursion work.&quot;</span>
         <span class="p">)</span>
 
     <span class="n">H_S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">system_hamiltonian</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
@@ -825,10 +810,10 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">L_n</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the n-th order TCL generator term per Companion Eq. (28).</span>
 
-<span class="sd">    DG-1 thin wrapper: routes to L_n_thermal_at_time when called with</span>
+<span class="sd">    Thin wrapper: routes to L_n_thermal_at_time when called with</span>
 <span class="sd">    the canonical (t_idx, t_grid, system_hamiltonian, coupling_operator,</span>
 <span class="sd">    D_bar_2_array) kwargs and a thermal bath state. Other configurations</span>
-<span class="sd">    raise NotImplementedError with explicit DG-2 routing.</span>
+<span class="sd">    raise NotImplementedError with explicit pending-recursion routing.</span>
 
 <span class="sd">    Callers should generally prefer L_n_thermal_at_time (explicit</span>
 <span class="sd">    parameters) or K_n_thermal_on_grid (higher-level batched form) over</span>
@@ -836,13 +821,15 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;L_n: n=</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> not implemented at DG-1; n &gt;= 3 is DG-2 territory.&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;L_n: n=</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> not implemented; n &gt;= 3 is pending &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;fourth-order-recursion work.&quot;</span>
         <span class="p">)</span>
     <span class="n">bath_state</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bath_state&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">bath_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">bath_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;family&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;thermal&quot;</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="s2">&quot;L_n: non-thermal bath at orders &gt;= 1 requires the displacement &quot;</span>
-            <span class="s2">&quot;convention deferred to DG-2 per plan v0.1.4 §1.1.&quot;</span>
+            <span class="s2">&quot;L_n: non-thermal generic dispatch is not implemented here. &quot;</span>
+            <span class="s2">&quot;Use K_total_displaced_on_grid for Council-cleared coherent-&quot;</span>
+            <span class="s2">&quot;displaced benchmark-card cases.&quot;</span>
         <span class="p">)</span>
     <span class="n">required</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;t_idx&quot;</span><span class="p">,</span> <span class="s2">&quot;t_grid&quot;</span><span class="p">,</span> <span class="s2">&quot;system_hamiltonian&quot;</span><span class="p">,</span> <span class="s2">&quot;coupling_operator&quot;</span><span class="p">)</span>
     <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">required</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">]</span>
@@ -863,7 +850,7 @@
 
 
 
-<span class="c1"># ─── Stubbed: full canonical Lindblad decomposition (DG-2) ───────────────────</span>
+<span class="c1"># ─── Pending: full canonical Lindblad decomposition ─────────────────────────</span>
 
 
 <div class="viewcode-block" id="canonical_lindblad_form">
@@ -872,15 +859,15 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Decompose L into K (Hamiltonian part) + canonical dissipator with</span>
 <span class="sd">    traceless jump operators, per Companion Eq. (43).</span>
 
-<span class="sd">    DG-1 only needs K (via Letter Eq. (6); use cbg.effective_hamiltonian.</span>
-<span class="sd">    K_from_generator). The full K + traceless-dissipator decomposition is</span>
-<span class="sd">    DG-2 territory and stays stubbed here.</span>
+<span class="sd">    Current benchmark-card runners only need K (via Letter Eq. (6); use</span>
+<span class="sd">    cbg.effective_hamiltonian.K_from_generator). The full K + traceless-</span>
+<span class="sd">    dissipator decomposition remains pending.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-        <span class="s2">&quot;canonical_lindblad_form: not implemented at DG-1. The K + &quot;</span>
-        <span class="s2">&quot;traceless-dissipator decomposition (Companion Eq. (43)) is DG-2 &quot;</span>
-        <span class="s2">&quot;territory; DG-1 cards only need K, which is provided by &quot;</span>
-        <span class="s2">&quot;cbg.effective_hamiltonian.K_from_generator via Letter Eq. (6).&quot;</span>
+        <span class="s2">&quot;canonical_lindblad_form: not implemented. The K + traceless-&quot;</span>
+        <span class="s2">&quot;dissipator decomposition (Companion Eq. (43)) remains pending; &quot;</span>
+        <span class="s2">&quot;current benchmark-card runners use K_from_generator via Letter &quot;</span>
+        <span class="s2">&quot;Eq. (6).&quot;</span>
     <span class="p">)</span></div>
 
 </pre></div>

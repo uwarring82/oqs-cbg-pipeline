@@ -6,11 +6,13 @@ Implements:
     K = (1 / 2id) Σ_α [F_α†, L[F_α]]                       (Letter Eq. (6))
     K = (1 / 2id) Σ_{j,k} [|j⟩⟨k|, L[|k⟩⟨j|]]              (Letter Eq. (7))
 
-and (DG-2 territory, stubbed) the recursive perturbative series
+and records the pending recursive perturbative series surface
 
     K(t) = Σ_n λ^n K_n(t)                                    (Letter Eq. (15))
 
-with K_n given by Letter Eq. (16) (companion paper Eq. (45)).
+with K_n given by Letter Eq. (16) (companion paper Eq. (45)). The full
+K_2-K_4 recursive computation at perturbative_order >= 4 is not yet
+implemented.
 
 Output discipline (per Sail v0.5 §4):
     All outputs of this module are COORDINATE-DEPENDENT under the chosen
@@ -18,9 +20,10 @@ Output discipline (per Sail v0.5 §4):
     table presenting K(t) must carry the coordinate-choice annotation
     template from docs/benchmark_protocol.md §1.
 
-DG status (per docs/validity_envelope.md):
-    DG-1 (Letter Eqs. (6)-(7) numerically reproduced)        NOT YET ATTEMPTED
-    DG-2 (Recursive K_n at fourth order with structural ID)  NOT YET ATTEMPTED
+Validation status (per docs/validity_envelope.md):
+    DG-1 formula implementation                             PASS
+    DG-2 structural sub-claims                              PASS
+    DG-2 fourth-order K_2-K_4 recursion proper              PENDING
 """
 
 from typing import Callable, List
@@ -108,15 +111,13 @@ def K_perturbative(order: int, **kwargs):
 
     Returns a list of K_n functions of t, in increasing order.
 
-    DG-2 requires this function to satisfy at least one non-trivial
-    structural constraint at each computed order:
-        - basis-independence (universal default), and/or
-        - parity rule (Letter Eqs. (23)-(24)) for spin systems, and/or
-        - vanishing pattern (Letter Appendix D) for symmetric couplings, and/or
-        - model-appropriate constraints declared in the benchmark card.
+    Pending full implementation. When implemented, this function must
+    satisfy the structural constraints declared by the relevant benchmark
+    card, including basis-independence where applicable.
     """
     raise NotImplementedError(
-        "K_perturbative: not implemented at DG-1 Phase C.3. "
-        "Recursive K_n requires cbg.cumulants (Phase C.7) and "
-        "cbg.tcl_recursion (Phase C.8); will land in those phases."
+        "K_perturbative: full recursive K_n computation is not implemented "
+        "in this metadata version. DG-2 structural sub-claims are verified "
+        "via benchmark cards, but K_2-K_4 recursion at perturbative_order "
+        ">= 4 remains pending."
     )

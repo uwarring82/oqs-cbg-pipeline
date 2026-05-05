@@ -22,36 +22,48 @@ Outputs of this package are coordinate-dependent under the Hayden–Sorce
 minimal-dissipation gauge. See docs/do_not_cite_as.md for citation rules.
 """
 
-__version__ = "0.1.0"
+try:
+    from importlib.metadata import PackageNotFoundError as _PNF, version as _pkg_version
+    __version__ = _pkg_version("oqs-cbg-pipeline")
+    del _pkg_version, _PNF
+except Exception:
+    __version__ = "0.0.0+unknown"
+
 __sail_version__ = "0.5"
 __ledger_anchor__ = "CL-2026-005_v0.4"
 __council_clearance_date__ = "2026-04-29"
 __steward__ = "U. Warring (Physikalisches Institut, Albert-Ludwigs-Universität Freiburg)"
 
-# Protective import-time check: the five mandatory docs/ files must exist.
-# This is a soft check — it warns but does not refuse — to avoid breaking
-# read-only inspection of the repository. CI enforces the same check strictly.
+# Protective import-time check: when imported from a repository checkout
+# (i.e., a sibling docs/ directory exists), the five mandatory docs/ files
+# must be present. When imported from a pip-installed wheel without the
+# repository tree, the check is skipped — Sail v0.5 §11 governs the source
+# repository state, not deployed copies. CI enforces the check strictly.
 import os as _os
 import warnings as _warnings
 
 _repo_root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
-_required_docs = [
-    "docs/endorsement_marker.md",
-    "docs/stewardship_conflict.md",
-    "docs/do_not_cite_as.md",
-    "docs/validity_envelope.md",
-    "docs/benchmark_protocol.md",
-]
-_missing = [d for d in _required_docs
-            if not _os.path.isfile(_os.path.join(_repo_root, d))]
-if _missing:
-    _warnings.warn(
-        "Mandatory protective documents missing from docs/: "
-        f"{_missing}. The package may be imported for inspection but "
-        "is structurally non-compliant with Sail v0.5 §11 in this state. "
-        "Outputs must not be released, archived, or cited.",
-        RuntimeWarning,
-        stacklevel=2,
-    )
+_docs_dir = _os.path.join(_repo_root, "docs")
 
-del _os, _warnings, _repo_root, _required_docs, _missing
+if _os.path.isdir(_docs_dir):
+    _required_docs = [
+        "docs/endorsement_marker.md",
+        "docs/stewardship_conflict.md",
+        "docs/do_not_cite_as.md",
+        "docs/validity_envelope.md",
+        "docs/benchmark_protocol.md",
+    ]
+    _missing = [d for d in _required_docs
+                if not _os.path.isfile(_os.path.join(_repo_root, d))]
+    if _missing:
+        _warnings.warn(
+            "Mandatory protective documents missing from docs/: "
+            f"{_missing}. The package may be imported for inspection but "
+            "is structurally non-compliant with Sail v0.5 §11 in this state. "
+            "Outputs must not be released, archived, or cited.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+    del _required_docs, _missing
+
+del _os, _warnings, _repo_root, _docs_dir

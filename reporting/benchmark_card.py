@@ -1525,22 +1525,18 @@ _DYNAMICAL_TEST_CASE_HANDLERS: Dict[
 
 
 def _run_dynamical(card: BenchmarkCard) -> CardResult:
-    """Run a dynamical card. Thermal-only at DG-1.
+    """Run a dynamical card.
 
     Pipeline:
         1. Build (H_S, A) from card.model via _MODEL_FACTORIES dispatch.
         2. Build the time grid from frozen_parameters.numerical.time_grid.
         3. For each test_case:
-              a. Verify bath_state.family == "thermal" (others raise with
-                 carve-out routing per plan v0.1.4 §1.1).
+              a. Dispatch on the registered (model, test_case_name) handler.
               b. Compute K_total = K_0 + K_1 + ... + K_{N_card} on the grid
-                 via cbg.tcl_recursion.K_total_thermal_on_grid.
-              c. Apply the per-(model, test_case_name) handler from
-                 _DYNAMICAL_TEST_CASE_HANDLERS to derive the verdict.
-
-    Coherent-displaced bath states are deferred to DG-2 per the
-    operationalisability carve-out (Cards A3 v0.1.0 / A4 v0.1.0 had those
-    cases; v0.1.1 cards retain only thermal_bath).
+                 through the thermal or Council-cleared coherent-displaced
+                 low-order entry point.
+              c. Apply the per-(model, test_case_name) handler to derive
+                 the verdict.
     """
     fp = card.frozen_parameters
 

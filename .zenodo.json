@@ -1,6 +1,6 @@
 {
   "title": "oqs-cbg-pipeline: Numerical implementation of the Colla–Breuer–Gasbarri minimal-dissipation effective-Hamiltonian framework",
-  "description": "<p>Sail-internal repository implementing the basis-independent operational expression and recursive perturbative expansion for the effective Hamiltonian K(t) of non-Markovian open quantum systems under the Hayden–Sorce minimal-dissipation gauge. Anchored to Council-cleared Breakwater Ledger entry CL-2026-005 v0.4.</p><p><strong>Outputs are coordinate-dependent under the chosen gauge.</strong> See docs/do_not_cite_as.md for citation prohibitions.</p>",
+  "description": "<p>Sail-internal repository implementing and benchmarking the currently validated surface of the Colla-Breuer-Gasbarri effective-Hamiltonian construction for non-Markovian open quantum systems under the Hayden-Sorce minimal-dissipation gauge. DG-1 has passed; DG-2 structural sub-claims have passed under the Council-cleared displacement-profile registry; the literal fourth-order K_2-K_4 recursive computation remains pending. Anchored to Council-cleared Breakwater Ledger entry CL-2026-005 v0.4.</p><p><strong>Outputs are coordinate-dependent under the chosen gauge.</strong> See docs/do_not_cite_as.md for citation prohibitions.</p>",
   "creators": [
     {
       "name": "Warring, Ulrich",
@@ -8,6 +8,7 @@
     }
   ],
   "upload_type": "software",
+  "version": "0.3.0.dev0",
   "license": "MIT",
   "access_right": "open",
   "keywords": [
@@ -36,5 +37,5 @@
       "scheme": "doi"
     }
   ],
-  "notes": "At v0.1.0, no Decision Gate (DG-1 through DG-5 per Sail v0.5 §9) has yet been passed. The repository is a scaffold; outputs at this version have demonstration value only. Live DG status: docs/validity_envelope.md."
+  "notes": "Current metadata version 0.3.0.dev0. DG-1 PASS (2026-04-30). DG-2 structural sub-claims PASS under the Council-cleared displacement-profile registry (2026-05-04). The literal fourth-order K_2-K_4 recursive computation, DG-3 cross-method validation, DG-4 failure-envelope work, and DG-5 thermodynamic discriminant remain pending. Live DG status: docs/validity_envelope.md."
 }
