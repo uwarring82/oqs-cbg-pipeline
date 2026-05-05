@@ -322,6 +322,131 @@ def test_rule10_primary_without_data_source_raises(a1_data):
         bc.validate_card_data(a1_data)
 
 
+# ─── SCHEMA.md v0.1.3 additions: Rules 17, 18, scope-definition status ──────
+
+
+D1_PATH = CARDS_DIR / "D1_failure-envelope-convergence_v0.1.0.yaml"
+E1_PATH = CARDS_DIR / "E1_thermodynamic-discriminant-fano-anderson_v0.1.0.yaml"
+
+
+@pytest.fixture
+def d1_data() -> dict:
+    """Fresh copy of Card D1 v0.1.0's parsed dict (carries sweep block)."""
+    return copy.deepcopy(_load_raw(D1_PATH))
+
+
+@pytest.fixture
+def e1_data() -> dict:
+    """Fresh copy of Card E1 v0.1.0's parsed dict (status: scope-definition)."""
+    return copy.deepcopy(_load_raw(E1_PATH))
+
+
+def test_known_schema_versions_includes_v013():
+    assert "v0.1.3" in bc.KNOWN_SCHEMA_VERSIONS
+
+
+def test_valid_status_includes_scope_definition():
+    assert "scope-definition" in bc.VALID_STATUS
+
+
+def test_load_card_d1_succeeds():
+    card = bc.load_card(D1_PATH)
+    assert card.card_id == "D1"
+    assert card.schema_version == "v0.1.3"
+
+
+def test_load_card_e1_succeeds():
+    card = bc.load_card(E1_PATH)
+    assert card.card_id == "E1"
+    assert card.schema_version == "v0.1.3"
+    assert card.status == "scope-definition"
+
+
+def test_validate_passes_on_d1(d1_data):
+    bc.validate_card_data(d1_data)  # must not raise
+
+
+def test_validate_passes_on_e1(e1_data):
+    bc.validate_card_data(e1_data)  # must not raise
+
+
+def test_rule17_sweep_missing_parameter_name_raises(d1_data):
+    d1_data["frozen_parameters"]["sweep"]["parameter_name"] = ""
+    with pytest.raises(bc.SchemaValidationError, match="rule 17"):
+        bc.validate_card_data(d1_data)
+
+
+def test_rule17_sweep_missing_sweep_range_raises(d1_data):
+    del d1_data["frozen_parameters"]["sweep"]["sweep_range"]
+    with pytest.raises(bc.SchemaValidationError, match="rule 17"):
+        bc.validate_card_data(d1_data)
+
+
+def test_rule17_sweep_range_missing_n_points_raises(d1_data):
+    del d1_data["frozen_parameters"]["sweep"]["sweep_range"]["n_points"]
+    with pytest.raises(bc.SchemaValidationError, match="rule 17"):
+        bc.validate_card_data(d1_data)
+
+
+def test_rule17_sweep_range_zero_n_points_raises(d1_data):
+    d1_data["frozen_parameters"]["sweep"]["sweep_range"]["n_points"] = 0
+    with pytest.raises(bc.SchemaValidationError, match="rule 17"):
+        bc.validate_card_data(d1_data)
+
+
+def test_rule17_sweep_range_unknown_scheme_raises(d1_data):
+    d1_data["frozen_parameters"]["sweep"]["sweep_range"]["scheme"] = "exponential"
+    with pytest.raises(bc.SchemaValidationError, match="rule 17"):
+        bc.validate_card_data(d1_data)
+
+
+def test_rule17_sweep_range_non_numeric_start_raises(d1_data):
+    d1_data["frozen_parameters"]["sweep"]["sweep_range"]["start"] = "low"
+    with pytest.raises(bc.SchemaValidationError, match="rule 17"):
+        bc.validate_card_data(d1_data)
+
+
+def test_rule17_absent_sweep_block_is_fine_for_non_sweep_cards(a1_data):
+    """A card without a sweep block must still validate (sweep is optional)."""
+    a1_data["frozen_parameters"].pop("sweep", None)
+    bc.validate_card_data(a1_data)  # must not raise
+
+
+def test_rule18_scope_definition_without_log_or_notes_raises(e1_data):
+    """Stripping both failure_mode_log AND result.notes triggers rule 18."""
+    e1_data["failure_mode_log"] = []
+    e1_data["result"]["notes"] = ""
+    with pytest.raises(bc.SchemaValidationError, match="rule 18"):
+        bc.validate_card_data(e1_data)
+
+
+def test_rule18_scope_definition_with_only_failure_mode_log_satisfies(e1_data):
+    """failure_mode_log alone is sufficient for rule 18 (notes may be empty)."""
+    assert e1_data["failure_mode_log"]  # E1 carries one entry by construction
+    e1_data["result"]["notes"] = ""
+    bc.validate_card_data(e1_data)  # must not raise
+
+
+def test_rule18_scope_definition_with_only_notes_satisfies(e1_data):
+    """result.notes alone is sufficient for rule 18 (log may be empty)."""
+    e1_data["failure_mode_log"] = []
+    assert e1_data["result"]["notes"]  # E1 carries notes by construction
+    bc.validate_card_data(e1_data)  # must not raise
+
+
+def test_rule3_scope_definition_with_dirty_result_raises(e1_data):
+    """status: scope-definition shares rule 3's empty-result precondition."""
+    e1_data["result"]["verdict"] = "PASS"
+    with pytest.raises(bc.SchemaValidationError, match="rule 3"):
+        bc.validate_card_data(e1_data)
+
+
+def test_rule3_scope_definition_with_runner_version_raises(e1_data):
+    e1_data["result"]["runner_version"] = "0.1.0"
+    with pytest.raises(bc.SchemaValidationError, match="rule 3"):
+        bc.validate_card_data(e1_data)
+
+
 # ─── Gauge-annotation enforcement ───────────────────────────────────────────
 
 

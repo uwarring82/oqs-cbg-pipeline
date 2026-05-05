@@ -6,9 +6,9 @@ dynamical-card runner. Provides the infrastructure that Cards A1, A3,
 A4 depend on:
 
     load_card(path)           — Read a YAML card and validate it against
-                                SCHEMA.md v0.1.2.
+                                SCHEMA.md v0.1.3.
     validate_card_data(data)  — Validate an already-parsed card dict
-                                against the 16 schema rules.
+                                against the 18 schema rules.
     verify_gauge_annotation   — Enforce the canonical Hayden–Sorce
                                 minimal-dissipation gauge block.
     run_card(card)            — Dispatch by model_kind. algebraic_map
@@ -31,7 +31,7 @@ _DYNAMICAL_TEST_CASE_HANDLERS for dynamical cards (keyed by
 the registries make the runner-side support surface explicit and
 auditable.
 
-Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.4 §4 Phase C rows C.4 and C.10.
+Anchor: SCHEMA.md v0.1.3; DG-1 work plan v0.1.4 §4 Phase C rows C.4 and C.10.
 """
 
 from __future__ import annotations
@@ -57,7 +57,7 @@ from numerical.time_grid import build_time_grid
 __version__ = "0.1.0"  # Recorded in card.result.runner_version
 
 
-# ─── Schema constants (SCHEMA.md v0.1.2) ─────────────────────────────────────
+# ─── Schema constants (SCHEMA.md v0.1.3) ─────────────────────────────────────
 
 CANONICAL_GAUGE_BLOCK: dict[str, Any] = {
     "gauge": "hayden-sorce-minimal-dissipation",
@@ -67,21 +67,31 @@ CANONICAL_GAUGE_BLOCK: dict[str, Any] = {
 }
 
 # Schema versions the runner knows how to validate. v0.1.1 was the first
-# version to reach HEAD (Card A1 v0.1.0 was authored under it); v0.1.2 is
-# the additive generalization that brought test_cases to dynamical cards
-# (Cards A3, A4, and Card A1 v0.1.1 were authored under v0.1.2). Per
-# SCHEMA.md §Schema versioning, "cards retain the schema they were
-# authored against"; the runner accepts any known version. Validation
-# uses the v0.1.2 rule set, which is a non-breaking superset of v0.1.1
-# (the model_kind discriminator and test_cases pattern were already in
-# v0.1.1; v0.1.2 only relaxed the bath_state / test_cases requirements
-# for dynamical cards).
-KNOWN_SCHEMA_VERSIONS: tuple[str, ...] = ("v0.1.1", "v0.1.2")
+# version to reach HEAD (Card A1 v0.1.0 was authored under it); v0.1.2
+# brought test_cases to dynamical cards (Cards A3, A4, A1 v0.1.1, B1–B5);
+# v0.1.3 added the optional `frozen_parameters.sweep:` block (Rule 17)
+# for DG-4 failure-envelope cards (D1) and the `scope-definition` status
+# (Rule 18) for design-target cards whose preconditions are not yet met
+# (E1: Fano-Anderson scope definition). Per SCHEMA.md §Schema versioning,
+# "cards retain the schema they were authored against"; the runner
+# accepts any known version. The v0.1.3 rule set is a non-breaking
+# superset of v0.1.2 (additions are additive; v0.1.2 cards continue
+# to validate unchanged).
+KNOWN_SCHEMA_VERSIONS: tuple[str, ...] = ("v0.1.1", "v0.1.2", "v0.1.3")
 
-VALID_STATUS = {"frozen-awaiting-run", "pass", "fail", "conditional", "superseded"}
+VALID_STATUS = {
+    "frozen-awaiting-run",
+    "pass",
+    "fail",
+    "conditional",
+    "superseded",
+    "scope-definition",  # SCHEMA.md v0.1.3 (Rule 18): design-target card
+}
 VALID_MODEL_KIND = {"dynamical", "algebraic_map"}
 VALID_STEWARDSHIP_FLAG = {"unflagged", "primary", "secondary", "stewardship-conflict-bound"}
 VALID_DG_TARGET = {"DG-1", "DG-2", "DG-3", "DG-4", "DG-5"}
+VALID_SWEEP_SCHEMES = {"uniform", "log_uniform", "chebyshev", "log"}
+EMPTY_RESULT_STATUSES = {"frozen-awaiting-run", "scope-definition"}
 
 REQUIRED_TOP_LEVEL_KEYS: tuple[str, ...] = (
     "schema_version",
@@ -113,7 +123,7 @@ REQUIRED_FROZEN_PARAMETERS_SUBBLOCKS: tuple[str, ...] = (
 
 
 class SchemaValidationError(ValueError):
-    """A card YAML violates one of the SCHEMA.md v0.1.2 validation rules."""
+    """A card YAML violates one of the SCHEMA.md v0.1.3 validation rules."""
 
 
 class GaugeAnnotationError(ValueError):
@@ -209,7 +219,7 @@ class CardResult:
 def load_card(path: Path | str) -> BenchmarkCard:
     """Load and validate a benchmark card YAML file.
 
-    Validates against SCHEMA.md v0.1.2 (16 rules); raises SchemaValidationError
+    Validates against SCHEMA.md v0.1.3 (18 rules); raises SchemaValidationError
     on any rule violation. The returned BenchmarkCard tracks its source_path
     so the runner can resolve relative evidence paths later.
     """
@@ -248,13 +258,13 @@ def _data_to_card(data: dict[str, Any]) -> BenchmarkCard:
     )
 
 
-# ─── Validator (SCHEMA.md v0.1.2 rules 1–16) ─────────────────────────────────
+# ─── Validator (SCHEMA.md v0.1.3 rules 1–18) ─────────────────────────────────
 
 
 def validate_card_data(data: dict[str, Any]) -> None:
-    """Validate a parsed card dict against SCHEMA.md v0.1.2.
+    """Validate a parsed card dict against SCHEMA.md v0.1.3.
 
-    Implements all 16 validation rules. Raises SchemaValidationError with
+    Implements all 18 validation rules. Raises SchemaValidationError with
     a "rule N: ..." prefix identifying the failing rule. Iteration order
     mirrors the schema's rule numbering for auditability.
     """
@@ -288,24 +298,27 @@ def validate_card_data(data: dict[str, Any]) -> None:
             "rule 5: status 'superseded' requires superseded_by to be populated"
         )
 
-    # Rule 3: frozen-awaiting-run ⇒ result block empty
+    # Rule 3: frozen-awaiting-run | scope-definition ⇒ result block empty
+    # (commit_hash and runner_version "", verdict null, evidence []). Note
+    # that result.notes MAY be non-empty under scope-definition (Rule 18
+    # accepts notes as a valid place to record unmet preconditions).
     r = data["result"]
-    if data["status"] == "frozen-awaiting-run":
+    if data["status"] in EMPTY_RESULT_STATUSES:
         if r.get("verdict") is not None:
             raise SchemaValidationError(
-                "rule 3: status 'frozen-awaiting-run' requires result.verdict null"
+                f"rule 3: status {data['status']!r} requires result.verdict null"
             )
         if r.get("evidence") != []:
             raise SchemaValidationError(
-                "rule 3: status 'frozen-awaiting-run' requires result.evidence []"
+                f"rule 3: status {data['status']!r} requires result.evidence []"
             )
         if r.get("commit_hash") != "":
             raise SchemaValidationError(
-                "rule 3: status 'frozen-awaiting-run' requires result.commit_hash ''"
+                f"rule 3: status {data['status']!r} requires result.commit_hash ''"
             )
         if r.get("runner_version") != "":
             raise SchemaValidationError(
-                "rule 3: status 'frozen-awaiting-run' requires result.runner_version ''"
+                f"rule 3: status {data['status']!r} requires result.runner_version ''"
             )
 
     # Rule 4: pass/fail/conditional ⇒ verdict matches
@@ -432,6 +445,62 @@ def validate_card_data(data: dict[str, Any]) -> None:
             "rule 10: stewardship_flag.status 'stewardship-conflict-bound' "
             "requires non-empty search_performed"
         )
+
+    # Rule 17: frozen_parameters.sweep is optional. When present:
+    # parameter_name, parameter_path, sweep_range required; sweep_range
+    # has start, end, n_points, scheme; scheme is in the enum.
+    sweep = fp.get("sweep")
+    if sweep is not None:
+        if not isinstance(sweep, dict):
+            raise SchemaValidationError("rule 17: frozen_parameters.sweep must be a mapping")
+        for f in ("parameter_name", "parameter_path", "sweep_range"):
+            if not sweep.get(f):
+                raise SchemaValidationError(
+                    f"rule 17: frozen_parameters.sweep.{f} required and non-empty"
+                )
+        sr = sweep["sweep_range"]
+        if not isinstance(sr, dict):
+            raise SchemaValidationError(
+                "rule 17: frozen_parameters.sweep.sweep_range must be a mapping"
+            )
+        for f in ("start", "end", "n_points", "scheme"):
+            if f not in sr:
+                raise SchemaValidationError(
+                    f"rule 17: frozen_parameters.sweep.sweep_range.{f} required"
+                )
+        if not isinstance(sr["start"], (int, float)) or isinstance(sr["start"], bool):
+            raise SchemaValidationError(
+                f"rule 17: sweep.sweep_range.start must be a number; got {sr['start']!r}"
+            )
+        if not isinstance(sr["end"], (int, float)) or isinstance(sr["end"], bool):
+            raise SchemaValidationError(
+                f"rule 17: sweep.sweep_range.end must be a number; got {sr['end']!r}"
+            )
+        if (
+            not isinstance(sr["n_points"], int)
+            or isinstance(sr["n_points"], bool)
+            or sr["n_points"] <= 0
+        ):
+            raise SchemaValidationError(
+                f"rule 17: sweep.sweep_range.n_points must be a positive integer; "
+                f"got {sr['n_points']!r}"
+            )
+        if sr["scheme"] not in VALID_SWEEP_SCHEMES:
+            raise SchemaValidationError(
+                f"rule 17: sweep.sweep_range.scheme {sr['scheme']!r} not in "
+                f"{sorted(VALID_SWEEP_SCHEMES)}"
+            )
+
+    # Rule 18: status 'scope-definition' ⇒ unmet preconditions recorded
+    # in either failure_mode_log (non-empty) or result.notes (non-empty).
+    if data["status"] == "scope-definition":
+        has_log = bool(data.get("failure_mode_log"))
+        has_notes = bool(r.get("notes"))
+        if not (has_log or has_notes):
+            raise SchemaValidationError(
+                "rule 18: status 'scope-definition' requires unmet preconditions "
+                "recorded in failure_mode_log (non-empty) or result.notes (non-empty)"
+            )
 
 
 # ─── Gauge-annotation enforcement ────────────────────────────────────────────
