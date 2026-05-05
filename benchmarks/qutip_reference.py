@@ -37,7 +37,7 @@ from typing import Any
 import numpy as np
 from scipy import integrate
 
-from cbg.bath_correlations import bath_two_point_thermal
+from cbg.bath_correlations import bath_two_point_thermal, ohmic_spectral_density
 
 
 def reference_propagate(
@@ -86,15 +86,16 @@ def reference_propagate(
     a_str = (model_spec.get("coupling_operator") or "").strip()
     bs = model_spec.get("bath_state") or {}
     bs_family = bs.get("family")
+    profile = bs.get("displacement_profile") if bs_family == "coherent_displaced" else None
 
-    key = (h_str, a_str, bs_family)
+    key = (h_str, a_str, bs_family, profile)
     handler = _HANDLERS.get(key)
     if handler is None:
         raise NotImplementedError(
             f"qutip_reference.reference_propagate: no handler registered for "
             f"(system_hamiltonian={h_str!r}, coupling_operator={a_str!r}, "
-            f"bath_state.family={bs_family!r}). Registered: "
-            f"{sorted(_HANDLERS.keys())}"
+            f"bath_state.family={bs_family!r}, displacement_profile={profile!r}). "
+            f"Registered: {sorted(_HANDLERS.keys())}"
         )
     return handler(model_spec, np.asarray(t_grid, dtype=float), solver_options, qutip)
 
@@ -159,6 +160,97 @@ def _propagate_pure_dephasing_thermal(
     return rho_system_t
 
 
-_HANDLERS: dict[tuple[str, str, str], Any] = {
-    ("(omega / 2) * sigma_z", "sigma_z", "thermal"): _propagate_pure_dephasing_thermal,
+def _propagate_pure_dephasing_displaced_delta_omega_c(
+    model_spec: dict[str, Any],
+    t_grid: np.ndarray,
+    solver_options: dict[str, Any] | None,
+    qutip: Any,
+) -> np.ndarray:
+    """C1 displaced fixture (delta-omega_c profile): time-dependent Hamiltonian.
+
+    Under the Council-cleared delta-omega_c convention (cbg.cumulants
+    ``_evaluate_displaced_first_cumulant``), ⟨B(t)⟩ = 2 α₀ √J(ω_c) cos(ω_c t).
+    Coherent displacement leaves the *connected* bath statistics invariant,
+    so the Markov dephasing rate γ_M is identical to the thermal handler.
+    The displacement enters the system master equation as a coherent
+    time-dependent Lamb shift on top of H_S:
+
+        H_eff(t) = (ω/2 + ⟨B(t)⟩) σ_z
+
+    QuTiP integrates this via a list-Hamiltonian
+    ``[H_S, [σ_z, ⟨B(t)⟩-coefficient(t)]]``; the collapse operator is
+    unchanged from the thermal handler.
+    """
+    sd = model_spec.get("bath_spectral_density", {})
+    bs = model_spec.get("bath_state", {})
+    params = bs.get("parameters") or {}
+    profile_name = bs.get("displacement_profile")
+    if profile_name != "delta-omega_c":
+        raise NotImplementedError(
+            f"_propagate_pure_dephasing_displaced_delta_omega_c: only "
+            f"'delta-omega_c' supported at v0.1.0; got {profile_name!r}"
+        )
+    if "alpha_0" not in params or "omega_c" not in params:
+        raise ValueError(
+            "_propagate_pure_dephasing_displaced_delta_omega_c: "
+            "bath_state.parameters must carry alpha_0 and omega_c"
+        )
+
+    alpha = float(sd["coupling_strength"])
+    omega_c = float(sd["cutoff_frequency"])
+    temperature = float(bs.get("temperature", 0.5))
+    omega = float(model_spec.get("parameters", {}).get("omega", 1.0))
+    alpha_0 = float(params["alpha_0"])
+    omega_disp = float(params["omega_c"])
+
+    # Markov dephasing rate from cbg (connected stats — unchanged by displacement).
+    t_int = np.linspace(0.0, 30.0 / omega_c, 2048)
+    re_C = np.array(
+        [bath_two_point_thermal(t, alpha, omega_c, temperature).real for t in t_int]
+    )
+    gamma_M = 2.0 * float(integrate.simpson(re_C, t_int))
+
+    # Coherent Lamb-shift amplitude from cbg.cumulants delta-omega_c
+    # convention: ⟨B(t)⟩ = 2 α₀ √J(ω_disp) cos(ω_disp t).
+    sqrt_J = float(np.sqrt(ohmic_spectral_density(omega_disp, alpha, omega_c)))
+    lamb_amp = 2.0 * alpha_0 * sqrt_J  # peak amplitude of ⟨B(t)⟩
+
+    sigma_z = qutip.sigmaz()
+    H_S = 0.5 * omega * sigma_z
+
+    plus = (qutip.basis(2, 0) + qutip.basis(2, 1)).unit()
+    rho0 = plus * plus.dag()
+    c_ops = [np.sqrt(gamma_M / 2.0) * sigma_z]
+
+    # QuTiP 5 string-coefficient time-dependent Hamiltonian: H = H_S + f(t) σ_z
+    # with f(t) = lamb_amp · cos(omega_disp · t).
+    H_t = [
+        H_S,
+        [sigma_z, "lamb_amp * cos(omega_disp * t)"],
+    ]
+    args = {"lamb_amp": lamb_amp, "omega_disp": omega_disp}
+
+    options = dict(solver_options) if solver_options else {}
+    options.setdefault("store_states", True)
+    options.setdefault("atol", 1e-12)
+    options.setdefault("rtol", 1e-10)
+
+    result = qutip.mesolve(
+        H_t, rho0, list(t_grid), c_ops=c_ops, args=args, options=options
+    )
+
+    rho_system_t = np.empty((t_grid.size, 2, 2), dtype=complex)
+    for k, state in enumerate(result.states):
+        rho_system_t[k] = np.asarray(state.full(), dtype=complex)
+    return rho_system_t
+
+
+_HANDLERS: dict[tuple[str, str, str, str | None], Any] = {
+    ("(omega / 2) * sigma_z", "sigma_z", "thermal", None): _propagate_pure_dephasing_thermal,
+    (
+        "(omega / 2) * sigma_z",
+        "sigma_z",
+        "coherent_displaced",
+        "delta-omega_c",
+    ): _propagate_pure_dephasing_displaced_delta_omega_c,
 }

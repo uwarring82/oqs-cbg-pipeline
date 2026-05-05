@@ -24,6 +24,7 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
+from scipy.linalg import expm
 
 from cbg.bath_correlations import ohmic_spectral_density
 
@@ -295,3 +296,208 @@ def _kron_chain(ops: list[np.ndarray]) -> np.ndarray:
     for op in ops[1:]:
         out = np.kron(out, op)
     return out
+
+
+# ─── Pure-dephasing displaced-bath helper (C1 displaced delta-omega_c) ─────
+
+
+def build_pure_dephasing_displaced_total(
+    model_spec: dict[str, Any],
+    *,
+    n_bath_modes: int = 4,
+    n_levels_per_mode: int = 4,
+    omega_min_factor: float = 0.05,
+    omega_max_factor: float = 4.0,
+    initial_system_rho: np.ndarray | None = None,
+) -> tuple[np.ndarray, np.ndarray, int, int]:
+    """Build (H_total, rho_initial, system_dim, bath_dim) for the C1 displaced case.
+
+    Discretises the ohmic spectral density into ``n_bath_modes`` log-spaced
+    bosonic modes, **forcing one mode exactly at the displacement-profile
+    centre frequency** so the coherent displacement under the Council-cleared
+    ``delta-omega_c`` profile maps onto a single discrete bath mode without
+    mode-fraction artefacts. The system + bath Hamiltonian is identical in
+    form to the thermal case; the displacement enters via a coherent shift
+    on the initial state of the resonant mode:
+
+        ρ_initial = ρ_S(0) ⊗ [⊗_{k≠c} ρ_thermal(ω_k)] ⊗ D(α_disp) ρ_thermal(ω_c) D(α_disp)†
+
+    where ``D(α) = exp(α a† − α* a)`` is the displacement operator on the
+    truncated Fock space and the discrete amplitude ``α_disp`` is calibrated
+    so the discrete first cumulant matches the Council-cleared continuous
+    convention ⟨B(t)⟩ = 2 α₀ √J(ω_c) cos(ω_c t):
+
+        2 g_c α_disp = 2 α₀ √J(ω_c)  ⇒  α_disp = α₀ / √(Δω_c)
+
+    where ``g_c = √(J(ω_c) Δω_c)`` is the continuum-discretisation coupling
+    of the resonant mode and ``Δω_c`` is its discretisation width. This is
+    the discrete-finite-bath analogue of the cbg.cumulants delta-omega_c
+    convention.
+
+    Parameters
+    ----------
+    model_spec : dict
+        The card's frozen_parameters.model mapping. Required:
+        - bath_spectral_density: family ('ohmic'), cutoff_frequency, coupling_strength.
+        - bath_state.family: 'coherent_displaced'.
+        - bath_state.displacement_profile: 'delta-omega_c'.
+        - bath_state.parameters: alpha_0, omega_c.
+        - parameters.omega (optional, default 1.0).
+        Bath temperature is sourced from bath_state.temperature when present;
+        otherwise a thermal background is assumed at the same temperature as
+        the C1 thermal fixture's reference (T = 0.5 ω-units), matching B4's
+        background state at v0.1.0.
+    n_bath_modes, n_levels_per_mode, omega_min_factor, omega_max_factor,
+    initial_system_rho
+        Same as ``build_pure_dephasing_thermal_total``.
+
+    Returns
+    -------
+    H_total, rho_initial, system_dim, bath_dim
+        Same shape contract as ``build_pure_dephasing_thermal_total``.
+
+    Raises
+    ------
+    ValueError
+        If model_spec describes an unsupported configuration. Only
+        ``displacement_profile == 'delta-omega_c'`` is wired at v0.1.0;
+        sqrt-J / gaussian / delta-omega_S route to a deferred error.
+    """
+    sd = model_spec.get("bath_spectral_density", {})
+    if sd.get("family") != "ohmic":
+        raise ValueError(
+            f"build_pure_dephasing_displaced_total: requires ohmic spectral "
+            f"density; got {sd.get('family')!r}"
+        )
+    bs = model_spec.get("bath_state", {})
+    if bs.get("family") != "coherent_displaced":
+        raise ValueError(
+            f"build_pure_dephasing_displaced_total: requires "
+            f"coherent_displaced bath_state; got {bs.get('family')!r}"
+        )
+    profile_name = bs.get("displacement_profile")
+    if profile_name != "delta-omega_c":
+        raise NotImplementedError(
+            f"build_pure_dephasing_displaced_total: only displacement_profile "
+            f"'delta-omega_c' is implemented at Phase B v0.1.0; got "
+            f"{profile_name!r}. Other Council-cleared profiles "
+            f"(delta-omega_S, sqrt-J, gaussian) are next deferred."
+        )
+    params = bs.get("parameters") or {}
+    if "alpha_0" not in params or "omega_c" not in params:
+        raise ValueError(
+            "build_pure_dephasing_displaced_total: bath_state.parameters "
+            "must carry alpha_0 and omega_c for the delta-omega_c profile"
+        )
+
+    alpha = float(sd["coupling_strength"])
+    omega_c = float(sd["cutoff_frequency"])
+    omega = float(model_spec.get("parameters", {}).get("omega", 1.0))
+    alpha_0 = float(params["alpha_0"])
+    omega_disp = float(params["omega_c"])
+
+    # Background-thermal temperature: prefer explicit bath_state.temperature,
+    # else fall back to the C1 thermal-fixture default. The exact_finite_env
+    # path requires a strictly positive thermal bed under the displacement;
+    # T = 0 collapses the per-mode populations onto |0⟩ and is a separate
+    # implementation path.
+    temperature = float(bs.get("temperature", 0.5))
+    if temperature <= 0.0:
+        raise ValueError(
+            "build_pure_dephasing_displaced_total: requires temperature > 0 "
+            "(displaced T=0 ground state is a separate implementation path)"
+        )
+
+    n = n_levels_per_mode
+
+    # Discretisation: log-spaced modes between [omega_min_factor*ω_c,
+    # omega_max_factor*ω_c], with the closest mode snapped to the
+    # displacement frequency ω_disp so the coherent shift maps onto a
+    # single discrete mode. The geometric-midpoint widths are recomputed
+    # after the snap so the discretisation coupling g_c at the displaced
+    # mode reflects the snapped grid.
+    omega_min = omega_min_factor * omega_c
+    omega_max = omega_max_factor * omega_c
+    omega_modes = np.geomspace(omega_min, omega_max, n_bath_modes)
+    # Snap the index closest (in log-distance) to ω_disp.
+    snap_idx = int(np.argmin(np.abs(np.log(omega_modes) - np.log(omega_disp))))
+    omega_modes[snap_idx] = omega_disp
+
+    log_modes = np.log(omega_modes)
+    log_edges = np.empty(n_bath_modes + 1)
+    log_edges[1:-1] = 0.5 * (log_modes[:-1] + log_modes[1:])
+    log_edges[0] = log_modes[0] - 0.5 * (log_modes[1] - log_modes[0])
+    log_edges[-1] = log_modes[-1] + 0.5 * (log_modes[-1] - log_modes[-2])
+    domega_modes = np.exp(log_edges[1:]) - np.exp(log_edges[:-1])
+
+    J_modes = ohmic_spectral_density(omega_modes, alpha, omega_c)
+    g_modes = np.sqrt(J_modes * domega_modes)
+
+    # Discrete displacement amplitude on the resonant mode. The
+    # calibration α_disp = α₀ √J(ω_c) / g_c = α₀ / √(Δω_c) makes the
+    # initial-time discrete first cumulant ⟨B(0)⟩ = 2 g_c α_disp match
+    # the continuous convention 2 α₀ √J(ω_c) per cbg.cumulants
+    # _evaluate_displaced_first_cumulant for the delta-omega_c profile.
+    alpha_disp_continuous = alpha_0 * float(
+        np.sqrt(ohmic_spectral_density(omega_disp, alpha, omega_c))
+    )
+    g_c = float(g_modes[snap_idx])
+    if g_c <= 0.0:
+        raise ValueError(
+            "build_pure_dephasing_displaced_total: resonant-mode coupling "
+            f"g_c={g_c} is non-positive; check spectral-density parameters"
+        )
+    alpha_disp = alpha_disp_continuous / g_c
+
+    a_single = np.diag(np.sqrt(np.arange(1, n)), k=1)
+    adag_single = a_single.T
+    n_single = adag_single @ a_single
+    I_single = np.eye(n, dtype=complex)
+
+    bath_dim = n**n_bath_modes
+    H_B = np.zeros((bath_dim, bath_dim), dtype=complex)
+    X_modes: list[np.ndarray] = []
+    for k in range(n_bath_modes):
+        ops_X = [I_single] * n_bath_modes
+        ops_X[k] = a_single + adag_single
+        X_modes.append(_kron_chain(ops_X))
+
+        ops_n = [I_single] * n_bath_modes
+        ops_n[k] = n_single
+        n_k_full = _kron_chain(ops_n)
+        H_B += omega_modes[k] * n_k_full
+
+    sigma_z = np.array([[1.0, 0.0], [0.0, -1.0]], dtype=complex)
+    I_S = np.eye(2, dtype=complex)
+    H_S = 0.5 * omega * sigma_z
+    H_total = np.kron(H_S, np.eye(bath_dim, dtype=complex)) + np.kron(I_S, H_B)
+    for k in range(n_bath_modes):
+        H_total += g_modes[k] * np.kron(sigma_z, X_modes[k])
+
+    # Per-mode initial states. Background thermal on every mode; the
+    # resonant mode then gets D(α_disp) applied to its thermal state.
+    levels = np.arange(n)
+    per_mode_rho: list[np.ndarray] = []
+    for k in range(n_bath_modes):
+        weights = np.exp(-omega_modes[k] * levels / temperature)
+        weights /= weights.sum()
+        rho_mode = np.diag(weights).astype(complex)
+        if k == snap_idx:
+            # D(α) = exp(α a† − α* a) on the truncated Fock space.
+            generator = alpha_disp * adag_single - np.conj(alpha_disp) * a_single
+            D = expm(generator)
+            rho_mode = D @ rho_mode @ D.conj().T
+        per_mode_rho.append(rho_mode)
+    rho_B = _kron_chain(per_mode_rho)
+
+    if initial_system_rho is None:
+        plus = np.array([[1.0], [1.0]], dtype=complex) / np.sqrt(2.0)
+        initial_system_rho = plus @ plus.conj().T
+    initial_system_rho = np.asarray(initial_system_rho, dtype=complex)
+    if initial_system_rho.shape != (2, 2):
+        raise ValueError(
+            f"initial_system_rho must be (2, 2); got {initial_system_rho.shape}"
+        )
+
+    rho_initial = np.kron(initial_system_rho, rho_B)
+    return H_total, rho_initial, 2, bath_dim

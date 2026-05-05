@@ -80,3 +80,75 @@ def test_reference_propagate_unsupported_coupling_raises():
     spec["coupling_operator"] = "sigma_x"
     with pytest.raises(NotImplementedError, match="no handler registered"):
         reference_propagate(spec, np.array([0.0, 1.0]))
+
+
+# ─── Displaced fixture (C1 displaced delta-omega_c) ─────────────────────────
+
+
+def _c1_displaced_model_spec() -> dict:
+    return {
+        "system_dimension": 2,
+        "system_hamiltonian": "(omega / 2) * sigma_z",
+        "coupling_operator": "sigma_z",
+        "bath_type": "bosonic_linear",
+        "bath_spectral_density": {
+            "family": "ohmic",
+            "cutoff_frequency": 10.0,
+            "coupling_strength": 0.05,
+        },
+        "bath_state": {
+            "family": "coherent_displaced",
+            "displacement_profile": "delta-omega_c",
+            "parameters": {"alpha_0": 1.0, "omega_c": 10.0},
+            "temperature": 0.5,
+        },
+        "parameters": {"omega": 1.0},
+    }
+
+
+def test_reference_propagate_c1_displaced_runs():
+    t_grid = np.linspace(0.0, 5.0, 11)
+    rho_S_t = reference_propagate(_c1_displaced_model_spec(), t_grid)
+    assert rho_S_t.shape == (11, 2, 2)
+
+
+def test_reference_propagate_c1_displaced_preserves_diagonals():
+    t_grid = np.linspace(0.0, 5.0, 11)
+    rho_S_t = reference_propagate(_c1_displaced_model_spec(), t_grid)
+    for k in range(t_grid.size):
+        assert np.isclose(rho_S_t[k, 0, 0].real, 0.5, atol=1e-8)
+        assert np.isclose(rho_S_t[k, 1, 1].real, 0.5, atol=1e-8)
+
+
+def test_reference_propagate_c1_displaced_traces_unit():
+    t_grid = np.linspace(0.0, 5.0, 11)
+    rho_S_t = reference_propagate(_c1_displaced_model_spec(), t_grid)
+    for k in range(t_grid.size):
+        assert np.isclose(np.trace(rho_S_t[k]).real, 1.0, atol=1e-8)
+
+
+def test_reference_propagate_c1_displaced_hermitian():
+    t_grid = np.linspace(0.0, 5.0, 11)
+    rho_S_t = reference_propagate(_c1_displaced_model_spec(), t_grid)
+    for k in range(t_grid.size):
+        assert np.allclose(rho_S_t[k], rho_S_t[k].conj().T, atol=1e-10)
+
+
+def test_reference_propagate_c1_displaced_differs_from_thermal():
+    """The Lamb-shift adds oscillating coherence phase that the thermal
+    handler does not have, so the trajectories differ."""
+    t_grid = np.linspace(0.0, 5.0, 11)
+    rho_disp = reference_propagate(_c1_displaced_model_spec(), t_grid)
+    rho_th = reference_propagate(_c1_thermal_model_spec(), t_grid)
+    # |rho_↑↓| should match envelope-wise, but the phase trajectory differs
+    # detectably at most grid times.
+    coh_disp = rho_disp[:, 0, 1]
+    coh_th = rho_th[:, 0, 1]
+    assert np.max(np.abs(coh_disp - coh_th)) > 1e-3
+
+
+def test_reference_propagate_unsupported_displacement_profile_raises():
+    spec = _c1_displaced_model_spec()
+    spec["bath_state"]["displacement_profile"] = "delta-omega_S"
+    with pytest.raises(NotImplementedError, match="no handler registered"):
+        reference_propagate(spec, np.array([0.0, 1.0]))

@@ -88,9 +88,10 @@ Both exceptions are bookkeeping completions of explicit gaps, not substantive re
 | 2026-05-04 | `dg-2-pass-envelope` | dg-pass | Validity envelope updated to DG-2 PASS — 4 of 4 sub-claims PASS under Council Act 2 cleared registry; B1 + B2 + B3 + B4-conv-registry + B5-conv-registry v0.2.0 collectively verify Entries 1.A, 1.B.3 (both halves) + 1.D, 3.B.3 (under registry), 4.B.2 (under registry); citation of Entries 3.B.3 / 4.B.2 supported with explicit profile naming requirement; K_2-K_4 numerical recursion at order ≥ 4 remains the only unattempted DG-2-internal milestone |
 | 2026-05-05 | `dg-3-4-5-scoping` | dg-scoping | DG-3/4/5 scoped in cards-first form — C1, C2, D1, and E1 frozen; validity envelope moved DG-3/4/5 from NOT YET ATTEMPTED to SCOPED; no verdict claims |
 | 2026-05-05 | `dg-3-phase-c-runner-wired` | structural | DG-3 Phase C partial implementation — cross-method runner branch added; C1 thermal fixture runs exact_finite_env vs qutip_reference and returns clean FAIL at error ≈ 0.548 > 1e-6; C1 displaced and C2 handlers remain deferred; no DG-3 verdict |
+| 2026-05-05 | `dg-3-c1-displaced-handler-wired` | structural | DG-3 next deferred handler — C1 displaced delta-omega_c wired in both reference modules; runner registry entry replaces the previous NotImplementedError; both C1 fixtures run end-to-end (thermal: error ≈ 0.293; displaced: error ≈ 0.309; threshold 1e-6); C2 handlers still deferred; no DG-3 verdict |
 
 (This index is updated atomically when new entries are added.)
 
 ---
 
-*Last updated: 2026-05-05 (DG-3 Phase C partial implementation recorded). CC-BY-4.0 (see ../LICENSE-docs).*
+*Last updated: 2026-05-05 (DG-3 C1 displaced handler wired). CC-BY-4.0 (see ../LICENSE-docs).*

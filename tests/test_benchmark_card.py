@@ -666,10 +666,23 @@ def test_run_card_c1_thermal_scope_returns_fail_verdict():
     assert "qutip_reference solver-default" in tcr.notes
 
 
-def test_run_card_c1_displaced_scope_is_deferred():
+def test_run_card_c1_displaced_runs_to_clean_fail():
+    """C1 displaced delta-omega_c handler is wired (Phase C+1 commit). The
+    finite-system reference uses a coherent displacement on the resonant
+    bath mode while the QuTiP reference adds a time-dependent Lamb shift;
+    both run to completion and return FAIL at the frozen 1.0e-6 threshold,
+    consistent with the Markov-vs-exact mismatch."""
     card = _single_case_card(C1_PATH, "displaced_bath_delta_omega_c_cross_method")
-    with pytest.raises(NotImplementedError, match="pure_dephasing coherent_displaced"):
-        bc.run_card(card)
+    result = bc.run_card(card)
+    assert result.verdict == "FAIL"
+    assert result.runner_version == bc.__version__
+    assert len(result.test_case_results) == 1
+    tcr = result.test_case_results[0]
+    assert tcr.name == "displaced_bath_delta_omega_c_cross_method"
+    assert not tcr.passed
+    assert tcr.error > card.threshold
+    assert "delta-omega_c" in tcr.notes
+    assert "Lamb shift" in tcr.notes
 
 
 def test_run_card_c2_thermal_scope_is_deferred():

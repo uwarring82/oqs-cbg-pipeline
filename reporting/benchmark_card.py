@@ -1796,15 +1796,45 @@ def _deferred_cross_method_handler(reason: str) -> CrossMethodHandler:
     return handler
 
 
+def _cross_handler_pure_dephasing_displaced_delta_omega_c(
+    model_spec: dict[str, Any],
+    t_grid: np.ndarray,
+    _numerical: dict[str, Any],
+    _truncation: dict[str, Any],
+) -> tuple[np.ndarray, np.ndarray, str]:
+    """C1 displaced delta-omega_c cross-method handler.
+
+    Builds the coherent-displaced finite-system reference (mode at ω_c
+    coherently displaced by α_disp = α_0 / √Δω_c per the discrete-finite-
+    bath analogue of the cbg.cumulants delta-omega_c convention) against
+    the QuTiP Markov reference with a time-dependent Lamb-shift
+    Hamiltonian H_eff(t) = (ω/2 + ⟨B(t)⟩) σ_z.
+    """
+    H_total, rho_initial, system_dim, bath_dim = (
+        exact_finite_env.build_pure_dephasing_displaced_total(model_spec)
+    )
+    rho_exact = exact_finite_env.propagate(
+        H_total,
+        rho_initial,
+        t_grid,
+        system_dim=system_dim,
+        bath_dim=bath_dim,
+    )
+    rho_qutip = qutip_reference.reference_propagate(model_spec, t_grid)
+    notes = (
+        "exact_finite_env finite-system reference with coherent displacement "
+        f"(system_dim={system_dim}, bath_dim={bath_dim}, profile=delta-omega_c); "
+        "qutip_reference Markov reference with time-dependent Lamb shift."
+    )
+    return rho_exact, rho_qutip, notes
+
+
 _CROSS_METHOD_TEST_CASE_HANDLERS: dict[tuple[str, str], CrossMethodHandler] = {
     ("pure_dephasing", "thermal_bath_cross_method"): _cross_handler_pure_dephasing_thermal,
     (
         "pure_dephasing",
         "displaced_bath_delta_omega_c_cross_method",
-    ): _deferred_cross_method_handler(
-        "pure_dephasing coherent_displaced cross-method fixture is deferred "
-        "after the C1 thermal scope"
-    ),
+    ): _cross_handler_pure_dephasing_displaced_delta_omega_c,
     ("spin_boson_sigma_x", "thermal_bath_cross_method"): _deferred_cross_method_handler(
         "spin_boson_sigma_x thermal cross-method fixture is deferred after "
         "the pure_dephasing thermal baseline"
