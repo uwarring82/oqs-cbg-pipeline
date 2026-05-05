@@ -178,7 +178,7 @@ After installing `[dev]` extras in the `.venv` and running the full tool suite, 
 ### Still open — High
 - [x] ~~Run `black .` and `ruff check --fix .`~~ ✅ Done (commit `290d589`)
 - [x] ~~Fix the 4 mypy errors~~ ✅ Done (commit `290d589`)
-- [ ] **Enforce `black` / `ruff` / `mypy` in CI**
+- [x] ~~Enforce `black` / `ruff` / `mypy` in CI~~ ✅ Done (commit `821cfee`)
 - [ ] **Add code coverage step to CI** (generate and upload reports)
 - [ ] **Add `__all__` to every package `__init__.py`**
 
