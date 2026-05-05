@@ -22,6 +22,24 @@ Outputs of this package are coordinate-dependent under the Hayden–Sorce
 minimal-dissipation gauge. See docs/do_not_cite_as.md for citation rules.
 """
 
+import sys as _sys
+
+# Python-version floor: pyproject.toml declares ``requires-python = ">=3.10"``
+# and several modules use 3.10+ syntax (zip(strict=...), PEP 604 unions,
+# match statements). Fail fast with a clear message on older interpreters
+# rather than letting downstream modules crash with cryptic TypeError /
+# SyntaxError. pip enforces the floor at install time, but a checkout
+# run with the wrong system interpreter (e.g. anaconda 3.9) bypasses pip;
+# this check covers that path.
+if _sys.version_info < (3, 10):
+    raise RuntimeError(
+        f"oqs-cbg-pipeline requires Python >= 3.10, but is running under "
+        f"{_sys.version_info.major}.{_sys.version_info.minor}."
+        f"{_sys.version_info.micro}. See pyproject.toml `requires-python` "
+        f"and README.md §Installation."
+    )
+del _sys
+
 try:
     from importlib.metadata import PackageNotFoundError as _PNF
     from importlib.metadata import version as _pkg_version
