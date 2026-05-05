@@ -2,7 +2,7 @@
 
 **Layer:** Repository protective scaffolding
 **Anchor:** Sail v0.5 §11 (four explicit content requirements)
-**Last updated:** 2026-04-29 (repository initialisation)
+**Last updated:** 2026-05-05 (DG-3/4/5 scoping pass)
 
 ---
 
@@ -67,6 +67,50 @@ Current status (mirrors `validity_envelope.md`):
 | `exact_finite_env.py` + `qutip_reference.py` | NOT YET IMPLEMENTED | NOT CLEARED |
 
 DG-3 *implementation-ready pass* requires only the first column. DG-3 *failure-asymmetry-cleared pass* requires both. Reports must explicitly state which level of pass is being claimed.
+
+### 3.1. Benchmark cards
+
+Two DG-3 cross-method cards are frozen:
+
+| Card | Model | Methods compared | Status |
+|---|---|---|---|
+| C1 | pure_dephasing | exact_finite_env vs qutip_reference | frozen-awaiting-run |
+| C2 | spin_boson_sigma_x | exact_finite_env vs qutip_reference | frozen-awaiting-run |
+
+Cards inherit frozen parameters from their DG-1/DG-2 siblings (A3/B4 and A4/B5) to preserve cross-card comparability. The runner does not yet have a cross-method comparison branch; that wiring is Phase C work per `plans/dg-3-work-plan_v0.1.0.md`.
+
+## 4. DG-4 status tracking
+
+Per Sail v0.5 §9 DG-4, the repository must identify at least one reproducible, cause-labelled failure regime. The five mandatory cause labels are:
+
+1. `convergence failure`
+2. `TCL singularity`
+3. `projection ambiguity`
+4. `truncation artefact`
+5. `benchmark disagreement`
+
+One DG-4 failure-envelope card is frozen:
+
+| Card | Model | Sweep parameter | Target cause label | Status |
+|---|---|---|---|---|
+| D1 | pure_dephasing | coupling_strength (0.05 → 1.0, log-uniform, 20 points) | convergence failure | frozen-awaiting-run |
+
+The runner does not yet support parameter sweeps. The card defines the sweep range frozen *before* any run, per the parameter-freezing protocol §4.
+
+## 5. DG-5 status tracking
+
+Per Sail v0.5 §9 DG-5, the repository must demonstrate numerically distinguishable predictions between the minimal-dissipation K(t) and a competing thermodynamic framework in one solvable model. One scope-definition card is frozen:
+
+| Card | Model | Competing framework | Observable | Status |
+|---|---|---|---|---|
+| E1 | fano_anderson | Hamiltonian of mean force (HMF) | impurity_occupation_dynamics | frozen-awaiting-run (scope definition) |
+
+Card E1 preconditions are not yet met:
+- `models/fano_anderson.py` has no callable API.
+- No HMF reference implementation exists in the repository.
+- `cbg.bath_correlations` does not support fermionic baths.
+
+DG-5 outputs route via fresh Council deliberation per Sail §9; they do not unilaterally modify the Ledger.
 
 ## 4. Parameter-freezing protocol (Risk #8 mitigation)
 

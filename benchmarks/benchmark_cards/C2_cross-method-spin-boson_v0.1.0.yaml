@@ -1,0 +1,169 @@
+# DG-3 Benchmark Card C2 — Cross-method validation, spin-boson sigma_x model
+#
+# Anchor: Sail v0.5 §9 (DG-3); docs/benchmark_protocol.md §2, §3;
+#         SCHEMA.md v0.1.2; DG-3 work plan v0.1.0 (draft)
+# Phase: B (frozen-awaiting-run)
+#
+# This card is the sigma_x-coupling sibling of Card C1.  It operationalises
+# DG-3 for the spin-boson_sigma_x model by comparing the same baseline pair:
+#   - exact_finite_env.py   (finite-system class)
+#   - qutip_reference.py    (solver-default class)
+#
+# Frozen parameters are inherited from Card A4 v0.1.1 (thermal bath) and
+# Card B5-conv-registry v0.2.0 (displaced bath).
+
+# ─── Top-level metadata ───────────────────────────────────────────────────────
+
+schema_version: "v0.1.2"
+card_id: "C2"
+version: "v0.1.0"
+date: "2026-05-05"
+dg_target: "DG-3"
+ledger_entry: "CL-2026-005 v0.4 Entry 4 (cross-method corroboration)"
+model: "spin_boson_sigma_x"
+status: "frozen-awaiting-run"
+license: "CC-BY-4.0 (LICENSE-docs)"
+
+# ─── Gauge block ──────────────────────────────────────────────────────────────
+
+gauge:
+  gauge: "hayden-sorce-minimal-dissipation"
+  coordinate_dependent: true
+  direct_observable: false
+  gauge_alignment_required_for_comparison:
+    - "hmf"
+    - "polaron"
+    - "mori"
+
+# ─── Frozen parameters ────────────────────────────────────────────────────────
+
+frozen_parameters:
+
+  model:
+    model_kind: "dynamical"
+    system_dimension: 2
+    system_hamiltonian: "(omega / 2) * sigma_z"
+    coupling_operator: "sigma_x"
+    bath_type: "bosonic_linear"
+    bath_spectral_density:
+      family: "ohmic"
+      cutoff_frequency: 10.0
+      coupling_strength: 0.05
+    test_cases:
+
+      - name: "thermal_bath_cross_method"
+        description: |
+          Thermal bosonic bath at T = 0.5 (omega-units).  The CBG pipeline
+          predicts no eigenbasis rotation at orders <= 2 (parity-class
+          theorem).  The two reference methods must agree on the reduced
+          dynamics to within the frozen tolerance.
+        bath_state:
+          family: "thermal"
+          temperature: 0.5
+        expected_outcome: |
+          Both methods agree to within inter_method_relative_frobenius <= 1.0e-6.
+        verifies:
+          - "DG-3 implementation readiness: baseline pair runs and agrees"
+          - "DG-3 failure-asymmetry pairing: finite-system vs solver-default"
+        reference: "Sail v0.5 §9 DG-3; docs/benchmark_protocol.md §2, §3"
+
+      - name: "displaced_bath_delta_omega_c_cross_method"
+        description: |
+          Coherently-displaced bath under the §3.1 cleared profile.
+          Cross-method agreement in the non-thermal regime for sigma_x coupling.
+        bath_state:
+          family: "coherent_displaced"
+          displacement_profile: "delta-omega_c"
+          parameters:
+            alpha_0: 1.0
+            omega_c: 10.0
+        expected_outcome: |
+          Both methods agree on the reduced dynamics to within the frozen
+          tolerance.  The transverse vector predicted by the CBG pipeline
+          (b(t), c(t)) = (D_bar_1(t), 0) is a secondary consistency check.
+        verifies:
+          - "DG-3 implementation readiness: non-thermal regime"
+          - "DG-3 failure-asymmetry pairing: finite-system vs solver-default"
+        reference: "Sail v0.5 §9 DG-3; Card B5-conv-registry v0.2.0"
+
+  truncation:
+    perturbative_order: 2
+    basis: "matrix_unit"
+    bath_mode_cutoff: 1024
+
+  numerical:
+    time_grid:
+      t_start: 0.0
+      t_end: 20.0
+      n_points: 200
+      scheme: "uniform"
+    integration_tolerance:
+      relative: 1.0e-10
+      absolute: 1.0e-12
+    solver: "scipy_dop853"
+
+  comparison:
+    reference: "cross-method: exact_finite_env vs qutip_reference"
+    target_observable: "reduced_density_matrix"
+    error_metric: "inter_method_relative_frobenius"
+    threshold: 1.0e-6
+    projection_scheme: null
+
+# ─── Acceptance criterion ─────────────────────────────────────────────────────
+
+acceptance_criterion:
+  reference: "cross-method: exact_finite_env vs qutip_reference"
+  observable: "reduced_density_matrix"
+  error_metric: "inter_method_relative_frobenius"
+  threshold: 1.0e-6
+  projection_scheme: null
+  rationale: |
+    Same inter-method agreement structure as Card C1, applied to the
+    spin_boson_sigma_x model.
+
+    Define:
+      diff_norm(t) = ||rho_exact(t) - rho_qutip(t)||_F
+      ref_norm(t)  = max(||rho_exact(t)||_F, ||rho_qutip(t)||_F)
+      error        = max_t diff_norm(t) / max(ref_norm(t), eps)
+
+    Per-case PASS condition: error <= 1.0e-6.
+    PASS for the card requires every test case to pass.
+
+    Secondary consistency check (non-gating):
+      The CBG K(t) prediction should be consistent with both reference
+      methods within an order of magnitude of the inter-method threshold.
+
+    Out of scope:
+      - Additional method families (HEOM, TEMPO, etc.): aspirational.
+      - Failure-envelope sweeps: DG-4.
+      - Thermodynamic discriminant: DG-5.
+
+# ─── Result block ─────────────────────────────────────────────────────────────
+
+result:
+  verdict: null
+  evidence: []
+  commit_hash: ""
+  runner_version: ""
+  notes: ""
+
+# ─── Failure-mode log ─────────────────────────────────────────────────────────
+
+failure_mode_log:
+  - date: "2026-05-05"
+    change: |
+      Card drafted from template; frozen parameters inherited from
+      A4 v0.1.1 (thermal) and B5-conv-registry v0.2.0 (displaced).
+    reason: |
+      DG-3 work plan v0.1.0 §1.3: cross-card parameter inheritance.
+      First-issue DG-3 card for the spin-boson_sigma_x model.
+    predecessor_card_id: ""
+    predecessor_version: ""
+
+# ─── Stewardship flag ─────────────────────────────────────────────────────────
+
+stewardship_flag:
+  status: "unflagged"
+  rationale: ""
+  data_source: ""
+  search_performed: ""

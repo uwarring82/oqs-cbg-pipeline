@@ -29,7 +29,6 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CARDS_DIR = REPO_ROOT / "benchmarks" / "benchmark_cards"
 RESULTS_DIR = REPO_ROOT / "benchmarks" / "results"
@@ -139,7 +138,7 @@ def main() -> int:
 
     print("=" * 60)
     print(f"DG-1 verdict: {overall}")
-    print(f"Summary -> benchmarks/results/DG-1_summary.json")
+    print("Summary -> benchmarks/results/DG-1_summary.json")
     return 0 if all_pass else 1
 
 

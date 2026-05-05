@@ -1,0 +1,161 @@
+# DG-4 Benchmark Card D1 — Failure envelope: perturbative-convergence breakdown
+#
+# Anchor: Sail v0.5 §9 (DG-4); docs/benchmark_protocol.md §2 (cause-label taxonomy);
+#         SCHEMA.md v0.1.2; DG-3 work plan v0.1.0 (draft)
+# Phase: B (frozen-awaiting-run)
+#
+# This card identifies a reproducible failure regime of the CBG pipeline by
+# sweeping the coupling strength alpha in the pure-dephasing model and
+# recording the order at which the perturbative expansion ceases to be
+# numerically meaningful.
+#
+# DG-4 requires at least one reproducible, cause-labelled failure regime.
+# The cause label for this card is "convergence failure" (Sail §9 DG-4
+# taxonomy category 1).
+#
+# model_kind: dynamical with parameter sweep (new pattern for DG-4).
+# The sweep is frozen BEFORE the run; post-hoc range tightening is
+# prohibited by docs/benchmark_protocol.md §4.
+
+# ─── Top-level metadata ───────────────────────────────────────────────────────
+
+schema_version: "v0.1.2"
+card_id: "D1"
+version: "v0.1.0"
+date: "2026-05-05"
+dg_target: "DG-4"
+ledger_entry: "CL-2026-005 v0.4 Entry 2 (recursive-series convergence; scope-limited)"
+model: "pure_dephasing"
+status: "frozen-awaiting-run"
+license: "CC-BY-4.0 (LICENSE-docs)"
+
+# ─── Gauge block ──────────────────────────────────────────────────────────────
+
+gauge:
+  gauge: "hayden-sorce-minimal-dissipation"
+  coordinate_dependent: true
+  direct_observable: false
+  gauge_alignment_required_for_comparison:
+    - "hmf"
+    - "polaron"
+    - "mori"
+
+# ─── Frozen parameters ────────────────────────────────────────────────────────
+
+frozen_parameters:
+
+  model:
+    model_kind: "dynamical"
+    system_dimension: 2
+    system_hamiltonian: "(omega / 2) * sigma_z"
+    coupling_operator: "sigma_z"
+    bath_type: "bosonic_linear"
+    bath_spectral_density:
+      family: "ohmic"
+      cutoff_frequency: 10.0
+      # coupling_strength is SWEPT; see sweep block below.
+    bath_state:
+      family: "thermal"
+      temperature: 0.5
+
+  truncation:
+    perturbative_order: 4          # DG-4 explores N = 2, 3, 4 to find breakdown
+    basis: "matrix_unit"
+    bath_mode_cutoff: 1024
+
+  numerical:
+    time_grid:
+      t_start: 0.0
+      t_end: 20.0
+      n_points: 200
+      scheme: "uniform"
+    integration_tolerance:
+      relative: 1.0e-10
+      absolute: 1.0e-12
+    solver: "scipy_dop853"
+
+  comparison:
+    reference: "internal-consistency: norm(K_n) vs norm(K_{n-1}) growth rate"
+    target_observable: "K_n(t) norm ratio ||K_n|| / ||K_{n-1}||"
+    error_metric: "convergence_ratio"
+    threshold: 1.0                  # ratio > 1 signals divergence
+    projection_scheme: null
+
+  sweep:                           # DG-4 parameter sweep (frozen range)
+    parameter_name: "coupling_strength"
+    parameter_path: "model.bath_spectral_density.coupling_strength"
+    sweep_range:
+      start: 0.05
+      end: 1.0
+      n_points: 20
+      scheme: "log_uniform"        # logarithmic spacing to resolve weak-coupling regime
+
+# ─── Acceptance criterion ─────────────────────────────────────────────────────
+
+acceptance_criterion:
+  reference: "internal-consistency: perturbative-norm growth"
+  observable: "K_n(t) norm ratio"
+  error_metric: "convergence_ratio"
+  threshold: 1.0
+  projection_scheme: null
+  rationale: |
+    PASS iff the card identifies at least one reproducible failure regime
+    with a cause label drawn from the DG-4 taxonomy (Sail §9).
+
+    For each swept value of coupling_strength alpha_j:
+
+      1. Compute K_0, K_1, K_2, K_3, K_4 via the TCL recursion.
+      2. Compute the time-averaged Frobenius norm of each K_n:
+         <||K_n||>_t = (1/t_end) integral_0^{t_end} ||K_n(t)||_F dt
+      3. Compute the growth ratio: r_n = <||K_n||>_t / <||K_{n-1}||>_t
+
+    Failure regime definition:
+      A regime alpha_j is classified as a "convergence failure" if
+      r_3 > 1.0 OR r_4 > 1.0 (the perturbative series ceases to decrease
+      in norm at order 3 or 4).
+
+    Reproducibility requirement:
+      The classification must be stable under a +-1 grid-point perturbation
+      in bath_mode_cutoff (1024 -> 1023 or 1025) and under a 10% tightening
+      of integration_tolerance.  If the classification changes, the regime
+      is a "truncation artefact" (cause label 4) rather than a true
+      "convergence failure" (cause label 1).
+
+    Cause-label assignment:
+      - If r_n > 1.0 and stable under truncation perturbation: "convergence failure"
+      - If r_n > 1.0 but unstable under truncation perturbation: "truncation artefact"
+      - If the runner hits a TCL singularity (||Lambda_t - id|| >= 1):
+        "TCL singularity" (cause label 2)
+
+    PASS for the card requires:
+      - At least one alpha_j is classified as a reproducible failure.
+      - The cause label is recorded in the result.notes field.
+      - The boundary alpha_crit (interpolated between the last passing and
+        first failing alpha_j) is reported in result.notes.
+
+    Out of scope for Card D1 v0.1.0:
+      - Multi-parameter sweeps (e.g. alpha x temperature): future card.
+      - Other cause labels (projection ambiguity, benchmark disagreement):
+        require cross-method data (DG-3) or alternative projection schemes.
+      - Fano-Anderson or Jaynes-Cummings models: no callable API yet.
+
+# ─── Result block ─────────────────────────────────────────────────────────────
+
+result:
+  verdict: null
+  evidence: []
+  commit_hash: ""
+  runner_version: ""
+  notes: ""
+
+# ─── Failure-mode log ─────────────────────────────────────────────────────────
+
+failure_mode_log: []
+
+# ─── Stewardship flag ─────────────────────────────────────────────────────────
+
+stewardship_flag:
+  status: "unflagged"
+  rationale: ""
+  data_source: ""
+  search_performed: ""

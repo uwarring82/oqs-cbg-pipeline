@@ -1,0 +1,202 @@
+# DG-3 Benchmark Card C1 — Cross-method validation, pure-dephasing model
+#
+# Anchor: Sail v0.5 §9 (DG-3); docs/benchmark_protocol.md §2, §3;
+#         SCHEMA.md v0.1.2; DG-3 work plan v0.1.0 (draft)
+# Phase: B (frozen-awaiting-run)
+#
+# This card operationalises DG-3 for the pure-dephasing model by comparing
+# two independent reference methods against the CBG pipeline output:
+#   - exact_finite_env.py   (finite-system class)
+#   - qutip_reference.py    (solver-default class)
+#
+# The frozen parameters are inherited from Card A3 v0.1.1 (thermal bath)
+# and Card B4-conv-registry v0.1.0 (displaced bath), ensuring cross-card
+# comparability.  The comparison is inter-method: the two reference methods
+# are run on the SAME model specification and their reduced dynamics are
+# compared against a frozen tolerance.
+#
+# model_kind: dynamical with test_cases (two cases: thermal + one displaced
+# profile, mirroring the A3/B4 coverage).
+# perturbative_order: 2 (matches DG-1/DG-2 cards; cross-method validation
+# does not require higher orders).
+#
+# Cards-first / Risk #6 audit boundary: this card is frozen BEFORE the
+# baseline pair (exact_finite_env + qutip_reference) is implemented.
+# The runner does not yet have a cross-method comparison branch; that
+# wiring is Phase C work bounded by this acceptance criterion.
+
+# ─── Top-level metadata ───────────────────────────────────────────────────────
+
+schema_version: "v0.1.2"
+card_id: "C1"
+version: "v0.1.0"
+date: "2026-05-05"
+dg_target: "DG-3"
+ledger_entry: "CL-2026-005 v0.4 Entry 3 (cross-method corroboration)"
+model: "pure_dephasing"
+status: "frozen-awaiting-run"
+license: "CC-BY-4.0 (LICENSE-docs)"
+
+# ─── Gauge block ──────────────────────────────────────────────────────────────
+
+gauge:
+  gauge: "hayden-sorce-minimal-dissipation"
+  coordinate_dependent: true
+  direct_observable: false
+  gauge_alignment_required_for_comparison:
+    - "hmf"
+    - "polaron"
+    - "mori"
+
+# ─── Frozen parameters ────────────────────────────────────────────────────────
+
+frozen_parameters:
+
+  model:
+    model_kind: "dynamical"
+    system_dimension: 2
+    system_hamiltonian: "(omega / 2) * sigma_z"
+    coupling_operator: "sigma_z"
+    bath_type: "bosonic_linear"
+    bath_spectral_density:
+      family: "ohmic"
+      cutoff_frequency: 10.0       # omega-units; inherited from A3 v0.1.1
+      coupling_strength: 0.05      # ohmic alpha; inherited from A3 v0.1.1
+    test_cases:
+
+      - name: "thermal_bath_cross_method"
+        description: |
+          Thermal bosonic bath at T = 0.5 (omega-units). The CBG pipeline
+          predicts K(t) = (omega/2) sigma_z exactly at orders ≤ 2.  The two
+          reference methods must agree with each other on the reduced dynamics
+          to within the frozen tolerance; agreement with the CBG prediction is
+          a secondary check, not the primary DG-3 criterion.
+        bath_state:
+          family: "thermal"
+          temperature: 0.5
+        expected_outcome: |
+          Both exact_finite_env and qutip_reference return reduced density
+          matrices rho(t) that agree to within relative_frobenius <= 1.0e-6.
+          The CBG K(t) prediction (sigma_z only, no renormalisation) should
+          also be consistent with both methods' long-time limit.
+        verifies:
+          - "DG-3 implementation readiness: baseline pair runs and agrees"
+          - "DG-3 failure-asymmetry pairing: finite-system vs solver-default"
+        reference: "Sail v0.5 §9 DG-3; docs/benchmark_protocol.md §2, §3"
+
+      - name: "displaced_bath_delta_omega_c_cross_method"
+        description: |
+          Coherently-displaced bath under the §3.1 cleared profile
+          (registry key delta-omega_c).  Cross-method agreement in the
+          non-thermal regime is the sharper test of the baseline pair.
+        bath_state:
+          family: "coherent_displaced"
+          displacement_profile: "delta-omega_c"
+          parameters:
+            alpha_0: 1.0
+            omega_c: 10.0
+        expected_outcome: |
+          Both methods agree on the reduced dynamics to within the frozen
+          tolerance.  The time-dependent shift predicted by the CBG pipeline
+          (omega_r(t) - omega = 2 D_bar_1(t)) is a secondary consistency check.
+        verifies:
+          - "DG-3 implementation readiness: non-thermal regime"
+          - "DG-3 failure-asymmetry pairing: finite-system vs solver-default"
+        reference: "Sail v0.5 §9 DG-3; Card B4-conv-registry v0.1.0"
+
+  truncation:
+    perturbative_order: 2
+    basis: "matrix_unit"
+    bath_mode_cutoff: 1024         # inherited from A3/B4
+    # exact_finite_env.bath_mode_count: 6   # small-env exact diagonalisation
+
+  numerical:
+    time_grid:
+      t_start: 0.0
+      t_end: 20.0
+      n_points: 200
+      scheme: "uniform"
+    integration_tolerance:
+      relative: 1.0e-10
+      absolute: 1.0e-12
+    solver: "scipy_dop853"
+
+  comparison:
+    reference: "cross-method: exact_finite_env vs qutip_reference"
+    target_observable: "reduced_density_matrix"
+    error_metric: "inter_method_relative_frobenius"
+    threshold: 1.0e-6
+    projection_scheme: null
+
+# ─── Acceptance criterion ─────────────────────────────────────────────────────
+
+acceptance_criterion:
+  reference: "cross-method: exact_finite_env vs qutip_reference"
+  observable: "reduced_density_matrix"
+  error_metric: "inter_method_relative_frobenius"
+  threshold: 1.0e-6
+  projection_scheme: null
+  rationale: |
+    PASS iff every test case satisfies the inter-method agreement condition.
+
+    For each test case, both reference methods are run on the SAME frozen
+    model specification.  Let rho_exact(t) and rho_qutip(t) be the reduced
+    system density matrices returned by exact_finite_env and qutip_reference
+    respectively, evaluated at every time point t in the frozen time_grid.
+
+    Define:
+
+      diff_norm(t) = ||rho_exact(t) - rho_qutip(t)||_F
+      ref_norm(t)  = max(||rho_exact(t)||_F, ||rho_qutip(t)||_F)
+      error        = max_t diff_norm(t) / max(ref_norm(t), eps)
+
+    Per-case PASS condition: error <= 1.0e-6.
+
+    PASS for the card requires every test case to pass.
+
+    Secondary consistency check (non-gating for DG-3, but recorded):
+      The CBG pipeline's K(t) prediction, evolved via the TCL recursion at
+      orders <= N_card = 2, should be consistent with both reference methods
+      in the sense that the reduced dynamics generated from K(t) via the
+      effective-Hamiltonian Schrödinger equation do not deviate from the
+      reference methods by more than an order of magnitude beyond the
+      inter-method threshold.  This secondary check is recorded in the
+      result.notes field but does not affect the verdict.
+
+    Out of scope for Card C1 v0.1.0:
+      - HEOM, TEMPO, MCTDH, or pseudomode comparisons: aspirational for
+        failure-asymmetry clearance, not required for implementation-ready pass.
+      - Failure-envelope characterisation (coupling_strength sweep): DG-4.
+      - Thermodynamic discriminant: DG-5.
+      - Jaynes-Cummings or Fano-Anderson models: no callable API yet.
+
+# ─── Result block ─────────────────────────────────────────────────────────────
+
+result:
+  verdict: null
+  evidence: []
+  commit_hash: ""
+  runner_version: ""
+  notes: ""
+
+# ─── Failure-mode log ─────────────────────────────────────────────────────────
+
+failure_mode_log:
+  - date: "2026-05-05"
+    change: |
+      Card drafted from template; frozen parameters inherited from
+      A3 v0.1.1 (thermal) and B4-conv-registry v0.1.0 (displaced).
+    reason: |
+      DG-3 work plan v0.1.0 §1.3: cross-card parameter inheritance to
+      maximise comparability.  No predecessor card was superseded;
+      this is a first-issue DG-3 card.
+    predecessor_card_id: ""
+    predecessor_version: ""
+
+# ─── Stewardship flag ─────────────────────────────────────────────────────────
+
+stewardship_flag:
+  status: "unflagged"
+  rationale: ""
+  data_source: ""
+  search_performed: ""

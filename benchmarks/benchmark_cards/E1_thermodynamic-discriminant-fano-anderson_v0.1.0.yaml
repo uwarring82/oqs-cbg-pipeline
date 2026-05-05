@@ -1,0 +1,174 @@
+# DG-5 Benchmark Card E1 — Thermodynamic discriminant, Fano-Anderson model
+#
+# Anchor: Sail v0.5 §9 (DG-5); CL-2026-005 v0.4 Entry 7 (UNDERDETERMINED);
+#         SCHEMA.md v0.1.2
+# Phase: B (frozen-awaiting-run)
+#
+# This card is a SCOPE DEFINITION, not an executable benchmark.  The
+# Fano-Anderson model (models/fano_anderson.py) currently has NO callable
+# API — only structural_constraints.  Card E1 defines what needs to be
+# built before DG-5 can be attempted.
+#
+# DG-5 passes if, in one solvable model, the minimal-dissipation K(t)
+# and a competing framework (Hamiltonian of mean force, polaron, or Mori)
+# yield numerically distinguishable predictions for at least one
+# thermodynamic observable in the same parameter regime.
+#
+# The Fano-Anderson model is the natural DG-5 venue because:
+#   - It is analytically solvable in certain limits.
+#   - It has a well-defined particle-number-conservation symmetry.
+#   - It admits both a minimal-dissipation K(t) construction and a
+#     Hamiltonian-of-mean-force (HMF) description.
+#
+# model_kind: dynamical (future; pending model API implementation).
+
+# ─── Top-level metadata ───────────────────────────────────────────────────────
+
+schema_version: "v0.1.2"
+card_id: "E1"
+version: "v0.1.0"
+date: "2026-05-05"
+dg_target: "DG-5"
+ledger_entry: "CL-2026-005 v0.4 Entry 7 (thermodynamic discriminant; UNDERDETERMINED)"
+model: "fano_anderson"
+status: "frozen-awaiting-run"
+license: "CC-BY-4.0 (LICENSE-docs)"
+
+# ─── Gauge block ──────────────────────────────────────────────────────────────
+# DG-5 may introduce alternative gauges.  For now, the canonical block is
+# retained; a schema bump will be required if an alternative gauge is
+# frozen in a future revision.
+
+gauge:
+  gauge: "hayden-sorce-minimal-dissipation"
+  coordinate_dependent: true
+  direct_observable: false
+  gauge_alignment_required_for_comparison:
+    - "hmf"
+    - "polaron"
+    - "mori"
+
+# ─── Frozen parameters ────────────────────────────────────────────────────────
+# TENTATIVE — these parameters will be refined once the model API is
+# implemented and the HMF reference is operationalised.  The values below
+# are placeholders that satisfy schema validation; they are NOT yet
+# scientifically frozen.
+
+frozen_parameters:
+
+  model:
+    model_kind: "dynamical"
+    system_dimension: 2            # Fano-Anderson impurity (d=2 spin or fermion)
+    system_hamiltonian: "epsilon * n_d + U * n_d_up * n_d_down"
+    coupling_operator: "TBD"       # to be defined when model API is implemented
+    bath_type: "fermionic"
+    bath_spectral_density:
+      family: "lorentzian"
+      cutoff_frequency: 10.0
+      coupling_strength: 0.05
+    bath_state:
+      family: "thermal"
+      temperature: 0.5
+
+  truncation:
+    perturbative_order: 2
+    basis: "matrix_unit"
+    bath_mode_cutoff: 1024
+
+  numerical:
+    time_grid:
+      t_start: 0.0
+      t_end: 20.0
+      n_points: 200
+      scheme: "uniform"
+    integration_tolerance:
+      relative: 1.0e-10
+      absolute: 1.0e-12
+    solver: "TBD"
+
+  comparison:
+    reference: "cross-framework: minimal-dissipation K(t) vs Hamiltonian of mean force"
+    target_observable: "impurity_occupation_dynamics"
+    error_metric: "absolute_l2"
+    threshold: 1.0e-4
+    projection_scheme: null
+
+# ─── Acceptance criterion ─────────────────────────────────────────────────────
+
+acceptance_criterion:
+  reference: "cross-framework: minimal-dissipation K(t) vs HMF"
+  observable: "impurity_occupation_dynamics"
+  error_metric: "absolute_l2"
+  threshold: 1.0e-4
+  projection_scheme: null
+  rationale: |
+    PASS iff the card demonstrates numerically distinguishable predictions
+    between the minimal-dissipation K(t) and a competing thermodynamic
+    framework in the SAME model parameter regime.
+
+    Required preconditions (not yet met at v0.1.0):
+      1. models/fano_anderson.py exposes a callable API:
+         hamiltonian(), coupling_operator(), system_arrays_from_spec().
+      2. A reference implementation of the Hamiltonian of mean force (HMF)
+         for the Fano-Anderson model is available and benchmarked.
+      3. The CBG pipeline can compute K(t) for fermionic baths (currently
+         cbg.bath_correlations supports bosonic_linear only).
+      4. A thermodynamic observable is chosen whose predicted time
+         evolution differs between K(t) and HMF by more than the frozen
+         threshold in at least one parameter regime.
+
+    Verdict logic (once preconditions are met):
+      Let n_K(t) be the impurity occupation predicted from the effective
+      Hamiltonian K(t), and n_HMF(t) the occupation predicted from the
+      Hamiltonian of mean force, both starting from the same initial state
+      in the same parameter regime.
+
+      error = ||n_K - n_HMF||_2 / sqrt(n_points)
+
+      PASS if error > 1.0e-4 in at least one parameter regime.
+      FAIL if error <= 1.0e-4 for ALL scanned regimes.
+
+      The CRITICAL NEGATION: agreement (error <= threshold everywhere) is
+      a FAIL for DG-5.  DG-5 requires demonstrable divergence.
+
+    Out of scope for Card E1 v0.1.0:
+      - Implementation of preconditions 1–4: deferred to future plan revision.
+      - Council deliberation on Entry 7 classification: DG-5 outputs feed
+        INTO a fresh Council deliberation; they do not unilaterally change
+        the Ledger.
+      - Jaynes-Cummings model: alternative DG-5 venue, separate card.
+
+# ─── Result block ─────────────────────────────────────────────────────────────
+
+result:
+  verdict: null
+  evidence: []
+  commit_hash: ""
+  runner_version: ""
+  notes: |
+    Placeholder.  Card E1 v0.1.0 is a scope-definition card; the result
+    block will be populated only after preconditions 1–4 are met.
+
+# ─── Failure-mode log ─────────────────────────────────────────────────────────
+
+failure_mode_log:
+  - date: "2026-05-05"
+    change: |
+      Card drafted as a scope-definition placeholder.  No predecessor.
+      Model API and competing-framework reference are not yet implemented.
+    reason: |
+      Sail v0.5 §9 DG-5 requires a solvable model with distinguishable
+      predictions.  The Fano-Anderson model is the designated venue, but
+      models/fano_anderson.py has no callable API.  This card freezes the
+      *intention* and the *parameter scaffold* so that future implementation
+      work is bounded and auditable.
+    predecessor_card_id: ""
+    predecessor_version: ""
+
+# ─── Stewardship flag ─────────────────────────────────────────────────────────
+
+stewardship_flag:
+  status: "unflagged"
+  rationale: ""
+  data_source: ""
+  search_performed: ""
