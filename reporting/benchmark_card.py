@@ -132,6 +132,33 @@ class GaugeAnnotationError(ValueError):
     """A card's gauge block does not match the canonical Hayden–Sorce form."""
 
 
+class ScopeDefinitionNotRunnableError(NotImplementedError):
+    """Raised when ``run_card`` is called on a ``status: scope-definition`` card.
+
+    Scope-definition cards (SCHEMA.md v0.1.3 Rule 18) are design-target
+    cards whose preconditions are not yet met (e.g. model API stubbed,
+    competing-framework reference missing). They freeze the *intended*
+    parameter scaffold and acceptance criterion so future implementation
+    work is bounded and auditable, but they are intentionally not
+    runnable: attempting to run one indicates a workflow mistake (the
+    card must transition to ``frozen-awaiting-run`` first via
+    supersedure) rather than a runner bug.
+    """
+
+
+class DG4SweepRunnerNotImplementedError(NotImplementedError):
+    """Raised when ``run_card`` is asked to run a DG-4 sweep card.
+
+    The DG-4 failure-envelope runner is not yet implemented. It would
+    require (i) extending ``cbg.tcl_recursion`` to orders n ≥ 3 (which
+    is the canonical-unfilled DG-2 milestone per
+    ``docs/validity_envelope.md``) and (ii) wiring the
+    ``frozen_parameters.sweep`` block (SCHEMA.md v0.1.3 Rule 17) into
+    the runner. Card D1 v0.1.0 will become runnable when both pieces
+    land.
+    """
+
+
 class TestCaseHandlerNotFoundError(LookupError):
     """No runner handler is registered for a card's test_case name."""
 
@@ -1279,6 +1306,10 @@ def run_card(card: BenchmarkCard) -> CardResult:
     GaugeAnnotationError if the canonical block has been tampered with.
     """
     verify_gauge_annotation(card)
+    if card.status == "scope-definition":
+        _refuse_scope_definition(card)  # raises ScopeDefinitionNotRunnableError
+    if card.dg_target == "DG-4":
+        _refuse_dg4_sweep(card)  # raises DG4SweepRunnerNotImplementedError
     if card.dg_target == "DG-3":
         return _run_cross_method(card)
     if card.model_kind == "algebraic_map":
@@ -1287,6 +1318,64 @@ def run_card(card: BenchmarkCard) -> CardResult:
         return _run_dynamical(card)
     # Unreachable given rule 13 validation, but defensive:
     raise SchemaValidationError(f"run_card: unknown model_kind {card.model_kind!r}")
+
+
+def _refuse_scope_definition(card: BenchmarkCard) -> None:
+    """Raise a clear ScopeDefinitionNotRunnableError citing the card's preconditions.
+
+    Reads the unmet preconditions from the card's ``failure_mode_log`` and
+    ``result.notes`` (Rule 18 requires at least one of those to be
+    populated) and folds them into the error message so callers see the
+    specific reason this card is intentionally not runnable.
+    """
+    preconditions: list[str] = []
+    for entry in card.failure_mode_log or []:
+        change = (entry.get("change") or "").strip()
+        reason = (entry.get("reason") or "").strip()
+        if change or reason:
+            preconditions.append(f"failure_mode_log entry {entry.get('date', '?')}: "
+                                 f"change={change!r}; reason={reason!r}")
+    notes = (card.result.get("notes") or "").strip() if card.result else ""
+    if notes:
+        preconditions.append(f"result.notes: {notes!r}")
+    detail = "\n  - ".join(preconditions) if preconditions else "(no detail recorded)"
+    raise ScopeDefinitionNotRunnableError(
+        f"run_card: card {card.card_id} {card.version} has "
+        f"status='scope-definition' (SCHEMA.md v0.1.3 Rule 18). "
+        f"Scope-definition cards are not runnable until their "
+        f"preconditions are met and the card is superseded by a "
+        f"frozen-awaiting-run successor. Recorded preconditions:\n"
+        f"  - {detail}"
+    )
+
+
+def _refuse_dg4_sweep(card: BenchmarkCard) -> None:
+    """Raise a clear DG4SweepRunnerNotImplementedError describing the gap.
+
+    The DG-4 sweep runner is not yet implemented. The error message names
+    the two prerequisite pieces (TCL recursion at orders ≥ 3, and the
+    sweep-block-aware runner branch) so the path forward is auditable.
+    """
+    fp = card.frozen_parameters
+    sweep = fp.get("sweep") if isinstance(fp, dict) else None
+    sweep_summary = ""
+    if isinstance(sweep, dict):
+        param = sweep.get("parameter_name", "?")
+        rng = sweep.get("sweep_range", {})
+        sweep_summary = (
+            f" Sweep: {param} from {rng.get('start')} to {rng.get('end')} "
+            f"({rng.get('n_points')} points, {rng.get('scheme')})."
+        )
+    raise DG4SweepRunnerNotImplementedError(
+        f"run_card: card {card.card_id} {card.version} (dg_target=DG-4) "
+        f"requires the DG-4 failure-envelope sweep runner, which is not "
+        f"yet implemented.{sweep_summary} Two pieces are missing: (i) "
+        f"cbg.tcl_recursion at perturbative_order >= 3 (the canonical-"
+        f"unfilled DG-2 milestone per docs/validity_envelope.md), and "
+        f"(ii) a sweep-block-aware runner branch consuming "
+        f"frozen_parameters.sweep (SCHEMA.md v0.1.3 Rule 17). Card "
+        f"becomes runnable when both land."
+    )
 
 
 def _run_algebraic_map(card: BenchmarkCard) -> CardResult:

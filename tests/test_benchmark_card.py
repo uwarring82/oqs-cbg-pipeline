@@ -745,6 +745,76 @@ def test_cross_method_relative_frobenius_shape_mismatch_raises():
         bc._inter_method_relative_frobenius(a, b)
 
 
+# ─── Runner: refusal paths for D1 (DG-4) and E1 (scope-definition) ──────────
+
+
+D1_PATH_FOR_RUN = CARDS_DIR / "D1_failure-envelope-convergence_v0.1.0.yaml"
+E1_PATH_FOR_RUN = CARDS_DIR / "E1_thermodynamic-discriminant-fano-anderson_v0.1.0.yaml"
+
+
+def test_scope_definition_error_subclasses_not_implemented():
+    """ScopeDefinitionNotRunnableError must be a NotImplementedError so
+    callers that catch the broader exception still see scope-definition
+    refusals."""
+    assert issubclass(bc.ScopeDefinitionNotRunnableError, NotImplementedError)
+
+
+def test_dg4_sweep_runner_error_subclasses_not_implemented():
+    assert issubclass(bc.DG4SweepRunnerNotImplementedError, NotImplementedError)
+
+
+def test_run_card_e1_raises_scope_definition_error():
+    """run_card on a status='scope-definition' card raises a clean
+    ScopeDefinitionNotRunnableError, not an opaque downstream error."""
+    card = bc.load_card(E1_PATH_FOR_RUN)
+    with pytest.raises(bc.ScopeDefinitionNotRunnableError) as exc_info:
+        bc.run_card(card)
+    msg = str(exc_info.value)
+    # Message must name the card and surface the recorded preconditions.
+    assert "E1" in msg
+    assert "scope-definition" in msg
+    # E1 carries a non-empty failure_mode_log entry; the message folds it in.
+    assert "failure_mode_log" in msg or "result.notes" in msg
+
+
+def test_run_card_d1_raises_dg4_sweep_error():
+    """run_card on a DG-4 sweep card raises a clean
+    DG4SweepRunnerNotImplementedError naming the missing pieces, not the
+    legacy KeyError that came from the dynamical runner mistakenly seeing
+    a sweep-bearing model spec."""
+    card = bc.load_card(D1_PATH_FOR_RUN)
+    with pytest.raises(bc.DG4SweepRunnerNotImplementedError) as exc_info:
+        bc.run_card(card)
+    msg = str(exc_info.value)
+    assert "D1" in msg
+    assert "DG-4" in msg
+    # Sweep summary surfaced from the card's frozen sweep block.
+    assert "coupling_strength" in msg
+    # Missing-pieces section names both gaps explicitly.
+    assert "tcl_recursion" in msg
+    assert "Rule 17" in msg or "sweep" in msg.lower()
+
+
+def test_run_card_d1_refusal_takes_precedence_over_dynamical_dispatch():
+    """D1's frozen_parameters has no 'test_cases' key; if the DG-4 refusal
+    branch did not fire first, run_card would raise a KeyError from the
+    dynamical handler. The refusal path must take precedence so the
+    error message is actionable."""
+    card = bc.load_card(D1_PATH_FOR_RUN)
+    with pytest.raises(bc.DG4SweepRunnerNotImplementedError):
+        bc.run_card(card)
+
+
+def test_run_card_e1_refusal_takes_precedence_over_model_factory():
+    """E1's model 'fano_anderson' has no model factory; if the scope-
+    definition refusal did not fire first, run_card would raise a generic
+    NotImplementedError from the dynamical handler about the missing
+    factory rather than the actionable preconditions."""
+    card = bc.load_card(E1_PATH_FOR_RUN)
+    with pytest.raises(bc.ScopeDefinitionNotRunnableError):
+        bc.run_card(card)
+
+
 # ─── Runner: gauge tampering aborts before computation ──────────────────────
 
 

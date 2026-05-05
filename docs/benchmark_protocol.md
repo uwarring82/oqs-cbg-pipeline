@@ -2,7 +2,7 @@
 
 **Layer:** Repository protective scaffolding
 **Anchor:** Sail v0.5 §11 (four explicit content requirements)
-**Last updated:** 2026-05-05 (DG-3 C2 displaced handler wired — full C1+C2 runner reachability)
+**Last updated:** 2026-05-05 (D1/E1 runner refusal paths wired — clean diagnostics for DG-4 sweep + scope-definition cards)
 
 ---
 
@@ -97,7 +97,7 @@ One DG-4 failure-envelope card is frozen:
 |---|---|---|---|---|
 | D1 | pure_dephasing | coupling_strength (0.05 → 1.0, log-uniform, 20 points) | convergence failure | frozen-awaiting-run |
 
-The runner does not yet support parameter sweeps. The card defines the sweep range frozen *before* any run, per the parameter-freezing protocol §6.
+The runner does not yet support parameter sweeps; `run_card(D1)` raises `DG4SweepRunnerNotImplementedError` naming the two missing pieces (`cbg.tcl_recursion` at perturbative_order ≥ 3 and a sweep-block-aware runner branch consuming `frozen_parameters.sweep` per SCHEMA.md v0.1.3 Rule 17). The card defines the sweep range frozen *before* any run, per the parameter-freezing protocol §6.
 
 ## 5. DG-5 status tracking
 
@@ -112,7 +112,7 @@ Card E1 preconditions are not yet met:
 - No HMF reference implementation exists in the repository.
 - `cbg.bath_correlations` does not support fermionic baths.
 
-DG-5 outputs route via fresh Council deliberation per Sail §9; they do not unilaterally modify the Ledger.
+DG-5 outputs route via fresh Council deliberation per Sail §9; they do not unilaterally modify the Ledger. `run_card(E1)` raises `ScopeDefinitionNotRunnableError` (a `NotImplementedError` subclass) that surfaces the recorded preconditions from the card's `failure_mode_log` / `result.notes` rather than failing with a generic missing-model-factory message.
 
 ## 6. Parameter-freezing protocol (Risk #8 mitigation)
 
