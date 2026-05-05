@@ -164,6 +164,10 @@ After installing `[dev]` extras in the `.venv` and running the full tool suite, 
 - [x] Create `CHANGELOG.md`
 - [x] Update `CITATION.cff`, `codemeta.json`, `.zenodo.json` to current version
 - [x] Rebuild API docs and landing page to reflect DG-2 status
+- [x] Run `black .` and `ruff check --fix .` on entire codebase
+- [x] Fix remaining ruff errors manually (E741, B905, E731, F841)
+- [x] Fix mypy errors (`np.trapz` fallback, `D_bar_1_array` assert, `K_expected` assert, yaml stubs)
+- [x] Add `types-PyYAML` to dev dependencies
 
 ### Still open — Critical
 - [ ] **Mint a Zenodo DOI** and populate the placeholder
@@ -172,8 +176,8 @@ After installing `[dev]` extras in the `.venv` and running the full tool suite, 
 - [ ] **Add `examples/` directory** with at least one runnable script and one Jupyter notebook
 
 ### Still open — High
-- [ ] **Run `black .` and `ruff check --fix .`** to establish a clean style baseline (5-minute task; 25 files need formatting, 168 of 194 ruff errors are auto-fixable)
-- [ ] **Fix the 4 mypy errors** (or add targeted `# type: ignore` comments)
+- [x] ~~Run `black .` and `ruff check --fix .`~~ ✅ Done (commit `290d589`)
+- [x] ~~Fix the 4 mypy errors~~ ✅ Done (commit `290d589`)
 - [ ] **Enforce `black` / `ruff` / `mypy` in CI**
 - [ ] **Add code coverage step to CI** (generate and upload reports)
 - [ ] **Add `__all__` to every package `__init__.py`**
