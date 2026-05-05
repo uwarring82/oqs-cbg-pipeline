@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-05
 **Type:** structural
-**Triggering commit:** _placeholder_
+**Triggering commit:** 82ee614
 **Triggering evidence:**
 - [`benchmarks/exact_finite_env.py`](../benchmarks/exact_finite_env.py): `build_spin_boson_sigma_x_displaced_total` (parallel to the σ_z displaced builder, σ_x in the joint interaction).
 - [`benchmarks/qutip_reference.py`](../benchmarks/qutip_reference.py): `_propagate_spin_boson_sigma_x_displaced_delta_omega_c` handler combining σ_-/σ_+ secular Lindblad (rates from cbg) with a time-dependent σ_x classical drive ⟨B(t)⟩ σ_x.
