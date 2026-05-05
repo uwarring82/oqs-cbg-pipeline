@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-05
 **Type:** structural
-**Triggering commit:** (to be populated on commit)
+**Triggering commit:** 8b66dcb6d025cd8df291a896c6f8740743cce498
 **Triggering evidence:**
 - [`reporting/benchmark_card.py`](../reporting/benchmark_card.py): DG-3 `_run_cross_method` branch and `_CROSS_METHOD_TEST_CASE_HANDLERS` registry added.
 - [`tests/test_benchmark_card.py`](../tests/test_benchmark_card.py): C1/C2 load, handler-registration, C1 thermal clean-FAIL, deferred-handler, and trajectory-shape tests added.
