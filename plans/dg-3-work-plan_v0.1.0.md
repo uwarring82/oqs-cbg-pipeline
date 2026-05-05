@@ -40,10 +40,10 @@ Only two models currently expose the full callable API (`hamiltonian`, `coupling
 
 ### 1.3 Card-parameter inheritance
 
-To maximise cross-card comparability, DG-3 cards inherit frozen parameters from their DG-1/DG-2 siblings:
+To maximise cross-card comparability, DG-3 cards inherit frozen parameters from their DG-1/DG-2 siblings on a per-case basis:
 
-- **Card C1** (pure_dephasing) inherits `bath_spectral_density`, `time_grid`, and integration tolerances from **Card A3 v0.1.1** and **Card B4-conv-registry v0.1.0**.
-- **Card C2** (spin_boson_sigma_x) inherits corresponding parameters from **Card A4 v0.1.1** and **Card B5-conv-registry v0.2.0**.
+- **Card C1** (pure_dephasing): the `thermal_bath_cross_method` test case inherits `bath_spectral_density`, `time_grid`, and integration tolerances from **Card A3 v0.1.1**; the `displaced_bath_delta_omega_c_cross_method` test case inherits its `bath_state` and `displacement_profile` from **Card B4-conv-registry v0.1.0**. (A3 v0.1.1 does not carry a displaced case — it was removed in the A3 v0.1.0 → v0.1.1 supersedure per the DG-2 deferral.)
+- **Card C2** (spin_boson_sigma_x): same per-case split, with **Card A4 v0.1.1** supplying the thermal anchor and **Card B5-conv-registry v0.2.0** supplying the displaced anchor.
 
 The inherited parameters are **not** silently edited; they are re-frozen in the new card with an explicit `failure_mode_log` entry citing the predecessor card. This preserves the audit trail required by `docs/benchmark_protocol.md` §4.
 

@@ -9,8 +9,14 @@
 #   - exact_finite_env.py   (finite-system class)
 #   - qutip_reference.py    (solver-default class)
 #
-# Frozen parameters are inherited from Card A4 v0.1.1 (thermal bath) and
-# Card B5-conv-registry v0.2.0 (displaced bath).
+# Inheritance:
+#   - thermal_bath_cross_method: bath_spectral_density, time_grid,
+#     integration tolerances from A4 v0.1.1.
+#   - displaced_bath_delta_omega_c_cross_method: bath_state and
+#     displacement_profile from B5-conv-registry v0.2.0.
+# As with the C1/A3 pair, A4 v0.1.1 does NOT carry a displaced case at
+# v0.1.1 (parallels the A3 v0.1.0 -> v0.1.1 DG-2 deferral); the displaced
+# fixture in this card is sourced from B5 alone.
 
 # ─── Top-level metadata ───────────────────────────────────────────────────────
 
@@ -49,6 +55,8 @@ frozen_parameters:
       family: "ohmic"
       cutoff_frequency: 10.0
       coupling_strength: 0.05
+    parameters:
+      omega: 1.0                   # system Bohr frequency; matches B5 v0.2.0
     test_cases:
 
       - name: "thermal_bath_cross_method"
@@ -152,8 +160,13 @@ result:
 failure_mode_log:
   - date: "2026-05-05"
     change: |
-      Card drafted from template; frozen parameters inherited from
-      A4 v0.1.1 (thermal) and B5-conv-registry v0.2.0 (displaced).
+      Card drafted from template.  Inheritance:
+        - thermal_bath_cross_method: bath_spectral_density, time_grid,
+          integration tolerances from A4 v0.1.1.
+        - displaced_bath_delta_omega_c_cross_method: bath_state and
+          displacement_profile from B5-conv-registry v0.2.0.
+      A4 v0.1.1 does NOT carry a displaced case (removed in the
+      A4 v0.1.0 -> v0.1.1 DG-2 deferral, parallel to A3).
     reason: |
       DG-3 work plan v0.1.0 §1.3: cross-card parameter inheritance.
       First-issue DG-3 card for the spin-boson_sigma_x model.

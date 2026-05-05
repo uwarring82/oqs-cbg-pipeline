@@ -9,11 +9,17 @@
 #   - exact_finite_env.py   (finite-system class)
 #   - qutip_reference.py    (solver-default class)
 #
-# The frozen parameters are inherited from Card A3 v0.1.1 (thermal bath)
-# and Card B4-conv-registry v0.1.0 (displaced bath), ensuring cross-card
-# comparability.  The comparison is inter-method: the two reference methods
-# are run on the SAME model specification and their reduced dynamics are
-# compared against a frozen tolerance.
+# The frozen parameters are inherited as follows, ensuring cross-card
+# comparability:
+#   - thermal-bath case: bath_spectral_density, time_grid, integration
+#     tolerances inherited from Card A3 v0.1.1.
+#   - coherent-displaced case: bath_state and displacement_profile
+#     inherited from Card B4-conv-registry v0.1.0 (delta-omega_c profile).
+#     A3 v0.1.1 does NOT carry a displaced case (it was removed in the
+#     v0.1.0 -> v0.1.1 supersedure; see A3 v0.1.1 failure_mode_log[0]).
+# The comparison is inter-method: the two reference methods are run on
+# the SAME model specification and their reduced dynamics are compared
+# against a frozen tolerance.
 #
 # model_kind: dynamical with test_cases (two cases: thermal + one displaced
 # profile, mirroring the A3/B4 coverage).
@@ -21,9 +27,11 @@
 # does not require higher orders).
 #
 # Cards-first / Risk #6 audit boundary: this card is frozen BEFORE the
-# baseline pair (exact_finite_env + qutip_reference) is implemented.
-# The runner does not yet have a cross-method comparison branch; that
-# wiring is Phase C work bounded by this acceptance criterion.
+# baseline pair's stubs are filled in (the files
+# benchmarks/exact_finite_env.py and benchmarks/qutip_reference.py exist
+# but their entry points raise NotImplementedError).  The runner does
+# not yet have a cross-method comparison branch; that wiring is Phase C
+# work bounded by this acceptance criterion.
 
 # ─── Top-level metadata ───────────────────────────────────────────────────────
 
@@ -62,6 +70,8 @@ frozen_parameters:
       family: "ohmic"
       cutoff_frequency: 10.0       # omega-units; inherited from A3 v0.1.1
       coupling_strength: 0.05      # ohmic alpha; inherited from A3 v0.1.1
+    parameters:
+      omega: 1.0                   # system Bohr frequency; matches B4 v0.1.0
     test_cases:
 
       - name: "thermal_bath_cross_method"
@@ -184,8 +194,13 @@ result:
 failure_mode_log:
   - date: "2026-05-05"
     change: |
-      Card drafted from template; frozen parameters inherited from
-      A3 v0.1.1 (thermal) and B4-conv-registry v0.1.0 (displaced).
+      Card drafted from template.  Inheritance:
+        - thermal_bath_cross_method: bath_spectral_density, time_grid,
+          integration tolerances from A3 v0.1.1.
+        - displaced_bath_delta_omega_c_cross_method: bath_state and
+          displacement_profile from B4-conv-registry v0.1.0.
+      A3 v0.1.1 does NOT carry a displaced case; it was removed in the
+      A3 v0.1.0 -> v0.1.1 supersedure per the DG-2 deferral.
     reason: |
       DG-3 work plan v0.1.0 §1.3: cross-card parameter inheritance to
       maximise comparability.  No predecessor card was superseded;

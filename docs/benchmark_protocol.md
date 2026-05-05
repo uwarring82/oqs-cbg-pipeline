@@ -6,12 +6,14 @@
 
 ---
 
-This document specifies, at minimum, four protocols required by Sail v0.5 §11:
+This document specifies the protocols required by Sail v0.5 §11:
 
 1. Coordinate-choice annotation template (Sail §4 output discipline).
 2. Failure-mode starter taxonomy for Tier 3 methods (Sail §5).
 3. DG-3 readiness vs. failure-asymmetry-clearance status tracking (Sail §9).
-4. Parameter-freezing protocol enforcing Risk #8 mitigation (Sail §10).
+4. DG-4 status tracking (Sail §9).
+5. DG-5 status tracking (Sail §9).
+6. Parameter-freezing protocol enforcing Risk #8 mitigation (Sail §10).
 
 ## 1. Coordinate-choice annotation template
 
@@ -95,7 +97,7 @@ One DG-4 failure-envelope card is frozen:
 |---|---|---|---|---|
 | D1 | pure_dephasing | coupling_strength (0.05 → 1.0, log-uniform, 20 points) | convergence failure | frozen-awaiting-run |
 
-The runner does not yet support parameter sweeps. The card defines the sweep range frozen *before* any run, per the parameter-freezing protocol §4.
+The runner does not yet support parameter sweeps. The card defines the sweep range frozen *before* any run, per the parameter-freezing protocol §6.
 
 ## 5. DG-5 status tracking
 
@@ -112,11 +114,11 @@ Card E1 preconditions are not yet met:
 
 DG-5 outputs route via fresh Council deliberation per Sail §9; they do not unilaterally modify the Ledger.
 
-## 4. Parameter-freezing protocol (Risk #8 mitigation)
+## 6. Parameter-freezing protocol (Risk #8 mitigation)
 
 Per Sail v0.5 §10 Risk #8, every parameter choice that affects Tier 1–3 outcomes must be set *before* benchmarking and recorded in the benchmark card. This document specifies the operational protocol:
 
-### 4.1. Parameters that must be frozen
+### 6.1. Parameters that must be frozen
 
 The following parameters must be frozen before any benchmark run:
 
@@ -125,19 +127,19 @@ The following parameters must be frozen before any benchmark run:
 - **Numerical parameters**: time-grid step size, integration tolerance, perturbative order, gauge choice.
 - **Comparison parameters**: target observable, error metric, agreement threshold, projection scheme (for non-TCL methods, per Sail §2 representation commitment).
 
-### 4.2. Recording protocol
+### 6.2. Recording protocol
 
 Each benchmark card carries a `frozen_parameters:` block at the top, populated *before* the benchmark is run. The block is committed to the repository. The benchmark is then run, and the result (PASS / FAIL / CONDITIONAL) is appended.
 
-### 4.3. Post-hoc adjustments
+### 6.3. Post-hoc adjustments
 
 If a parameter is changed *after* the initial run — for any reason, including a discovered bug — this is *not* silent revision. The card is retained with its original verdict; a *new* card is created with the new parameter set, *and* a `failure_mode_log` entry is added explaining what changed and why. The original card is annotated `superseded by <new-card-id>`. No card is ever silently deleted or edited post-result.
 
-### 4.4. Parameter-sweep distinction
+### 6.4. Parameter-sweep distinction
 
 A *parameter sweep* (e.g. running the same benchmark over a range of bath cutoffs to verify convergence) is *not* a post-hoc adjustment. Sweeps are part of the frozen design: the sweep range is itself a frozen parameter, declared before the run. A sweep that reveals divergence at one end of the range is a DG-4 failure-envelope finding, not a justification for tightening the range and re-running.
 
-### 4.5. Audit
+### 6.5. Audit
 
 A future steward (including a non-conflicted future steward) must be able to reconstruct, from the recorded benchmark cards alone, which parameters were frozen for each run, when they were frozen, and what the resulting verdict was. The reconstruction must not require access to internal communications, side-channel notes, or the original implementer's recollection.
 

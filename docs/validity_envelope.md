@@ -2,7 +2,7 @@
 
 **Layer:** Repository protective scaffolding (living document)
 **Anchor:** Sail v0.5 §9 (Decision Gates DG-1 through DG-5)
-**Last updated:** 2026-05-04 (DG-2 structural sub-claims PASS under Council Act 2 cleared registry; literal K_2-K_4 recursion pending; see `logbook/2026-05-04_dg-2-pass-envelope.md`)
+**Last updated:** 2026-05-05 (DG-3/4/5 scoping pass: C1, C2, D1, E1 frozen; see `logbook/2026-05-05_dg-3-4-5-scoping.md`)
 
 ---
 
