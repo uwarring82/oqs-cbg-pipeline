@@ -1,8 +1,9 @@
 # Critical FAIR Review of `oqs-cbg-pipeline`
 
-**Date:** 2026-05-04  
+**Date:** 2026-05-04 (initial review)  
+**Updated:** 2026-05-05 (re-assessment after commit `0df8a1e`)  
 **Reviewer:** Kimi Code CLI (automated agent review)  
-**Repository version assessed:** Git tag `v0.2.0` (2026-05-04), though `pyproject.toml` and `cbg/__init__.py` still report `0.1.0`.
+**Repository version assessed:** Git tag `v0.2.0` / metadata `0.3.0.dev0` (commit `0df8a1e`)
 
 ---
 
@@ -11,6 +12,54 @@
 This repository is **scientifically rigorous but software-poor**. It has some of the best metadata and governance discipline seen in academic research software, yet it fails basic software accessibility and usability tests. Its FAIR compliance is **asymmetric**: strong on Findability infrastructure and Reusability governance, weak on practical Accessibility and immediate Reusability.
 
 > **Note:** This review was conducted while the codebase is still in active development. Many of the gaps noted below are acknowledged by the project (e.g. DG-3–DG-5 not yet attempted, some benchmark stubs intentional). The purpose of this review is to provide a checkpoint against which future improvements can be measured.
+
+---
+
+## Changelog of this review
+
+### 2026-05-05 — Re-assessment after `v0.3.0.dev0: post-DG-2 metadata refresh + FAIR hygiene pass`
+
+The steward responded to the initial review with a single comprehensive commit (`0df8a1e`) that addressed **many** of the critical and high-priority items. This section tracks what improved.
+
+| Item | Previous status | Current status | Notes |
+|---|---|---|---|
+| README DG status table | ❌ Stale (all "NOT YET ATTEMPTED") | ✅ Fixed | Now correctly shows DG-1 PASS and DG-2 structural sub-claims PASS |
+| README version badge | ❌ "scaffold–v0.1.0" | ✅ "DG-1 PASS \| DG-2 structural PASS" | Accurately reflects maturity |
+| README installation instructions | ❌ Absent | ✅ Present | Copy-paste `git clone` + `pip install -e ".[dev]"` block |
+| README quickstart | ❌ Absent | ✅ Present | Runnable `K_from_generator` example + pytest invocation |
+| README tutorial link | ❌ Orphaned HTML unmentioned | ✅ Linked | `cbg-tutorial-for-phd-students_v0.2.html` now referenced |
+| `pyproject.toml` version | ❌ Hardcoded `0.1.0` (drifted from tag) | ✅ `0.3.0.dev0` | Bumped and consistent with new dev cycle |
+| `cbg.__version__` | ❌ Hardcoded literal | ✅ `importlib.metadata` sourced | Eliminates drift risk; falls back to `0.0.0+unknown` when not installed |
+| Import-time docs check | ❌ Warned on every import outside repo tree | ✅ Silent on pip-installed wheels | Now only checks when `docs/` sibling directory exists |
+| `CHANGELOG.md` | ❌ Absent | ✅ Added | Clean semver-style log referencing validity envelope |
+| `[tool.black]` in `pyproject.toml` | ❌ Absent | ✅ Added | `line-length = 100`, target py310–py312 |
+| `[tool.ruff]` in `pyproject.toml` | ❌ Absent | ✅ Added | E, F, W, I, B, UP selectors; E501 ignored (black governs) |
+| `[tool.mypy]` in `pyproject.toml` | ❌ Absent | ✅ Added | `python_version = 3.10`, `ignore_missing_imports = true` |
+| `CITATION.cff` | ❌ Stale abstract, version `0.1.0` | ✅ Updated | Abstract now mentions DG-2 structural pass; version `0.3.0.dev0` |
+| `codemeta.json` | ❌ Stale description, version `0.1.0` | ✅ Updated | Description and version bumped; keywords consistent |
+| `.zenodo.json` | ❌ Not checked in detail | ✅ Updated | Version bump reflected |
+| API docs / landing page | ❌ Reflected old DG status | ✅ Rebuilt | `api/`, `index.html`, `docs-site/index.md` all updated |
+| `tests/test_imports.py` | ❌ Pinned literal version string | ✅ Dynamic | No longer hardcodes version |
+
+**What remains unaddressed** from the initial priority table:
+- ❌ No minted DOI (still placeholder)
+- ❌ No ORCID (still placeholder)
+- ❌ No PyPI publication
+- ❌ No `examples/` directory or Jupyter notebooks
+- ❌ No `__all__` declarations in package `__init__.py` files
+- ❌ Flat package namespace unchanged (`models`, `numerical`, etc. as top-level)
+- ❌ No CI enforcement of `black` / `ruff` / `mypy` (configured but not run in workflow)
+- ❌ No code coverage reporting in CI
+- ❌ No issue / PR templates in `.github/`
+- ❌ Benchmark stubs still `NotImplementedError`
+- ❌ `models/` APIs still partial (Fano-Anderson, Jaynes-Cummings scaffolded)
+- ❌ `cbg/diagnostics.py` still mostly stubs
+- ❌ `reporting/benchmark_card.py` `write_card` still stubbed
+- ❌ Dict-driven API still limits scripting interoperability
+- ❌ No data export formats beyond JSON/YAML
+- ❌ `codemeta.json` `funding` field still placeholder
+- ❌ Sphinx docs still committed to `api/` rather than deployed to dedicated host
+- ❌ No interactive/cloud environment (Binder, etc.)
 
 ---
 
@@ -37,13 +86,14 @@ This repository is **scientifically rigorous but software-poor**. It has some of
 - **Open by design:** GitHub repo is public; `.zenodo.json` sets `"access_right": "open"`.
 - **Multi-layer documentation exists:** README, `docs/`, `docs-site/`, `api/`, `index.html`, logbook, ledger.
 - **Installation path exists** in `pyproject.toml` (supports `pip install -e ".[dev]"`).
+- **README now accurate:** DG status table, version badge, and "What this is not" all correctly reflect DG-1 PASS and DG-2 structural sub-claims PASS.
+- **README now has Installation and Quickstart:** Copy-paste commands and a runnable `K_from_generator` example.
 
-### What fails — and this is serious
-- **Zero installation instructions in the README.** A visitor must infer from CI or `pyproject.toml` that `pip install -e .` is the intended path. There are no copy-paste quickstart commands.
-- **Zero code examples in the README.** No snippets showing how to call `K_from_generator()`, load a benchmark card, or run a minimal model. The README is 100% governance, 0% "Getting Started."
-- **The README is factually stale** — a documentation integrity bug. The badge says "scaffold–v0.1.0". Line 33 claims "At v0.1.0, no Decision Gate has been passed." The DG status table lists **all gates as "NOT YET ATTEMPTED."** The footer says "No Decision Gate has yet been passed at this version." Yet `docs/validity_envelope.md` records **DG-1 PASS (2026-04-30)** and **DG-2 PASS (2026-05-04)**, and Git tags confirm `v0.2.0` exists. A new user reading the README receives false information about the project's maturity.
+### What still fails
 - **No interactive/cloud environment** (Binder, Colab, Codespaces).
 - **Sphinx docs are committed to `api/`** rather than deployed to a dedicated docs host, mixing built artifacts with source code.
+- **No runnable examples directory or notebooks:** The Quickstart is a single snippet in the README. There is no `examples/` folder, no Jupyter notebooks, and no step-by-step tutorial script for users to explore.
+- **Governance text volume remains a cognitive barrier:** A new user must still traverse ledger → sail → plans → docs → validity envelope → benchmark cards before understanding the full context. The protective scaffolding is thorough but dense.
 
 ---
 
@@ -55,6 +105,7 @@ This repository is **scientifically rigorous but software-poor**. It has some of
 - **Structured data formats:** Benchmark cards use YAML with a formal schema; results use JSON. Both are highly interoperable.
 - **Sphinx intersphinx** mappings to Python, NumPy, and SciPy docs improve cross-referencing.
 - **Type hints are partially present** and mandated by `CONTRIBUTING.md` for public functions.
+- **Tool configuration now present:** `[tool.black]`, `[tool.ruff]`, `[tool.mypy]` blocks in `pyproject.toml` provide shared defaults for contributors.
 
 ### What fails
 - **Flat package namespace is a collision risk.** `pyproject.toml` declares `packages = ["cbg", "models", "numerical", "benchmarks", "reporting"]`. If this is installed alongside any other project with a top-level `models` or `reporting` package, imports will clash. Best practice is namespacing under `cbg.models`, `cbg.numerical`, etc.
@@ -62,6 +113,7 @@ This repository is **scientifically rigorous but software-poor**. It has some of
 - **Dict-driven API** limits scripting interoperability. Functions like `K_total_thermal_on_grid` require `bath_state: Dict[str, Any]` and `spectral_density: Dict[str, Any]` rather than direct typed parameters. A user cannot easily call `K_total_thermal_on_grid(alpha=0.05, omega_c=10.0, T=0.5)` without knowing the correct internal dict schema.
 - **No formal API specification** beyond Sphinx autodoc; no data export beyond JSON/YAML (no HDF5, NetCDF, CSV).
 - **No `__all__` declarations** in any `__init__.py`, so `from cbg import *` pollutes the namespace with internal variables.
+- **Tool configs not enforced in CI:** `black`, `ruff`, and `mypy` have config blocks but the GitHub Actions workflow does not run them.
 
 ---
 
@@ -74,40 +126,64 @@ This repository is **scientifically rigorous but software-poor**. It has some of
 - **CI runs** on Python 3.10, 3.11, 3.12 via GitHub Actions.
 - **Contribution guidelines and code of conduct** are present and tailored.
 - **Docstrings are excellent:** NumPy-style, physics-contextual, anchored to specific paper equations (e.g., "Letter Eq. (6)", "Companion Eq. (28)").
+- **CHANGELOG.md now exists:** Provides a flat, user-facing summary of releases.
+- **Import-time protective-docs check softened:** No longer emits `RuntimeWarning` when the package is pip-installed without the repository tree, removing a reusability barrier for downstream users.
 
 ### What fails
-- **No CI enforcement of code quality.** The workflow (`tests.yml`) runs structural checks and `pytest`, but does **not** run `black --check`, `ruff`, or `mypy`. Style/type quality is not automatically guaranteed. `pyproject.toml` lacks `[tool.black]`, `[tool.ruff]`, and `[tool.mypy]` configuration blocks.
+- **No CI enforcement of code quality.** The workflow (`tests.yml`) runs structural checks and `pytest`, but does **not** run `black --check`, `ruff`, or `mypy`. Style/type quality is not automatically guaranteed.
 - **No code coverage reporting in CI.** `pytest-cov` is a dev dependency, but coverage reports are not generated or uploaded.
-- **No interactive examples or notebooks.** There is no `examples/` directory, no Jupyter notebooks, and no step-by-step tutorial script. The only tutorial (`cbg-tutorial-for-phd-students_v0.2.html`) exists at the repo root but is **not mentioned in the README** and is orphaned from the Sphinx docs hierarchy.
+- **No interactive examples or notebooks.** There is no `examples/` directory, no Jupyter notebooks, and no step-by-step tutorial script. The only tutorial (`cbg-tutorial-for-phd-students_v0.2.html`) exists at the repo root and is now linked from the README, but remains orphaned from the Sphinx docs hierarchy.
 - **Many APIs are stubs.** `benchmarks/exact_finite_env.py` and `benchmarks/qutip_reference.py` are empty `NotImplementedError` shells. `models/fano_anderson.py` and `models/jaynes_cummings.py` contain no callable API. `cbg/diagnostics.py` exports only string constants and unimplemented functions. `reporting/benchmark_card.py` has `write_card` explicitly stubbed.
-- **Import-time side effect in `cbg/__init__.py`:** The package performs a filesystem check for five `docs/` markdown files at import time. If the package is pip-installed without the full repository tree (a normal reusability scenario), it emits a `RuntimeWarning`. This is a structural anti-pattern for a reusable library.
-- **No `CHANGELOG.md`** or release notes. Version changes are tracked in the logbook and validity envelope, but there is no conventional changelog for users.
+- **No `__all__` declarations** in package `__init__.py` files.
 - **No issue/PR templates** in `.github/`.
-- **Version is inconsistent:** `pyproject.toml` and `cbg/__init__.py` both hardcode `0.1.0`, but the Git tag `v0.2.0` exists and the validity envelope records DG-2 PASS.
+- **Flat package namespace** collision risk remains.
 
 ---
 
 ## Priority fixes for FAIR compliance
 
-| Priority | Fix | Impact |
-|---|---|---|
-| **Critical** | Fix README.md DG status table and version string to match `v0.2.0` / `validity_envelope.md` | Prevents users from receiving false maturity signals |
-| **Critical** | Add an "Installation" section and a "Quickstart" code block to README | Unblocks basic Accessibility |
-| **Critical** | Mint a Zenodo DOI and populate the placeholder | Enables persistent Findability and citability |
-| **High** | Add ORCID to `CITATION.cff`, `.zenodo.json`, `codemeta.json`, README | Standard scholarly identity |
-| **High** | Publish to PyPI | Enables standard Python package discovery and installation |
-| **High** | Add `examples/` with at least one runnable script and one Jupyter notebook | Dramatically improves Reusability |
-| **High** | Remove or soften the import-time `docs/` filesystem check in `cbg/__init__.py` | Removes reusability barrier for pip-installed users |
-| **Medium** | Add `[tool.ruff]`, `[tool.mypy]` to `pyproject.toml` and enforce in CI | Improves Interoperability and Reusability |
-| **Medium** | Add code coverage step to CI | Improves quality assurance |
-| **Medium** | Consider namespacing sub-packages under `cbg.*` | Eliminates namespace collision risk |
-| **Medium** | Create `CHANGELOG.md` | Standard software reusability practice |
-| **Low** | Integrate the PhD tutorial HTML into the Sphinx docs-site | Unifies pedagogical documentation |
+### Already completed (2026-05-05)
+- [x] Fix README.md DG status table and version string
+- [x] Add Installation section to README
+- [x] Add Quickstart code block to README
+- [x] Bump `pyproject.toml` / `cbg/__init__.py` version consistency
+- [x] Source `cbg.__version__` from `importlib.metadata`
+- [x] Soften import-time `docs/` filesystem check for pip-installed users
+- [x] Add `[tool.black]`, `[tool.ruff]`, `[tool.mypy]` to `pyproject.toml`
+- [x] Create `CHANGELOG.md`
+- [x] Update `CITATION.cff`, `codemeta.json`, `.zenodo.json` to current version
+- [x] Rebuild API docs and landing page to reflect DG-2 status
+
+### Still open — Critical
+- [ ] **Mint a Zenodo DOI** and populate the placeholder
+- [ ] **Add ORCID** to `CITATION.cff`, `.zenodo.json`, `codemeta.json`, README
+- [ ] **Publish to PyPI** to enable `pip install oqs-cbg-pipeline`
+- [ ] **Add `examples/` directory** with at least one runnable script and one Jupyter notebook
+
+### Still open — High
+- [ ] **Enforce `black` / `ruff` / `mypy` in CI**
+- [ ] **Add code coverage step to CI** (generate and upload reports)
+- [ ] **Add `__all__` to every package `__init__.py`**
+- [ ] **Remove or further soften the import-time `docs/` check** (currently still checks when `docs/` dir exists, even if incomplete)
+
+### Still open — Medium
+- [ ] **Consider namespacing sub-packages under `cbg.*`**
+- [ ] **Add issue / PR templates** to `.github/`
+- [ ] **Integrate the PhD tutorial HTML into the Sphinx docs-site**
+- [ ] **Add a convenience API** (e.g., `cbg.pipeline.compute_k(...)`) bypassing the YAML card layer
+
+### Still open — Low / Deferred (acknowledged by project)
+- [ ] Complete benchmark reference implementations (`exact_finite_env.py`, `qutip_reference.py`) — DG-3 territory
+- [ ] Complete model APIs (`fano_anderson.py`, `jaynes_cummings.py`) — pending benchmark cards
+- [ ] Implement `reporting/benchmark_card.py::write_card` — pending DG-3/4 needs
+- [ ] Add data export formats (HDF5, NetCDF, CSV)
+- [ ] Add interactive/cloud environment (Binder, Colab)
+- [ ] Populate `codemeta.json` `funding` field
 
 ---
 
 ## Bottom line
 
-This repository is **a scientific governance fortress with a broken drawbridge**. The metadata, provenance tracking, and reproducibility discipline are genuinely exceptional — among the best reviewed. But the **README lies about the project's maturity**, there are **no installation instructions**, **no runnable examples**, and **the package warns at import time when used outside the repository tree**. A determined expert can read the source code and docstrings to figure it out, but the broader open-quantum-systems community the project seeks to serve will bounce off it.
+This repository is **a scientific governance fortress whose drawbridge has been partially repaired**. The metadata, provenance tracking, and reproducibility discipline remain genuinely exceptional. The steward's rapid response to the initial review (`0df8a1e`) fixed the most embarrassing software-accessibility gaps: the README no longer lies about maturity, installation instructions exist, a quickstart example runs, and the package no longer warns at import time when used outside the repository tree.
 
-FAIR is not just about having `CITATION.cff` and `.zenodo.json` files. It is about enabling a researcher to **find, access, interoperate with, and reuse** the software with minimal friction. Right now, this repo excels at the "findable metadata" layer and struggles at the "actually usable software" layer.
+However, **FAIR is a journey, not a destination.** The repository still lacks a DOI, ORCID, PyPI presence, runnable examples, CI-enforced linting, and a namespaced package structure. A determined expert can now install and run the code with minimal friction, but the broader open-quantum-systems community would still benefit from the remaining high-priority items — especially a minted DOI and an `examples/` directory — before the repository can be called broadly reusable.
