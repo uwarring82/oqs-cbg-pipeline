@@ -685,10 +685,22 @@ def test_run_card_c1_displaced_runs_to_clean_fail():
     assert "Lamb shift" in tcr.notes
 
 
-def test_run_card_c2_thermal_scope_is_deferred():
+def test_run_card_c2_thermal_runs_to_clean_fail():
+    """C2 thermal handler is wired (next-deferred commit). The σ_x finite
+    reference and the σ_-/σ_+ secular Lindblad reference both run to
+    completion and return FAIL at the frozen 1.0e-6 threshold, again
+    consistent with the Markov-vs-exact mismatch."""
     card = _single_case_card(C2_PATH, "thermal_bath_cross_method")
-    with pytest.raises(NotImplementedError, match="spin_boson_sigma_x thermal"):
-        bc.run_card(card)
+    result = bc.run_card(card)
+    assert result.verdict == "FAIL"
+    assert result.runner_version == bc.__version__
+    assert len(result.test_case_results) == 1
+    tcr = result.test_case_results[0]
+    assert tcr.name == "thermal_bath_cross_method"
+    assert not tcr.passed
+    assert tcr.error > card.threshold
+    assert "σ_x" in tcr.notes or "sigma_x" in tcr.notes
+    assert "σ_-" in tcr.notes or "sigma_-" in tcr.notes or "secular" in tcr.notes
 
 
 def test_cross_method_relative_frobenius_shape_mismatch_raises():

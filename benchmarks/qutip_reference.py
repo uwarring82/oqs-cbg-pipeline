@@ -245,6 +245,90 @@ def _propagate_pure_dephasing_displaced_delta_omega_c(
     return rho_system_t
 
 
+def _propagate_spin_boson_sigma_x_thermal(
+    model_spec: dict[str, Any],
+    t_grid: np.ndarray,
+    solver_options: dict[str, Any] | None,
+    qutip: Any,
+) -> np.ndarray:
+    """C2 thermal-bath fixture: σ_x coupling under Born-Markov-secular Lindblad.
+
+    Unlike σ_z (pure dephasing) where the bath couples to the system's
+    energy basis and only S(0) matters, σ_x couples to off-diagonal
+    transitions, so the relevant bath spectrum frequencies are ±ω_S
+    (the system Bohr frequency). The secular master equation has two
+    Lindblad channels:
+
+        c_- = √(γ(+ω_S)) σ_-     (relaxation; rate γ_- = S(+ω_S))
+        c_+ = √(γ(-ω_S)) σ_+     (excitation; rate γ_+ = S(-ω_S))
+
+    where S(ω) = ∫_{-∞}^∞ ⟨B(t)B(0)⟩ e^{iωt} dt is the bath spectrum,
+    sourced from cbg.bath_correlations.bath_two_point_thermal (NOT
+    from QuTiP defaults). For ohmic at T > 0:
+
+        S(+ω_S) = 2π J(ω_S) (n(ω_S) + 1)
+        S(-ω_S) = 2π J(ω_S) n(ω_S)
+
+    so the long-time steady state is the canonical Boltzmann distribution
+    P(↑)/P(↓) = γ_+/γ_- = exp(-ω_S/T).
+
+    Implementation evaluates S(ω_S) and S(-ω_S) numerically by Simpson
+    integration of cbg's correlator on a fine grid, avoiding any
+    closed-form ohmic-spectrum dependence inside this module.
+    """
+    sd = model_spec.get("bath_spectral_density", {})
+    bs = model_spec.get("bath_state", {})
+    alpha = float(sd["coupling_strength"])
+    omega_c = float(sd["cutoff_frequency"])
+    temperature = float(bs["temperature"])
+    omega = float(model_spec.get("parameters", {}).get("omega", 1.0))
+
+    # Numerical bath spectrum at ±ω: S(ω) = 2 Re[∫_0^∞ C(t) e^{iωt} dt].
+    t_int = np.linspace(0.0, 30.0 / omega_c, 4096)
+    C_int = np.array(
+        [bath_two_point_thermal(t, alpha, omega_c, temperature) for t in t_int]
+    )
+    re_C = C_int.real
+    im_C = C_int.imag
+    cos_w = np.cos(omega * t_int)
+    sin_w = np.sin(omega * t_int)
+    # S(+ω) = 2 ∫(re_C cos(ωt) - im_C sin(ωt)) dt
+    # S(-ω) = 2 ∫(re_C cos(ωt) + im_C sin(ωt)) dt
+    gamma_relax = 2.0 * float(integrate.simpson(re_C * cos_w - im_C * sin_w, t_int))
+    gamma_excite = 2.0 * float(integrate.simpson(re_C * cos_w + im_C * sin_w, t_int))
+    if gamma_relax < 0 or gamma_excite < 0:
+        raise ValueError(
+            f"_propagate_spin_boson_sigma_x_thermal: numerical spectrum "
+            f"yielded negative rates (γ_-={gamma_relax}, γ_+={gamma_excite}); "
+            f"check spectral-density parameters."
+        )
+
+    sigma_z = qutip.sigmaz()
+    sigma_p = qutip.sigmap()
+    sigma_m = qutip.sigmam()
+    H_S = 0.5 * omega * sigma_z
+
+    plus = (qutip.basis(2, 0) + qutip.basis(2, 1)).unit()
+    rho0 = plus * plus.dag()
+
+    c_ops = [
+        np.sqrt(gamma_relax) * sigma_m,
+        np.sqrt(gamma_excite) * sigma_p,
+    ]
+
+    options = dict(solver_options) if solver_options else {}
+    options.setdefault("store_states", True)
+    options.setdefault("atol", 1e-12)
+    options.setdefault("rtol", 1e-10)
+
+    result = qutip.mesolve(H_S, rho0, list(t_grid), c_ops=c_ops, options=options)
+
+    rho_system_t = np.empty((t_grid.size, 2, 2), dtype=complex)
+    for k, state in enumerate(result.states):
+        rho_system_t[k] = np.asarray(state.full(), dtype=complex)
+    return rho_system_t
+
+
 _HANDLERS: dict[tuple[str, str, str, str | None], Any] = {
     ("(omega / 2) * sigma_z", "sigma_z", "thermal", None): _propagate_pure_dephasing_thermal,
     (
@@ -253,4 +337,10 @@ _HANDLERS: dict[tuple[str, str, str, str | None], Any] = {
         "coherent_displaced",
         "delta-omega_c",
     ): _propagate_pure_dephasing_displaced_delta_omega_c,
+    (
+        "(omega / 2) * sigma_z",
+        "sigma_x",
+        "thermal",
+        None,
+    ): _propagate_spin_boson_sigma_x_thermal,
 }

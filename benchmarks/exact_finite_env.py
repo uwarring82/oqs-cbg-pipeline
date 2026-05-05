@@ -298,6 +298,121 @@ def _kron_chain(ops: list[np.ndarray]) -> np.ndarray:
     return out
 
 
+# ─── spin_boson_sigma_x thermal-bath helper (C2 thermal case) ──────────────
+#
+# Differs from build_pure_dephasing_thermal_total in exactly one line: the
+# joint interaction is σ_x ⊗ Σ_k g_k (a_k + a_k†) instead of σ_z ⊗ ... .
+# The bath discretisation, thermal initial state, and Hilbert-space layout
+# are identical. Future refactor opportunity: factor out
+# `_build_spin_thermal_joint(coupling_op_array, ...)` and call from both
+# wrappers; deferred to keep this commit's scope minimal.
+
+
+def build_spin_boson_sigma_x_thermal_total(
+    model_spec: dict[str, Any],
+    *,
+    n_bath_modes: int = 4,
+    n_levels_per_mode: int = 4,
+    omega_min_factor: float = 0.05,
+    omega_max_factor: float = 4.0,
+    initial_system_rho: np.ndarray | None = None,
+) -> tuple[np.ndarray, np.ndarray, int, int]:
+    """Build (H_total, rho_initial, system_dim, bath_dim) for the C2 thermal case.
+
+    System is a qubit with ``H_S = (omega/2) sigma_z`` and ``A = sigma_x``;
+    the interaction is ``H_int = sigma_x ⊗ sum_k g_k (a_k + a_k†)``. Unlike
+    the σ_z (pure-dephasing) case, ``[H_S, A] ≠ 0``, so the σ_z populations
+    of ρ_S(t) are NOT conserved — the system experiences both energy
+    relaxation toward thermal Boltzmann equilibrium and coherence loss.
+
+    Parameters and contract are otherwise identical to
+    ``build_pure_dephasing_thermal_total``.
+    """
+    sd = model_spec.get("bath_spectral_density", {})
+    if sd.get("family") != "ohmic":
+        raise ValueError(
+            f"build_spin_boson_sigma_x_thermal_total: requires ohmic spectral "
+            f"density; got {sd.get('family')!r}"
+        )
+    bs = model_spec.get("bath_state", {})
+    if bs.get("family") != "thermal":
+        raise ValueError(
+            f"build_spin_boson_sigma_x_thermal_total: requires thermal "
+            f"bath_state; got {bs.get('family')!r}"
+        )
+
+    alpha = float(sd["coupling_strength"])
+    omega_c = float(sd["cutoff_frequency"])
+    temperature = float(bs["temperature"])
+    omega = float(model_spec.get("parameters", {}).get("omega", 1.0))
+
+    if temperature <= 0.0:
+        raise ValueError(
+            "build_spin_boson_sigma_x_thermal_total: thermal-mode populations "
+            "require temperature > 0 (T=0 ground state is a separate path)"
+        )
+
+    omega_min = omega_min_factor * omega_c
+    omega_max = omega_max_factor * omega_c
+    omega_modes = np.geomspace(omega_min, omega_max, n_bath_modes)
+    log_edges = np.empty(n_bath_modes + 1)
+    log_modes = np.log(omega_modes)
+    log_edges[1:-1] = 0.5 * (log_modes[:-1] + log_modes[1:])
+    log_edges[0] = log_modes[0] - 0.5 * (log_modes[1] - log_modes[0])
+    log_edges[-1] = log_modes[-1] + 0.5 * (log_modes[-1] - log_modes[-2])
+    domega_modes = np.exp(log_edges[1:]) - np.exp(log_edges[:-1])
+
+    J_modes = ohmic_spectral_density(omega_modes, alpha, omega_c)
+    g_modes = np.sqrt(J_modes * domega_modes)
+
+    n = n_levels_per_mode
+    a_single = np.diag(np.sqrt(np.arange(1, n)), k=1)
+    adag_single = a_single.T
+    n_single = adag_single @ a_single
+    I_single = np.eye(n, dtype=complex)
+
+    bath_dim = n**n_bath_modes
+    H_B = np.zeros((bath_dim, bath_dim), dtype=complex)
+    X_modes: list[np.ndarray] = []
+    for k in range(n_bath_modes):
+        ops_X = [I_single] * n_bath_modes
+        ops_X[k] = a_single + adag_single
+        X_modes.append(_kron_chain(ops_X))
+
+        ops_n = [I_single] * n_bath_modes
+        ops_n[k] = n_single
+        H_B += omega_modes[k] * _kron_chain(ops_n)
+
+    sigma_z = np.array([[1.0, 0.0], [0.0, -1.0]], dtype=complex)
+    sigma_x = np.array([[0.0, 1.0], [1.0, 0.0]], dtype=complex)
+    I_S = np.eye(2, dtype=complex)
+
+    H_S = 0.5 * omega * sigma_z
+    H_total = np.kron(H_S, np.eye(bath_dim, dtype=complex)) + np.kron(I_S, H_B)
+    for k in range(n_bath_modes):
+        H_total += g_modes[k] * np.kron(sigma_x, X_modes[k])
+
+    levels = np.arange(n)
+    per_mode_thermal: list[np.ndarray] = []
+    for k in range(n_bath_modes):
+        weights = np.exp(-omega_modes[k] * levels / temperature)
+        weights /= weights.sum()
+        per_mode_thermal.append(np.diag(weights).astype(complex))
+    rho_B = _kron_chain(per_mode_thermal)
+
+    if initial_system_rho is None:
+        plus = np.array([[1.0], [1.0]], dtype=complex) / np.sqrt(2.0)
+        initial_system_rho = plus @ plus.conj().T
+    initial_system_rho = np.asarray(initial_system_rho, dtype=complex)
+    if initial_system_rho.shape != (2, 2):
+        raise ValueError(
+            f"initial_system_rho must be (2, 2); got {initial_system_rho.shape}"
+        )
+
+    rho_initial = np.kron(initial_system_rho, rho_B)
+    return H_total, rho_initial, 2, bath_dim
+
+
 # ─── Pure-dephasing displaced-bath helper (C1 displaced delta-omega_c) ─────
 
 

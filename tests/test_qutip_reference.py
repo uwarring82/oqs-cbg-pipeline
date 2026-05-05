@@ -77,7 +77,7 @@ def test_reference_propagate_unsupported_combo_raises():
 
 def test_reference_propagate_unsupported_coupling_raises():
     spec = _c1_thermal_model_spec()
-    spec["coupling_operator"] = "sigma_x"
+    spec["coupling_operator"] = "sigma_y"  # σ_y has no handler; σ_x thermal does.
     with pytest.raises(NotImplementedError, match="no handler registered"):
         reference_propagate(spec, np.array([0.0, 1.0]))
 
@@ -152,3 +152,65 @@ def test_reference_propagate_unsupported_displacement_profile_raises():
     spec["bath_state"]["displacement_profile"] = "delta-omega_S"
     with pytest.raises(NotImplementedError, match="no handler registered"):
         reference_propagate(spec, np.array([0.0, 1.0]))
+
+
+# ─── C2 thermal fixture (spin_boson_sigma_x × thermal) ──────────────────────
+
+
+def _c2_thermal_model_spec() -> dict:
+    return {
+        "system_dimension": 2,
+        "system_hamiltonian": "(omega / 2) * sigma_z",
+        "coupling_operator": "sigma_x",
+        "bath_type": "bosonic_linear",
+        "bath_spectral_density": {
+            "family": "ohmic",
+            "cutoff_frequency": 10.0,
+            "coupling_strength": 0.05,
+        },
+        "bath_state": {"family": "thermal", "temperature": 0.5},
+        "parameters": {"omega": 1.0},
+    }
+
+
+def test_reference_propagate_c2_thermal_runs():
+    t_grid = np.linspace(0.0, 5.0, 11)
+    rho_S_t = reference_propagate(_c2_thermal_model_spec(), t_grid)
+    assert rho_S_t.shape == (11, 2, 2)
+
+
+def test_reference_propagate_c2_thermal_traces_unit():
+    t_grid = np.linspace(0.0, 5.0, 11)
+    rho_S_t = reference_propagate(_c2_thermal_model_spec(), t_grid)
+    for k in range(t_grid.size):
+        assert np.isclose(np.trace(rho_S_t[k]).real, 1.0, atol=1e-8)
+
+
+def test_reference_propagate_c2_thermal_hermitian():
+    t_grid = np.linspace(0.0, 5.0, 11)
+    rho_S_t = reference_propagate(_c2_thermal_model_spec(), t_grid)
+    for k in range(t_grid.size):
+        assert np.allclose(rho_S_t[k], rho_S_t[k].conj().T, atol=1e-10)
+
+
+def test_reference_propagate_c2_thermal_diagonals_evolve():
+    """σ_x Lindblad → σ_z populations relax (not conserved as in σ_z)."""
+    t_grid = np.linspace(0.0, 5.0, 11)
+    rho_S_t = reference_propagate(_c2_thermal_model_spec(), t_grid)
+    p_up_init = rho_S_t[0, 0, 0].real
+    p_up_late = rho_S_t[-1, 0, 0].real
+    assert np.isclose(p_up_init, 0.5, atol=1e-8)
+    assert abs(p_up_late - 0.5) > 0.05
+
+
+def test_reference_propagate_c2_thermal_approaches_boltzmann():
+    """Long-time limit: P(↑)/P(↓) → exp(-ω_S/T) (canonical Boltzmann).
+
+    For ω_S=1, T=0.5: P(↑) → 1/(1 + e^2) ≈ 0.1192. The σ_-/σ_+ Lindblad
+    rates from cbg.bath_correlations should produce detailed balance.
+    """
+    t_grid = np.linspace(0.0, 50.0, 51)
+    rho_S_t = reference_propagate(_c2_thermal_model_spec(), t_grid)
+    p_up_long = rho_S_t[-1, 0, 0].real
+    expected = 1.0 / (1.0 + np.exp(2.0))  # ≈ 0.1192
+    assert np.isclose(p_up_long, expected, atol=5e-3)

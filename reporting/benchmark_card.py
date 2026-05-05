@@ -1796,6 +1796,43 @@ def _deferred_cross_method_handler(reason: str) -> CrossMethodHandler:
     return handler
 
 
+def _cross_handler_spin_boson_sigma_x_thermal(
+    model_spec: dict[str, Any],
+    t_grid: np.ndarray,
+    _numerical: dict[str, Any],
+    _truncation: dict[str, Any],
+) -> tuple[np.ndarray, np.ndarray, str]:
+    """C2 thermal-bath cross-method handler.
+
+    Builds the σ_x finite-system reference (full unitary on the joint
+    system+bath Hilbert space, no rotating-wave approximation) against
+    the QuTiP secular Lindblad reference (σ_-/σ_+ collapse operators
+    with rates S(±ω_S) sourced from cbg.bath_correlations). Belongs to
+    the same finite-system × solver-default failure-mode pairing as
+    the C1 handlers; the qualitative differences from the σ_z case
+    are (i) energy relaxation toward Boltzmann equilibrium and (ii)
+    the relevant bath spectral frequencies are ±ω_S rather than 0.
+    """
+    H_total, rho_initial, system_dim, bath_dim = (
+        exact_finite_env.build_spin_boson_sigma_x_thermal_total(model_spec)
+    )
+    rho_exact = exact_finite_env.propagate(
+        H_total,
+        rho_initial,
+        t_grid,
+        system_dim=system_dim,
+        bath_dim=bath_dim,
+    )
+    rho_qutip = qutip_reference.reference_propagate(model_spec, t_grid)
+    notes = (
+        "exact_finite_env finite-system reference for σ_x coupling "
+        f"(system_dim={system_dim}, bath_dim={bath_dim}); "
+        "qutip_reference solver-default secular Lindblad with σ_-/σ_+ "
+        "collapse operators at S(±ω_S)."
+    )
+    return rho_exact, rho_qutip, notes
+
+
 def _cross_handler_pure_dephasing_displaced_delta_omega_c(
     model_spec: dict[str, Any],
     t_grid: np.ndarray,
@@ -1835,10 +1872,10 @@ _CROSS_METHOD_TEST_CASE_HANDLERS: dict[tuple[str, str], CrossMethodHandler] = {
         "pure_dephasing",
         "displaced_bath_delta_omega_c_cross_method",
     ): _cross_handler_pure_dephasing_displaced_delta_omega_c,
-    ("spin_boson_sigma_x", "thermal_bath_cross_method"): _deferred_cross_method_handler(
-        "spin_boson_sigma_x thermal cross-method fixture is deferred after "
-        "the pure_dephasing thermal baseline"
-    ),
+    (
+        "spin_boson_sigma_x",
+        "thermal_bath_cross_method",
+    ): _cross_handler_spin_boson_sigma_x_thermal,
     (
         "spin_boson_sigma_x",
         "displaced_bath_delta_omega_c_cross_method",
