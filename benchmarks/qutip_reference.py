@@ -329,6 +329,106 @@ def _propagate_spin_boson_sigma_x_thermal(
     return rho_system_t
 
 
+def _propagate_spin_boson_sigma_x_displaced_delta_omega_c(
+    model_spec: dict[str, Any],
+    t_grid: np.ndarray,
+    solver_options: dict[str, Any] | None,
+    qutip: Any,
+) -> np.ndarray:
+    """C2 displaced fixture: σ_x coupling under coherent-displaced bath.
+
+    Combines two Phase B mechanisms already validated:
+      - Connected-stats invariance under displacement: γ_± = S(±ω_S) are
+        identical to the C2 thermal case (σ_-/σ_+ secular Lindblad).
+      - Coherent-displacement Lamb-like drive: ⟨B(t)⟩ = 2 α₀ √J(ω_c)
+        cos(ω_c t) acts as a time-dependent classical drive on the
+        coupling operator. For σ_x coupling this is a coherent σ_x drive,
+        not a σ_z Lamb shift.
+
+    The total Hamiltonian seen by the system is
+
+        H_eff(t) = (ω/2) σ_z + ⟨B(t)⟩ σ_x,
+
+    encoded as a QuTiP list-Hamiltonian with a string-coefficient time
+    dependence; the dissipator is the same σ_-/σ_+ pair as the σ_x
+    thermal handler.
+    """
+    sd = model_spec.get("bath_spectral_density", {})
+    bs = model_spec.get("bath_state", {})
+    params = bs.get("parameters") or {}
+    profile_name = bs.get("displacement_profile")
+    if profile_name != "delta-omega_c":
+        raise NotImplementedError(
+            f"_propagate_spin_boson_sigma_x_displaced_delta_omega_c: "
+            f"only 'delta-omega_c' supported at v0.1.0; got {profile_name!r}"
+        )
+    if "alpha_0" not in params or "omega_c" not in params:
+        raise ValueError(
+            "_propagate_spin_boson_sigma_x_displaced_delta_omega_c: "
+            "bath_state.parameters must carry alpha_0 and omega_c"
+        )
+
+    alpha = float(sd["coupling_strength"])
+    omega_c = float(sd["cutoff_frequency"])
+    temperature = float(bs.get("temperature", 0.5))
+    omega = float(model_spec.get("parameters", {}).get("omega", 1.0))
+    alpha_0 = float(params["alpha_0"])
+    omega_disp = float(params["omega_c"])
+
+    # Same numerical S(±ω_S) extraction as the σ_x thermal handler
+    # (connected stats invariant under displacement).
+    t_int = np.linspace(0.0, 30.0 / omega_c, 4096)
+    C_int = np.array(
+        [bath_two_point_thermal(t, alpha, omega_c, temperature) for t in t_int]
+    )
+    cos_w = np.cos(omega * t_int)
+    sin_w = np.sin(omega * t_int)
+    gamma_relax = 2.0 * float(integrate.simpson(C_int.real * cos_w - C_int.imag * sin_w, t_int))
+    gamma_excite = 2.0 * float(integrate.simpson(C_int.real * cos_w + C_int.imag * sin_w, t_int))
+    if gamma_relax < 0 or gamma_excite < 0:
+        raise ValueError(
+            f"_propagate_spin_boson_sigma_x_displaced_delta_omega_c: numerical "
+            f"spectrum yielded negative rates (γ_-={gamma_relax}, γ_+={gamma_excite})"
+        )
+
+    # Coherent-drive amplitude on σ_x at frequency ω_disp.
+    sqrt_J = float(np.sqrt(ohmic_spectral_density(omega_disp, alpha, omega_c)))
+    drive_amp = 2.0 * alpha_0 * sqrt_J
+
+    sigma_z = qutip.sigmaz()
+    sigma_x = qutip.sigmax()
+    sigma_p = qutip.sigmap()
+    sigma_m = qutip.sigmam()
+    H_S = 0.5 * omega * sigma_z
+
+    plus = (qutip.basis(2, 0) + qutip.basis(2, 1)).unit()
+    rho0 = plus * plus.dag()
+    c_ops = [
+        np.sqrt(gamma_relax) * sigma_m,
+        np.sqrt(gamma_excite) * sigma_p,
+    ]
+
+    H_t = [
+        H_S,
+        [sigma_x, "drive_amp * cos(omega_disp * t)"],
+    ]
+    args = {"drive_amp": drive_amp, "omega_disp": omega_disp}
+
+    options = dict(solver_options) if solver_options else {}
+    options.setdefault("store_states", True)
+    options.setdefault("atol", 1e-12)
+    options.setdefault("rtol", 1e-10)
+
+    result = qutip.mesolve(
+        H_t, rho0, list(t_grid), c_ops=c_ops, args=args, options=options
+    )
+
+    rho_system_t = np.empty((t_grid.size, 2, 2), dtype=complex)
+    for k, state in enumerate(result.states):
+        rho_system_t[k] = np.asarray(state.full(), dtype=complex)
+    return rho_system_t
+
+
 _HANDLERS: dict[tuple[str, str, str, str | None], Any] = {
     ("(omega / 2) * sigma_z", "sigma_z", "thermal", None): _propagate_pure_dephasing_thermal,
     (
@@ -343,4 +443,10 @@ _HANDLERS: dict[tuple[str, str, str, str | None], Any] = {
         "thermal",
         None,
     ): _propagate_spin_boson_sigma_x_thermal,
+    (
+        "(omega / 2) * sigma_z",
+        "sigma_x",
+        "coherent_displaced",
+        "delta-omega_c",
+    ): _propagate_spin_boson_sigma_x_displaced_delta_omega_c,
 }

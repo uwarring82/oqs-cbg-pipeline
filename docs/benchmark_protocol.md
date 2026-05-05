@@ -2,7 +2,7 @@
 
 **Layer:** Repository protective scaffolding
 **Anchor:** Sail v0.5 §11 (four explicit content requirements)
-**Last updated:** 2026-05-05 (DG-3 C2 thermal handler wired)
+**Last updated:** 2026-05-05 (DG-3 C2 displaced handler wired — full C1+C2 runner reachability)
 
 ---
 
@@ -66,7 +66,7 @@ Current status (mirrors `validity_envelope.md`):
 
 | Pair | Implementation readiness | Failure-asymmetry clearance |
 |---|---|---|
-| `exact_finite_env.py` + `qutip_reference.py` | PARTIAL — full C1 runner wired; C2 thermal wired; C2 displaced deferred | NOT CLEARED at DG level; method classes are distinct (`finite-system` vs `solver-default`), but C2 displaced is incomplete and third-method clearance remains deferred |
+| `exact_finite_env.py` + `qutip_reference.py` | COMPLETE for all four C1+C2 fixtures | NOT CLEARED at DG level; method classes are distinct (`finite-system` vs `solver-default`), but third-method clearance from a non-overlapping class (HEOM, TEMPO, MCTDH, pseudomode/chain-mapping) remains deferred |
 
 DG-3 *implementation-ready pass* requires only the first column. DG-3 *failure-asymmetry-cleared pass* requires both. Reports must explicitly state which level of pass is being claimed.
 
@@ -77,9 +77,9 @@ Two DG-3 cross-method cards are frozen:
 | Card | Model | Methods compared | Status |
 |---|---|---|---|
 | C1 | pure_dephasing | exact_finite_env vs qutip_reference | frozen-awaiting-run; both fixtures run to clean FAIL (thermal: `error ≈ 0.293`; displaced delta-omega_c: `error ≈ 0.309`; threshold 1.0e-6) |
-| C2 | spin_boson_sigma_x | exact_finite_env vs qutip_reference | frozen-awaiting-run; thermal runs to clean FAIL (`error ≈ 0.538`); displaced delta-omega_c handler deferred |
+| C2 | spin_boson_sigma_x | exact_finite_env vs qutip_reference | frozen-awaiting-run; both fixtures run to clean FAIL (thermal: `error ≈ 0.538`; displaced delta-omega_c: `error ≈ 0.526`; threshold 1.0e-6) |
 
-Cards inherit frozen parameters from their DG-1/DG-2 siblings (A3/B4 and A4/B5) to preserve cross-card comparability. The runner now has a DG-3 cross-method comparison branch (`reporting.benchmark_card._run_cross_method`) with handlers registered for both C1 fixtures and C2 thermal. Phase D verdict blocks for C1 are reachable end-to-end; the C2 verdict commit is gated on the remaining `displaced_bath_delta_omega_c_cross_method` handler for `spin_boson_sigma_x`, which still raises `NotImplementedError`.
+Cards inherit frozen parameters from their DG-1/DG-2 siblings (A3/B4 and A4/B5) to preserve cross-card comparability. The runner now has a DG-3 cross-method comparison branch (`reporting.benchmark_card._run_cross_method`) with handlers registered for **all four** C1+C2 fixtures. Phase D verdict commits for both C1 and C2 are structurally reachable; their admissibility requires either convergence in the finite-bath truncation or a third reference method from a non-overlapping failure-mode class (Sail v0.5 §5 Tier 3). **No `NotImplementedError` paths remain for C1/C2 frozen test cases.**
 
 ## 4. DG-4 status tracking
 

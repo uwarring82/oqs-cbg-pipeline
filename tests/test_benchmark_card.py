@@ -703,6 +703,41 @@ def test_run_card_c2_thermal_runs_to_clean_fail():
     assert "σ_-" in tcr.notes or "sigma_-" in tcr.notes or "secular" in tcr.notes
 
 
+def test_run_card_c2_displaced_runs_to_clean_fail():
+    """C2 displaced delta-omega_c handler is wired (final C1+C2 deferred
+    handler commit). The σ_x finite reference applies a coherent
+    displacement to the resonant bath mode; the QuTiP reference combines
+    σ_-/σ_+ secular Lindblad with a time-dependent σ_x drive ⟨B(t)⟩ σ_x.
+    Both run to completion and return FAIL at the 1e-6 threshold."""
+    card = _single_case_card(C2_PATH, "displaced_bath_delta_omega_c_cross_method")
+    result = bc.run_card(card)
+    assert result.verdict == "FAIL"
+    assert result.runner_version == bc.__version__
+    assert len(result.test_case_results) == 1
+    tcr = result.test_case_results[0]
+    assert tcr.name == "displaced_bath_delta_omega_c_cross_method"
+    assert not tcr.passed
+    assert tcr.error > card.threshold
+    assert ("σ_x" in tcr.notes) or ("sigma_x" in tcr.notes)
+    assert "delta-omega_c" in tcr.notes
+
+
+def test_run_card_c2_full_card_reaches_verdict():
+    """All four C1+C2 fixtures are now runner-reachable: C2 v0.1.0 runs
+    both its test_cases without raising and returns an aggregate FAIL."""
+    card = bc.load_card(C2_PATH)
+    # Use a reduced grid to keep the finite-environment reference fast.
+    card.frozen_parameters["numerical"]["time_grid"]["t_end"] = 5.0
+    card.frozen_parameters["numerical"]["time_grid"]["n_points"] = 21
+    result = bc.run_card(card)
+    assert result.verdict == "FAIL"
+    case_names = {tcr.name for tcr in result.test_case_results}
+    assert case_names == {
+        "thermal_bath_cross_method",
+        "displaced_bath_delta_omega_c_cross_method",
+    }
+
+
 def test_cross_method_relative_frobenius_shape_mismatch_raises():
     a = np.zeros((2, 2, 2), dtype=complex)
     b = np.zeros((3, 2, 2), dtype=complex)

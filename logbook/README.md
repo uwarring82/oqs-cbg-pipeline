@@ -90,9 +90,10 @@ Both exceptions are bookkeeping completions of explicit gaps, not substantive re
 | 2026-05-05 | `dg-3-phase-c-runner-wired` | structural | DG-3 Phase C partial implementation — cross-method runner branch added; C1 thermal fixture runs exact_finite_env vs qutip_reference and returns clean FAIL at error ≈ 0.548 > 1e-6; C1 displaced and C2 handlers remain deferred; no DG-3 verdict |
 | 2026-05-05 | `dg-3-c1-displaced-handler-wired` | structural | DG-3 next deferred handler — C1 displaced delta-omega_c wired in both reference modules; runner registry entry replaces the previous NotImplementedError; both C1 fixtures run end-to-end (thermal: error ≈ 0.293; displaced: error ≈ 0.309; threshold 1e-6); C2 handlers still deferred; no DG-3 verdict |
 | 2026-05-05 | `dg-3-c2-thermal-handler-wired` | structural | DG-3 next deferred handler — C2 (spin_boson_sigma_x) thermal wired with σ_x-coupling exact reference and σ_-/σ_+ secular Lindblad QuTiP reference; rates S(±ω_S) sourced from cbg.bath_correlations; QuTiP path reaches Boltzmann at P(↑)=0.1189 vs target 0.1192; runs to clean FAIL (error ≈ 0.538); only C2 displaced handler still deferred; no DG-3 verdict |
+| 2026-05-05 | `dg-3-c2-displaced-handler-wired` | structural | DG-3 last deferred handler — C2 displaced delta-omega_c wired (σ_x coupling + coherent-displaced bath); same σ_-/σ_+ Lindblad as C2 thermal plus a time-dependent σ_x classical drive ⟨B(t)⟩ σ_x; runs to clean FAIL (error ≈ 0.526); **all four C1+C2 fixtures now runner-reachable**; next: failure-asymmetry clearance via a third method from a non-overlapping class; no DG-3 verdict |
 
 (This index is updated atomically when new entries are added.)
 
 ---
 
-*Last updated: 2026-05-05 (DG-3 C2 thermal handler wired). CC-BY-4.0 (see ../LICENSE-docs).*
+*Last updated: 2026-05-05 (DG-3 C2 displaced handler wired — full C1+C2 reachability). CC-BY-4.0 (see ../LICENSE-docs).*

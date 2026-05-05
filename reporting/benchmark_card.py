@@ -1833,6 +1833,40 @@ def _cross_handler_spin_boson_sigma_x_thermal(
     return rho_exact, rho_qutip, notes
 
 
+def _cross_handler_spin_boson_sigma_x_displaced_delta_omega_c(
+    model_spec: dict[str, Any],
+    t_grid: np.ndarray,
+    _numerical: dict[str, Any],
+    _truncation: dict[str, Any],
+) -> tuple[np.ndarray, np.ndarray, str]:
+    """C2 displaced delta-omega_c cross-method handler.
+
+    Combines the σ_x finite-system reference under coherent-displaced bath
+    (mode at ω_c displaced; same α_disp calibration as the σ_z displaced
+    builder) with the QuTiP secular Lindblad reference for σ_x — same
+    σ_-/σ_+ rates as the C2 thermal handler (connected stats invariant
+    under displacement) plus a time-dependent σ_x drive ⟨B(t)⟩ σ_x.
+    """
+    H_total, rho_initial, system_dim, bath_dim = (
+        exact_finite_env.build_spin_boson_sigma_x_displaced_total(model_spec)
+    )
+    rho_exact = exact_finite_env.propagate(
+        H_total,
+        rho_initial,
+        t_grid,
+        system_dim=system_dim,
+        bath_dim=bath_dim,
+    )
+    rho_qutip = qutip_reference.reference_propagate(model_spec, t_grid)
+    notes = (
+        "exact_finite_env finite-system σ_x reference with coherent "
+        f"displacement (system_dim={system_dim}, bath_dim={bath_dim}, "
+        "profile=delta-omega_c); qutip_reference σ_-/σ_+ secular "
+        "Lindblad with time-dependent σ_x drive."
+    )
+    return rho_exact, rho_qutip, notes
+
+
 def _cross_handler_pure_dephasing_displaced_delta_omega_c(
     model_spec: dict[str, Any],
     t_grid: np.ndarray,
@@ -1879,10 +1913,7 @@ _CROSS_METHOD_TEST_CASE_HANDLERS: dict[tuple[str, str], CrossMethodHandler] = {
     (
         "spin_boson_sigma_x",
         "displaced_bath_delta_omega_c_cross_method",
-    ): _deferred_cross_method_handler(
-        "spin_boson_sigma_x coherent_displaced cross-method fixture is "
-        "deferred after the sigma_x thermal fixture"
-    ),
+    ): _cross_handler_spin_boson_sigma_x_displaced_delta_omega_c,
 }
 
 

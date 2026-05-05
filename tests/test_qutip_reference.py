@@ -214,3 +214,57 @@ def test_reference_propagate_c2_thermal_approaches_boltzmann():
     p_up_long = rho_S_t[-1, 0, 0].real
     expected = 1.0 / (1.0 + np.exp(2.0))  # ≈ 0.1192
     assert np.isclose(p_up_long, expected, atol=5e-3)
+
+
+# ─── C2 displaced fixture (sigma_x × coherent_displaced delta-omega_c) ──────
+
+
+def _c2_displaced_model_spec() -> dict:
+    return {
+        "system_dimension": 2,
+        "system_hamiltonian": "(omega / 2) * sigma_z",
+        "coupling_operator": "sigma_x",
+        "bath_type": "bosonic_linear",
+        "bath_spectral_density": {
+            "family": "ohmic",
+            "cutoff_frequency": 10.0,
+            "coupling_strength": 0.05,
+        },
+        "bath_state": {
+            "family": "coherent_displaced",
+            "displacement_profile": "delta-omega_c",
+            "parameters": {"alpha_0": 1.0, "omega_c": 10.0},
+            "temperature": 0.5,
+        },
+        "parameters": {"omega": 1.0},
+    }
+
+
+def test_reference_propagate_c2_displaced_runs():
+    t_grid = np.linspace(0.0, 5.0, 11)
+    rho_S_t = reference_propagate(_c2_displaced_model_spec(), t_grid)
+    assert rho_S_t.shape == (11, 2, 2)
+
+
+def test_reference_propagate_c2_displaced_traces_unit():
+    t_grid = np.linspace(0.0, 5.0, 11)
+    rho_S_t = reference_propagate(_c2_displaced_model_spec(), t_grid)
+    for k in range(t_grid.size):
+        assert np.isclose(np.trace(rho_S_t[k]).real, 1.0, atol=1e-8)
+
+
+def test_reference_propagate_c2_displaced_hermitian():
+    t_grid = np.linspace(0.0, 5.0, 11)
+    rho_S_t = reference_propagate(_c2_displaced_model_spec(), t_grid)
+    for k in range(t_grid.size):
+        assert np.allclose(rho_S_t[k], rho_S_t[k].conj().T, atol=1e-10)
+
+
+def test_reference_propagate_c2_displaced_differs_from_c2_thermal():
+    """The σ_x time-dependent drive ⟨B(t)⟩ σ_x perturbs the trajectory
+    measurably even though it is far off-resonant from ω_S."""
+    t_grid = np.linspace(0.0, 5.0, 11)
+    rho_disp = reference_propagate(_c2_displaced_model_spec(), t_grid)
+    rho_th = reference_propagate(_c2_thermal_model_spec(), t_grid)
+    # P(↑) trajectories should differ noticeably under the σ_x drive
+    assert np.max(np.abs(rho_disp[:, 0, 0].real - rho_th[:, 0, 0].real)) > 1e-3

@@ -13,6 +13,7 @@ import pytest
 from benchmarks.exact_finite_env import (
     build_pure_dephasing_displaced_total,
     build_pure_dephasing_thermal_total,
+    build_spin_boson_sigma_x_displaced_total,
     build_spin_boson_sigma_x_thermal_total,
     propagate,
 )
@@ -397,3 +398,82 @@ def test_propagate_sigma_x_thermal_hermitian_at_all_times():
     rho_S_t = propagate(H_total, rho_initial, t_grid, sd, bd)
     for k in range(t_grid.size):
         assert np.allclose(rho_S_t[k], rho_S_t[k].conj().T, atol=1e-10)
+
+
+# ─── spin_boson_sigma_x displaced fixture (C2 displaced) ────────────────────
+
+
+def _c2_displaced_model_spec() -> dict:
+    """Card C2 v0.1.0's displaced_bath_delta_omega_c_cross_method fixture."""
+    return {
+        "system_dimension": 2,
+        "system_hamiltonian": "(omega / 2) * sigma_z",
+        "coupling_operator": "sigma_x",
+        "bath_type": "bosonic_linear",
+        "bath_spectral_density": {
+            "family": "ohmic",
+            "cutoff_frequency": 10.0,
+            "coupling_strength": 0.05,
+        },
+        "bath_state": {
+            "family": "coherent_displaced",
+            "displacement_profile": "delta-omega_c",
+            "parameters": {"alpha_0": 1.0, "omega_c": 10.0},
+            "temperature": 0.5,
+        },
+        "parameters": {"omega": 1.0},
+    }
+
+
+def test_build_sigma_x_displaced_shapes():
+    H_total, rho_initial, sd, bd = build_spin_boson_sigma_x_displaced_total(
+        _c2_displaced_model_spec(), n_bath_modes=3, n_levels_per_mode=3
+    )
+    assert sd == 2
+    assert bd == 3**3
+    assert H_total.shape == (2 * bd, 2 * bd)
+
+
+def test_build_sigma_x_displaced_hermitian_and_trace_one():
+    H_total, rho_initial, _, _ = build_spin_boson_sigma_x_displaced_total(
+        _c2_displaced_model_spec(), n_bath_modes=3, n_levels_per_mode=3
+    )
+    assert np.allclose(H_total, H_total.conj().T)
+    assert np.allclose(rho_initial, rho_initial.conj().T)
+    assert np.isclose(np.trace(rho_initial).real, 1.0)
+
+
+def test_build_sigma_x_displaced_rejects_non_displaced():
+    spec = _c2_displaced_model_spec()
+    spec["bath_state"]["family"] = "thermal"
+    with pytest.raises(ValueError, match="coherent_displaced"):
+        build_spin_boson_sigma_x_displaced_total(spec)
+
+
+def test_build_sigma_x_displaced_rejects_unsupported_profile():
+    spec = _c2_displaced_model_spec()
+    spec["bath_state"]["displacement_profile"] = "delta-omega_S"
+    with pytest.raises(NotImplementedError, match="delta-omega_c"):
+        build_spin_boson_sigma_x_displaced_total(spec)
+
+
+def test_propagate_sigma_x_displaced_traces_unit():
+    H_total, rho_initial, sd, bd = build_spin_boson_sigma_x_displaced_total(
+        _c2_displaced_model_spec(), n_bath_modes=4, n_levels_per_mode=4
+    )
+    t_grid = np.linspace(0.0, 5.0, 11)
+    rho_S_t = propagate(H_total, rho_initial, t_grid, sd, bd)
+    for k in range(t_grid.size):
+        assert np.isclose(np.trace(rho_S_t[k]).real, 1.0, atol=1e-10)
+
+
+def test_propagate_sigma_x_displaced_diagonals_evolve():
+    H_total, rho_initial, sd, bd = build_spin_boson_sigma_x_displaced_total(
+        _c2_displaced_model_spec(), n_bath_modes=4, n_levels_per_mode=4
+    )
+    t_grid = np.linspace(0.0, 10.0, 11)
+    rho_S_t = propagate(H_total, rho_initial, t_grid, sd, bd)
+    p_up_init = rho_S_t[0, 0, 0].real
+    p_up_late = rho_S_t[-1, 0, 0].real
+    assert np.isclose(p_up_init, 0.5, atol=1e-10)
+    assert abs(p_up_late - 0.5) > 0.05
