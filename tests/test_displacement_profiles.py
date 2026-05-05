@@ -13,14 +13,13 @@ from __future__ import annotations
 import pytest
 
 from cbg.displacement_profiles import (
-    DisplacementProfile,
     REGISTERED_PROFILES,
+    DisplacementProfile,
     delta_omega_c,
     delta_omega_S,
     gaussian,
     sqrt_J,
 )
-
 
 # ─── DisplacementProfile dataclass ──────────────────────────────────────────
 

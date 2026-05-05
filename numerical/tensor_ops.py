@@ -42,9 +42,7 @@ def commutator(A: np.ndarray, B: np.ndarray) -> np.ndarray:
     A = np.asarray(A)
     B = np.asarray(B)
     if A.shape != B.shape:
-        raise ValueError(
-            f"commutator: shape mismatch, got A {A.shape} and B {B.shape}"
-        )
+        raise ValueError(f"commutator: shape mismatch, got A {A.shape} and B {B.shape}")
     return A @ B - B @ A
 
 
@@ -69,9 +67,7 @@ def anticommutator(A: np.ndarray, B: np.ndarray) -> np.ndarray:
     A = np.asarray(A)
     B = np.asarray(B)
     if A.shape != B.shape:
-        raise ValueError(
-            f"anticommutator: shape mismatch, got A {A.shape} and B {B.shape}"
-        )
+        raise ValueError(f"anticommutator: shape mismatch, got A {A.shape} and B {B.shape}")
     return A @ B + B @ A
 
 
@@ -100,8 +96,7 @@ def hilbert_schmidt_inner(A: np.ndarray, B: np.ndarray) -> complex:
     B = np.asarray(B)
     if A.shape != B.shape:
         raise ValueError(
-            f"hilbert_schmidt_inner: shape mismatch, "
-            f"got A {A.shape} and B {B.shape}"
+            f"hilbert_schmidt_inner: shape mismatch, " f"got A {A.shape} and B {B.shape}"
         )
     return complex(np.trace(A.conj().T @ B))
 

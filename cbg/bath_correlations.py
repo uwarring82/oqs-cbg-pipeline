@@ -47,11 +47,10 @@ Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.3 §4 Phase C row C.6.
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
 import numpy as np
 from scipy import integrate
-
 
 # ─── Spectral densities ─────────────────────────────────────────────────────
 
@@ -158,9 +157,7 @@ def bath_two_point_thermal(
     if omega_c <= 0.0:
         raise ValueError(f"bath_two_point_thermal: omega_c must be > 0; got {omega_c}")
     if temperature < 0.0:
-        raise ValueError(
-            f"bath_two_point_thermal: temperature must be >= 0; got {temperature}"
-        )
+        raise ValueError(f"bath_two_point_thermal: temperature must be >= 0; got {temperature}")
 
     if temperature == 0.0:
         # Analytical T = 0 limit: C(t) = α / (1/ω_c + it)².
@@ -212,12 +209,20 @@ def bath_two_point_thermal(
         # IntegrationWarning ("integral is probably divergent or slowly
         # convergent") for grid points with t_diff at the cutoff scale.
         real_part, _ = integrate.quad(
-            _real_amplitude, 0.0, upper,
-            weight="cos", wvar=t_diff, limit=quad_limit,
+            _real_amplitude,
+            0.0,
+            upper,
+            weight="cos",
+            wvar=t_diff,
+            limit=quad_limit,
         )
         imag_part, _ = integrate.quad(
-            _imag_amplitude, 0.0, upper,
-            weight="sin", wvar=t_diff, limit=quad_limit,
+            _imag_amplitude,
+            0.0,
+            upper,
+            weight="sin",
+            wvar=t_diff,
+            limit=quad_limit,
         )
     return complex(real_part, imag_part)
 
@@ -249,8 +254,7 @@ def bath_two_point_thermal_array(
     t_grid = np.asarray(t_grid, dtype=float)
     if t_grid.ndim != 1:
         raise ValueError(
-            f"bath_two_point_thermal_array: t_grid must be 1D; "
-            f"got shape {t_grid.shape}"
+            f"bath_two_point_thermal_array: t_grid must be 1D; " f"got shape {t_grid.shape}"
         )
 
     # Compute C on the unique non-negative time-difference grid; reuse
@@ -260,12 +264,11 @@ def bath_two_point_thermal_array(
 
     unique_pos = np.unique(np.abs(diff))
     c_vals = np.array(
-        [bath_two_point_thermal(float(t), alpha, omega_c, temperature)
-         for t in unique_pos],
+        [bath_two_point_thermal(float(t), alpha, omega_c, temperature) for t in unique_pos],
         dtype=complex,
     )
     # Map: |diff| → C(|diff|); for negative diff, conjugate.
-    c_lookup = dict(zip(unique_pos, c_vals))
+    c_lookup = dict(zip(unique_pos, c_vals, strict=False))
     C = np.zeros((n, n), dtype=complex)
     for j in range(n):
         for k in range(n):
@@ -284,8 +287,8 @@ def two_point(
     t1: float,
     t2: float,
     *,
-    bath_state: Dict[str, Any],
-    spectral_density: Dict[str, Any],
+    bath_state: dict[str, Any],
+    spectral_density: dict[str, Any],
 ) -> complex:
     """Connected two-point bath correlator at the requested bath state.
 

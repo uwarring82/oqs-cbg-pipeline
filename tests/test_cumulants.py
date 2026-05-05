@@ -16,7 +16,6 @@ import yaml
 
 from cbg import bath_correlations, cumulants
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CARDS_DIR = REPO_ROOT / "benchmarks" / "benchmark_cards"
 
@@ -47,8 +46,7 @@ def test_D_bar_1_coherent_displaced_legacy_shape_raises():
     requires every coherent-displaced bath_state to carry one of the four
     cleared registry keys."""
     t = np.linspace(0.0, 5.0, 11)
-    bs = {"family": "coherent_displaced", "temperature": 0.0,
-          "displacement_amplitude": 1.0}
+    bs = {"family": "coherent_displaced", "temperature": 0.0, "displacement_amplitude": 1.0}
     sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
     with pytest.raises(ValueError, match="displacement_profile"):
         cumulants.D_bar_1(t, bath_state=bs, spectral_density=sd)
@@ -59,9 +57,11 @@ def test_D_bar_1_coherent_displaced_with_cleared_profile_succeeds():
     a non-zero ⟨B(t)⟩ — verified for delta-omega_c via the closed-form
     prediction 2 α₀ √J(ω_c) cos(ω_c t)."""
     t = np.linspace(0.0, 1.0, 5)
-    bs = {"family": "coherent_displaced",
-          "displacement_profile": "delta-omega_c",
-          "parameters": {"alpha_0": 1.0, "omega_c": 10.0}}
+    bs = {
+        "family": "coherent_displaced",
+        "displacement_profile": "delta-omega_c",
+        "parameters": {"alpha_0": 1.0, "omega_c": 10.0},
+    }
     sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
     result = cumulants.D_bar_1(t, bath_state=bs, spectral_density=sd)
     # Closed form: 2 · 1 · √(0.05·10·exp(-1)) · cos(10·t)
@@ -80,9 +80,11 @@ def test_D_bar_1_unknown_family_raises():
 def test_D_bar_1_unregistered_displacement_profile_raises():
     """The §6.1 registry-clearance-gate refuses ad-hoc profile additions."""
     t = np.linspace(0.0, 5.0, 11)
-    bs = {"family": "coherent_displaced",
-          "displacement_profile": "lorentzian",  # not in registry
-          "parameters": {}}
+    bs = {
+        "family": "coherent_displaced",
+        "displacement_profile": "lorentzian",  # not in registry
+        "parameters": {},
+    }
     sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
     with pytest.raises(NotImplementedError, match="registry-clearance-gate"):
         cumulants.D_bar_1(t, bath_state=bs, spectral_density=sd)
@@ -116,8 +118,11 @@ def test_D_bar_2_displacement_invariance():
     handle the displaced case without the convention."""
     t = np.linspace(0.0, 3.0, 7)
     bs_thermal = {"family": "thermal", "temperature": 0.0}
-    bs_displaced = {"family": "coherent_displaced", "temperature": 0.0,
-                    "displacement_amplitude": 1.0}
+    bs_displaced = {
+        "family": "coherent_displaced",
+        "temperature": 0.0,
+        "displacement_amplitude": 1.0,
+    }
     sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
     D_thermal = cumulants.D_bar_2(t, bath_state=bs_thermal, spectral_density=sd)
     D_displaced = cumulants.D_bar_2(t, bath_state=bs_displaced, spectral_density=sd)
@@ -129,8 +134,11 @@ def test_D_bar_2_displacement_invariance_at_finite_T_baseline():
     baseline, D̄_2 still uses that temperature (displacement only affects D̄_1)."""
     t = np.linspace(0.0, 3.0, 7)
     bs_thermal = {"family": "thermal", "temperature": 0.5}
-    bs_displaced = {"family": "coherent_displaced", "temperature": 0.5,
-                    "displacement_amplitude": 1.0}
+    bs_displaced = {
+        "family": "coherent_displaced",
+        "temperature": 0.5,
+        "displacement_amplitude": 1.0,
+    }
     sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
     D_thermal = cumulants.D_bar_2(t, bath_state=bs_thermal, spectral_density=sd)
     D_displaced = cumulants.D_bar_2(t, bath_state=bs_displaced, spectral_density=sd)
@@ -149,8 +157,7 @@ def test_D_bar_2_shape_and_dtype():
 def test_D_bar_2_unknown_spectral_density_raises():
     t = np.linspace(0.0, 3.0, 7)
     bs = {"family": "thermal", "temperature": 0.5}
-    sd = {"family": "drude_lorentz", "coupling_strength": 0.05,
-          "cutoff_frequency": 10.0}
+    sd = {"family": "drude_lorentz", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
     with pytest.raises(NotImplementedError, match="ohmic"):
         cumulants.D_bar_2(t, bath_state=bs, spectral_density=sd)
 
@@ -179,8 +186,7 @@ def test_D_bar_n1_displaced_legacy_shape_raises():
     """The generic D_bar dispatch propagates the same ValueError as D_bar_1
     when a coherent_displaced bath_state lacks the displacement_profile key
     (legacy A3 v0.1.0 shape; rejected post-Council-Act-2)."""
-    bs = {"family": "coherent_displaced", "temperature": 0.0,
-          "displacement_amplitude": 1.0}
+    bs = {"family": "coherent_displaced", "temperature": 0.0, "displacement_amplitude": 1.0}
     sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
     with pytest.raises(ValueError, match="displacement_profile"):
         cumulants.D_bar((1.0,), (), bath_state=bs, spectral_density=sd)
@@ -275,14 +281,12 @@ def test_D_bar_2_displacement_invariance_on_a3_pair():
     bs_thermal = a3["frozen_parameters"]["model"]["test_cases"][0]["bath_state"]
     bs_displaced = a3["frozen_parameters"]["model"]["test_cases"][1]["bath_state"]
     t = np.linspace(0.0, 5.0, 11)
-    D_thermal = cumulants.D_bar_2(t, bath_state=bs_thermal, spectral_density=sd)
+    _D_thermal = cumulants.D_bar_2(t, bath_state=bs_thermal, spectral_density=sd)
     D_displaced = cumulants.D_bar_2(t, bath_state=bs_displaced, spectral_density=sd)
     # Different temperatures → different D̄_2, but the displacement
     # invariance applies AT FIXED temperature. A3's thermal is T=0.5 and
     # displaced is T=0, so they differ. Verify by comparing each to its
     # own thermal-evaluator twin.
     same_T_thermal = {"family": "thermal", "temperature": bs_displaced["temperature"]}
-    D_displaced_via_thermal = cumulants.D_bar_2(
-        t, bath_state=same_T_thermal, spectral_density=sd
-    )
+    D_displaced_via_thermal = cumulants.D_bar_2(t, bath_state=same_T_thermal, spectral_density=sd)
     np.testing.assert_array_equal(D_displaced, D_displaced_via_thermal)

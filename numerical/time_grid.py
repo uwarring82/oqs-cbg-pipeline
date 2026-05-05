@@ -38,10 +38,9 @@ Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.3 §4 Phase C row C.5.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any
 
 import numpy as np
-
 
 # ─── Schemes / orderings ────────────────────────────────────────────────────
 
@@ -52,7 +51,7 @@ KNOWN_ORDERINGS = ("time_ordered",)
 # rather than the generic "unknown" error).
 DEFERRED_SCHEMES = {
     "chebyshev": "DG-2: non-uniform grid with Chebyshev nodes (better "
-                 "convergence at the bath-cutoff scale)",
+    "convergence at the bath-cutoff scale)",
     "log": "DG-2: logarithmic spacing for memory-tail resolution",
 }
 DEFERRED_ORDERINGS = {
@@ -78,6 +77,7 @@ class TimeGrid:
     scheme : str
         Construction scheme (e.g. "uniform").
     """
+
     times: np.ndarray
     t_start: float
     t_end: float
@@ -99,7 +99,7 @@ class TimeGrid:
 REQUIRED_TIME_GRID_KEYS = ("t_start", "t_end", "n_points", "scheme")
 
 
-def build_time_grid(spec: Dict[str, Any]) -> TimeGrid:
+def build_time_grid(spec: dict[str, Any]) -> TimeGrid:
     """Construct a TimeGrid from a card's time_grid spec dict.
 
     Parameters
@@ -122,9 +122,7 @@ def build_time_grid(spec: Dict[str, Any]) -> TimeGrid:
         If `scheme` is unknown.
     """
     if not isinstance(spec, dict):
-        raise ValueError(
-            f"build_time_grid: spec must be a mapping; got {type(spec).__name__}"
-        )
+        raise ValueError(f"build_time_grid: spec must be a mapping; got {type(spec).__name__}")
     missing = [k for k in REQUIRED_TIME_GRID_KEYS if k not in spec]
     if missing:
         raise ValueError(f"build_time_grid: missing required keys {missing}")
@@ -135,17 +133,12 @@ def build_time_grid(spec: Dict[str, Any]) -> TimeGrid:
     scheme = spec["scheme"]
 
     if not isinstance(n_points, int) or isinstance(n_points, bool):
-        raise ValueError(
-            f"build_time_grid: n_points must be int; got {n_points!r}"
-        )
+        raise ValueError(f"build_time_grid: n_points must be int; got {n_points!r}")
     if n_points < 2:
-        raise ValueError(
-            f"build_time_grid: n_points must be >= 2; got {n_points}"
-        )
+        raise ValueError(f"build_time_grid: n_points must be >= 2; got {n_points}")
     if t_end <= t_start:
         raise ValueError(
-            f"build_time_grid: require t_end > t_start; got "
-            f"t_start={t_start}, t_end={t_end}"
+            f"build_time_grid: require t_end > t_start; got " f"t_start={t_start}, t_end={t_end}"
         )
 
     if scheme in DEFERRED_SCHEMES:
@@ -245,14 +238,10 @@ def integrate_with_ordering(
     t_grid = np.asarray(t_grid)
 
     if t_grid.ndim != 1:
-        raise ValueError(
-            f"integrate_with_ordering: t_grid must be 1D; got shape {t_grid.shape}"
-        )
+        raise ValueError(f"integrate_with_ordering: t_grid must be 1D; got shape {t_grid.shape}")
     n = t_grid.shape[0]
     if n < 2:
-        raise ValueError(
-            f"integrate_with_ordering: t_grid must have at least 2 points; got {n}"
-        )
+        raise ValueError(f"integrate_with_ordering: t_grid must have at least 2 points; got {n}")
     if np.any(np.diff(t_grid) <= 0):
         raise ValueError(
             "integrate_with_ordering: t_grid must be strictly monotonically increasing"
@@ -315,6 +304,10 @@ def _cumulative_time_ordered_double(g: np.ndarray, t: np.ndarray) -> np.ndarray:
         # Trapezoidal on g[j, 0:j+1] over t[0:j+1]
         row = g[j, : j + 1]
         ts = t[: j + 1]
-        G[j] = np.trapezoid(row, ts) if hasattr(np, "trapezoid") else np.trapz(row, ts)
+        G[j] = (
+            np.trapezoid(row, ts)
+            if hasattr(np, "trapezoid")
+            else np.trapz(row, ts)  # type: ignore[attr-defined]
+        )
     # Outer cumulative trapezoidal over τ.
     return _cumulative_trapezoid(G, t)

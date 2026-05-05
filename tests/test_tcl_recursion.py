@@ -22,7 +22,6 @@ import yaml
 
 from cbg import tcl_recursion as tr
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CARDS_DIR = REPO_ROOT / "benchmarks" / "benchmark_cards"
 
@@ -48,8 +47,7 @@ def _thermal_state(temperature=0.5):
 
 
 def _ohmic_sd(alpha=0.05, omega_c=10.0):
-    return {"family": "ohmic", "coupling_strength": alpha,
-            "cutoff_frequency": omega_c}
+    return {"family": "ohmic", "coupling_strength": alpha, "cutoff_frequency": omega_c}
 
 
 # ─── interaction_picture ───────────────────────────────────────────────────
@@ -67,19 +65,17 @@ def test_interaction_picture_commuting_op_invariant():
     H_S = _hs()
     A = sigma_z  # commutes with H_S = (omega/2) sigma_z
     for tau in [0.5, 1.0, 5.0, -2.0]:
-        np.testing.assert_allclose(
-            tr.interaction_picture(H_S, A, tau), A, atol=1e-12
-        )
+        np.testing.assert_allclose(tr.interaction_picture(H_S, A, tau), A, atol=1e-12)
 
 
 def test_interaction_picture_sigma_x_rotates():
     """For H_S = (omega/2) sigma_z and A = sigma_x:
 
-       e^{i H_S tau} sigma_x e^{-i H_S tau} = sigma_x cos(omega tau) − sigma_y sin(omega tau)
+    e^{i H_S tau} sigma_x e^{-i H_S tau} = sigma_x cos(omega tau) − sigma_y sin(omega tau)
 
-       (Heisenberg-picture evolution under H_S; the sign on the sigma_y term
-       follows from [sigma_z, sigma_x] = 2i sigma_y and the d/dτ formula.)
-       Check at tau = pi / (2 omega): cos = 0, sin = 1 → result = -sigma_y."""
+    (Heisenberg-picture evolution under H_S; the sign on the sigma_y term
+    follows from [sigma_z, sigma_x] = 2i sigma_y and the d/dτ formula.)
+    Check at tau = pi / (2 omega): cos = 0, sin = 1 → result = -sigma_y."""
     omega = 1.0
     H_S = _hs(omega=omega)
     A = sigma_x
@@ -128,9 +124,7 @@ def test_L_1_thermal_returns_zero():
     t = _coarse_t_grid()
     H_S = _hs()
     L_1 = tr.L_n_thermal_at_time(1, 5, t, H_S, sigma_x, D_bar_2_array=None)
-    np.testing.assert_array_equal(
-        L_1(sigma_x), np.zeros((2, 2), dtype=complex)
-    )
+    np.testing.assert_array_equal(L_1(sigma_x), np.zeros((2, 2), dtype=complex))
 
 
 # ─── L_2 thermal ───────────────────────────────────────────────────────────
@@ -138,6 +132,7 @@ def test_L_1_thermal_returns_zero():
 
 def _D_bar_2_for_grid(t_grid, bath_state, spectral_density):
     from cbg.cumulants import D_bar_2
+
     return D_bar_2(t_grid, bath_state=bath_state, spectral_density=spectral_density)
 
 
@@ -179,7 +174,10 @@ def test_K_2_pure_dephasing_thermal_is_zero():
     """
     t = _coarse_t_grid(t_end=5.0, n_points=21)
     K_2 = tr.K_n_thermal_on_grid(
-        2, t, _hs(), sigma_z,
+        2,
+        t,
+        _hs(),
+        sigma_z,
         bath_state=_thermal_state(temperature=0.5),
         spectral_density=_ohmic_sd(alpha=0.05, omega_c=10.0),
     )
@@ -200,14 +198,19 @@ def test_K_total_pure_dephasing_thermal_is_H_S():
     t = _coarse_t_grid(t_end=5.0, n_points=21)
     H_S = _hs(omega=1.0)
     K = tr.K_total_thermal_on_grid(
-        2, t, H_S, sigma_z,
+        2,
+        t,
+        H_S,
+        sigma_z,
         bath_state=_thermal_state(temperature=0.5),
         spectral_density=_ohmic_sd(alpha=0.05, omega_c=10.0),
     )
     for t_idx in range(len(t)):
         np.testing.assert_allclose(
-            K[t_idx], H_S, atol=1e-10,
-            err_msg=f"K(t={t[t_idx]:.2f}) deviates from H_S in pure dephasing"
+            K[t_idx],
+            H_S,
+            atol=1e-10,
+            err_msg=f"K(t={t[t_idx]:.2f}) deviates from H_S in pure dephasing",
         )
 
 
@@ -227,7 +230,10 @@ def test_K_2_sigma_x_thermal_has_no_transverse_components():
     """
     t = _coarse_t_grid(t_end=5.0, n_points=21)
     K_2 = tr.K_n_thermal_on_grid(
-        2, t, _hs(), sigma_x,
+        2,
+        t,
+        _hs(),
+        sigma_x,
         bath_state=_thermal_state(temperature=0.5),
         spectral_density=_ohmic_sd(alpha=0.05, omega_c=10.0),
     )
@@ -252,14 +258,19 @@ def test_K_2_sigma_x_thermal_is_hermitian():
     """K_2(t) must be Hermitian (Hermiticity-preserving L → Hermitian K)."""
     t = _coarse_t_grid(t_end=2.0, n_points=11)
     K_2 = tr.K_n_thermal_on_grid(
-        2, t, _hs(), sigma_x,
+        2,
+        t,
+        _hs(),
+        sigma_x,
         bath_state=_thermal_state(),
         spectral_density=_ohmic_sd(),
     )
     for t_idx in range(len(t)):
         np.testing.assert_allclose(
-            K_2[t_idx], K_2[t_idx].conj().T, atol=1e-10,
-            err_msg=f"K_2(t={t[t_idx]:.2f}) is not Hermitian"
+            K_2[t_idx],
+            K_2[t_idx].conj().T,
+            atol=1e-10,
+            err_msg=f"K_2(t={t[t_idx]:.2f}) is not Hermitian",
         )
 
 
@@ -267,7 +278,10 @@ def test_K_total_sigma_x_thermal_no_transverse():
     """Card A4 v0.1.1 PASS condition: K_total has no transverse components."""
     t = _coarse_t_grid(t_end=5.0, n_points=21)
     K = tr.K_total_thermal_on_grid(
-        2, t, _hs(), sigma_x,
+        2,
+        t,
+        _hs(),
+        sigma_x,
         bath_state=_thermal_state(),
         spectral_density=_ohmic_sd(),
     )
@@ -275,7 +289,7 @@ def test_K_total_sigma_x_thermal_no_transverse():
         K_t = K[t_idx]
         b = 0.5 * np.trace(sigma_x @ K_t)
         c = 0.5 * np.trace(sigma_y @ K_t)
-        transverse_norm = np.sqrt(abs(b)**2 + abs(c)**2)
+        transverse_norm = np.sqrt(abs(b) ** 2 + abs(c) ** 2)
         assert transverse_norm < 1e-10, (
             f"K_total(t={t[t_idx]:.2f}) transverse_norm = {transverse_norm:.3e}; "
             f"Card A4 v0.1.1 B.1 violated"
@@ -289,7 +303,10 @@ def test_K_total_negative_N_card_raises():
     t = _coarse_t_grid()
     with pytest.raises(ValueError, match="non-negative"):
         tr.K_total_thermal_on_grid(
-            -1, t, _hs(), sigma_x,
+            -1,
+            t,
+            _hs(),
+            sigma_x,
             bath_state=_thermal_state(),
             spectral_density=_ohmic_sd(),
         )
@@ -299,7 +316,10 @@ def test_K_total_N_card_3_raises_pending_recursion():
     t = _coarse_t_grid()
     with pytest.raises(NotImplementedError, match="pending fourth-order"):
         tr.K_total_thermal_on_grid(
-            3, t, _hs(), sigma_x,
+            3,
+            t,
+            _hs(),
+            sigma_x,
             bath_state=_thermal_state(),
             spectral_density=_ohmic_sd(),
         )
@@ -308,11 +328,13 @@ def test_K_total_N_card_3_raises_pending_recursion():
 def test_K_n_non_thermal_points_to_displaced_entry_point():
     """The thermal-only path points displaced cards to the displaced runner."""
     t = _coarse_t_grid()
-    bs = {"family": "coherent_displaced", "temperature": 0.0,
-          "displacement_amplitude": 1.0}
+    bs = {"family": "coherent_displaced", "temperature": 0.0, "displacement_amplitude": 1.0}
     with pytest.raises(NotImplementedError, match="K_total_displaced_on_grid"):
         tr.K_n_thermal_on_grid(
-            2, t, _hs(), sigma_x,
+            2,
+            t,
+            _hs(),
+            sigma_x,
             bath_state=bs,
             spectral_density=_ohmic_sd(),
         )
@@ -328,9 +350,13 @@ def test_L_n_shim_thermal_n_2_dispatches_to_thermal_at_time():
     A = sigma_z
     D = _D_bar_2_for_grid(t, _thermal_state(), _ohmic_sd())
     via_shim = tr.L_n(
-        n=2, t_idx=5, t_grid=t,
-        system_hamiltonian=H_S, coupling_operator=A,
-        D_bar_2_array=D, bath_state=_thermal_state(),
+        n=2,
+        t_idx=5,
+        t_grid=t,
+        system_hamiltonian=H_S,
+        coupling_operator=A,
+        D_bar_2_array=D,
+        bath_state=_thermal_state(),
     )
     via_direct = tr.L_n_thermal_at_time(2, 5, t, H_S, A, D_bar_2_array=D)
     X = sigma_x
@@ -339,16 +365,26 @@ def test_L_n_shim_thermal_n_2_dispatches_to_thermal_at_time():
 
 def test_L_n_shim_n_3_raises_pending_recursion():
     with pytest.raises(NotImplementedError, match="pending fourth-order"):
-        tr.L_n(n=3, t_idx=0, t_grid=_coarse_t_grid(),
-               system_hamiltonian=_hs(), coupling_operator=sigma_x)
+        tr.L_n(
+            n=3,
+            t_idx=0,
+            t_grid=_coarse_t_grid(),
+            system_hamiltonian=_hs(),
+            coupling_operator=sigma_x,
+        )
 
 
 def test_L_n_shim_non_thermal_points_to_displaced_entry_point():
     bs = {"family": "coherent_displaced", "displacement_amplitude": 1.0}
     with pytest.raises(NotImplementedError, match="K_total_displaced_on_grid"):
-        tr.L_n(n=2, t_idx=5, t_grid=_coarse_t_grid(),
-               system_hamiltonian=_hs(), coupling_operator=sigma_x,
-               bath_state=bs)
+        tr.L_n(
+            n=2,
+            t_idx=5,
+            t_grid=_coarse_t_grid(),
+            system_hamiltonian=_hs(),
+            coupling_operator=sigma_x,
+            bath_state=bs,
+        )
 
 
 def test_L_n_shim_missing_required_kwargs_raises():
@@ -374,9 +410,7 @@ def test_K_total_composes_with_A3_v011_thermal_case():
     Uses a coarse 11-point sub-grid of the card's 200-point grid for test
     speed; the full 200-point run is exercised in Phase D once the runner
     is wired."""
-    a3 = yaml.safe_load(
-        (CARDS_DIR / "A3_pure-dephasing_v0.1.1.yaml").read_text()
-    )
+    a3 = yaml.safe_load((CARDS_DIR / "A3_pure-dephasing_v0.1.1.yaml").read_text())
     fp = a3["frozen_parameters"]
     bs = fp["model"]["test_cases"][0]["bath_state"]
     sd = fp["model"]["bath_spectral_density"]
@@ -384,9 +418,7 @@ def test_K_total_composes_with_A3_v011_thermal_case():
     H_S = 0.5 * omega * sigma_z
     A = sigma_z
     t = np.linspace(0.0, 5.0, 11)  # coarse sub-grid
-    K = tr.K_total_thermal_on_grid(
-        2, t, H_S, A, bath_state=bs, spectral_density=sd
-    )
+    K = tr.K_total_thermal_on_grid(2, t, H_S, A, bath_state=bs, spectral_density=sd)
     for t_idx in range(len(t)):
         np.testing.assert_allclose(K[t_idx], H_S, atol=1e-10)
 
@@ -394,9 +426,7 @@ def test_K_total_composes_with_A3_v011_thermal_case():
 def test_K_total_composes_with_A4_v011_thermal_case():
     """End-to-end smoke: load A4 v0.1.1, compute K_total over a coarse
     sub-grid, verify the parity-class theorem (no transverse components)."""
-    a4 = yaml.safe_load(
-        (CARDS_DIR / "A4_sigma-x-thermal_v0.1.1.yaml").read_text()
-    )
+    a4 = yaml.safe_load((CARDS_DIR / "A4_sigma-x-thermal_v0.1.1.yaml").read_text())
     fp = a4["frozen_parameters"]
     bs = fp["model"]["test_cases"][0]["bath_state"]
     sd = fp["model"]["bath_spectral_density"]
@@ -404,15 +434,12 @@ def test_K_total_composes_with_A4_v011_thermal_case():
     H_S = 0.5 * omega * sigma_z
     A = sigma_x
     t = np.linspace(0.0, 5.0, 11)
-    K = tr.K_total_thermal_on_grid(
-        2, t, H_S, A, bath_state=bs, spectral_density=sd
-    )
+    K = tr.K_total_thermal_on_grid(2, t, H_S, A, bath_state=bs, spectral_density=sd)
     for t_idx in range(len(t)):
         K_t = K[t_idx]
         b = 0.5 * np.trace(sigma_x @ K_t)
         c = 0.5 * np.trace(sigma_y @ K_t)
-        transverse = np.sqrt(abs(b)**2 + abs(c)**2)
+        transverse = np.sqrt(abs(b) ** 2 + abs(c) ** 2)
         assert transverse < 1e-10, (
-            f"A4 v0.1.1 K_total(t={t[t_idx]:.2f}) transverse_norm "
-            f"{transverse:.3e} violates B.1"
+            f"A4 v0.1.1 K_total(t={t[t_idx]:.2f}) transverse_norm " f"{transverse:.3e} violates B.1"
         )

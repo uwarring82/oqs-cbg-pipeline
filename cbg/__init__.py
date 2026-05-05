@@ -23,7 +23,9 @@ minimal-dissipation gauge. See docs/do_not_cite_as.md for citation rules.
 """
 
 try:
-    from importlib.metadata import PackageNotFoundError as _PNF, version as _pkg_version
+    from importlib.metadata import PackageNotFoundError as _PNF
+    from importlib.metadata import version as _pkg_version
+
     __version__ = _pkg_version("oqs-cbg-pipeline")
     del _pkg_version, _PNF
 except Exception:
@@ -53,8 +55,7 @@ if _os.path.isdir(_docs_dir):
         "docs/validity_envelope.md",
         "docs/benchmark_protocol.md",
     ]
-    _missing = [d for d in _required_docs
-                if not _os.path.isfile(_os.path.join(_repo_root, d))]
+    _missing = [d for d in _required_docs if not _os.path.isfile(_os.path.join(_repo_root, d))]
     if _missing:
         _warnings.warn(
             "Mandatory protective documents missing from docs/: "

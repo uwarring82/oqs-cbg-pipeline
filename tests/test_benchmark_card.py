@@ -27,7 +27,6 @@ import yaml
 
 from reporting import benchmark_card as bc
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CARDS_DIR = REPO_ROOT / "benchmarks" / "benchmark_cards"
 
@@ -255,7 +254,8 @@ def test_rule14a_model_level_bath_state_satisfies(a3_data):
         case.pop("bath_state", None)
     # Add model-level bath_state
     a3_data["frozen_parameters"]["model"]["bath_state"] = {
-        "family": "thermal", "temperature": 0.5,
+        "family": "thermal",
+        "temperature": 0.5,
     }
     bc.validate_card_data(a3_data)  # must not raise
 
@@ -366,8 +366,9 @@ def test_run_card_a1_lamb_shift_recovers_combined_H():
     """The markovian_weak_coupling_lamb_shift case is also exact."""
     card = bc.load_card(A1_PATH)
     result = bc.run_card(card)
-    tcr = next(r for r in result.test_case_results
-               if r.name == "markovian_weak_coupling_lamb_shift")
+    tcr = next(
+        r for r in result.test_case_results if r.name == "markovian_weak_coupling_lamb_shift"
+    )
     assert tcr.error < 1e-12
 
 
@@ -499,8 +500,10 @@ def test_populate_result_fail_sets_status_fail():
 def test_populate_result_unknown_verdict_raises():
     card = bc.load_card(A1_PATH)
     fake_run = bc.CardResult(
-        card_id=card.card_id, verdict="MAYBE",
-        test_case_results=[], runner_version="0.1.0",
+        card_id=card.card_id,
+        verdict="MAYBE",
+        test_case_results=[],
+        runner_version="0.1.0",
     )
     with pytest.raises(ValueError, match="unknown verdict"):
         bc.populate_result(card, fake_run)
@@ -532,12 +535,14 @@ def test_test_case_handlers_cover_a1_v011_test_cases():
 
 def test_unknown_test_case_name_raises_handler_not_found(a1_data):
     """Adding an unknown test_case name surfaces a clear error."""
-    a1_data["frozen_parameters"]["model"]["test_cases"].append({
-        "name": "made_up_test",
-        "description": "not a real test",
-        "expected_outcome": "unknown",
-        "reference": "no paper",
-    })
+    a1_data["frozen_parameters"]["model"]["test_cases"].append(
+        {
+            "name": "made_up_test",
+            "description": "not a real test",
+            "expected_outcome": "unknown",
+            "reference": "no paper",
+        }
+    )
     card = bc._data_to_card(a1_data)
     with pytest.raises(bc.TestCaseHandlerNotFoundError, match="made_up_test"):
         bc.run_card(card)
@@ -637,8 +642,7 @@ def test_run_card_b1_sigma_z_recovers_minus_half_sigma_z():
     summation against the trace-based H_HS formula)."""
     card = bc.load_card(B1_PATH)
     result = bc.run_card(card)
-    tcr = next(r for r in result.test_case_results
-               if r.name == "pseudo_kraus_diagonal_sigma_z")
+    tcr = next(r for r in result.test_case_results if r.name == "pseudo_kraus_diagonal_sigma_z")
     assert tcr.error == 0.0
 
 
@@ -648,8 +652,7 @@ def test_run_card_b1_sigma_x_recovers_minus_half_sigma_x():
     is not silently axis-biased."""
     card = bc.load_card(B1_PATH)
     result = bc.run_card(card)
-    tcr = next(r for r in result.test_case_results
-               if r.name == "pseudo_kraus_diagonal_sigma_x")
+    tcr = next(r for r in result.test_case_results if r.name == "pseudo_kraus_diagonal_sigma_x")
     assert tcr.error == 0.0
 
 
@@ -658,8 +661,7 @@ def test_run_card_b1_traceless_gives_zero_K():
     per transcription §5; HPTA holds exactly (σ_x² = σ_y² = I)."""
     card = bc.load_card(B1_PATH)
     result = bc.run_card(card)
-    tcr = next(r for r in result.test_case_results
-               if r.name == "pseudo_kraus_traceless_jumps")
+    tcr = next(r for r in result.test_case_results if r.name == "pseudo_kraus_traceless_jumps")
     assert tcr.error == 0.0
     assert tcr.hpta_residual == 0.0
 
@@ -684,8 +686,7 @@ def test_run_card_b1_hpta_gate_short_circuits_on_violation():
     # Bypass full validation (gauge etc. unchanged); call the algebraic-map
     # runner directly to focus the assertion on the HPTA gate.
     result = bc._run_algebraic_map(card)
-    tcr = next(r for r in result.test_case_results
-               if r.name == "pseudo_kraus_diagonal_sigma_z")
+    tcr = next(r for r in result.test_case_results if r.name == "pseudo_kraus_diagonal_sigma_z")
     assert not tcr.passed
     assert tcr.hpta_residual is not None
     assert tcr.hpta_residual > tcr.hpta_threshold
@@ -752,18 +753,14 @@ def test_eval_complex_scalar_expression_rejects_non_sqrt_call():
 def test_parse_offdiag_omega_returns_hermitian_matrix_for_canonical_fixture():
     """The first B2 fixture's omega = [[1, iβ], [-iβ, -1]] is Hermitian
     (omega - omega^dagger == 0) for any real β."""
-    omega = bc._parse_offdiag_omega(
-        [["1.0", "1j * beta"], ["-1j * beta", "-1.0"]], {"beta": 0.5}
-    )
+    omega = bc._parse_offdiag_omega([["1.0", "1j * beta"], ["-1j * beta", "-1.0"]], {"beta": 0.5})
     assert omega.shape == (2, 2)
     assert bc._hermiticity_residual(omega) == 0.0
 
 
 def test_parse_offdiag_omega_rejects_non_square():
     with pytest.raises(ValueError, match="square matrix"):
-        bc._parse_offdiag_omega(
-            [["1.0", "0.0"], ["0.0", "0.0", "0.0"]], {}
-        )
+        bc._parse_offdiag_omega([["1.0", "0.0"], ["0.0", "0.0", "0.0"]], {})
 
 
 def test_hermiticity_residual_detects_non_hermitian_omega():
@@ -812,8 +809,7 @@ def test_run_card_b2_sigma_z_recovers_beta_sigma_z():
     — algebraic tautology between matrix-unit basis sum and §4b H_HS^off-diag."""
     card = bc.load_card(B2_PATH)
     result = bc.run_card(card)
-    tcr = next(r for r in result.test_case_results
-               if r.name == "offdiag_omega_imaginary_sigma_z")
+    tcr = next(r for r in result.test_case_results if r.name == "offdiag_omega_imaginary_sigma_z")
     assert tcr.error == 0.0
 
 
@@ -822,8 +818,7 @@ def test_run_card_b2_sigma_x_recovers_minus_beta_sigma_x():
     — confirms the off-diagonal handler does not silently prefer σ_z."""
     card = bc.load_card(B2_PATH)
     result = bc.run_card(card)
-    tcr = next(r for r in result.test_case_results
-               if r.name == "offdiag_omega_imaginary_sigma_x")
+    tcr = next(r for r in result.test_case_results if r.name == "offdiag_omega_imaginary_sigma_x")
     assert tcr.error == 0.0
 
 
@@ -833,8 +828,7 @@ def test_run_card_b2_diagonal_only_gives_zero_K():
     vanish."""
     card = bc.load_card(B2_PATH)
     result = bc.run_card(card)
-    tcr = next(r for r in result.test_case_results
-               if r.name == "offdiag_omega_diagonal_only")
+    tcr = next(r for r in result.test_case_results if r.name == "offdiag_omega_diagonal_only")
     assert tcr.error == 0.0
     assert tcr.hpta_residual == 0.0
     assert tcr.hermiticity_residual == 0.0
@@ -859,8 +853,7 @@ def test_run_card_b2_hermiticity_gate_short_circuits_on_violation():
     ]
     card = bc._data_to_card(raw)
     result = bc._run_algebraic_map(card)
-    tcr = next(r for r in result.test_case_results
-               if r.name == "offdiag_omega_imaginary_sigma_z")
+    tcr = next(r for r in result.test_case_results if r.name == "offdiag_omega_imaginary_sigma_z")
     assert not tcr.passed
     assert tcr.hermiticity_residual is not None
     assert tcr.hermiticity_residual > tcr.hermiticity_threshold
@@ -882,8 +875,7 @@ def test_run_card_b2_hpta_gate_short_circuits_with_hermitian_omega_but_no_hpta()
     ]
     card = bc._data_to_card(raw)
     result = bc._run_algebraic_map(card)
-    tcr = next(r for r in result.test_case_results
-               if r.name == "offdiag_omega_imaginary_sigma_z")
+    tcr = next(r for r in result.test_case_results if r.name == "offdiag_omega_imaginary_sigma_z")
     assert not tcr.passed
     # Hermiticity passed (diag is trivially Hermitian) — residual recorded.
     assert tcr.hermiticity_residual == 0.0
@@ -932,14 +924,14 @@ def test_run_card_b3_pseudo_kraus_carries_hpta_fields():
     Lindblad-form B3 cases carry no HPTA residual."""
     card = bc.load_card(B3_PATH)
     result = bc.run_card(card)
-    pk = next(r for r in result.test_case_results
-              if r.name == "basis_independence_pseudo_kraus_sigma_z")
+    pk = next(
+        r for r in result.test_case_results if r.name == "basis_independence_pseudo_kraus_sigma_z"
+    )
     assert pk.hpta_residual is not None
     assert pk.hpta_threshold is not None
     assert pk.hpta_residual <= pk.hpta_threshold
 
-    for name in ("basis_independence_lindblad_traceless",
-                 "basis_independence_lindblad_lamb_shift"):
+    for name in ("basis_independence_lindblad_traceless", "basis_independence_lindblad_lamb_shift"):
         tcr = next(r for r in result.test_case_results if r.name == name)
         assert tcr.hpta_residual is None
         assert tcr.hpta_threshold is None
@@ -1043,9 +1035,9 @@ def test_run_card_b4_passes_all_four_profiles():
         assert tcr.passed
         # All four profiles land at machine precision
         # (≤ 1e-12, well below the 1e-4 threshold).
-        assert tcr.error < 1e-12, (
-            f"{tcr.name}: expected machine-precision error; got {tcr.error:.3e}"
-        )
+        assert (
+            tcr.error < 1e-12
+        ), f"{tcr.name}: expected machine-precision error; got {tcr.error:.3e}"
 
 
 def test_displacement_profiles_registry_has_act2_cleared_keys():
@@ -1089,10 +1081,12 @@ def test_b5_test_cases_carry_same_registry_profiles_as_b4():
     registry; the σ_x sibling shares the registry surface)."""
     b4 = bc.load_card(B4_PATH)
     b5 = bc.load_card(B5_PATH)
-    b4_profiles = {c["bath_state"]["displacement_profile"]
-                   for c in b4.frozen_parameters["model"]["test_cases"]}
-    b5_profiles = {c["bath_state"]["displacement_profile"]
-                   for c in b5.frozen_parameters["model"]["test_cases"]}
+    b4_profiles = {
+        c["bath_state"]["displacement_profile"] for c in b4.frozen_parameters["model"]["test_cases"]
+    }
+    b5_profiles = {
+        c["bath_state"]["displacement_profile"] for c in b5.frozen_parameters["model"]["test_cases"]
+    }
     assert b4_profiles == b5_profiles
 
 
@@ -1115,6 +1109,6 @@ def test_run_card_b5_passes_all_four_profiles():
     }
     for tcr in result.test_case_results:
         assert tcr.passed
-        assert tcr.error == 0.0, (
-            f"{tcr.name}: expected exact-zero structural error; got {tcr.error:.3e}"
-        )
+        assert (
+            tcr.error == 0.0
+        ), f"{tcr.name}: expected exact-zero structural error; got {tcr.error:.3e}"

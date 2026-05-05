@@ -37,9 +37,10 @@ Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.4 §4 Phase C rows C.4 and C.10.
 from __future__ import annotations
 
 import ast
-from dataclasses import dataclass, field
+from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any
 
 import numpy as np
 import yaml
@@ -53,13 +54,12 @@ from models import pure_dephasing, spin_boson_sigma_x
 from numerical.tensor_ops import anticommutator, commutator
 from numerical.time_grid import build_time_grid
 
-
 __version__ = "0.1.0"  # Recorded in card.result.runner_version
 
 
 # ─── Schema constants (SCHEMA.md v0.1.2) ─────────────────────────────────────
 
-CANONICAL_GAUGE_BLOCK: Dict[str, Any] = {
+CANONICAL_GAUGE_BLOCK: dict[str, Any] = {
     "gauge": "hayden-sorce-minimal-dissipation",
     "coordinate_dependent": True,
     "direct_observable": False,
@@ -76,22 +76,36 @@ CANONICAL_GAUGE_BLOCK: Dict[str, Any] = {
 # (the model_kind discriminator and test_cases pattern were already in
 # v0.1.1; v0.1.2 only relaxed the bath_state / test_cases requirements
 # for dynamical cards).
-KNOWN_SCHEMA_VERSIONS: Tuple[str, ...] = ("v0.1.1", "v0.1.2")
+KNOWN_SCHEMA_VERSIONS: tuple[str, ...] = ("v0.1.1", "v0.1.2")
 
 VALID_STATUS = {"frozen-awaiting-run", "pass", "fail", "conditional", "superseded"}
 VALID_MODEL_KIND = {"dynamical", "algebraic_map"}
 VALID_STEWARDSHIP_FLAG = {"unflagged", "primary", "secondary", "stewardship-conflict-bound"}
 VALID_DG_TARGET = {"DG-1", "DG-2", "DG-3", "DG-4", "DG-5"}
 
-REQUIRED_TOP_LEVEL_KEYS: Tuple[str, ...] = (
-    "schema_version", "card_id", "version", "date", "dg_target",
-    "ledger_entry", "model", "status", "license", "gauge",
-    "frozen_parameters", "acceptance_criterion", "result",
-    "failure_mode_log", "stewardship_flag",
+REQUIRED_TOP_LEVEL_KEYS: tuple[str, ...] = (
+    "schema_version",
+    "card_id",
+    "version",
+    "date",
+    "dg_target",
+    "ledger_entry",
+    "model",
+    "status",
+    "license",
+    "gauge",
+    "frozen_parameters",
+    "acceptance_criterion",
+    "result",
+    "failure_mode_log",
+    "stewardship_flag",
 )
 
-REQUIRED_FROZEN_PARAMETERS_SUBBLOCKS: Tuple[str, ...] = (
-    "model", "truncation", "numerical", "comparison",
+REQUIRED_FROZEN_PARAMETERS_SUBBLOCKS: tuple[str, ...] = (
+    "model",
+    "truncation",
+    "numerical",
+    "comparison",
 )
 
 
@@ -131,15 +145,15 @@ class BenchmarkCard:
     model: str
     status: str
     license: str
-    gauge: Dict[str, Any]
-    frozen_parameters: Dict[str, Any]
-    acceptance_criterion: Dict[str, Any]
-    result: Dict[str, Any]
-    failure_mode_log: List[Dict[str, Any]]
-    stewardship_flag: Dict[str, Any]
-    supersedes: Optional[str] = None
-    superseded_by: Optional[str] = None
-    source_path: Optional[Path] = None
+    gauge: dict[str, Any]
+    frozen_parameters: dict[str, Any]
+    acceptance_criterion: dict[str, Any]
+    result: dict[str, Any]
+    failure_mode_log: list[dict[str, Any]]
+    stewardship_flag: dict[str, Any]
+    supersedes: str | None = None
+    superseded_by: str | None = None
+    source_path: Path | None = None
 
     @property
     def model_kind(self) -> str:
@@ -168,17 +182,23 @@ class TestCaseResult:
     error: float
     threshold: float
     notes: str = ""
-    hpta_residual: Optional[float] = None  # populated for pseudo-Kraus handlers; None for Lindblad-form handlers
-    hpta_threshold: Optional[float] = None  # absolute Frobenius bound; None when no HPTA gate applies
-    hermiticity_residual: Optional[float] = None  # populated for off-diagonal pseudo-Kraus (B2); None elsewhere
-    hermiticity_threshold: Optional[float] = None  # absolute Frobenius bound; None when no Hermiticity gate applies
+    hpta_residual: float | None = (
+        None  # populated for pseudo-Kraus handlers; None for Lindblad-form handlers
+    )
+    hpta_threshold: float | None = None  # absolute Frobenius bound; None when no HPTA gate applies
+    hermiticity_residual: float | None = (
+        None  # populated for off-diagonal pseudo-Kraus (B2); None elsewhere
+    )
+    hermiticity_threshold: float | None = (
+        None  # absolute Frobenius bound; None when no Hermiticity gate applies
+    )
 
 
 @dataclass
 class CardResult:
     card_id: str
     verdict: str  # "PASS" | "FAIL" | "CONDITIONAL"
-    test_case_results: List[TestCaseResult]
+    test_case_results: list[TestCaseResult]
     runner_version: str
     notes: str = ""
 
@@ -206,7 +226,7 @@ def load_card(path: Path | str) -> BenchmarkCard:
     return card
 
 
-def _data_to_card(data: Dict[str, Any]) -> BenchmarkCard:
+def _data_to_card(data: dict[str, Any]) -> BenchmarkCard:
     return BenchmarkCard(
         schema_version=data["schema_version"],
         card_id=data["card_id"],
@@ -231,7 +251,7 @@ def _data_to_card(data: Dict[str, Any]) -> BenchmarkCard:
 # ─── Validator (SCHEMA.md v0.1.2 rules 1–16) ─────────────────────────────────
 
 
-def validate_card_data(data: Dict[str, Any]) -> None:
+def validate_card_data(data: dict[str, Any]) -> None:
     """Validate a parsed card dict against SCHEMA.md v0.1.2.
 
     Implements all 16 validation rules. Raises SchemaValidationError with
@@ -253,8 +273,7 @@ def validate_card_data(data: Dict[str, Any]) -> None:
     # Rule 11: license
     if data["license"] != "CC-BY-4.0 (LICENSE-docs)":
         raise SchemaValidationError(
-            f"rule 11: license must equal 'CC-BY-4.0 (LICENSE-docs)'; "
-            f"got {data['license']!r}"
+            f"rule 11: license must equal 'CC-BY-4.0 (LICENSE-docs)'; " f"got {data['license']!r}"
         )
 
     # Rule 2: status enum
@@ -320,9 +339,7 @@ def validate_card_data(data: Dict[str, Any]) -> None:
         raise SchemaValidationError("rule 7: frozen_parameters must be a mapping")
     for sub in REQUIRED_FROZEN_PARAMETERS_SUBBLOCKS:
         if sub not in fp or not fp[sub]:
-            raise SchemaValidationError(
-                f"rule 7: frozen_parameters.{sub} required and non-empty"
-            )
+            raise SchemaValidationError(f"rule 7: frozen_parameters.{sub} required and non-empty")
 
     # Rule 13: model.model_kind enum
     mk = fp["model"].get("model_kind")
@@ -337,8 +354,7 @@ def validate_card_data(data: Dict[str, Any]) -> None:
         for f in ("system_hamiltonian", "coupling_operator", "bath_type"):
             if not fp["model"].get(f):
                 raise SchemaValidationError(
-                    f"rule 14: model_kind == dynamical requires model.{f} "
-                    f"at model level"
+                    f"rule 14: model_kind == dynamical requires model.{f} " f"at model level"
                 )
         if not fp["numerical"].get("time_grid"):
             raise SchemaValidationError(
@@ -378,9 +394,7 @@ def validate_card_data(data: Dict[str, Any]) -> None:
     for i, case in enumerate(test_cases):
         for f in ("name", "description", "expected_outcome", "reference"):
             if not case.get(f):
-                raise SchemaValidationError(
-                    f"rule 15: test_cases[{i}].{f} required and non-empty"
-                )
+                raise SchemaValidationError(f"rule 15: test_cases[{i}].{f} required and non-empty")
 
     # Rule 8: perturbative_order non-negative integer
     po = fp["truncation"].get("perturbative_order")
@@ -394,8 +408,7 @@ def validate_card_data(data: Dict[str, Any]) -> None:
     thr = data["acceptance_criterion"].get("threshold")
     if not isinstance(thr, (int, float)) or isinstance(thr, bool) or thr <= 0:
         raise SchemaValidationError(
-            f"rule 9: acceptance_criterion.threshold must be a positive number; "
-            f"got {thr!r}"
+            f"rule 9: acceptance_criterion.threshold must be a positive number; " f"got {thr!r}"
         )
 
     # Rule 10: stewardship_flag.status enum + conditional fields
@@ -449,14 +462,15 @@ _SIGMA_X = np.array([[0, 1], [1, 0]], dtype=complex)
 _SIGMA_Y = np.array([[0, -1j], [1j, 0]], dtype=complex)
 _SIGMA_Z = np.array([[1, 0], [0, -1]], dtype=complex)
 _SIGMA_MINUS = np.array([[0, 1], [0, 0]], dtype=complex)  # |0><1|
-_SIGMA_PLUS = np.array([[0, 0], [1, 0]], dtype=complex)   # |1><0|
+_SIGMA_PLUS = np.array([[0, 0], [1, 0]], dtype=complex)  # |1><0|
 
 
 def _build_lindblad_generator(
     H: np.ndarray,
-    jump_operators: List[np.ndarray],
+    jump_operators: list[np.ndarray],
 ) -> Callable[[np.ndarray], np.ndarray]:
     """Construct L[X] = -i[H, X] + Σ_i (V_i X V_i† - 0.5 {V_i†V_i, X})."""
+
     def L(X: np.ndarray) -> np.ndarray:
         out = -1j * commutator(H, X)
         for V in jump_operators:
@@ -464,14 +478,18 @@ def _build_lindblad_generator(
             out += V @ X @ V_dag
             out -= 0.5 * anticommutator(V_dag @ V, X)
         return out
+
     return L
 
 
 def _handler_canonical_lindblad_traceless(
-    case: Dict[str, Any], d: int,
-) -> Tuple[
-    Callable[[np.ndarray], np.ndarray], np.ndarray,
-    Optional[float], Optional[float],
+    case: dict[str, Any],
+    d: int,
+) -> tuple[
+    Callable[[np.ndarray], np.ndarray],
+    np.ndarray,
+    float | None,
+    float | None,
 ]:
     """Card A1 v0.1.1 test_case canonical_lindblad_traceless (Entry 1.B.1).
 
@@ -503,10 +521,13 @@ def _handler_canonical_lindblad_traceless(
 
 
 def _handler_markovian_weak_coupling_lamb_shift(
-    case: Dict[str, Any], d: int,
-) -> Tuple[
-    Callable[[np.ndarray], np.ndarray], np.ndarray,
-    Optional[float], Optional[float],
+    case: dict[str, Any],
+    d: int,
+) -> tuple[
+    Callable[[np.ndarray], np.ndarray],
+    np.ndarray,
+    float | None,
+    float | None,
 ]:
     """Card A1 v0.1.1 test_case markovian_weak_coupling_lamb_shift (Entry 1.B.2).
 
@@ -547,7 +568,7 @@ def _handler_markovian_weak_coupling_lamb_shift(
 # Adding a new dimension or a new symbolic identifier requires extending
 # _OPERATOR_NAMESPACE_BUILDERS or _ALLOWED_FUNCTION_NAMES below.
 
-_OPERATOR_NAMESPACE_BUILDERS: Dict[int, Callable[[], Dict[str, Any]]] = {
+_OPERATOR_NAMESPACE_BUILDERS: dict[int, Callable[[], dict[str, Any]]] = {
     2: lambda: {
         "I": np.eye(2, dtype=complex),
         "sigma_x": _SIGMA_X,
@@ -562,19 +583,29 @@ _ALLOWED_FUNCTION_NAMES = frozenset({"sqrt"})
 
 # Whitelist of AST node types permitted in a symbolic-operator expression.
 # Any node outside this set raises during _eval_operator_expression.
-_ALLOWED_AST_NODES: Tuple[type, ...] = (
+_ALLOWED_AST_NODES: tuple[type, ...] = (
     ast.Expression,
-    ast.Constant,           # numeric / complex literals (0.5, 1.0, 1j)
-    ast.Name,               # identifiers — bound by the namespace
-    ast.Load,               # context for Name reads
-    ast.UnaryOp, ast.USub, ast.UAdd,
-    ast.BinOp, ast.Add, ast.Sub, ast.Mult, ast.Div, ast.Pow, ast.MatMult,
-    ast.Call,               # only sqrt(...) — verified semantically below
+    ast.Constant,  # numeric / complex literals (0.5, 1.0, 1j)
+    ast.Name,  # identifiers — bound by the namespace
+    ast.Load,  # context for Name reads
+    ast.UnaryOp,
+    ast.USub,
+    ast.UAdd,
+    ast.BinOp,
+    ast.Add,
+    ast.Sub,
+    ast.Mult,
+    ast.Div,
+    ast.Pow,
+    ast.MatMult,
+    ast.Call,  # only sqrt(...) — verified semantically below
 )
 
 
 def _eval_operator_expression(
-    expr: str, parameters: Dict[str, Any], d: int,
+    expr: str,
+    parameters: dict[str, Any],
+    d: int,
 ) -> np.ndarray:
     """Evaluate a symbolic-operator expression in a restricted namespace.
 
@@ -631,9 +662,7 @@ def _eval_operator_expression(
     try:
         tree = ast.parse(expr, mode="eval")
     except SyntaxError as e:
-        raise ValueError(
-            f"_eval_operator_expression: cannot parse expression {expr!r}: {e}"
-        ) from e
+        raise ValueError(f"_eval_operator_expression: cannot parse expression {expr!r}: {e}") from e
 
     for node in ast.walk(tree):
         if not isinstance(node, _ALLOWED_AST_NODES):
@@ -642,8 +671,7 @@ def _eval_operator_expression(
                 f"{type(node).__name__} in expression {expr!r}"
             )
         if isinstance(node, ast.Call):
-            if not (isinstance(node.func, ast.Name)
-                    and node.func.id in _ALLOWED_FUNCTION_NAMES):
+            if not (isinstance(node.func, ast.Name) and node.func.id in _ALLOWED_FUNCTION_NAMES):
                 raise ValueError(
                     f"_eval_operator_expression: only calls to "
                     f"{sorted(_ALLOWED_FUNCTION_NAMES)} are permitted; "
@@ -666,38 +694,44 @@ def _eval_operator_expression(
 
 
 def _build_pseudo_kraus_generator(
-    operators: List[np.ndarray], coefficients: List[float],
+    operators: list[np.ndarray],
+    coefficients: list[float],
 ) -> Callable[[np.ndarray], np.ndarray]:
     """Build L(rho) = sum_j gamma_j E_j rho E_j^dagger.
 
     Caller is responsible for HPTA: real coefficients and
     sum_j gamma_j E_j^dagger E_j = 0. This function does not validate.
     """
+
     def L(rho: np.ndarray) -> np.ndarray:
         out = np.zeros_like(rho, dtype=complex)
-        for E, g in zip(operators, coefficients):
+        for E, g in zip(operators, coefficients, strict=False):
             out += g * (E @ rho @ E.conj().T)
         return out
+
     return L
 
 
 def _hpta_residual(
-    operators: List[np.ndarray], coefficients: List[float],
+    operators: list[np.ndarray],
+    coefficients: list[float],
 ) -> float:
     """Absolute Frobenius norm of sum_j gamma_j E_j^dagger E_j."""
     acc = np.zeros_like(operators[0], dtype=complex)
-    for E, g in zip(operators, coefficients):
+    for E, g in zip(operators, coefficients, strict=False):
         acc += g * (E.conj().T @ E)
     return float(np.linalg.norm(acc, ord="fro"))
 
 
 def _make_pseudo_kraus_handler(
-    expected_K: Callable[[Dict[str, Any]], np.ndarray],
+    expected_K: Callable[[dict[str, Any]], np.ndarray],
 ) -> Callable[
-    [Dict[str, Any], int],
-    Tuple[
-        Callable[[np.ndarray], np.ndarray], np.ndarray,
-        float, Optional[float],
+    [dict[str, Any], int],
+    tuple[
+        Callable[[np.ndarray], np.ndarray],
+        np.ndarray,
+        float,
+        float | None,
     ],
 ]:
     """Return a handler for a pseudo-Kraus algebraic_map test_case.
@@ -715,16 +749,19 @@ def _make_pseudo_kraus_handler(
     coefficients (the 1×1 / vector form is trivially Hermitian, and the
     runner has no omega matrix to gate on).
     """
+
     def handler(
-        case: Dict[str, Any], d: int,
-    ) -> Tuple[
-        Callable[[np.ndarray], np.ndarray], np.ndarray,
-        float, Optional[float],
+        case: dict[str, Any],
+        d: int,
+    ) -> tuple[
+        Callable[[np.ndarray], np.ndarray],
+        np.ndarray,
+        float,
+        float | None,
     ]:
         if d != 2:
             raise NotImplementedError(
-                f"pseudo-Kraus handler: only d=2 supported (Card B1 v0.1.0); "
-                f"got d={d}"
+                f"pseudo-Kraus handler: only d=2 supported (Card B1 v0.1.0); " f"got d={d}"
             )
         params = case.get("parameters") or {}
         op_exprs = case["pseudo_kraus_operators"]
@@ -735,25 +772,27 @@ def _make_pseudo_kraus_handler(
         residual = _hpta_residual(operators, coefficients)
         K_expected = expected_K(case)
         return L, K_expected, residual, None
+
     return handler
 
 
 # Per-test-case K_expected closures. Kept as small named functions so the
 # handler factory's parameterisation stays readable in the registry below.
 
-def _expected_K_pseudo_kraus_diagonal_sigma_z(case: Dict[str, Any]) -> np.ndarray:
+
+def _expected_K_pseudo_kraus_diagonal_sigma_z(case: dict[str, Any]) -> np.ndarray:
     """K = -a * sigma_z; transcription §7 evaluated at the case's a."""
     a = float(case["parameters"]["a"])
     return -a * _SIGMA_Z
 
 
-def _expected_K_pseudo_kraus_diagonal_sigma_x(case: Dict[str, Any]) -> np.ndarray:
+def _expected_K_pseudo_kraus_diagonal_sigma_x(case: dict[str, Any]) -> np.ndarray:
     """K = -b * sigma_x; sigma_x analog of transcription §7 at the case's b."""
     b = float(case["parameters"]["b"])
     return -b * _SIGMA_X
 
 
-def _expected_K_pseudo_kraus_traceless_jumps(case: Dict[str, Any]) -> np.ndarray:
+def _expected_K_pseudo_kraus_traceless_jumps(case: dict[str, Any]) -> np.ndarray:
     """K = 0; transcription §5 'every V_i traceless => H_HS = 0'."""
     return np.zeros((2, 2), dtype=complex)
 
@@ -771,7 +810,8 @@ def _expected_K_pseudo_kraus_traceless_jumps(case: Dict[str, Any]) -> np.ndarray
 
 
 def _eval_complex_scalar_expression(
-    expr: str, parameters: Dict[str, Any],
+    expr: str,
+    parameters: dict[str, Any],
 ) -> complex:
     """Evaluate a complex-scalar expression in a parameters-only namespace.
 
@@ -802,7 +842,7 @@ def _eval_complex_scalar_expression(
         functions other than sqrt, parameter names shadowing sqrt, or
         identifiers not in ``parameters``.
     """
-    namespace: Dict[str, Any] = dict(parameters)
+    namespace: dict[str, Any] = dict(parameters)
     for pname in parameters:
         if pname in _ALLOWED_FUNCTION_NAMES:
             raise ValueError(
@@ -816,8 +856,7 @@ def _eval_complex_scalar_expression(
         tree = ast.parse(expr, mode="eval")
     except SyntaxError as e:
         raise ValueError(
-            f"_eval_complex_scalar_expression: cannot parse expression "
-            f"{expr!r}: {e}"
+            f"_eval_complex_scalar_expression: cannot parse expression " f"{expr!r}: {e}"
         ) from e
 
     for node in ast.walk(tree):
@@ -827,8 +866,7 @@ def _eval_complex_scalar_expression(
                 f"{type(node).__name__} in expression {expr!r}"
             )
         if isinstance(node, ast.Call):
-            if not (isinstance(node.func, ast.Name)
-                    and node.func.id in _ALLOWED_FUNCTION_NAMES):
+            if not (isinstance(node.func, ast.Name) and node.func.id in _ALLOWED_FUNCTION_NAMES):
                 raise ValueError(
                     f"_eval_complex_scalar_expression: only calls to "
                     f"{sorted(_ALLOWED_FUNCTION_NAMES)} are permitted; "
@@ -850,7 +888,8 @@ def _eval_complex_scalar_expression(
 
 
 def _parse_offdiag_omega(
-    rows: List[List[str]], parameters: Dict[str, Any],
+    rows: list[list[str]],
+    parameters: dict[str, Any],
 ) -> np.ndarray:
     """Parse a 2D list of complex-scalar string expressions into an n×n array.
 
@@ -876,7 +915,8 @@ def _hermiticity_residual(omega: np.ndarray) -> float:
 
 
 def _build_offdiag_pseudo_kraus_generator(
-    operators: List[np.ndarray], omega: np.ndarray,
+    operators: list[np.ndarray],
+    omega: np.ndarray,
 ) -> Callable[[np.ndarray], np.ndarray]:
     """Build L(rho) = sum_{i,j} omega_{ij} V_i rho V_j^dagger.
 
@@ -895,11 +935,13 @@ def _build_offdiag_pseudo_kraus_generator(
                 V_j_dag = operators[j].conj().T
                 out += omega[i, j] * (V_i @ rho @ V_j_dag)
         return out
+
     return L
 
 
 def _offdiag_hpta_residual(
-    operators: List[np.ndarray], omega: np.ndarray,
+    operators: list[np.ndarray],
+    omega: np.ndarray,
 ) -> float:
     """Absolute Frobenius norm of sum_{i,j} omega_{ij} V_j^dagger V_i."""
     n = len(operators)
@@ -914,12 +956,14 @@ def _offdiag_hpta_residual(
 
 
 def _make_offdiag_pseudo_kraus_handler(
-    expected_K: Callable[[Dict[str, Any]], np.ndarray],
+    expected_K: Callable[[dict[str, Any]], np.ndarray],
 ) -> Callable[
-    [Dict[str, Any], int],
-    Tuple[
-        Callable[[np.ndarray], np.ndarray], np.ndarray,
-        float, float,
+    [dict[str, Any], int],
+    tuple[
+        Callable[[np.ndarray], np.ndarray],
+        np.ndarray,
+        float,
+        float,
     ],
 ]:
     """Return a handler for an off-diagonal pseudo-Kraus algebraic_map test_case.
@@ -936,11 +980,15 @@ def _make_offdiag_pseudo_kraus_handler(
 
     Returns (L, K_expected, hpta_residual, hermiticity_residual).
     """
+
     def handler(
-        case: Dict[str, Any], d: int,
-    ) -> Tuple[
-        Callable[[np.ndarray], np.ndarray], np.ndarray,
-        float, float,
+        case: dict[str, Any],
+        d: int,
+    ) -> tuple[
+        Callable[[np.ndarray], np.ndarray],
+        np.ndarray,
+        float,
+        float,
     ]:
         if d != 2:
             raise NotImplementedError(
@@ -963,6 +1011,7 @@ def _make_offdiag_pseudo_kraus_handler(
         hpta = _offdiag_hpta_residual(operators, omega)
         K_expected = expected_K(case)
         return L, K_expected, hpta, hermiticity
+
     return handler
 
 
@@ -974,19 +1023,20 @@ def _make_offdiag_pseudo_kraus_handler(
 # Each fixture's per-term derivation is recorded in the YAML's
 # expected_outcome and §7a; here we encode the closed-form result.
 
-def _expected_K_offdiag_omega_imaginary_sigma_z(case: Dict[str, Any]) -> np.ndarray:
+
+def _expected_K_offdiag_omega_imaginary_sigma_z(case: dict[str, Any]) -> np.ndarray:
     """K = beta * sigma_z; transcription §7a worked fixture at the case's beta."""
     beta = float(case["parameters"]["beta"])
     return beta * _SIGMA_Z
 
 
-def _expected_K_offdiag_omega_imaginary_sigma_x(case: Dict[str, Any]) -> np.ndarray:
+def _expected_K_offdiag_omega_imaginary_sigma_x(case: dict[str, Any]) -> np.ndarray:
     """K = -beta * sigma_x; sigma_x analog of §7a at the case's beta."""
     beta = float(case["parameters"]["beta"])
     return -beta * _SIGMA_X
 
 
-def _expected_K_offdiag_omega_diagonal_only(case: Dict[str, Any]) -> np.ndarray:
+def _expected_K_offdiag_omega_diagonal_only(case: dict[str, Any]) -> np.ndarray:
     """K = 0; degenerate sub-case where omega's off-diagonal entries vanish
     and the V_i pair (I, sigma_z) gives Tr-cancellation in the (1,1) summand
     and a traceless-V in the (2,2) summand."""
@@ -1000,7 +1050,7 @@ def _expected_K_offdiag_omega_diagonal_only(case: Dict[str, Any]) -> np.ndarray:
 # resolves the name through this registry; adding a new comparison_basis
 # value (e.g. "hermitian_basis") requires registering its builder here.
 
-_BASIS_BUILDERS: Dict[str, Callable[[int], List[np.ndarray]]] = {
+_BASIS_BUILDERS: dict[str, Callable[[int], list[np.ndarray]]] = {
     "matrix_unit": matrix_unit_basis,
     "su_d_generator": su_d_generator_basis,
 }
@@ -1028,7 +1078,7 @@ _BASIS_BUILDERS: Dict[str, Callable[[int], List[np.ndarray]]] = {
 # of truth for the cleared set. The B4-conv-registry_v0.1.0 card's
 # per-test-case ``displacement_profile`` field resolves through this dict.
 
-_DISPLACEMENT_PROFILES: Dict[str, Callable[..., Any]] = dict(_CBG_REGISTERED_PROFILES)
+_DISPLACEMENT_PROFILES: dict[str, Callable[..., Any]] = dict(_CBG_REGISTERED_PROFILES)
 
 
 # ─── Basis-independence handler factory (B3) ────────────────────────────────
@@ -1047,17 +1097,21 @@ _DISPLACEMENT_PROFILES: Dict[str, Callable[..., Any]] = dict(_CBG_REGISTERED_PRO
 
 def _make_basis_independence_handler(
     base_handler: Callable[
-        [Dict[str, Any], int],
-        Tuple[
-            Callable[[np.ndarray], np.ndarray], np.ndarray,
-            Optional[float], Optional[float],
+        [dict[str, Any], int],
+        tuple[
+            Callable[[np.ndarray], np.ndarray],
+            np.ndarray,
+            float | None,
+            float | None,
         ],
     ],
 ) -> Callable[
-    [Dict[str, Any], int],
-    Tuple[
-        Callable[[np.ndarray], np.ndarray], None,
-        Optional[float], Optional[float],
+    [dict[str, Any], int],
+    tuple[
+        Callable[[np.ndarray], np.ndarray],
+        None,
+        float | None,
+        float | None,
     ],
 ]:
     """Wrap an A1 / B1 handler to drop K_expected for B3 cross-basis use.
@@ -1069,14 +1123,19 @@ def _make_basis_independence_handler(
     comparison branch; the trailing slots pass through whatever the
     source handler surfaced.
     """
+
     def handler(
-        case: Dict[str, Any], d: int,
-    ) -> Tuple[
-        Callable[[np.ndarray], np.ndarray], None,
-        Optional[float], Optional[float],
+        case: dict[str, Any],
+        d: int,
+    ) -> tuple[
+        Callable[[np.ndarray], np.ndarray],
+        None,
+        float | None,
+        float | None,
     ]:
         L, _K_expected, hpta_residual, hermiticity_residual = base_handler(case, d)
         return L, None, hpta_residual, hermiticity_residual
+
     return handler
 
 
@@ -1090,40 +1149,47 @@ def _make_basis_independence_handler(
 # K_expected = None is the runner's signal to take the cross-basis comparison
 # branch (B3); the trailing residual slots gate the runner's precondition
 # checks.
-_TEST_CASE_HANDLERS: Dict[
+_TEST_CASE_HANDLERS: dict[
     str,
     Callable[
-        [Dict[str, Any], int],
-        Tuple[
+        [dict[str, Any], int],
+        tuple[
             Callable[[np.ndarray], np.ndarray],
-            Optional[np.ndarray],
-            Optional[float],
-            Optional[float],
+            np.ndarray | None,
+            float | None,
+            float | None,
         ],
     ],
 ] = {
     "canonical_lindblad_traceless": _handler_canonical_lindblad_traceless,
     "markovian_weak_coupling_lamb_shift": _handler_markovian_weak_coupling_lamb_shift,
-    "pseudo_kraus_diagonal_sigma_z":
-        _make_pseudo_kraus_handler(_expected_K_pseudo_kraus_diagonal_sigma_z),
-    "pseudo_kraus_diagonal_sigma_x":
-        _make_pseudo_kraus_handler(_expected_K_pseudo_kraus_diagonal_sigma_x),
-    "pseudo_kraus_traceless_jumps":
-        _make_pseudo_kraus_handler(_expected_K_pseudo_kraus_traceless_jumps),
-    "offdiag_omega_imaginary_sigma_z":
-        _make_offdiag_pseudo_kraus_handler(_expected_K_offdiag_omega_imaginary_sigma_z),
-    "offdiag_omega_imaginary_sigma_x":
-        _make_offdiag_pseudo_kraus_handler(_expected_K_offdiag_omega_imaginary_sigma_x),
-    "offdiag_omega_diagonal_only":
-        _make_offdiag_pseudo_kraus_handler(_expected_K_offdiag_omega_diagonal_only),
-    "basis_independence_pseudo_kraus_sigma_z":
-        _make_basis_independence_handler(
-            _make_pseudo_kraus_handler(_expected_K_pseudo_kraus_diagonal_sigma_z)
-        ),
-    "basis_independence_lindblad_traceless":
-        _make_basis_independence_handler(_handler_canonical_lindblad_traceless),
-    "basis_independence_lindblad_lamb_shift":
-        _make_basis_independence_handler(_handler_markovian_weak_coupling_lamb_shift),
+    "pseudo_kraus_diagonal_sigma_z": _make_pseudo_kraus_handler(
+        _expected_K_pseudo_kraus_diagonal_sigma_z
+    ),
+    "pseudo_kraus_diagonal_sigma_x": _make_pseudo_kraus_handler(
+        _expected_K_pseudo_kraus_diagonal_sigma_x
+    ),
+    "pseudo_kraus_traceless_jumps": _make_pseudo_kraus_handler(
+        _expected_K_pseudo_kraus_traceless_jumps
+    ),
+    "offdiag_omega_imaginary_sigma_z": _make_offdiag_pseudo_kraus_handler(
+        _expected_K_offdiag_omega_imaginary_sigma_z
+    ),
+    "offdiag_omega_imaginary_sigma_x": _make_offdiag_pseudo_kraus_handler(
+        _expected_K_offdiag_omega_imaginary_sigma_x
+    ),
+    "offdiag_omega_diagonal_only": _make_offdiag_pseudo_kraus_handler(
+        _expected_K_offdiag_omega_diagonal_only
+    ),
+    "basis_independence_pseudo_kraus_sigma_z": _make_basis_independence_handler(
+        _make_pseudo_kraus_handler(_expected_K_pseudo_kraus_diagonal_sigma_z)
+    ),
+    "basis_independence_lindblad_traceless": _make_basis_independence_handler(
+        _handler_canonical_lindblad_traceless
+    ),
+    "basis_independence_lindblad_lamb_shift": _make_basis_independence_handler(
+        _handler_markovian_weak_coupling_lamb_shift
+    ),
 }
 
 
@@ -1147,9 +1213,7 @@ def run_card(card: BenchmarkCard) -> CardResult:
     if card.model_kind == "dynamical":
         return _run_dynamical(card)
     # Unreachable given rule 13 validation, but defensive:
-    raise SchemaValidationError(
-        f"run_card: unknown model_kind {card.model_kind!r}"
-    )
+    raise SchemaValidationError(f"run_card: unknown model_kind {card.model_kind!r}")
 
 
 def _run_algebraic_map(card: BenchmarkCard) -> CardResult:
@@ -1176,11 +1240,9 @@ def _run_algebraic_map(card: BenchmarkCard) -> CardResult:
         )
 
     threshold = card.threshold
-    abs_tol = float(
-        card.frozen_parameters["numerical"]["integration_tolerance"]["absolute"]
-    )
+    abs_tol = float(card.frozen_parameters["numerical"]["integration_tolerance"]["absolute"])
     test_cases = card.frozen_parameters["model"]["test_cases"]
-    test_case_results: List[TestCaseResult] = []
+    test_case_results: list[TestCaseResult] = []
 
     for case in test_cases:
         name = case["name"]
@@ -1202,22 +1264,24 @@ def _run_algebraic_map(card: BenchmarkCard) -> CardResult:
         # the K comparison downstream meaningless. Short-circuit with a
         # clear diagnostic.
         if hermiticity_residual is not None and hermiticity_residual > abs_tol:
-            test_case_results.append(TestCaseResult(
-                name=name,
-                passed=False,
-                error=hermiticity_residual,
-                threshold=abs_tol,
-                notes=(
-                    f"Hermiticity precondition failed: "
-                    f"||omega - omega^dagger||_F = {hermiticity_residual:.3e} "
-                    f"> absolute tolerance {abs_tol:.3e}. "
-                    f"HPTA and K comparison skipped."
-                ),
-                hpta_residual=hpta_residual,
-                hpta_threshold=abs_tol if hpta_residual is not None else None,
-                hermiticity_residual=hermiticity_residual,
-                hermiticity_threshold=abs_tol,
-            ))
+            test_case_results.append(
+                TestCaseResult(
+                    name=name,
+                    passed=False,
+                    error=hermiticity_residual,
+                    threshold=abs_tol,
+                    notes=(
+                        f"Hermiticity precondition failed: "
+                        f"||omega - omega^dagger||_F = {hermiticity_residual:.3e} "
+                        f"> absolute tolerance {abs_tol:.3e}. "
+                        f"HPTA and K comparison skipped."
+                    ),
+                    hpta_residual=hpta_residual,
+                    hpta_threshold=abs_tol if hpta_residual is not None else None,
+                    hermiticity_residual=hermiticity_residual,
+                    hermiticity_threshold=abs_tol,
+                )
+            )
             continue
 
         # HPTA precondition gate — applies only to handlers that surface a
@@ -1228,21 +1292,23 @@ def _run_algebraic_map(card: BenchmarkCard) -> CardResult:
         # downstream would be meaningless; short-circuit with a clear
         # diagnostic instead.
         if hpta_residual is not None and hpta_residual > abs_tol:
-            test_case_results.append(TestCaseResult(
-                name=name,
-                passed=False,
-                error=hpta_residual,
-                threshold=abs_tol,
-                notes=(
-                    f"HPTA precondition failed: "
-                    f"||sum_j gamma_j E_j^dagger E_j||_F = {hpta_residual:.3e} "
-                    f"> absolute tolerance {abs_tol:.3e}. K comparison skipped."
-                ),
-                hpta_residual=hpta_residual,
-                hpta_threshold=abs_tol,
-                hermiticity_residual=hermiticity_residual,
-                hermiticity_threshold=abs_tol if hermiticity_residual is not None else None,
-            ))
+            test_case_results.append(
+                TestCaseResult(
+                    name=name,
+                    passed=False,
+                    error=hpta_residual,
+                    threshold=abs_tol,
+                    notes=(
+                        f"HPTA precondition failed: "
+                        f"||sum_j gamma_j E_j^dagger E_j||_F = {hpta_residual:.3e} "
+                        f"> absolute tolerance {abs_tol:.3e}. K comparison skipped."
+                    ),
+                    hpta_residual=hpta_residual,
+                    hpta_threshold=abs_tol,
+                    hermiticity_residual=hermiticity_residual,
+                    hermiticity_threshold=abs_tol if hermiticity_residual is not None else None,
+                )
+            )
             continue
 
         K_computed = K_from_generator(L, basis)
@@ -1279,6 +1345,7 @@ def _run_algebraic_map(card: BenchmarkCard) -> CardResult:
             error = diff_norm / max(ref_norm, 1.0)
         else:
             # K-value branch (A1, B1): compare K_computed against K_expected.
+            assert K_expected is not None
             diff_norm = float(np.linalg.norm(K_computed - K_expected, ord="fro"))
             ref_norm = float(np.linalg.norm(K_expected, ord="fro"))
             if ref_norm > 0.0:
@@ -1287,16 +1354,18 @@ def _run_algebraic_map(card: BenchmarkCard) -> CardResult:
                 # If K_expected is zero, fall back to absolute Frobenius norm
                 error = diff_norm
 
-        test_case_results.append(TestCaseResult(
-            name=name,
-            passed=error <= threshold,
-            error=error,
-            threshold=threshold,
-            hpta_residual=hpta_residual,
-            hpta_threshold=abs_tol if hpta_residual is not None else None,
-            hermiticity_residual=hermiticity_residual,
-            hermiticity_threshold=abs_tol if hermiticity_residual is not None else None,
-        ))
+        test_case_results.append(
+            TestCaseResult(
+                name=name,
+                passed=error <= threshold,
+                error=error,
+                threshold=threshold,
+                hpta_residual=hpta_residual,
+                hpta_threshold=abs_tol if hpta_residual is not None else None,
+                hermiticity_residual=hermiticity_residual,
+                hermiticity_threshold=abs_tol if hermiticity_residual is not None else None,
+            )
+        )
 
     all_passed = all(r.passed for r in test_case_results)
     verdict = "PASS" if all_passed else "FAIL"
@@ -1311,17 +1380,20 @@ def _run_algebraic_map(card: BenchmarkCard) -> CardResult:
 # ─── Dynamical-card runner (Cards A3, A4 thermal-only at DG-1) ──────────────
 
 # Model-factory registry: card.model -> (model_spec dict) -> (H_S, A) ndarrays.
-_MODEL_FACTORIES: Dict[str, Callable[[Dict[str, Any]], Tuple[np.ndarray, np.ndarray]]] = {
+_MODEL_FACTORIES: dict[str, Callable[[dict[str, Any]], tuple[np.ndarray, np.ndarray]]] = {
     "pure_dephasing": pure_dephasing.system_arrays_from_spec,
     "spin_boson_sigma_x": spin_boson_sigma_x.system_arrays_from_spec,
 }
 
 
 def _dyn_handler_pure_dephasing_thermal(
-    K_array: np.ndarray, t_grid: np.ndarray, threshold: float, H_S: np.ndarray,
-    bath_state: Optional[Dict[str, Any]] = None,
-    spectral_density: Optional[Dict[str, Any]] = None,
-) -> Tuple[bool, float]:
+    K_array: np.ndarray,
+    t_grid: np.ndarray,
+    threshold: float,
+    H_S: np.ndarray,
+    bath_state: dict[str, Any] | None = None,
+    spectral_density: dict[str, Any] | None = None,
+) -> tuple[bool, float]:
     """Card A3 v0.1.1 thermal_bath PASS condition.
 
     Verifies Entry 3.B.1 (K(t) ∝ sigma_z; max_t shape_residual <= threshold)
@@ -1352,10 +1424,13 @@ def _dyn_handler_pure_dephasing_thermal(
 
 
 def _dyn_handler_sigma_x_thermal(
-    K_array: np.ndarray, t_grid: np.ndarray, threshold: float, H_S: np.ndarray,
-    bath_state: Optional[Dict[str, Any]] = None,
-    spectral_density: Optional[Dict[str, Any]] = None,
-) -> Tuple[bool, float]:
+    K_array: np.ndarray,
+    t_grid: np.ndarray,
+    threshold: float,
+    H_S: np.ndarray,
+    bath_state: dict[str, Any] | None = None,
+    spectral_density: dict[str, Any] | None = None,
+) -> tuple[bool, float]:
     """Card A4 v0.1.1 thermal_bath PASS condition.
 
     Verifies Entry 4.B.1 (no eigenbasis rotation; max_t transverse_norm
@@ -1372,7 +1447,7 @@ def _dyn_handler_sigma_x_thermal(
     for K_t in K_array:
         b = 0.5 * np.trace(_SIGMA_X @ K_t)
         c = 0.5 * np.trace(_SIGMA_Y @ K_t)
-        transverse = float(np.sqrt(abs(b)**2 + abs(c)**2))
+        transverse = float(np.sqrt(abs(b) ** 2 + abs(c) ** 2))
         max_transverse = max(max_transverse, transverse)
     return max_transverse <= threshold, max_transverse
 
@@ -1393,10 +1468,13 @@ def _dyn_handler_sigma_x_thermal(
 
 
 def _dyn_handler_pure_dephasing_displaced(
-    K_array: np.ndarray, t_grid: np.ndarray, threshold: float, H_S: np.ndarray,
-    bath_state: Optional[Dict[str, Any]] = None,
-    spectral_density: Optional[Dict[str, Any]] = None,
-) -> Tuple[bool, float]:
+    K_array: np.ndarray,
+    t_grid: np.ndarray,
+    threshold: float,
+    H_S: np.ndarray,
+    bath_state: dict[str, Any] | None = None,
+    spectral_density: dict[str, Any] | None = None,
+) -> tuple[bool, float]:
     """Card B4-conv-registry v0.1.0 displaced-pure-dephasing PASS condition.
 
     Per fixture (one of four cleared profiles), gates BOTH:
@@ -1410,15 +1488,17 @@ def _dyn_handler_pure_dephasing_displaced(
     """
     if bath_state is None or spectral_density is None:
         raise ValueError(
-            "_dyn_handler_pure_dephasing_displaced: bath_state + "
-            "spectral_density are required"
+            "_dyn_handler_pure_dephasing_displaced: bath_state + " "spectral_density are required"
         )
 
     omega = float(2.0 * H_S[0, 0].real)
-    shift_predicted = 2.0 * np.real(_cumulants_D_bar_1(
-        np.asarray(t_grid, dtype=float),
-        bath_state=bath_state, spectral_density=spectral_density,
-    ))
+    shift_predicted = 2.0 * np.real(
+        _cumulants_D_bar_1(
+            np.asarray(t_grid, dtype=float),
+            bath_state=bath_state,
+            spectral_density=spectral_density,
+        )
+    )
     max_shape_residual = 0.0
     max_shift_err = 0.0
     for i, K_t in enumerate(K_array):
@@ -1448,10 +1528,13 @@ def _dyn_handler_pure_dephasing_displaced(
 
 
 def _dyn_handler_sigma_x_displaced(
-    K_array: np.ndarray, t_grid: np.ndarray, threshold: float, H_S: np.ndarray,
-    bath_state: Optional[Dict[str, Any]] = None,
-    spectral_density: Optional[Dict[str, Any]] = None,
-) -> Tuple[bool, float]:
+    K_array: np.ndarray,
+    t_grid: np.ndarray,
+    threshold: float,
+    H_S: np.ndarray,
+    bath_state: dict[str, Any] | None = None,
+    spectral_density: dict[str, Any] | None = None,
+) -> tuple[bool, float]:
     """Card B5-conv-registry v0.2.0 displaced-σ_x PASS condition.
 
     Per fixture (one of four cleared profiles), gates the Schrödinger-
@@ -1474,21 +1557,21 @@ def _dyn_handler_sigma_x_displaced(
     """
     if bath_state is None or spectral_density is None:
         raise ValueError(
-            "_dyn_handler_sigma_x_displaced: bath_state + spectral_density "
-            "are required"
+            "_dyn_handler_sigma_x_displaced: bath_state + spectral_density " "are required"
         )
 
-    b_predicted = np.real(_cumulants_D_bar_1(
-        np.asarray(t_grid, dtype=float),
-        bath_state=bath_state, spectral_density=spectral_density,
-    ))
+    b_predicted = np.real(
+        _cumulants_D_bar_1(
+            np.asarray(t_grid, dtype=float),
+            bath_state=bath_state,
+            spectral_density=spectral_density,
+        )
+    )
     max_transverse_err = 0.0
     for i, K_t in enumerate(K_array):
         b_actual = 0.5 * np.trace(_SIGMA_X @ K_t).real
         c_actual = 0.5 * np.trace(_SIGMA_Y @ K_t).real
-        transverse_err = float(np.sqrt(
-            (b_actual - b_predicted[i]) ** 2 + c_actual ** 2
-        ))
+        transverse_err = float(np.sqrt((b_actual - b_predicted[i]) ** 2 + c_actual**2))
         max_transverse_err = max(max_transverse_err, transverse_err)
     return max_transverse_err <= threshold, max_transverse_err
 
@@ -1499,28 +1582,20 @@ def _dyn_handler_sigma_x_displaced(
 # DG-2 (post-Council-Act-2) extends the registry with the four B4-conv-registry
 # fixtures under pure_dephasing AND the four B5-conv-registry v0.2.0 fixtures
 # under spin_boson_sigma_x — one per cleared displacement profile in each.
-_DYNAMICAL_TEST_CASE_HANDLERS: Dict[
-    Tuple[str, str],
-    Callable[..., Tuple[bool, float]],
+_DYNAMICAL_TEST_CASE_HANDLERS: dict[
+    tuple[str, str],
+    Callable[..., tuple[bool, float]],
 ] = {
     ("pure_dephasing", "thermal_bath"): _dyn_handler_pure_dephasing_thermal,
     ("spin_boson_sigma_x", "thermal_bath"): _dyn_handler_sigma_x_thermal,
-    ("pure_dephasing", "displaced_bath_delta_omega_c"):
-        _dyn_handler_pure_dephasing_displaced,
-    ("pure_dephasing", "displaced_bath_delta_omega_S"):
-        _dyn_handler_pure_dephasing_displaced,
-    ("pure_dephasing", "displaced_bath_sqrt_J"):
-        _dyn_handler_pure_dephasing_displaced,
-    ("pure_dephasing", "displaced_bath_gaussian"):
-        _dyn_handler_pure_dephasing_displaced,
-    ("spin_boson_sigma_x", "displaced_bath_delta_omega_c"):
-        _dyn_handler_sigma_x_displaced,
-    ("spin_boson_sigma_x", "displaced_bath_delta_omega_S"):
-        _dyn_handler_sigma_x_displaced,
-    ("spin_boson_sigma_x", "displaced_bath_sqrt_J"):
-        _dyn_handler_sigma_x_displaced,
-    ("spin_boson_sigma_x", "displaced_bath_gaussian"):
-        _dyn_handler_sigma_x_displaced,
+    ("pure_dephasing", "displaced_bath_delta_omega_c"): _dyn_handler_pure_dephasing_displaced,
+    ("pure_dephasing", "displaced_bath_delta_omega_S"): _dyn_handler_pure_dephasing_displaced,
+    ("pure_dephasing", "displaced_bath_sqrt_J"): _dyn_handler_pure_dephasing_displaced,
+    ("pure_dephasing", "displaced_bath_gaussian"): _dyn_handler_pure_dephasing_displaced,
+    ("spin_boson_sigma_x", "displaced_bath_delta_omega_c"): _dyn_handler_sigma_x_displaced,
+    ("spin_boson_sigma_x", "displaced_bath_delta_omega_S"): _dyn_handler_sigma_x_displaced,
+    ("spin_boson_sigma_x", "displaced_bath_sqrt_J"): _dyn_handler_sigma_x_displaced,
+    ("spin_boson_sigma_x", "displaced_bath_gaussian"): _dyn_handler_sigma_x_displaced,
 }
 
 
@@ -1558,14 +1633,18 @@ def _run_dynamical(card: BenchmarkCard) -> CardResult:
     N_card = fp["truncation"]["perturbative_order"]
     threshold = card.threshold
 
-    test_case_results: List[TestCaseResult] = []
+    test_case_results: list[TestCaseResult] = []
     for case in fp["model"]["test_cases"]:
         bs = case["bath_state"]
         bs_family = bs.get("family")
         if bs_family == "thermal":
             K_array = K_total_thermal_on_grid(
-                N_card, grid.times, H_S, A,
-                bath_state=bs, spectral_density=sd,
+                N_card,
+                grid.times,
+                H_S,
+                A,
+                bath_state=bs,
+                spectral_density=sd,
             )
         elif bs_family == "coherent_displaced":
             # Council Act 2 (2026-05-04) lifted the standing carve-out under
@@ -1573,8 +1652,12 @@ def _run_dynamical(card: BenchmarkCard) -> CardResult:
             # displaced K_total dispatches on the per-fixture
             # ``displacement_profile`` registry key.
             K_array = K_total_displaced_on_grid(
-                N_card, grid.times, H_S, A,
-                bath_state=bs, spectral_density=sd,
+                N_card,
+                grid.times,
+                H_S,
+                A,
+                bath_state=bs,
+                spectral_density=sd,
             )
         else:
             raise NotImplementedError(
@@ -1594,15 +1677,21 @@ def _run_dynamical(card: BenchmarkCard) -> CardResult:
                 f"Known: {sorted(_DYNAMICAL_TEST_CASE_HANDLERS.keys())}"
             )
         passed, error = handler(
-            K_array, grid.times, threshold, H_S,
-            bath_state=bs, spectral_density=sd,
+            K_array,
+            grid.times,
+            threshold,
+            H_S,
+            bath_state=bs,
+            spectral_density=sd,
         )
-        test_case_results.append(TestCaseResult(
-            name=case["name"],
-            passed=passed,
-            error=error,
-            threshold=threshold,
-        ))
+        test_case_results.append(
+            TestCaseResult(
+                name=case["name"],
+                passed=passed,
+                error=error,
+                threshold=threshold,
+            )
+        )
 
     all_passed = all(r.passed for r in test_case_results)
     verdict = "PASS" if all_passed else "FAIL"
@@ -1620,7 +1709,7 @@ def _run_dynamical(card: BenchmarkCard) -> CardResult:
 def populate_result(
     card: BenchmarkCard,
     run_result: CardResult,
-    evidence_paths: Optional[List[str]] = None,
+    evidence_paths: list[str] | None = None,
     notes: str = "",
 ) -> None:
     """Populate the card's in-memory result block with the run verdict.

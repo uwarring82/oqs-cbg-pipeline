@@ -10,7 +10,6 @@ import yaml
 
 from models import spin_boson_sigma_x as sbsx
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CARDS_DIR = REPO_ROOT / "benchmarks" / "benchmark_cards"
 
@@ -20,9 +19,7 @@ CARDS_DIR = REPO_ROOT / "benchmarks" / "benchmark_cards"
 
 def test_hamiltonian_unit_omega():
     H = sbsx.hamiltonian(1.0)
-    np.testing.assert_array_equal(
-        H, np.array([[0.5, 0], [0, -0.5]], dtype=complex)
-    )
+    np.testing.assert_array_equal(H, np.array([[0.5, 0], [0, -0.5]], dtype=complex))
 
 
 def test_hamiltonian_extra_args_ignored_at_dg1():
@@ -37,16 +34,12 @@ def test_hamiltonian_extra_args_ignored_at_dg1():
 
 def test_hamiltonian_scaling():
     H = sbsx.hamiltonian(2.0)
-    np.testing.assert_array_equal(
-        H, np.array([[1.0, 0], [0, -1.0]], dtype=complex)
-    )
+    np.testing.assert_array_equal(H, np.array([[1.0, 0], [0, -1.0]], dtype=complex))
 
 
 def test_coupling_operator_is_sigma_x():
     A = sbsx.coupling_operator()
-    np.testing.assert_array_equal(
-        A, np.array([[0, 1], [1, 0]], dtype=complex)
-    )
+    np.testing.assert_array_equal(A, np.array([[0, 1], [1, 0]], dtype=complex))
 
 
 def test_coupling_operator_returns_independent_copies():
@@ -77,12 +70,8 @@ def _valid_a4_model_spec():
 
 def test_system_arrays_from_spec_valid():
     H_S, A = sbsx.system_arrays_from_spec(_valid_a4_model_spec())
-    np.testing.assert_array_equal(
-        H_S, np.array([[0.5, 0], [0, -0.5]], dtype=complex)
-    )
-    np.testing.assert_array_equal(
-        A, np.array([[0, 1], [1, 0]], dtype=complex)
-    )
+    np.testing.assert_array_equal(H_S, np.array([[0.5, 0], [0, -0.5]], dtype=complex))
+    np.testing.assert_array_equal(A, np.array([[0, 1], [1, 0]], dtype=complex))
 
 
 def test_system_arrays_from_spec_wrong_dimension_raises():
@@ -111,13 +100,7 @@ def test_system_arrays_from_spec_wrong_coupling_raises():
 
 def test_system_arrays_from_a4_v011_yaml():
     """End-to-end: load A4 v0.1.1, build (H_S, A) via the model factory."""
-    a4 = yaml.safe_load(
-        (CARDS_DIR / "A4_sigma-x-thermal_v0.1.1.yaml").read_text()
-    )
+    a4 = yaml.safe_load((CARDS_DIR / "A4_sigma-x-thermal_v0.1.1.yaml").read_text())
     H_S, A = sbsx.system_arrays_from_spec(a4["frozen_parameters"]["model"])
-    np.testing.assert_array_equal(
-        H_S, np.array([[0.5, 0], [0, -0.5]], dtype=complex)
-    )
-    np.testing.assert_array_equal(
-        A, np.array([[0, 1], [1, 0]], dtype=complex)
-    )
+    np.testing.assert_array_equal(H_S, np.array([[0.5, 0], [0, -0.5]], dtype=complex))
+    np.testing.assert_array_equal(A, np.array([[0, 1], [1, 0]], dtype=complex))

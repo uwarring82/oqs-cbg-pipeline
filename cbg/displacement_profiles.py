@@ -35,8 +35,9 @@ discipline that handling (c) was selected to preserve (Act 2 Architect D-iii
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -67,7 +68,7 @@ class DisplacementProfile:
     """
 
     kind: str
-    params: Dict[str, Any] = field(default_factory=dict)
+    params: dict[str, Any] = field(default_factory=dict)
 
 
 def delta_omega_c(alpha_0: float, omega_c: float) -> DisplacementProfile:
@@ -98,8 +99,7 @@ def delta_omega_c(alpha_0: float, omega_c: float) -> DisplacementProfile:
     """
     if omega_c <= 0.0:
         raise ValueError(
-            f"delta_omega_c: omega_c must be positive (bath cutoff "
-            f"frequency); got {omega_c!r}"
+            f"delta_omega_c: omega_c must be positive (bath cutoff " f"frequency); got {omega_c!r}"
         )
     return DisplacementProfile(
         kind="delta",
@@ -136,8 +136,7 @@ def delta_omega_S(alpha_0: float, omega_S: float) -> DisplacementProfile:
     """
     if omega_S <= 0.0:
         raise ValueError(
-            f"delta_omega_S: omega_S must be positive (system Bohr "
-            f"frequency); got {omega_S!r}"
+            f"delta_omega_S: omega_S must be positive (system Bohr " f"frequency); got {omega_S!r}"
         )
     return DisplacementProfile(
         kind="delta",
@@ -186,7 +185,9 @@ def sqrt_J(alpha_0: float, J: Callable[[float], float]) -> DisplacementProfile:
 
 
 def gaussian(
-    alpha_0: float, omega_d: float, Delta_omega: float,
+    alpha_0: float,
+    omega_d: float,
+    Delta_omega: float,
 ) -> DisplacementProfile:
     """Specified-bandwidth Gaussian-envelope coherent-displacement profile.
 
@@ -247,7 +248,7 @@ def gaussian(
 # The runner-level analog lives in ``reporting.benchmark_card`` as
 # ``_DISPLACEMENT_PROFILES``, importing these constructors by name.
 
-REGISTERED_PROFILES: Dict[str, Callable[..., DisplacementProfile]] = {
+REGISTERED_PROFILES: dict[str, Callable[..., DisplacementProfile]] = {
     "delta-omega_c": delta_omega_c,
     "delta-omega_S": delta_omega_S,
     "sqrt-J": sqrt_J,

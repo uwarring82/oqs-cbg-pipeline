@@ -26,14 +26,16 @@ Validation status (per docs/validity_envelope.md):
     DG-2 fourth-order K_2-K_4 recursion proper              PENDING
 """
 
-from typing import Callable, List
+from collections.abc import Callable
+
 import numpy as np
 
 from numerical.tensor_ops import commutator
 
 
-def K_from_generator(generator: Callable[[np.ndarray], np.ndarray],
-                     basis: List[np.ndarray]) -> np.ndarray:
+def K_from_generator(
+    generator: Callable[[np.ndarray], np.ndarray], basis: list[np.ndarray]
+) -> np.ndarray:
     """Compute K from a TCL generator L using Letter Eq. (6).
 
     Implements the basis-independent operational form:
@@ -102,7 +104,7 @@ def K_from_generator(generator: Callable[[np.ndarray], np.ndarray],
     K = np.zeros((d, d), dtype=complex)
     for F_alpha in basis:
         K += commutator(F_alpha.conj().T, generator(F_alpha))
-    K /= (2j * d)
+    K /= 2j * d
     return K
 
 

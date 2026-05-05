@@ -10,7 +10,6 @@ import pytest
 
 from cbg import basis
 
-
 # ─── matrix_unit_basis ────────────────────────────────────────────────────────
 
 
@@ -86,7 +85,7 @@ def test_verify_orthonormality_tolerance_argument():
     # Add a 0.01 perturbation to b[0] — breaks orthonormality by ~0.01.
     b_mod = [b[0] + 0.01 * np.ones((2, 2), dtype=complex)] + b[1:]
     assert basis.verify_orthonormality(b_mod, tol=1e-3) is False  # 0.01 > 1e-3
-    assert basis.verify_orthonormality(b_mod, tol=1.0) is True   # 0.01 < 1.0
+    assert basis.verify_orthonormality(b_mod, tol=1.0) is True  # 0.01 < 1.0
 
 
 def test_verify_orthonormality_returns_bool():

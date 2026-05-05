@@ -8,6 +8,7 @@ These tests do NOT verify scientific correctness. They verify only that:
 
 Scientific tests are added as Decision Gates pass.
 """
+
 import os
 
 
@@ -21,8 +22,9 @@ def test_protective_docs_exist():
         "docs/validity_envelope.md",
         "docs/benchmark_protocol.md",
     ):
-        assert os.path.isfile(os.path.join(repo_root, required)), \
-            f"Mandatory protective doc missing: {required}"
+        assert os.path.isfile(
+            os.path.join(repo_root, required)
+        ), f"Mandatory protective doc missing: {required}"
 
 
 def test_ledger_vendored():
@@ -47,6 +49,7 @@ def test_sail_vendored():
 def test_cbg_imports():
     """The cbg package must import without error and expose anchor metadata."""
     import re
+
     import cbg
 
     # __version__ is sourced from package metadata (pyproject.toml). It must be
@@ -74,7 +77,7 @@ def test_stubs_raise_notimplementederror():
     those modules' docstrings for the rationale and the DG at which their
     function stubs land.
     """
-    from cbg import basis, effective_hamiltonian, diagnostics
+    from cbg import basis, diagnostics, effective_hamiltonian
 
     # (callable, args, kwargs) — args sized so each call would otherwise reach
     # the function body. The body must raise NotImplementedError.
@@ -130,5 +133,6 @@ def test_diagnostics_constants_present():
         "truncation_artefact",
         "benchmark_disagreement",
     }
-    assert diagnostics.VALID_CAUSE_LABELS == expected, \
-        f"VALID_CAUSE_LABELS mismatch: {diagnostics.VALID_CAUSE_LABELS} vs {expected}"
+    assert (
+        diagnostics.VALID_CAUSE_LABELS == expected
+    ), f"VALID_CAUSE_LABELS mismatch: {diagnostics.VALID_CAUSE_LABELS} vs {expected}"

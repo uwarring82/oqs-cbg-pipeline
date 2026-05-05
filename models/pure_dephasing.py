@@ -40,10 +40,9 @@ Anchor: SCHEMA.md v0.1.2; Cards A3 and B4-conv-registry.
 
 from __future__ import annotations
 
-from typing import Any, Dict, Tuple
+from typing import Any
 
 import numpy as np
-
 
 structural_constraints = (
     "basis_independence",
@@ -85,7 +84,7 @@ _EXPECTED_SYSTEM_HAMILTONIAN = "(omega / 2) * sigma_z"
 _EXPECTED_COUPLING_OPERATOR = "sigma_z"
 
 
-def system_arrays_from_spec(model_spec: Dict[str, Any]) -> Tuple[np.ndarray, np.ndarray]:
+def system_arrays_from_spec(model_spec: dict[str, Any]) -> tuple[np.ndarray, np.ndarray]:
     """Build (H_S, A) numpy arrays from a card's frozen_parameters.model dict.
 
     Validates:
@@ -113,8 +112,7 @@ def system_arrays_from_spec(model_spec: Dict[str, Any]) -> Tuple[np.ndarray, np.
     d = model_spec.get("system_dimension")
     if d != 2:
         raise ValueError(
-            f"pure_dephasing.system_arrays_from_spec: system_dimension must "
-            f"be 2; got {d!r}"
+            f"pure_dephasing.system_arrays_from_spec: system_dimension must " f"be 2; got {d!r}"
         )
 
     h_str = (model_spec.get("system_hamiltonian") or "").strip()

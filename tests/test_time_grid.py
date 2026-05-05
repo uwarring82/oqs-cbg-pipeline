@@ -18,7 +18,6 @@ import yaml
 
 from numerical import time_grid as tg
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CARDS_DIR = REPO_ROOT / "benchmarks" / "benchmark_cards"
 
@@ -27,9 +26,7 @@ CARDS_DIR = REPO_ROOT / "benchmarks" / "benchmark_cards"
 
 
 def test_build_time_grid_uniform_basic():
-    grid = tg.build_time_grid({
-        "t_start": 0.0, "t_end": 10.0, "n_points": 11, "scheme": "uniform"
-    })
+    grid = tg.build_time_grid({"t_start": 0.0, "t_end": 10.0, "n_points": 11, "scheme": "uniform"})
     assert isinstance(grid, tg.TimeGrid)
     assert grid.n_points == 11
     assert grid.scheme == "uniform"
@@ -37,16 +34,12 @@ def test_build_time_grid_uniform_basic():
 
 
 def test_build_time_grid_uniform_dt_property():
-    grid = tg.build_time_grid({
-        "t_start": 0.0, "t_end": 10.0, "n_points": 11, "scheme": "uniform"
-    })
+    grid = tg.build_time_grid({"t_start": 0.0, "t_end": 10.0, "n_points": 11, "scheme": "uniform"})
     assert grid.dt == pytest.approx(1.0)
 
 
 def test_build_time_grid_n_points_2_minimum():
-    grid = tg.build_time_grid({
-        "t_start": 0.0, "t_end": 1.0, "n_points": 2, "scheme": "uniform"
-    })
+    grid = tg.build_time_grid({"t_start": 0.0, "t_end": 1.0, "n_points": 2, "scheme": "uniform"})
     np.testing.assert_allclose(grid.times, [0.0, 1.0])
 
 
@@ -69,30 +62,22 @@ def test_build_time_grid_missing_key_raises():
 
 def test_build_time_grid_n_points_below_2_raises():
     with pytest.raises(ValueError, match=">= 2"):
-        tg.build_time_grid({
-            "t_start": 0.0, "t_end": 10.0, "n_points": 1, "scheme": "uniform"
-        })
+        tg.build_time_grid({"t_start": 0.0, "t_end": 10.0, "n_points": 1, "scheme": "uniform"})
 
 
 def test_build_time_grid_non_integer_n_points_raises():
     with pytest.raises(ValueError, match="must be int"):
-        tg.build_time_grid({
-            "t_start": 0.0, "t_end": 10.0, "n_points": 11.5, "scheme": "uniform"
-        })
+        tg.build_time_grid({"t_start": 0.0, "t_end": 10.0, "n_points": 11.5, "scheme": "uniform"})
 
 
 def test_build_time_grid_t_end_less_than_t_start_raises():
     with pytest.raises(ValueError, match="t_end > t_start"):
-        tg.build_time_grid({
-            "t_start": 10.0, "t_end": 5.0, "n_points": 11, "scheme": "uniform"
-        })
+        tg.build_time_grid({"t_start": 10.0, "t_end": 5.0, "n_points": 11, "scheme": "uniform"})
 
 
 def test_build_time_grid_t_end_equals_t_start_raises():
     with pytest.raises(ValueError, match="t_end > t_start"):
-        tg.build_time_grid({
-            "t_start": 5.0, "t_end": 5.0, "n_points": 11, "scheme": "uniform"
-        })
+        tg.build_time_grid({"t_start": 5.0, "t_end": 5.0, "n_points": 11, "scheme": "uniform"})
 
 
 def test_build_time_grid_non_dict_spec_raises():
@@ -105,23 +90,17 @@ def test_build_time_grid_non_dict_spec_raises():
 
 def test_build_time_grid_chebyshev_deferred_to_dg2():
     with pytest.raises(NotImplementedError, match="DG-2"):
-        tg.build_time_grid({
-            "t_start": 0.0, "t_end": 10.0, "n_points": 11, "scheme": "chebyshev"
-        })
+        tg.build_time_grid({"t_start": 0.0, "t_end": 10.0, "n_points": 11, "scheme": "chebyshev"})
 
 
 def test_build_time_grid_log_deferred_to_dg2():
     with pytest.raises(NotImplementedError, match="DG-2"):
-        tg.build_time_grid({
-            "t_start": 0.1, "t_end": 10.0, "n_points": 11, "scheme": "log"
-        })
+        tg.build_time_grid({"t_start": 0.1, "t_end": 10.0, "n_points": 11, "scheme": "log"})
 
 
 def test_build_time_grid_unknown_scheme_raises():
     with pytest.raises(ValueError, match="unknown scheme"):
-        tg.build_time_grid({
-            "t_start": 0.0, "t_end": 10.0, "n_points": 11, "scheme": "magic"
-        })
+        tg.build_time_grid({"t_start": 0.0, "t_end": 10.0, "n_points": 11, "scheme": "magic"})
 
 
 # ─── Composability with Cards A3/A4 ────────────────────────────────────────

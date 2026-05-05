@@ -2,6 +2,7 @@
 
 **Date:** 2026-05-04 (initial review)  
 **Updated:** 2026-05-05 (re-assessment after commit `0df8a1e`)  
+**Final update:** 2026-05-05 (coding-readiness pass — dev tools installed and run)  
 **Reviewer:** Kimi Code CLI (automated agent review)  
 **Repository version assessed:** Git tag `v0.2.0` / metadata `0.3.0.dev0` (commit `0df8a1e`)
 
@@ -41,25 +42,35 @@ The steward responded to the initial review with a single comprehensive commit (
 | API docs / landing page | ❌ Reflected old DG status | ✅ Rebuilt | `api/`, `index.html`, `docs-site/index.md` all updated |
 | `tests/test_imports.py` | ❌ Pinned literal version string | ✅ Dynamic | No longer hardcodes version |
 
-**What remains unaddressed** from the initial priority table:
-- ❌ No minted DOI (still placeholder)
-- ❌ No ORCID (still placeholder)
-- ❌ No PyPI publication
-- ❌ No `examples/` directory or Jupyter notebooks
-- ❌ No `__all__` declarations in package `__init__.py` files
-- ❌ Flat package namespace unchanged (`models`, `numerical`, etc. as top-level)
-- ❌ No CI enforcement of `black` / `ruff` / `mypy` (configured but not run in workflow)
-- ❌ No code coverage reporting in CI
-- ❌ No issue / PR templates in `.github/`
-- ❌ Benchmark stubs still `NotImplementedError`
-- ❌ `models/` APIs still partial (Fano-Anderson, Jaynes-Cummings scaffolded)
-- ❌ `cbg/diagnostics.py` still mostly stubs
-- ❌ `reporting/benchmark_card.py` `write_card` still stubbed
-- ❌ Dict-driven API still limits scripting interoperability
-- ❌ No data export formats beyond JSON/YAML
-- ❌ `codemeta.json` `funding` field still placeholder
-- ❌ Sphinx docs still committed to `api/` rather than deployed to dedicated host
-- ❌ No interactive/cloud environment (Binder, etc.)
+### 2026-05-05 — Coding-readiness pass (new findings)
+
+After installing `[dev]` extras in the `.venv` and running the full tool suite, additional findings emerged:
+
+| Check | Result | Verdict |
+|---|---|---|
+| `pytest tests/` | ✅ 323 passed in ~18 s | Test suite is solid |
+| `black --check` | ❌ 25 files would be reformatted | Significant style debt |
+| `ruff check` | ❌ 194 errors (168 auto-fixable) | Import sorting, PEP-585/604 annotations, deprecated imports |
+| `mypy` | ❌ 4 errors in 3 files | 1 false positive (`np.trapz` fallback), 1 real type error, 2 missing stub issues |
+| `python -c "import cbg"` in .venv | ✅ `__version__` = `0.3.0.dev0` | Package installs and imports cleanly |
+
+**Ruff error breakdown:**
+- 108 × `UP006` — non-PEP-585 annotations (e.g. `List[np.ndarray]` → `list[np.ndarray]`)
+- 31 × `UP045` — non-PEP-604 optional annotations (e.g. `Optional[T]` → `T \| None`)
+- 23 × `I001` — unsorted imports
+- 19 × `UP035` — deprecated imports from `typing`
+- 6 × `E731` — lambda assignments
+- 3 × `B905` — `zip()` without explicit `strict=`
+- 1 × `E741` — ambiguous variable name (`l`)
+- 1 × `F401` — unused import
+- 1 × `F841` — unused variable
+- 1 × `W293` — blank line with whitespace
+
+**MyPy error breakdown:**
+- `numerical/time_grid.py:318` — `Module has no attribute "trapz"`. This is a static-analysis false positive: the line `np.trapezoid(...) if hasattr(np, "trapezoid") else np.trapz(...)` is runtime-safe (the `else` branch is never hit with NumPy ≥ 2.0), but mypy sees the reference to the removed `np.trapz` attribute.
+- `cbg/tcl_recursion.py:423` — real type error: passing `ndarray | None` where `ndarray` is expected.
+- `reporting/benchmark_card.py:45` — missing `types-PyYAML` stub package.
+- `reporting/benchmark_card.py:1283` — passing `ndarray | None` to `np.linalg.norm`.
 
 ---
 
@@ -146,7 +157,7 @@ The steward responded to the initial review with a single comprehensive commit (
 - [x] Fix README.md DG status table and version string
 - [x] Add Installation section to README
 - [x] Add Quickstart code block to README
-- [x] Bump `pyproject.toml` / `cbg/__init__.py` version consistency
+- [x] Bump `pyproject.toml` / `cbg.__init__.py` version consistency
 - [x] Source `cbg.__version__` from `importlib.metadata`
 - [x] Soften import-time `docs/` filesystem check for pip-installed users
 - [x] Add `[tool.black]`, `[tool.ruff]`, `[tool.mypy]` to `pyproject.toml`
@@ -161,10 +172,11 @@ The steward responded to the initial review with a single comprehensive commit (
 - [ ] **Add `examples/` directory** with at least one runnable script and one Jupyter notebook
 
 ### Still open — High
+- [ ] **Run `black .` and `ruff check --fix .`** to establish a clean style baseline (5-minute task; 25 files need formatting, 168 of 194 ruff errors are auto-fixable)
+- [ ] **Fix the 4 mypy errors** (or add targeted `# type: ignore` comments)
 - [ ] **Enforce `black` / `ruff` / `mypy` in CI**
 - [ ] **Add code coverage step to CI** (generate and upload reports)
 - [ ] **Add `__all__` to every package `__init__.py`**
-- [ ] **Remove or further soften the import-time `docs/` check** (currently still checks when `docs/` dir exists, even if incomplete)
 
 ### Still open — Medium
 - [ ] **Consider namespacing sub-packages under `cbg.*`**
@@ -182,8 +194,52 @@ The steward responded to the initial review with a single comprehensive commit (
 
 ---
 
-## Bottom line
+## Coding-readiness assessment
 
-This repository is **a scientific governance fortress whose drawbridge has been partially repaired**. The metadata, provenance tracking, and reproducibility discipline remain genuinely exceptional. The steward's rapid response to the initial review (`0df8a1e`) fixed the most embarrassing software-accessibility gaps: the README no longer lies about maturity, installation instructions exist, a quickstart example runs, and the package no longer warns at import time when used outside the repository tree.
+**Are you ready to move on with coding?** Yes — *with one caveat*.
+
+### What's solid ✅
+- **323 tests pass.** The DG-1 and DG-2 foundations are numerically verified and stable.
+- **Architecture is clean.** Modules are well-separated (`cbg/`, `models/`, `numerical/`, `benchmarks/`, `reporting/`).
+- **Docstrings are excellent.** Every public function has NumPy-style documentation with physics context.
+- **Stubs are clearly marked.** Every unimplemented surface raises `NotImplementedError` with a descriptive message, so you won't accidentally call broken code.
+- **Dev environment works.** `pip install -e ".[dev]"` in the `.venv` installs all tools; the package imports cleanly and reports the correct version.
+
+### The one caveat ⚠️
+**Clean the style baseline first.** Running the dev tools reveals:
+- `black` wants to reformat **25 files**
+- `ruff` reports **194 errors** (168 auto-fixable)
+- `mypy` reports **4 type errors**
+
+If you start coding now without fixing these, your future pull requests will contain noisy formatting diffs mixed with real logic changes. This makes code review harder and pollutes `git blame`.
+
+**Recommended 10-minute pre-flight checklist before coding:**
+
+```bash
+# 1. Ensure you're in the .venv with dev tools
+source .venv/bin/activate
+pip install -e ".[dev]"
+
+# 2. Establish clean style baseline
+black .
+ruff check --fix .
+
+# 3. Fix remaining mypy issues (or add # type: ignore where appropriate)
+mypy cbg/ models/ numerical/ benchmarks/ reporting/
+
+# 4. Verify tests still pass
+pytest tests/ -q
+
+# 5. Commit the hygiene pass
+git add -A
+git commit -m "style: black + ruff baseline; fix mypy errors"
+```
+
+After that, you have a clean slate and can code with confidence. The CI should also be updated to run these tools so the baseline stays clean.
+
+### Bottom line
+This repository is **a scientific governance fortress whose drawbridge has been partially repaired**. The steward's rapid response to the initial review fixed the most embarrassing software-accessibility gaps: the README no longer lies about maturity, installation instructions exist, a quickstart example runs, and the package no longer warns at import time when used outside the repository tree.
 
 However, **FAIR is a journey, not a destination.** The repository still lacks a DOI, ORCID, PyPI presence, runnable examples, CI-enforced linting, and a namespaced package structure. A determined expert can now install and run the code with minimal friction, but the broader open-quantum-systems community would still benefit from the remaining high-priority items — especially a minted DOI and an `examples/` directory — before the repository can be called broadly reusable.
+
+For **internal development**, you are absolutely ready to code. Just run that 10-minute style baseline cleanup first.

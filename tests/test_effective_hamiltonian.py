@@ -12,7 +12,6 @@ import pytest
 from cbg import basis, effective_hamiltonian
 from numerical import tensor_ops
 
-
 # ─── Test fixtures ───────────────────────────────────────────────────────────
 
 sigma_x = np.array([[0, 1], [1, 0]], dtype=complex)
@@ -20,7 +19,7 @@ sigma_y = np.array([[0, -1j], [1j, 0]], dtype=complex)
 sigma_z = np.array([[1, 0], [0, -1]], dtype=complex)
 identity_2 = np.eye(2, dtype=complex)
 sigma_minus = np.array([[0, 1], [0, 0]], dtype=complex)  # |0⟩⟨1|; traceless
-sigma_plus = np.array([[0, 0], [1, 0]], dtype=complex)   # |1⟩⟨0|; traceless
+sigma_plus = np.array([[0, 0], [1, 0]], dtype=complex)  # |1⟩⟨0|; traceless
 
 
 def _basis_d2():
@@ -33,13 +32,16 @@ def _basis_d3():
 
 def _unitary_generator(H):
     """L[X] = -i [H, X]; pure unitary evolution."""
+
     def L(X):
         return -1j * tensor_ops.commutator(H, X)
+
     return L
 
 
 def _canonical_lindblad_generator(H, jump_operators):
     """L[X] = -i[H, X] + Σ_i (V_i X V_i† - 0.5 {V_i† V_i, X})."""
+
     def L(X):
         out = -1j * tensor_ops.commutator(H, X)
         for V in jump_operators:
@@ -47,6 +49,7 @@ def _canonical_lindblad_generator(H, jump_operators):
             out += V @ X @ V_dag
             out -= 0.5 * tensor_ops.anticommutator(V_dag @ V, X)
         return out
+
     return L
 
 
@@ -80,7 +83,10 @@ def test_K_from_generator_pure_unitary_traceful_H_returns_traceless_part():
 
 def test_K_from_generator_zero_generator_returns_zero():
     """For L = 0, K = 0."""
-    L = lambda X: np.zeros_like(X)
+
+    def L(X):
+        return np.zeros_like(X)
+
     K = effective_hamiltonian.K_from_generator(L, _basis_d2())
     np.testing.assert_allclose(K, np.zeros((2, 2), dtype=complex), atol=1e-12)
 
@@ -181,20 +187,26 @@ def test_K_from_generator_composes_with_cbg_basis():
 
 
 def test_K_from_generator_empty_basis_raises():
-    L = lambda X: X
+    def L(X):
+        return X
+
     with pytest.raises(ValueError, match="non-empty"):
         effective_hamiltonian.K_from_generator(L, [])
 
 
 def test_K_from_generator_non_square_first_element_raises():
-    L = lambda X: X
+    def L(X):
+        return X
+
     bad_basis = [np.zeros((2, 3), dtype=complex)]
     with pytest.raises(ValueError, match="non-square"):
         effective_hamiltonian.K_from_generator(L, bad_basis)
 
 
 def test_K_from_generator_inconsistent_shapes_raises():
-    L = lambda X: X
+    def L(X):
+        return X
+
     mixed_basis = [
         np.zeros((2, 2), dtype=complex),
         np.zeros((3, 3), dtype=complex),

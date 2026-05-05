@@ -22,7 +22,6 @@ import yaml
 
 from cbg import bath_correlations as bc
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CARDS_DIR = REPO_ROOT / "benchmarks" / "benchmark_cards"
 
@@ -192,8 +191,9 @@ def test_bath_two_point_array_stationarity():
     t = np.linspace(0.0, 3.0, 7)
     t_shifted = t + 100.0
     C = bc.bath_two_point_thermal_array(t, alpha=0.05, omega_c=10.0, temperature=0.5)
-    C_shifted = bc.bath_two_point_thermal_array(t_shifted, alpha=0.05, omega_c=10.0,
-                                                temperature=0.5)
+    C_shifted = bc.bath_two_point_thermal_array(
+        t_shifted, alpha=0.05, omega_c=10.0, temperature=0.5
+    )
     np.testing.assert_allclose(C, C_shifted, atol=1e-10)
 
 
@@ -219,10 +219,8 @@ def test_bath_two_point_array_2d_grid_raises():
 
 def test_two_point_thermal_ohmic_dispatches():
     bath_state = {"family": "thermal", "temperature": 0.5}
-    spectral_density = {"family": "ohmic", "coupling_strength": 0.05,
-                        "cutoff_frequency": 10.0}
-    val = bc.two_point(1.0, 0.0, bath_state=bath_state,
-                       spectral_density=spectral_density)
+    spectral_density = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
+    val = bc.two_point(1.0, 0.0, bath_state=bath_state, spectral_density=spectral_density)
     expected = bc.bath_two_point_thermal(1.0, 0.05, 10.0, 0.5)
     assert val == pytest.approx(expected, rel=1e-12)
 
@@ -231,12 +229,9 @@ def test_two_point_coherent_displaced_uses_thermal_evaluator():
     """Coherent-displaced uses the same connected two-point as the
     underlying thermal-vacuum at the spec's temperature; displacement
     leaves the connected part invariant."""
-    bath_state = {"family": "coherent_displaced", "temperature": 0.0,
-                  "displacement_amplitude": 1.0}
-    spectral_density = {"family": "ohmic", "coupling_strength": 0.05,
-                        "cutoff_frequency": 10.0}
-    val = bc.two_point(0.5, 0.0, bath_state=bath_state,
-                       spectral_density=spectral_density)
+    bath_state = {"family": "coherent_displaced", "temperature": 0.0, "displacement_amplitude": 1.0}
+    spectral_density = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
+    val = bc.two_point(0.5, 0.0, bath_state=bath_state, spectral_density=spectral_density)
     expected = bc.bath_two_point_thermal(0.5, 0.05, 10.0, 0.0)
     assert val == pytest.approx(expected, rel=1e-12)
 
@@ -251,8 +246,7 @@ def test_two_point_uses_only_time_difference():
 
 def test_two_point_unknown_spectral_density_family_raises():
     bs = {"family": "thermal", "temperature": 0.5}
-    sd = {"family": "drude_lorentz", "coupling_strength": 0.05,
-          "cutoff_frequency": 10.0}
+    sd = {"family": "drude_lorentz", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
     with pytest.raises(NotImplementedError, match="DG-2"):
         bc.two_point(1.0, 0.0, bath_state=bs, spectral_density=sd)
 

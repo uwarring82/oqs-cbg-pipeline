@@ -10,7 +10,6 @@ import yaml
 
 from models import pure_dephasing as pd
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CARDS_DIR = REPO_ROOT / "benchmarks" / "benchmark_cards"
 
@@ -20,16 +19,12 @@ CARDS_DIR = REPO_ROOT / "benchmarks" / "benchmark_cards"
 
 def test_hamiltonian_unit_omega():
     H = pd.hamiltonian(1.0)
-    np.testing.assert_array_equal(
-        H, np.array([[0.5, 0], [0, -0.5]], dtype=complex)
-    )
+    np.testing.assert_array_equal(H, np.array([[0.5, 0], [0, -0.5]], dtype=complex))
 
 
 def test_hamiltonian_scaling():
     H = pd.hamiltonian(2.5)
-    np.testing.assert_array_equal(
-        H, np.array([[1.25, 0], [0, -1.25]], dtype=complex)
-    )
+    np.testing.assert_array_equal(H, np.array([[1.25, 0], [0, -1.25]], dtype=complex))
 
 
 def test_hamiltonian_returns_complex_dtype():
@@ -38,9 +33,7 @@ def test_hamiltonian_returns_complex_dtype():
 
 def test_coupling_operator_is_sigma_z():
     A = pd.coupling_operator()
-    np.testing.assert_array_equal(
-        A, np.array([[1, 0], [0, -1]], dtype=complex)
-    )
+    np.testing.assert_array_equal(A, np.array([[1, 0], [0, -1]], dtype=complex))
 
 
 def test_coupling_operator_returns_independent_copies():
@@ -71,12 +64,8 @@ def _valid_a3_model_spec():
 
 def test_system_arrays_from_spec_valid():
     H_S, A = pd.system_arrays_from_spec(_valid_a3_model_spec())
-    np.testing.assert_array_equal(
-        H_S, np.array([[0.5, 0], [0, -0.5]], dtype=complex)
-    )
-    np.testing.assert_array_equal(
-        A, np.array([[1, 0], [0, -1]], dtype=complex)
-    )
+    np.testing.assert_array_equal(H_S, np.array([[0.5, 0], [0, -0.5]], dtype=complex))
+    np.testing.assert_array_equal(A, np.array([[1, 0], [0, -1]], dtype=complex))
 
 
 def test_system_arrays_from_spec_wrong_dimension_raises():
@@ -112,14 +101,8 @@ def test_system_arrays_from_spec_missing_field_raises():
 
 def test_system_arrays_from_a3_v011_yaml():
     """End-to-end: load A3 v0.1.1, build (H_S, A) via the model factory."""
-    a3 = yaml.safe_load(
-        (CARDS_DIR / "A3_pure-dephasing_v0.1.1.yaml").read_text()
-    )
+    a3 = yaml.safe_load((CARDS_DIR / "A3_pure-dephasing_v0.1.1.yaml").read_text())
     H_S, A = pd.system_arrays_from_spec(a3["frozen_parameters"]["model"])
     # H_S = (1/2) sigma_z (omega = 1.0 by convention); A = sigma_z.
-    np.testing.assert_array_equal(
-        H_S, np.array([[0.5, 0], [0, -0.5]], dtype=complex)
-    )
-    np.testing.assert_array_equal(
-        A, np.array([[1, 0], [0, -1]], dtype=complex)
-    )
+    np.testing.assert_array_equal(H_S, np.array([[0.5, 0], [0, -0.5]], dtype=complex))
+    np.testing.assert_array_equal(A, np.array([[1, 0], [0, -1]], dtype=complex))

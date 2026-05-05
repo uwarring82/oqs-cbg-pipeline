@@ -23,11 +23,10 @@ Hilbert–Schmidt orthonormality relation up to numerical tolerance,
 verifiable by verify_orthonormality.
 """
 
-from typing import List
 import numpy as np
 
 
-def matrix_unit_basis(d: int) -> List[np.ndarray]:
+def matrix_unit_basis(d: int) -> list[np.ndarray]:
     """Matrix-unit basis {|j⟩⟨k|}, j,k ∈ {0, ..., d-1}.
 
     The basis used in Letter Eq. (7). Each element E_{j,k} is the d×d
@@ -67,7 +66,7 @@ def matrix_unit_basis(d: int) -> List[np.ndarray]:
     return basis
 
 
-def su_d_generator_basis(d: int) -> List[np.ndarray]:
+def su_d_generator_basis(d: int) -> list[np.ndarray]:
     """Generators of su(d) plus the identity, normalised for Hilbert–Schmidt.
 
     For d = 2, returns the normalised Pauli basis
@@ -104,20 +103,19 @@ def su_d_generator_basis(d: int) -> List[np.ndarray]:
             "Higher-d cross-basis fixtures are a separate DG-2 freeze."
         )
     inv_sqrt2 = 1.0 / np.sqrt(2.0)
-    I = np.eye(2, dtype=complex)
+    identity_2 = np.eye(2, dtype=complex)
     sigma_x = np.array([[0, 1], [1, 0]], dtype=complex)
     sigma_y = np.array([[0, -1j], [1j, 0]], dtype=complex)
     sigma_z = np.array([[1, 0], [0, -1]], dtype=complex)
     return [
-        inv_sqrt2 * I,
+        inv_sqrt2 * identity_2,
         inv_sqrt2 * sigma_x,
         inv_sqrt2 * sigma_y,
         inv_sqrt2 * sigma_z,
     ]
 
 
-def verify_orthonormality(basis: List[np.ndarray],
-                          tol: float = 1e-10) -> bool:
+def verify_orthonormality(basis: list[np.ndarray], tol: float = 1e-10) -> bool:
     """Verify Tr(F_α† F_β) = δ_αβ to within `tol`.
 
     Returns True iff every pairwise Hilbert–Schmidt inner product is

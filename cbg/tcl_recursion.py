@@ -24,7 +24,8 @@ Anchor: SCHEMA.md v0.1.2; benchmark cards A3/A4/B4/B5.
 
 from __future__ import annotations
 
-from typing import Callable, Dict, Any
+from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 from scipy.linalg import expm
@@ -32,7 +33,6 @@ from scipy.linalg import expm
 from cbg.basis import matrix_unit_basis
 from cbg.cumulants import D_bar_1, D_bar_2
 from cbg.effective_hamiltonian import K_from_generator
-
 
 # ─── Interaction-picture helper ──────────────────────────────────────────────
 
@@ -194,8 +194,8 @@ def K_n_thermal_on_grid(
     system_hamiltonian: np.ndarray,
     coupling_operator: np.ndarray,
     *,
-    bath_state: Dict[str, Any],
-    spectral_density: Dict[str, Any],
+    bath_state: dict[str, Any],
+    spectral_density: dict[str, Any],
     basis: list | None = None,
 ) -> np.ndarray:
     """Compute K_n(t) at every t in t_grid for a thermal Gaussian bath.
@@ -253,15 +253,11 @@ def K_n_thermal_on_grid(
     # For n = 2, precompute the D̄_2 array once (reused across all t_idx).
     D = None
     if n == 2:
-        D = D_bar_2(
-            t_grid, bath_state=bath_state, spectral_density=spectral_density
-        )
+        D = D_bar_2(t_grid, bath_state=bath_state, spectral_density=spectral_density)
 
     K = np.zeros((len(t_grid), d, d), dtype=complex)
     for t_idx in range(len(t_grid)):
-        L_n_apply = L_n_thermal_at_time(
-            n, t_idx, t_grid, H_S, A, D_bar_2_array=D
-        )
+        L_n_apply = L_n_thermal_at_time(n, t_idx, t_grid, H_S, A, D_bar_2_array=D)
         K[t_idx] = K_from_generator(L_n_apply, basis)
     return K
 
@@ -323,8 +319,8 @@ def K_total_displaced_on_grid(
     system_hamiltonian: np.ndarray,
     coupling_operator: np.ndarray,
     *,
-    bath_state: Dict[str, Any],
-    spectral_density: Dict[str, Any],
+    bath_state: dict[str, Any],
+    spectral_density: dict[str, Any],
     basis: list | None = None,
 ) -> np.ndarray:
     """Compute K(t) = Σ_{n=0}^{N_card} K_n(t) for a coherent-displaced bath.
@@ -365,8 +361,7 @@ def K_total_displaced_on_grid(
     """
     if not isinstance(N_card, int) or isinstance(N_card, bool) or N_card < 0:
         raise ValueError(
-            f"K_total_displaced_on_grid: N_card must be a non-negative integer; "
-            f"got {N_card!r}"
+            f"K_total_displaced_on_grid: N_card must be a non-negative integer; " f"got {N_card!r}"
         )
     if N_card > 2:
         raise NotImplementedError(
@@ -395,9 +390,15 @@ def K_total_displaced_on_grid(
     # the bath_state may carry a temperature override (e.g. for
     # thermal-on-top-of-displaced studies). Current cards do not set
     # temperature on coherent_displaced bath_states; default to 0.
-    D_bar_1_array = D_bar_1(
-        t_grid, bath_state=bath_state, spectral_density=spectral_density,
-    ) if N_card >= 1 else None
+    D_bar_1_array = (
+        D_bar_1(
+            t_grid,
+            bath_state=bath_state,
+            spectral_density=spectral_density,
+        )
+        if N_card >= 1
+        else None
+    )
 
     # For D̄_2 we forward to the existing connected-two-point evaluator
     # at the spec's temperature (or T=0 default). The evaluator already
@@ -410,7 +411,9 @@ def K_total_displaced_on_grid(
         if "temperature" not in bs_for_d2:
             bs_for_d2["temperature"] = 0.0
         D_bar_2_array = D_bar_2(
-            t_grid, bath_state=bs_for_d2, spectral_density=spectral_density,
+            t_grid,
+            bath_state=bs_for_d2,
+            spectral_density=spectral_density,
         )
 
     K = np.zeros((len(t_grid), d, d), dtype=complex)
@@ -420,12 +423,18 @@ def K_total_displaced_on_grid(
         K[t_idx] += K_from_generator(L0, basis)
         # n = 1: displaced contribution.
         if N_card >= 1:
+            assert D_bar_1_array is not None
             L1 = L_1_displaced_at_time(t_idx, A, D_bar_1_array)
             K[t_idx] += K_from_generator(L1, basis)
         # n = 2: TCL2 dissipator (D̄_2 invariant; same as thermal).
         if N_card >= 2:
             L2 = L_n_thermal_at_time(
-                2, t_idx, t_grid, H_S, A, D_bar_2_array=D_bar_2_array,
+                2,
+                t_idx,
+                t_grid,
+                H_S,
+                A,
+                D_bar_2_array=D_bar_2_array,
             )
             K[t_idx] += K_from_generator(L2, basis)
     return K
@@ -437,8 +446,8 @@ def K_total_thermal_on_grid(
     system_hamiltonian: np.ndarray,
     coupling_operator: np.ndarray,
     *,
-    bath_state: Dict[str, Any],
-    spectral_density: Dict[str, Any],
+    bath_state: dict[str, Any],
+    spectral_density: dict[str, Any],
     basis: list | None = None,
 ) -> np.ndarray:
     """Compute K(t) = Σ_{n=0}^{N_card} K_n(t) at every t in t_grid for a
@@ -463,8 +472,7 @@ def K_total_thermal_on_grid(
     """
     if not isinstance(N_card, int) or isinstance(N_card, bool) or N_card < 0:
         raise ValueError(
-            f"K_total_thermal_on_grid: N_card must be a non-negative integer; "
-            f"got {N_card!r}"
+            f"K_total_thermal_on_grid: N_card must be a non-negative integer; " f"got {N_card!r}"
         )
     if N_card > 2:
         raise NotImplementedError(
@@ -478,8 +486,12 @@ def K_total_thermal_on_grid(
 
     for n in range(N_card + 1):
         K += K_n_thermal_on_grid(
-            n, t_grid, system_hamiltonian, coupling_operator,
-            bath_state=bath_state, spectral_density=spectral_density,
+            n,
+            t_grid,
+            system_hamiltonian,
+            coupling_operator,
+            bath_state=bath_state,
+            spectral_density=spectral_density,
             basis=basis,
         )
     return K
@@ -502,8 +514,7 @@ def L_n(n: int, **kwargs):
     """
     if n >= 3:
         raise NotImplementedError(
-            f"L_n: n={n} not implemented; n >= 3 is pending "
-            f"fourth-order-recursion work."
+            f"L_n: n={n} not implemented; n >= 3 is pending " f"fourth-order-recursion work."
         )
     bath_state = kwargs.get("bath_state")
     if bath_state is not None and bath_state.get("family") != "thermal":

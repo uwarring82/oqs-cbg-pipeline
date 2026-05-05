@@ -29,13 +29,15 @@ CAUSE_PROJECTION_AMBIGUITY = "projection_ambiguity"
 CAUSE_TRUNCATION_ARTEFACT = "truncation_artefact"
 CAUSE_BENCHMARK_DISAGREEMENT = "benchmark_disagreement"
 
-VALID_CAUSE_LABELS = frozenset({
-    CAUSE_CONVERGENCE_FAILURE,
-    CAUSE_TCL_SINGULARITY,
-    CAUSE_PROJECTION_AMBIGUITY,
-    CAUSE_TRUNCATION_ARTEFACT,
-    CAUSE_BENCHMARK_DISAGREEMENT,
-})
+VALID_CAUSE_LABELS = frozenset(
+    {
+        CAUSE_CONVERGENCE_FAILURE,
+        CAUSE_TCL_SINGULARITY,
+        CAUSE_PROJECTION_AMBIGUITY,
+        CAUSE_TRUNCATION_ARTEFACT,
+        CAUSE_BENCHMARK_DISAGREEMENT,
+    }
+)
 
 
 def perturbative_order_norms(K_n_list):
@@ -50,7 +52,7 @@ def tcl_invertibility_distance(Lambda_t):
 
 def basis_independence_check(generator, basis_a, basis_b, tol=1e-8):
     """Universal-default DG-2 structural-identity check.
-    
+
     Computes K via Letter Eq. (6) under two different bases and verifies
     agreement to within `tol`. Returns (passed: bool, residual: float).
     """

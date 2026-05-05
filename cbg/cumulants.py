@@ -49,17 +49,16 @@ Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.3 §4 Phase C row C.7.
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
 import numpy as np
 from scipy import integrate
 
 from cbg.bath_correlations import bath_two_point_thermal_array, ohmic_spectral_density
 from cbg.displacement_profiles import (
-    DisplacementProfile,
     REGISTERED_PROFILES,
+    DisplacementProfile,
 )
-
 
 # ─── First generalised cumulant D̄_1(t) ─────────────────────────────────────
 
@@ -67,8 +66,8 @@ from cbg.displacement_profiles import (
 def D_bar_1(
     t_grid: np.ndarray,
     *,
-    bath_state: Dict[str, Any],
-    spectral_density: Dict[str, Any] | None = None,
+    bath_state: dict[str, Any],
+    spectral_density: dict[str, Any] | None = None,
 ) -> np.ndarray:
     """First generalised cumulant D̄_1(t) = ⟨B(t)⟩ on the time grid.
 
@@ -104,16 +103,16 @@ def D_bar_1(
     """
     t_grid = np.asarray(t_grid, dtype=float)
     if t_grid.ndim != 1:
-        raise ValueError(
-            f"D_bar_1: t_grid must be 1D; got shape {t_grid.shape}"
-        )
+        raise ValueError(f"D_bar_1: t_grid must be 1D; got shape {t_grid.shape}")
 
     family = bath_state.get("family")
     if family == "thermal":
         return np.zeros_like(t_grid, dtype=complex)
     if family == "coherent_displaced":
         return _D_bar_1_coherent_displaced(
-            t_grid, bath_state=bath_state, spectral_density=spectral_density,
+            t_grid,
+            bath_state=bath_state,
+            spectral_density=spectral_density,
         )
     raise NotImplementedError(
         f"D_bar_1: bath_state.family {family!r} not implemented. "
@@ -129,8 +128,8 @@ def D_bar_1(
 def _D_bar_1_coherent_displaced(
     t_grid: np.ndarray,
     *,
-    bath_state: Dict[str, Any],
-    spectral_density: Dict[str, Any] | None,
+    bath_state: dict[str, Any],
+    spectral_density: dict[str, Any] | None,
 ) -> np.ndarray:
     """⟨B(t)⟩ for a coherent-displaced bosonic bath under one of the four
     Council-cleared displacement-mode profiles (subsidiary briefing v0.3.0
@@ -226,16 +225,22 @@ def _D_bar_1_coherent_displaced(
     # Build the DisplacementProfile via the registered constructor. For
     # sqrt-J the constructor takes a callable J built from the spec.
     if profile_name == "sqrt-J":
+
         def J(w: float) -> float:
             return float(ohmic_spectral_density(w, alpha_sd, omega_c))
+
         profile = REGISTERED_PROFILES[profile_name](
-            alpha_0=params["alpha_0"], J=J,
+            alpha_0=params["alpha_0"],
+            J=J,
         )
     else:
         profile = REGISTERED_PROFILES[profile_name](**params)
 
     return _evaluate_displaced_first_cumulant(
-        t_grid, profile, alpha_sd=alpha_sd, omega_c=omega_c,
+        t_grid,
+        profile,
+        alpha_sd=alpha_sd,
+        omega_c=omega_c,
     )
 
 
@@ -283,12 +288,19 @@ def _evaluate_displaced_first_cumulant(
         for i, t in enumerate(t_grid):
             if t == 0.0:
                 integral, _ = integrate.quad(
-                    amplitude, 0.0, upper, limit=_QUAD_LIMIT,
+                    amplitude,
+                    0.0,
+                    upper,
+                    limit=_QUAD_LIMIT,
                 )
             else:
                 integral, _ = integrate.quad(
-                    amplitude, 0.0, upper,
-                    weight="cos", wvar=float(t), limit=_QUAD_LIMIT,
+                    amplitude,
+                    0.0,
+                    upper,
+                    weight="cos",
+                    wvar=float(t),
+                    limit=_QUAD_LIMIT,
                 )
             result[i] = 2.0 * alpha_0 * integral
         return result
@@ -303,19 +315,26 @@ def _evaluate_displaced_first_cumulant(
             if omega <= 0.0:
                 return 0.0
             J_w = float(ohmic_spectral_density(omega, alpha_sd, omega_c))
-            envelope = float(np.exp(-((omega - omega_d) ** 2) / (2.0 * Delta_omega ** 2)))
+            envelope = float(np.exp(-((omega - omega_d) ** 2) / (2.0 * Delta_omega**2)))
             return float(np.sqrt(J_w)) * envelope
 
         result = np.zeros_like(t_grid, dtype=complex)
         for i, t in enumerate(t_grid):
             if t == 0.0:
                 integral, _ = integrate.quad(
-                    amplitude, 0.0, upper, limit=_QUAD_LIMIT,
+                    amplitude,
+                    0.0,
+                    upper,
+                    limit=_QUAD_LIMIT,
                 )
             else:
                 integral, _ = integrate.quad(
-                    amplitude, 0.0, upper,
-                    weight="cos", wvar=float(t), limit=_QUAD_LIMIT,
+                    amplitude,
+                    0.0,
+                    upper,
+                    weight="cos",
+                    wvar=float(t),
+                    limit=_QUAD_LIMIT,
                 )
             result[i] = 2.0 * alpha_0 * integral
         return result
@@ -332,8 +351,8 @@ def _evaluate_displaced_first_cumulant(
 def D_bar_2(
     t_grid: np.ndarray,
     *,
-    bath_state: Dict[str, Any],
-    spectral_density: Dict[str, Any],
+    bath_state: dict[str, Any],
+    spectral_density: dict[str, Any],
 ) -> np.ndarray:
     """Second generalised cumulant D̄_2(τ, s) = ⟨B(τ) B(s)⟩_connected on
     the time grid.
@@ -387,9 +406,7 @@ def D_bar_2(
     omega_c = float(spectral_density["cutoff_frequency"])
     temperature = float(bath_state["temperature"])
 
-    return bath_two_point_thermal_array(
-        t_grid, alpha, omega_c, temperature
-    )
+    return bath_two_point_thermal_array(t_grid, alpha, omega_c, temperature)
 
 
 # ─── Generic D_bar dispatch (existing-stub signature) ───────────────────────
@@ -461,13 +478,11 @@ def D_bar(tau_args, s_args, **kwargs):
 
     t_grid = np.asarray(tau_args, dtype=float)
     if n_total == 1:
-        return D_bar_1(t_grid, bath_state=bath_state,
-                       spectral_density=spectral_density)
+        return D_bar_1(t_grid, bath_state=bath_state, spectral_density=spectral_density)
     # n_total == 2
     if spectral_density is None:
         raise ValueError("D_bar: spectral_density kwarg required for n=2")
-    arr = D_bar_2(t_grid, bath_state=bath_state,
-                  spectral_density=spectral_density)
+    arr = D_bar_2(t_grid, bath_state=bath_state, spectral_density=spectral_density)
     # arr is (2, 2); the requested cumulant is arr[0, 1] (or arr[1, 0]
     # by Hermiticity). Return the [0, 1] entry — D̄_2(τ_1, τ_2).
     return arr[0, 1]

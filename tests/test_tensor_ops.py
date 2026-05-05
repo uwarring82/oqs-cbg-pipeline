@@ -11,7 +11,6 @@ import pytest
 
 from numerical import tensor_ops
 
-
 # ─── Test fixtures (Pauli matrices and the 2x2 identity) ─────────────────────
 
 sigma_x = np.array([[0, 1], [1, 0]], dtype=complex)
@@ -188,7 +187,10 @@ def test_hs_inner_shape_mismatch_raises():
 
 def test_superop_apply_callable_dispatches():
     """For callable L, superop_apply(L, X) returns L(X)."""
-    L = lambda X: X @ X
+
+    def L(X):
+        return X @ X
+
     result = tensor_ops.superop_apply(L, sigma_z)
     np.testing.assert_allclose(result, identity_2, atol=1e-12)
 
@@ -196,7 +198,10 @@ def test_superop_apply_callable_dispatches():
 def test_superop_apply_unitary_lindbladian():
     """A unitary-only Lindbladian L[X] = -i[H, X] passes through cleanly."""
     H = sigma_z
-    L = lambda X: -1j * tensor_ops.commutator(H, X)
+
+    def L(X):
+        return -1j * tensor_ops.commutator(H, X)
+
     result = tensor_ops.superop_apply(L, sigma_x)
     expected = -1j * tensor_ops.commutator(H, sigma_x)
     np.testing.assert_allclose(result, expected, atol=1e-12)
