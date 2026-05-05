@@ -52,7 +52,7 @@ This index is the canonical source of truth for *current* plan status. Updating 
 |---|---|---|---|---|
 | [DG-1 Work Plan](dg-1-work-plan_v0.1.4.md) | v0.1.4 | verdict-reached | **Verdict: PASS** (2026-04-30; tag `v0.2.0`) | Sail v0.5 §9 (DG-1); CL-2026-005 v0.4 Entries 1, 3, 4 (1.B.3, 3.B.3, 4.B.2 deferred to DG-2 per v0.1.4 §1.1 operationalisability carve-out). See [logbook/2026-04-30_dg-1-pass.md](../logbook/2026-04-30_dg-1-pass.md). |
 | [DG-3 Work Plan](dg-3-work-plan_v0.1.0.md) | v0.1.0 | draft | Phase A: cards frozen; Phase B–D pending | Sail v0.5 §9 (DG-3); baseline pair implementation + cross-method runner wiring. Cards C1, C2 frozen. |
-| [DG-4 Work Plan](dg-4-work-plan_v0.1.0.md) | v0.1.0 | draft | Phase A: card D1 frozen; Phase B–D pending | Sail v0.5 §9 (DG-4); CL-2026-005 v0.4 Entry 2 (recursive-series convergence; scope-limited). Phase B unblocks the canonical-unfilled DG-2 K_2–K_4 milestone as a side effect. |
+| [DG-4 Work Plan](dg-4-work-plan_v0.1.1.md) | v0.1.1 | draft | Phase A complete; Phase A.bis (D1 v0.1.1 supersedure) + Phase B–D pending | Sail v0.5 §9 (DG-4); CL-2026-005 v0.4 Entry 2 (recursive-series convergence; scope-limited). Phase B unblocks the canonical-unfilled DG-2 K_2–K_4 milestone as a side effect. v0.1.1 supersedes v0.1.0 to fix the K_n weak-probe metric flaw, the non-operational reproducibility knobs, the Phase B leaf-layer gap, the TCL-singularity ambiguity, and the tolerance-units mismatch. |
 
 ### Superseded plans (retained for audit)
 
@@ -62,7 +62,8 @@ This index is the canonical source of truth for *current* plan status. Updating 
 | [DG-1 Work Plan v0.1.1](dg-1-work-plan_v0.1.1.md) | v0.1.1 | [v0.1.2](dg-1-work-plan_v0.1.2.md) | 2026-04-30 |
 | [DG-1 Work Plan v0.1.2](dg-1-work-plan_v0.1.2.md) | v0.1.2 | [v0.1.3](dg-1-work-plan_v0.1.3.md) | 2026-04-30 |
 | [DG-1 Work Plan v0.1.3](dg-1-work-plan_v0.1.3.md) | v0.1.3 | [v0.1.4](dg-1-work-plan_v0.1.4.md) | 2026-04-30 |
+| [DG-4 Work Plan v0.1.0](dg-4-work-plan_v0.1.0.md) | v0.1.0 | [v0.1.1](dg-4-work-plan_v0.1.1.md) | 2026-05-05 |
 
 ---
 
-*Last updated: 2026-04-30. CC-BY-4.0 (see ../LICENSE-docs).*
+*Last updated: 2026-05-05 (DG-4 work plan v0.1.1 supersedes v0.1.0). CC-BY-4.0 (see ../LICENSE-docs).*

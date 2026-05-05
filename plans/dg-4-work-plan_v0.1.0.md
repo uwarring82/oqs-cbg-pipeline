@@ -7,6 +7,7 @@ anchor_sail: sail/sail-cbg-pipeline_v0.5.md §§9 (DG-4), 10 (Risks #6, #8), 11
 anchor_ledger: ledger/CL-2026-005_v0.4.md Entry 2 (recursive-series convergence; COMPATIBLE, scope-limited)
 anchor_envelope: docs/validity_envelope.md DG-4 row (SCOPED — runner refusal path wired → target PASS)
 status: draft
+superseded_by: dg-4-work-plan_v0.1.1.md
 license: CC-BY-4.0 (LICENSE-docs)
 ---
 
