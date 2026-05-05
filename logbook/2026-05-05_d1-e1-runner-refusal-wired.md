@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-05
 **Type:** structural
-**Triggering commit:** _placeholder_
+**Triggering commit:** 0c01cbd
 **Triggering evidence:**
 - [`reporting/benchmark_card.py`](../reporting/benchmark_card.py): two new `NotImplementedError` subclasses (`ScopeDefinitionNotRunnableError`, `DG4SweepRunnerNotImplementedError`) plus dedicated refusal branches `_refuse_scope_definition` and `_refuse_dg4_sweep` invoked from `run_card`.
 - [`tests/test_benchmark_card.py`](../tests/test_benchmark_card.py): 6 new tests covering exception hierarchy, message content (card id, DG label, surfaced preconditions / sweep summary, missing-pieces description), and dispatch-precedence (refusal must fire before downstream dispatch).
