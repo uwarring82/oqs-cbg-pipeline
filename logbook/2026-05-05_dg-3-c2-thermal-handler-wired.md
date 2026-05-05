@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-05
 **Type:** structural
-**Triggering commit:** _placeholder_
+**Triggering commit:** 45489d7
 **Triggering evidence:**
 - [`benchmarks/exact_finite_env.py`](../benchmarks/exact_finite_env.py): `build_spin_boson_sigma_x_thermal_total` builder (parallel to the pure-dephasing thermal builder, σ_x in the joint interaction).
 - [`benchmarks/qutip_reference.py`](../benchmarks/qutip_reference.py): `_propagate_spin_boson_sigma_x_thermal` handler with σ_-/σ_+ secular Lindblad and rates `S(±ω_S)` numerically integrated from `cbg.bath_correlations.bath_two_point_thermal`.
