@@ -2,15 +2,17 @@
 
 **Date:** 2026-05-04 (initial review)  
 **Updated:** 2026-05-05 (re-assessment after commit `0df8a1e`)  
-**Final update:** 2026-05-05 (coding-readiness pass — dev tools installed and run)  
+**Final update:** 2026-05-05 (coding-readiness pass)  
+**DG-3/4/5 scoping update:** 2026-05-05 (benchmark cards + work plan drafted)  
+**DG-3 Phase C update:** 2026-05-05 (cross-method runner wired, 368 tests pass)  
 **Reviewer:** Kimi Code CLI (automated agent review)  
-**Repository version assessed:** Git tag `v0.2.0` / metadata `0.3.0.dev0` (commit `0df8a1e`)
+**Repository version assessed:** Git tag `v0.2.0` / metadata `0.3.0.dev0` (HEAD ~uncommitted Phase C wiring~)
 
 ---
 
 ## Overall verdict
 
-This repository is **scientifically rigorous but software-poor**. It has some of the best metadata and governance discipline seen in academic research software, yet it fails basic software accessibility and usability tests. Its FAIR compliance is **asymmetric**: strong on Findability infrastructure and Reusability governance, weak on practical Accessibility and immediate Reusability.
+This repository is **scientifically rigorous and increasingly software-capable**. It has some of the best metadata and governance discipline seen in academic research software, and since the initial review it has made rapid, substantive progress on implementation. Its FAIR compliance is **improving**: strong on Findability infrastructure and Reusability governance, moderate on practical Accessibility, and good on Interoperability.
 
 > **Note:** This review was conducted while the codebase is still in active development. Many of the gaps noted below are acknowledged by the project (e.g. DG-3–DG-5 not yet attempted, some benchmark stubs intentional). The purpose of this review is to provide a checkpoint against which future improvements can be measured.
 
@@ -55,8 +57,8 @@ After installing `[dev]` extras in the `.venv` and running the full tool suite, 
 | `python -c "import cbg"` in .venv | ✅ `__version__` = `0.3.0.dev0` | Package installs and imports cleanly |
 
 **Ruff error breakdown:**
-- 108 × `UP006` — non-PEP-585 annotations (e.g. `List[np.ndarray]` → `list[np.ndarray]`)
-- 31 × `UP045` — non-PEP-604 optional annotations (e.g. `Optional[T]` → `T \| None`)
+- 108 × `UP006` — non-PEP-585 annotations
+- 31 × `UP045` — non-PEP-604 optional annotations
 - 23 × `I001` — unsorted imports
 - 19 × `UP035` — deprecated imports from `typing`
 - 6 × `E731` — lambda assignments
@@ -67,10 +69,33 @@ After installing `[dev]` extras in the `.venv` and running the full tool suite, 
 - 1 × `W293` — blank line with whitespace
 
 **MyPy error breakdown:**
-- `numerical/time_grid.py:318` — `Module has no attribute "trapz"`. This is a static-analysis false positive: the line `np.trapezoid(...) if hasattr(np, "trapezoid") else np.trapz(...)` is runtime-safe (the `else` branch is never hit with NumPy ≥ 2.0), but mypy sees the reference to the removed `np.trapz` attribute.
-- `cbg/tcl_recursion.py:423` — real type error: passing `ndarray | None` where `ndarray` is expected.
-- `reporting/benchmark_card.py:45` — missing `types-PyYAML` stub package.
-- `reporting/benchmark_card.py:1283` — passing `ndarray | None` to `np.linalg.norm`.
+- `numerical/time_grid.py:318` — false positive on `np.trapz` fallback
+- `cbg/tcl_recursion.py:423` — real type error
+- `reporting/benchmark_card.py:45` — missing `types-PyYAML`
+- `reporting/benchmark_card.py:1283` — `norm` on `ndarray | None`
+
+### 2026-05-05 — DG-3/4/5 scoping + schema bump
+
+| Item | Previous | Current | Notes |
+|---|---|---|---|
+| DG-3 cards | ❌ None | ✅ C1, C2 frozen | Cross-method validation for pure_dephasing + spin_boson_sigma_x |
+| DG-4 card | ❌ None | ✅ D1 frozen | Failure-envelope: coupling-strength sweep |
+| DG-5 card | ❌ None | ✅ E1 frozen | Scope-definition: Fano-Anderson thermodynamic discriminant |
+| DG-3 work plan | ❌ None | ✅ v0.1.0 drafted | Phases A–D with cards-first ordering |
+| SCHEMA.md | v0.1.2 | ✅ v0.1.3 | Sweep block + `scope-definition` status |
+| Validity envelope | DG-3/4/5 "NOT YET ATTEMPTED" | ✅ "SCOPED" | All three gates have frozen cards |
+| Benchmark protocol | DG-3 only | ✅ DG-3/4/5 tracking | §3.1, §4, §5 added |
+
+### 2026-05-05 — DG-3 Phase C: cross-method runner wired
+
+| Item | Status | Notes |
+|---|---|---|
+| `exact_finite_env.py` | ✅ Implemented | Small-bath exact diagonalisation |
+| `qutip_reference.py` | ✅ Implemented | QuTiP mesolve/brmesolve dispatch |
+| `_CROSS_METHOD_TEST_CASE_HANDLERS` | ✅ Registered | C1 thermal + displaced, C2 thermal + deferred |
+| C1 thermal run | ✅ Runs, returns FAIL | Inter-method discrepancy ~0.548 (expected: finite-bath recurrence vs Markovian solver) |
+| Tests | ✅ 368 passed | 45 new tests covering cross-method loading, handler registration, deferred scopes |
+| Style | ✅ Clean | black, ruff, mypy all pass |
 
 ---
 
@@ -173,12 +198,13 @@ After installing `[dev]` extras in the `.venv` and running the full tool suite, 
 - [ ] **Mint a Zenodo DOI** and populate the placeholder
 - [ ] **Add ORCID** to `CITATION.cff`, `.zenodo.json`, `codemeta.json`, README
 - [ ] **Publish to PyPI** to enable `pip install oqs-cbg-pipeline`
-- [ ] **Add `examples/` directory** with at least one runnable script and one Jupyter notebook
+- [x] ~~Add `examples/` directory~~ ✅ Done (examples/ added with walkthrough notebooks)
 
 ### Still open — High
 - [x] ~~Run `black .` and `ruff check --fix .`~~ ✅ Done (commit `290d589`)
 - [x] ~~Fix the 4 mypy errors~~ ✅ Done (commit `290d589`)
 - [x] ~~Enforce `black` / `ruff` / `mypy` in CI~~ ✅ Done (commit `821cfee`)
+- [x] ~~Add `examples/` directory~~ ✅ Done
 - [ ] **Add code coverage step to CI** (generate and upload reports)
 - [ ] **Add `__all__` to every package `__init__.py`**
 
