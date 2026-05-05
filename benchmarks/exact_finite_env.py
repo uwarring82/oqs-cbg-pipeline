@@ -8,15 +8,36 @@ Reference method for small environments. Failure modes:
 
 Failure-mode class: finite-system (per docs/benchmark_protocol.md §2).
 
-Phase B implementation (DG-3 work plan v0.1.0): the generic ``propagate``
-routine eigendecomposes the joint system+bath Hamiltonian and partial-
-traces over the bath at every time-grid point. A model-specific helper
-``build_pure_dephasing_thermal_total`` constructs ``H_total`` and the
-factorised initial state for the C1 (pure_dephasing × thermal_bath)
-fixture by discretising the ohmic spectral density into a finite set
-of independent-bosonic-mode oscillators with truncated Fock spaces.
+Implementation (DG-3 work plan v0.1.0, Phase B + C): the generic
+``propagate`` routine eigendecomposes the joint system+bath Hamiltonian
+and partial-traces over the bath at every time-grid point. A single
+private helper ``_build_spin_joint`` constructs the joint Hilbert
+space, the system+bath Hamiltonian, and the factorised initial state
+for any 2-level system with a single Hermitian coupling operator and
+an ohmic bosonic bath in either a thermal or coherently-displaced
+state. The four C1/C2 fixtures are thin wrappers that validate their
+spec and dispatch into the helper:
 
-Anchor: SCHEMA.md v0.1.3; Card C1 v0.1.0; DG-3 work plan v0.1.0 Phase B.
+    Card    coupling   bath_state                  wrapper
+    ----    --------   --------------------------  -------------------------------------
+    C1 a    σ_z        thermal                     build_pure_dephasing_thermal_total
+    C1 b    σ_z        displaced (delta-omega_c)   build_pure_dephasing_displaced_total
+    C2 a    σ_x        thermal                     build_spin_boson_sigma_x_thermal_total
+    C2 b    σ_x        displaced (delta-omega_c)   build_spin_boson_sigma_x_displaced_total
+
+The displacement convention follows cbg.cumulants
+``_evaluate_displaced_first_cumulant`` for the Council-cleared
+delta-omega_c profile: the discretisation forces one bath mode at
+ω_c and the discrete coherent-state amplitude is
+
+    α_disp = α₀ √J(ω_c) / g_c = α₀ / √(Δω_c)
+
+where g_c = √(J(ω_c) Δω_c) is the discretisation coupling at the
+resonant mode. This pins ⟨B(t)⟩_discrete = 2 α₀ √J(ω_c) cos(ω_c t),
+matching the continuous convention.
+
+Anchor: SCHEMA.md v0.1.3; Cards C1, C2 v0.1.0; DG-3 work plan v0.1.0
+Phase B + C.
 """
 
 from __future__ import annotations
@@ -27,6 +48,9 @@ import numpy as np
 from scipy.linalg import expm
 
 from cbg.bath_correlations import ohmic_spectral_density
+
+
+# ─── Generic propagation ────────────────────────────────────────────────────
 
 
 def propagate(
@@ -130,7 +154,222 @@ def _partial_trace_bath(
     )
 
 
-# ─── Pure-dephasing thermal-bath helper (C1 thermal case) ───────────────────
+def _kron_chain(ops: list[np.ndarray]) -> np.ndarray:
+    """Compute kron(ops[0], ops[1], ..., ops[-1])."""
+    out = ops[0]
+    for op in ops[1:]:
+        out = np.kron(out, op)
+    return out
+
+
+# ─── Single-coupling-operator joint builder (private) ──────────────────────
+
+
+_SIGMA_Z: np.ndarray = np.array([[1.0, 0.0], [0.0, -1.0]], dtype=complex)
+_SIGMA_X: np.ndarray = np.array([[0.0, 1.0], [1.0, 0.0]], dtype=complex)
+
+
+def _build_spin_joint(
+    *,
+    coupling_op: np.ndarray,
+    alpha: float,
+    omega_c: float,
+    omega: float,
+    temperature: float,
+    n_bath_modes: int,
+    n_levels_per_mode: int,
+    omega_min_factor: float,
+    omega_max_factor: float,
+    initial_system_rho: np.ndarray | None,
+    displacement: dict[str, float] | None = None,
+) -> tuple[np.ndarray, np.ndarray, int, int]:
+    """Build the joint (H_total, rho_initial) for a 2-level system + ohmic bath.
+
+    All four C1/C2 fixtures dispatch into this helper. The system is
+    H_S = (omega/2) σ_z; the joint interaction is
+    ``coupling_op ⊗ Σ_k g_k (a_k + a_k†)`` with g_k = √(J(ω_k) Δω_k);
+    the bath state is factorised thermal across all modes, with the
+    resonant mode optionally displaced by ``D(α_disp)`` for the
+    Council-cleared delta-omega_c profile.
+
+    Pre-conditions assumed validated by the caller:
+        - ``coupling_op`` is a (2, 2) Hermitian matrix.
+        - ``alpha >= 0``, ``omega_c > 0``, ``temperature > 0``.
+        - ``displacement``, if not None, has keys ``alpha_0`` (real) and
+          ``omega_disp`` (positive). The discretisation snaps the
+          closest log-spaced mode to ``omega_disp`` so the discrete
+          first cumulant matches the continuous convention exactly.
+
+    The function does not validate the spec or the bath-state family;
+    callers should check those before dispatching here.
+    """
+    n = n_levels_per_mode
+    omega_min = omega_min_factor * omega_c
+    omega_max = omega_max_factor * omega_c
+    omega_modes = np.geomspace(omega_min, omega_max, n_bath_modes)
+
+    snap_idx: int | None = None
+    if displacement is not None:
+        omega_disp = float(displacement["omega_disp"])
+        snap_idx = int(np.argmin(np.abs(np.log(omega_modes) - np.log(omega_disp))))
+        omega_modes[snap_idx] = omega_disp
+
+    log_modes = np.log(omega_modes)
+    log_edges = np.empty(n_bath_modes + 1)
+    log_edges[1:-1] = 0.5 * (log_modes[:-1] + log_modes[1:])
+    log_edges[0] = log_modes[0] - 0.5 * (log_modes[1] - log_modes[0])
+    log_edges[-1] = log_modes[-1] + 0.5 * (log_modes[-1] - log_modes[-2])
+    domega_modes = np.exp(log_edges[1:]) - np.exp(log_edges[:-1])
+
+    J_modes = ohmic_spectral_density(omega_modes, alpha, omega_c)
+    g_modes = np.sqrt(J_modes * domega_modes)
+
+    a_single = np.diag(np.sqrt(np.arange(1, n)), k=1)
+    adag_single = a_single.T
+    n_single = adag_single @ a_single
+    I_single = np.eye(n, dtype=complex)
+
+    bath_dim = n**n_bath_modes
+    H_B = np.zeros((bath_dim, bath_dim), dtype=complex)
+    X_modes: list[np.ndarray] = []
+    for k in range(n_bath_modes):
+        ops_X = [I_single] * n_bath_modes
+        ops_X[k] = a_single + adag_single
+        X_modes.append(_kron_chain(ops_X))
+
+        ops_n = [I_single] * n_bath_modes
+        ops_n[k] = n_single
+        H_B += omega_modes[k] * _kron_chain(ops_n)
+
+    I_S = np.eye(2, dtype=complex)
+    H_S = 0.5 * omega * _SIGMA_Z
+    H_total = np.kron(H_S, np.eye(bath_dim, dtype=complex)) + np.kron(I_S, H_B)
+    for k in range(n_bath_modes):
+        H_total += g_modes[k] * np.kron(coupling_op, X_modes[k])
+
+    # Coherent-displacement amplitude on the resonant mode (if any).
+    alpha_disp: complex | None = None
+    if displacement is not None:
+        assert snap_idx is not None  # narrowed by the displacement branch above
+        g_c = float(g_modes[snap_idx])
+        if g_c <= 0.0:
+            raise ValueError(
+                f"_build_spin_joint: resonant-mode coupling g_c={g_c} non-positive"
+            )
+        alpha_0 = float(displacement["alpha_0"])
+        alpha_disp_continuous = alpha_0 * float(
+            np.sqrt(ohmic_spectral_density(displacement["omega_disp"], alpha, omega_c))
+        )
+        alpha_disp = alpha_disp_continuous / g_c
+
+    levels = np.arange(n)
+    per_mode_rho: list[np.ndarray] = []
+    for k in range(n_bath_modes):
+        weights = np.exp(-omega_modes[k] * levels / temperature)
+        weights /= weights.sum()
+        rho_mode = np.diag(weights).astype(complex)
+        if displacement is not None and k == snap_idx:
+            assert alpha_disp is not None
+            generator = alpha_disp * adag_single - np.conj(alpha_disp) * a_single
+            D = expm(generator)
+            rho_mode = D @ rho_mode @ D.conj().T
+        per_mode_rho.append(rho_mode)
+    rho_B = _kron_chain(per_mode_rho)
+
+    if initial_system_rho is None:
+        plus = np.array([[1.0], [1.0]], dtype=complex) / np.sqrt(2.0)
+        initial_system_rho = plus @ plus.conj().T
+    initial_system_rho = np.asarray(initial_system_rho, dtype=complex)
+    if initial_system_rho.shape != (2, 2):
+        raise ValueError(
+            f"initial_system_rho must be (2, 2); got {initial_system_rho.shape}"
+        )
+
+    rho_initial = np.kron(initial_system_rho, rho_B)
+    return H_total, rho_initial, 2, bath_dim
+
+
+# ─── Wrapper validation helpers ─────────────────────────────────────────────
+
+
+def _read_thermal_spec(model_spec: dict[str, Any], func_name: str) -> tuple[float, float, float, float]:
+    """Validate ohmic + thermal + T>0 and return (alpha, omega_c, omega, T).
+
+    ``func_name`` is the public wrapper name; it appears in error messages
+    so the caller can identify which builder rejected the spec.
+    """
+    sd = model_spec.get("bath_spectral_density", {})
+    if sd.get("family") != "ohmic":
+        raise ValueError(
+            f"{func_name}: requires ohmic spectral density; got {sd.get('family')!r}"
+        )
+    bs = model_spec.get("bath_state", {})
+    if bs.get("family") != "thermal":
+        raise ValueError(
+            f"{func_name}: requires thermal bath_state; got {bs.get('family')!r}"
+        )
+    alpha = float(sd["coupling_strength"])
+    omega_c = float(sd["cutoff_frequency"])
+    temperature = float(bs["temperature"])
+    omega = float(model_spec.get("parameters", {}).get("omega", 1.0))
+    if temperature <= 0.0:
+        raise ValueError(
+            f"{func_name}: thermal-mode populations require temperature > 0 "
+            f"(T=0 ground state is a separate path)"
+        )
+    return alpha, omega_c, omega, temperature
+
+
+def _read_displaced_spec(
+    model_spec: dict[str, Any], func_name: str
+) -> tuple[float, float, float, float, dict[str, float]]:
+    """Validate ohmic + coherent_displaced + delta-omega_c + T>0.
+
+    Returns (alpha, omega_c, omega, T, displacement_dict) with the
+    displacement dict carrying ``alpha_0`` and ``omega_disp`` as floats.
+    """
+    sd = model_spec.get("bath_spectral_density", {})
+    if sd.get("family") != "ohmic":
+        raise ValueError(
+            f"{func_name}: requires ohmic spectral density; got {sd.get('family')!r}"
+        )
+    bs = model_spec.get("bath_state", {})
+    if bs.get("family") != "coherent_displaced":
+        raise ValueError(
+            f"{func_name}: requires coherent_displaced bath_state; "
+            f"got {bs.get('family')!r}"
+        )
+    profile_name = bs.get("displacement_profile")
+    if profile_name != "delta-omega_c":
+        raise NotImplementedError(
+            f"{func_name}: only displacement_profile 'delta-omega_c' is "
+            f"implemented at v0.1.0; got {profile_name!r}. Other "
+            f"Council-cleared profiles (delta-omega_S, sqrt-J, gaussian) "
+            f"are next deferred."
+        )
+    params = bs.get("parameters") or {}
+    if "alpha_0" not in params or "omega_c" not in params:
+        raise ValueError(
+            f"{func_name}: bath_state.parameters must carry alpha_0 and "
+            f"omega_c for the delta-omega_c profile"
+        )
+    alpha = float(sd["coupling_strength"])
+    omega_c_sd = float(sd["cutoff_frequency"])
+    omega = float(model_spec.get("parameters", {}).get("omega", 1.0))
+    temperature = float(bs.get("temperature", 0.5))
+    if temperature <= 0.0:
+        raise ValueError(
+            f"{func_name}: requires temperature > 0 (displaced T=0 ground "
+            f"state is a separate implementation path)"
+        )
+    displacement = {
+        "alpha_0": float(params["alpha_0"]),
+        "omega_disp": float(params["omega_c"]),
+    }
+    return alpha, omega_c_sd, omega, temperature, displacement
+
+
+# ─── Public builders (thin wrappers around _build_spin_joint) ──────────────
 
 
 def build_pure_dephasing_thermal_total(
@@ -179,294 +418,23 @@ def build_pure_dephasing_thermal_total(
     rho_initial : ndarray, same shape, density matrix.
     system_dim : int (always 2).
     bath_dim : int (n_levels_per_mode ** n_bath_modes).
-
-    Raises
-    ------
-    ValueError
-        If model_spec describes an unsupported configuration (non-ohmic,
-        non-thermal, non-pure-dephasing).
     """
-    # Validate model_spec.
-    sd = model_spec.get("bath_spectral_density", {})
-    if sd.get("family") != "ohmic":
-        raise ValueError(
-            f"build_pure_dephasing_thermal_total: requires ohmic spectral "
-            f"density; got {sd.get('family')!r}"
-        )
-    bs = model_spec.get("bath_state", {})
-    if bs.get("family") != "thermal":
-        raise ValueError(
-            f"build_pure_dephasing_thermal_total: requires thermal bath_state; "
-            f"got {bs.get('family')!r}"
-        )
-
-    alpha = float(sd["coupling_strength"])
-    omega_c = float(sd["cutoff_frequency"])
-    temperature = float(bs["temperature"])
-    omega = float(model_spec.get("parameters", {}).get("omega", 1.0))
-
-    if temperature <= 0.0:
-        raise ValueError(
-            "build_pure_dephasing_thermal_total: thermal-mode populations "
-            "require temperature > 0 (T=0 ground state is a separate path)"
-        )
-
-    # Discretisation grid: log-uniform between omega_min and omega_max.
-    omega_min = omega_min_factor * omega_c
-    omega_max = omega_max_factor * omega_c
-    omega_modes = np.geomspace(omega_min, omega_max, n_bath_modes)
-    # Discretisation widths: piecewise log-spaced. Use geometric midpoints
-    # for the boundary rule.
-    log_edges = np.empty(n_bath_modes + 1)
-    log_modes = np.log(omega_modes)
-    log_edges[1:-1] = 0.5 * (log_modes[:-1] + log_modes[1:])
-    log_edges[0] = log_modes[0] - 0.5 * (log_modes[1] - log_modes[0])
-    log_edges[-1] = log_modes[-1] + 0.5 * (log_modes[-1] - log_modes[-2])
-    domega_modes = np.exp(log_edges[1:]) - np.exp(log_edges[:-1])
-
-    J_modes = ohmic_spectral_density(omega_modes, alpha, omega_c)
-    g_modes = np.sqrt(J_modes * domega_modes)  # discretisation couplings
-
-    # Build the bath operators in the truncated Fock space.
-    # Per-mode operators (n_levels_per_mode × n_levels_per_mode):
-    #   a_k = sum_{n} sqrt(n+1) |n⟩⟨n+1|
-    #   a_k† = a_k.T
-    n = n_levels_per_mode
-    a_single = np.diag(np.sqrt(np.arange(1, n)), k=1)  # shape (n, n)
-    adag_single = a_single.T
-    n_single = adag_single @ a_single
-    I_single = np.eye(n, dtype=complex)
-
-    # Embed each per-mode operator into the full bath Hilbert space
-    # (n^n_bath_modes dimensional) via Kronecker products. Build:
-    #   H_B = sum_k omega_k a_k† a_k
-    #   X_k = a_k + a_k†
-    bath_dim = n**n_bath_modes
-    H_B = np.zeros((bath_dim, bath_dim), dtype=complex)
-    X_modes: list[np.ndarray] = []
-    for k in range(n_bath_modes):
-        # a_k embedded: kron(I, ..., I, a_single, I, ..., I) with a_single in slot k.
-        ops_X = [I_single] * n_bath_modes
-        ops_X[k] = a_single + adag_single
-        X_k = _kron_chain(ops_X)
-        X_modes.append(X_k)
-
-        ops_n = [I_single] * n_bath_modes
-        ops_n[k] = n_single
-        n_k_full = _kron_chain(ops_n)
-        H_B += omega_modes[k] * n_k_full
-
-    # System operators on the joint Hilbert space.
-    sigma_z = np.array([[1.0, 0.0], [0.0, -1.0]], dtype=complex)
-    I_S = np.eye(2, dtype=complex)
-
-    H_S = 0.5 * omega * sigma_z
-    H_total = np.kron(H_S, np.eye(bath_dim, dtype=complex)) + np.kron(I_S, H_B)
-    for k in range(n_bath_modes):
-        H_total += g_modes[k] * np.kron(sigma_z, X_modes[k])
-
-    # Initial bath state: factorised thermal across modes,
-    # rho_B = ⊗_k exp(-omega_k a_k† a_k / T) / Z_k.
-    levels = np.arange(n)
-    per_mode_thermal: list[np.ndarray] = []
-    for k in range(n_bath_modes):
-        weights = np.exp(-omega_modes[k] * levels / temperature)
-        weights /= weights.sum()
-        per_mode_thermal.append(np.diag(weights).astype(complex))
-    rho_B = _kron_chain(per_mode_thermal)
-
-    if initial_system_rho is None:
-        # |+⟩⟨+| in the σ_z basis: dephasing target.
-        plus = np.array([[1.0], [1.0]], dtype=complex) / np.sqrt(2.0)
-        initial_system_rho = plus @ plus.conj().T
-    initial_system_rho = np.asarray(initial_system_rho, dtype=complex)
-    if initial_system_rho.shape != (2, 2):
-        raise ValueError(
-            f"initial_system_rho must be (2, 2); got {initial_system_rho.shape}"
-        )
-
-    rho_initial = np.kron(initial_system_rho, rho_B)
-
-    return H_total, rho_initial, 2, bath_dim
-
-
-def _kron_chain(ops: list[np.ndarray]) -> np.ndarray:
-    """Compute kron(ops[0], ops[1], ..., ops[-1])."""
-    out = ops[0]
-    for op in ops[1:]:
-        out = np.kron(out, op)
-    return out
-
-
-# ─── spin_boson_sigma_x displaced-bath helper (C2 displaced delta-omega_c) ──
-#
-# Mirror of build_pure_dephasing_displaced_total with σ_x in the joint
-# interaction. The mode-snapping discretisation, α_disp calibration, and
-# coherent displacement on the resonant mode's truncated thermal Fock
-# state are identical — the displacement convention is a property of the
-# bath and is independent of which system operator the bath couples to.
-# Refactor opportunity (now three copies): factor a common helper
-# `_build_spin_displaced_joint(coupling_op_array, ...)`. Deferred again
-# for minimal diff in this commit.
-
-
-def build_spin_boson_sigma_x_displaced_total(
-    model_spec: dict[str, Any],
-    *,
-    n_bath_modes: int = 4,
-    n_levels_per_mode: int = 4,
-    omega_min_factor: float = 0.05,
-    omega_max_factor: float = 4.0,
-    initial_system_rho: np.ndarray | None = None,
-) -> tuple[np.ndarray, np.ndarray, int, int]:
-    """Build (H_total, rho_initial, system_dim, bath_dim) for the C2 displaced case.
-
-    Identical contract to ``build_pure_dephasing_displaced_total`` (same
-    discrete-finite-bath calibration of the coherent displacement under
-    the Council-cleared delta-omega_c profile), but with σ_x in the
-    joint interaction:
-
-        H_int = sigma_x ⊗ Σ_k g_k (a_k + a_k†).
-
-    The system is the same H_S = (omega/2) sigma_z. Because [H_S, σ_x] ≠ 0,
-    the σ_z populations evolve under the joint dynamics — the displacement
-    here drives a coherent oscillation of σ_x at frequency ω_c on top of
-    the σ_x energy-relaxation channel.
-
-    Raises
-    ------
-    NotImplementedError
-        If displacement_profile is not 'delta-omega_c' (other Council-
-        cleared profiles are next deferred).
-    ValueError
-        For invalid spec (non-ohmic, non-displaced, missing parameters,
-        T = 0, etc.).
-    """
-    sd = model_spec.get("bath_spectral_density", {})
-    if sd.get("family") != "ohmic":
-        raise ValueError(
-            f"build_spin_boson_sigma_x_displaced_total: requires ohmic "
-            f"spectral density; got {sd.get('family')!r}"
-        )
-    bs = model_spec.get("bath_state", {})
-    if bs.get("family") != "coherent_displaced":
-        raise ValueError(
-            f"build_spin_boson_sigma_x_displaced_total: requires "
-            f"coherent_displaced bath_state; got {bs.get('family')!r}"
-        )
-    profile_name = bs.get("displacement_profile")
-    if profile_name != "delta-omega_c":
-        raise NotImplementedError(
-            f"build_spin_boson_sigma_x_displaced_total: only "
-            f"displacement_profile 'delta-omega_c' is implemented at "
-            f"v0.1.0; got {profile_name!r}."
-        )
-    params = bs.get("parameters") or {}
-    if "alpha_0" not in params or "omega_c" not in params:
-        raise ValueError(
-            "build_spin_boson_sigma_x_displaced_total: bath_state."
-            "parameters must carry alpha_0 and omega_c"
-        )
-
-    alpha = float(sd["coupling_strength"])
-    omega_c = float(sd["cutoff_frequency"])
-    omega = float(model_spec.get("parameters", {}).get("omega", 1.0))
-    alpha_0 = float(params["alpha_0"])
-    omega_disp = float(params["omega_c"])
-    temperature = float(bs.get("temperature", 0.5))
-    if temperature <= 0.0:
-        raise ValueError(
-            "build_spin_boson_sigma_x_displaced_total: requires "
-            "temperature > 0 (T=0 ground state is a separate path)"
-        )
-
-    n = n_levels_per_mode
-    omega_min = omega_min_factor * omega_c
-    omega_max = omega_max_factor * omega_c
-    omega_modes = np.geomspace(omega_min, omega_max, n_bath_modes)
-    snap_idx = int(np.argmin(np.abs(np.log(omega_modes) - np.log(omega_disp))))
-    omega_modes[snap_idx] = omega_disp
-
-    log_modes = np.log(omega_modes)
-    log_edges = np.empty(n_bath_modes + 1)
-    log_edges[1:-1] = 0.5 * (log_modes[:-1] + log_modes[1:])
-    log_edges[0] = log_modes[0] - 0.5 * (log_modes[1] - log_modes[0])
-    log_edges[-1] = log_modes[-1] + 0.5 * (log_modes[-1] - log_modes[-2])
-    domega_modes = np.exp(log_edges[1:]) - np.exp(log_edges[:-1])
-
-    J_modes = ohmic_spectral_density(omega_modes, alpha, omega_c)
-    g_modes = np.sqrt(J_modes * domega_modes)
-
-    alpha_disp_continuous = alpha_0 * float(
-        np.sqrt(ohmic_spectral_density(omega_disp, alpha, omega_c))
+    alpha, omega_c, omega, temperature = _read_thermal_spec(
+        model_spec, "build_pure_dephasing_thermal_total"
     )
-    g_c = float(g_modes[snap_idx])
-    if g_c <= 0.0:
-        raise ValueError(
-            "build_spin_boson_sigma_x_displaced_total: resonant-mode "
-            f"coupling g_c={g_c} is non-positive"
-        )
-    alpha_disp = alpha_disp_continuous / g_c
-
-    a_single = np.diag(np.sqrt(np.arange(1, n)), k=1)
-    adag_single = a_single.T
-    n_single = adag_single @ a_single
-    I_single = np.eye(n, dtype=complex)
-
-    bath_dim = n**n_bath_modes
-    H_B = np.zeros((bath_dim, bath_dim), dtype=complex)
-    X_modes: list[np.ndarray] = []
-    for k in range(n_bath_modes):
-        ops_X = [I_single] * n_bath_modes
-        ops_X[k] = a_single + adag_single
-        X_modes.append(_kron_chain(ops_X))
-
-        ops_n = [I_single] * n_bath_modes
-        ops_n[k] = n_single
-        H_B += omega_modes[k] * _kron_chain(ops_n)
-
-    sigma_z = np.array([[1.0, 0.0], [0.0, -1.0]], dtype=complex)
-    sigma_x = np.array([[0.0, 1.0], [1.0, 0.0]], dtype=complex)
-    I_S = np.eye(2, dtype=complex)
-    H_S = 0.5 * omega * sigma_z
-    H_total = np.kron(H_S, np.eye(bath_dim, dtype=complex)) + np.kron(I_S, H_B)
-    for k in range(n_bath_modes):
-        H_total += g_modes[k] * np.kron(sigma_x, X_modes[k])
-
-    levels = np.arange(n)
-    per_mode_rho: list[np.ndarray] = []
-    for k in range(n_bath_modes):
-        weights = np.exp(-omega_modes[k] * levels / temperature)
-        weights /= weights.sum()
-        rho_mode = np.diag(weights).astype(complex)
-        if k == snap_idx:
-            generator = alpha_disp * adag_single - np.conj(alpha_disp) * a_single
-            D = expm(generator)
-            rho_mode = D @ rho_mode @ D.conj().T
-        per_mode_rho.append(rho_mode)
-    rho_B = _kron_chain(per_mode_rho)
-
-    if initial_system_rho is None:
-        plus = np.array([[1.0], [1.0]], dtype=complex) / np.sqrt(2.0)
-        initial_system_rho = plus @ plus.conj().T
-    initial_system_rho = np.asarray(initial_system_rho, dtype=complex)
-    if initial_system_rho.shape != (2, 2):
-        raise ValueError(
-            f"initial_system_rho must be (2, 2); got {initial_system_rho.shape}"
-        )
-
-    rho_initial = np.kron(initial_system_rho, rho_B)
-    return H_total, rho_initial, 2, bath_dim
-
-
-# ─── spin_boson_sigma_x thermal-bath helper (C2 thermal case) ──────────────
-#
-# Differs from build_pure_dephasing_thermal_total in exactly one line: the
-# joint interaction is σ_x ⊗ Σ_k g_k (a_k + a_k†) instead of σ_z ⊗ ... .
-# The bath discretisation, thermal initial state, and Hilbert-space layout
-# are identical. Future refactor opportunity: factor out
-# `_build_spin_thermal_joint(coupling_op_array, ...)` and call from both
-# wrappers; deferred to keep this commit's scope minimal.
+    return _build_spin_joint(
+        coupling_op=_SIGMA_Z,
+        alpha=alpha,
+        omega_c=omega_c,
+        omega=omega,
+        temperature=temperature,
+        n_bath_modes=n_bath_modes,
+        n_levels_per_mode=n_levels_per_mode,
+        omega_min_factor=omega_min_factor,
+        omega_max_factor=omega_max_factor,
+        initial_system_rho=initial_system_rho,
+        displacement=None,
+    )
 
 
 def build_spin_boson_sigma_x_thermal_total(
@@ -480,101 +448,27 @@ def build_spin_boson_sigma_x_thermal_total(
 ) -> tuple[np.ndarray, np.ndarray, int, int]:
     """Build (H_total, rho_initial, system_dim, bath_dim) for the C2 thermal case.
 
-    System is a qubit with ``H_S = (omega/2) sigma_z`` and ``A = sigma_x``;
-    the interaction is ``H_int = sigma_x ⊗ sum_k g_k (a_k + a_k†)``. Unlike
-    the σ_z (pure-dephasing) case, ``[H_S, A] ≠ 0``, so the σ_z populations
-    of ρ_S(t) are NOT conserved — the system experiences both energy
-    relaxation toward thermal Boltzmann equilibrium and coherence loss.
-
-    Parameters and contract are otherwise identical to
-    ``build_pure_dephasing_thermal_total``.
+    Identical contract to ``build_pure_dephasing_thermal_total`` but with
+    σ_x in the joint interaction. Because [H_S, σ_x] ≠ 0, the σ_z
+    populations of ρ_S(t) are NOT conserved — energy relaxation toward
+    Boltzmann equilibrium plus coherence loss.
     """
-    sd = model_spec.get("bath_spectral_density", {})
-    if sd.get("family") != "ohmic":
-        raise ValueError(
-            f"build_spin_boson_sigma_x_thermal_total: requires ohmic spectral "
-            f"density; got {sd.get('family')!r}"
-        )
-    bs = model_spec.get("bath_state", {})
-    if bs.get("family") != "thermal":
-        raise ValueError(
-            f"build_spin_boson_sigma_x_thermal_total: requires thermal "
-            f"bath_state; got {bs.get('family')!r}"
-        )
-
-    alpha = float(sd["coupling_strength"])
-    omega_c = float(sd["cutoff_frequency"])
-    temperature = float(bs["temperature"])
-    omega = float(model_spec.get("parameters", {}).get("omega", 1.0))
-
-    if temperature <= 0.0:
-        raise ValueError(
-            "build_spin_boson_sigma_x_thermal_total: thermal-mode populations "
-            "require temperature > 0 (T=0 ground state is a separate path)"
-        )
-
-    omega_min = omega_min_factor * omega_c
-    omega_max = omega_max_factor * omega_c
-    omega_modes = np.geomspace(omega_min, omega_max, n_bath_modes)
-    log_edges = np.empty(n_bath_modes + 1)
-    log_modes = np.log(omega_modes)
-    log_edges[1:-1] = 0.5 * (log_modes[:-1] + log_modes[1:])
-    log_edges[0] = log_modes[0] - 0.5 * (log_modes[1] - log_modes[0])
-    log_edges[-1] = log_modes[-1] + 0.5 * (log_modes[-1] - log_modes[-2])
-    domega_modes = np.exp(log_edges[1:]) - np.exp(log_edges[:-1])
-
-    J_modes = ohmic_spectral_density(omega_modes, alpha, omega_c)
-    g_modes = np.sqrt(J_modes * domega_modes)
-
-    n = n_levels_per_mode
-    a_single = np.diag(np.sqrt(np.arange(1, n)), k=1)
-    adag_single = a_single.T
-    n_single = adag_single @ a_single
-    I_single = np.eye(n, dtype=complex)
-
-    bath_dim = n**n_bath_modes
-    H_B = np.zeros((bath_dim, bath_dim), dtype=complex)
-    X_modes: list[np.ndarray] = []
-    for k in range(n_bath_modes):
-        ops_X = [I_single] * n_bath_modes
-        ops_X[k] = a_single + adag_single
-        X_modes.append(_kron_chain(ops_X))
-
-        ops_n = [I_single] * n_bath_modes
-        ops_n[k] = n_single
-        H_B += omega_modes[k] * _kron_chain(ops_n)
-
-    sigma_z = np.array([[1.0, 0.0], [0.0, -1.0]], dtype=complex)
-    sigma_x = np.array([[0.0, 1.0], [1.0, 0.0]], dtype=complex)
-    I_S = np.eye(2, dtype=complex)
-
-    H_S = 0.5 * omega * sigma_z
-    H_total = np.kron(H_S, np.eye(bath_dim, dtype=complex)) + np.kron(I_S, H_B)
-    for k in range(n_bath_modes):
-        H_total += g_modes[k] * np.kron(sigma_x, X_modes[k])
-
-    levels = np.arange(n)
-    per_mode_thermal: list[np.ndarray] = []
-    for k in range(n_bath_modes):
-        weights = np.exp(-omega_modes[k] * levels / temperature)
-        weights /= weights.sum()
-        per_mode_thermal.append(np.diag(weights).astype(complex))
-    rho_B = _kron_chain(per_mode_thermal)
-
-    if initial_system_rho is None:
-        plus = np.array([[1.0], [1.0]], dtype=complex) / np.sqrt(2.0)
-        initial_system_rho = plus @ plus.conj().T
-    initial_system_rho = np.asarray(initial_system_rho, dtype=complex)
-    if initial_system_rho.shape != (2, 2):
-        raise ValueError(
-            f"initial_system_rho must be (2, 2); got {initial_system_rho.shape}"
-        )
-
-    rho_initial = np.kron(initial_system_rho, rho_B)
-    return H_total, rho_initial, 2, bath_dim
-
-
-# ─── Pure-dephasing displaced-bath helper (C1 displaced delta-omega_c) ─────
+    alpha, omega_c, omega, temperature = _read_thermal_spec(
+        model_spec, "build_spin_boson_sigma_x_thermal_total"
+    )
+    return _build_spin_joint(
+        coupling_op=_SIGMA_X,
+        alpha=alpha,
+        omega_c=omega_c,
+        omega=omega,
+        temperature=temperature,
+        n_bath_modes=n_bath_modes,
+        n_levels_per_mode=n_levels_per_mode,
+        omega_min_factor=omega_min_factor,
+        omega_max_factor=omega_max_factor,
+        initial_system_rho=initial_system_rho,
+        displacement=None,
+    )
 
 
 def build_pure_dephasing_displaced_total(
@@ -588,192 +482,71 @@ def build_pure_dephasing_displaced_total(
 ) -> tuple[np.ndarray, np.ndarray, int, int]:
     """Build (H_total, rho_initial, system_dim, bath_dim) for the C1 displaced case.
 
-    Discretises the ohmic spectral density into ``n_bath_modes`` log-spaced
-    bosonic modes, **forcing one mode exactly at the displacement-profile
-    centre frequency** so the coherent displacement under the Council-cleared
-    ``delta-omega_c`` profile maps onto a single discrete bath mode without
-    mode-fraction artefacts. The system + bath Hamiltonian is identical in
-    form to the thermal case; the displacement enters via a coherent shift
-    on the initial state of the resonant mode:
+    σ_z coupling under coherent-displaced bath at the Council-cleared
+    delta-omega_c profile. The discretisation snaps one mode to ω_c
+    and that mode is coherently displaced by
 
-        ρ_initial = ρ_S(0) ⊗ [⊗_{k≠c} ρ_thermal(ω_k)] ⊗ D(α_disp) ρ_thermal(ω_c) D(α_disp)†
+        α_disp = α₀ √J(ω_c) / g_c = α₀ / √(Δω_c)
 
-    where ``D(α) = exp(α a† − α* a)`` is the displacement operator on the
-    truncated Fock space and the discrete amplitude ``α_disp`` is calibrated
-    so the discrete first cumulant matches the Council-cleared continuous
-    convention ⟨B(t)⟩ = 2 α₀ √J(ω_c) cos(ω_c t):
-
-        2 g_c α_disp = 2 α₀ √J(ω_c)  ⇒  α_disp = α₀ / √(Δω_c)
-
-    where ``g_c = √(J(ω_c) Δω_c)`` is the continuum-discretisation coupling
-    of the resonant mode and ``Δω_c`` is its discretisation width. This is
-    the discrete-finite-bath analogue of the cbg.cumulants delta-omega_c
-    convention.
-
-    Parameters
-    ----------
-    model_spec : dict
-        The card's frozen_parameters.model mapping. Required:
-        - bath_spectral_density: family ('ohmic'), cutoff_frequency, coupling_strength.
-        - bath_state.family: 'coherent_displaced'.
-        - bath_state.displacement_profile: 'delta-omega_c'.
-        - bath_state.parameters: alpha_0, omega_c.
-        - parameters.omega (optional, default 1.0).
-        Bath temperature is sourced from bath_state.temperature when present;
-        otherwise a thermal background is assumed at the same temperature as
-        the C1 thermal fixture's reference (T = 0.5 ω-units), matching B4's
-        background state at v0.1.0.
-    n_bath_modes, n_levels_per_mode, omega_min_factor, omega_max_factor,
-    initial_system_rho
-        Same as ``build_pure_dephasing_thermal_total``.
-
-    Returns
-    -------
-    H_total, rho_initial, system_dim, bath_dim
-        Same shape contract as ``build_pure_dephasing_thermal_total``.
+    so the discrete first cumulant ⟨B(t)⟩_discrete = 2 g_c α_disp cos(ω_c t)
+    matches the cbg.cumulants delta-omega_c convention 2 α₀ √J(ω_c) cos(ω_c t).
 
     Raises
     ------
+    NotImplementedError
+        If displacement_profile ≠ 'delta-omega_c' (other Council-cleared
+        profiles are next deferred).
     ValueError
-        If model_spec describes an unsupported configuration. Only
-        ``displacement_profile == 'delta-omega_c'`` is wired at v0.1.0;
-        sqrt-J / gaussian / delta-omega_S route to a deferred error.
+        For invalid spec (non-ohmic, non-displaced, missing parameters,
+        T = 0, etc.).
     """
-    sd = model_spec.get("bath_spectral_density", {})
-    if sd.get("family") != "ohmic":
-        raise ValueError(
-            f"build_pure_dephasing_displaced_total: requires ohmic spectral "
-            f"density; got {sd.get('family')!r}"
-        )
-    bs = model_spec.get("bath_state", {})
-    if bs.get("family") != "coherent_displaced":
-        raise ValueError(
-            f"build_pure_dephasing_displaced_total: requires "
-            f"coherent_displaced bath_state; got {bs.get('family')!r}"
-        )
-    profile_name = bs.get("displacement_profile")
-    if profile_name != "delta-omega_c":
-        raise NotImplementedError(
-            f"build_pure_dephasing_displaced_total: only displacement_profile "
-            f"'delta-omega_c' is implemented at Phase B v0.1.0; got "
-            f"{profile_name!r}. Other Council-cleared profiles "
-            f"(delta-omega_S, sqrt-J, gaussian) are next deferred."
-        )
-    params = bs.get("parameters") or {}
-    if "alpha_0" not in params or "omega_c" not in params:
-        raise ValueError(
-            "build_pure_dephasing_displaced_total: bath_state.parameters "
-            "must carry alpha_0 and omega_c for the delta-omega_c profile"
-        )
-
-    alpha = float(sd["coupling_strength"])
-    omega_c = float(sd["cutoff_frequency"])
-    omega = float(model_spec.get("parameters", {}).get("omega", 1.0))
-    alpha_0 = float(params["alpha_0"])
-    omega_disp = float(params["omega_c"])
-
-    # Background-thermal temperature: prefer explicit bath_state.temperature,
-    # else fall back to the C1 thermal-fixture default. The exact_finite_env
-    # path requires a strictly positive thermal bed under the displacement;
-    # T = 0 collapses the per-mode populations onto |0⟩ and is a separate
-    # implementation path.
-    temperature = float(bs.get("temperature", 0.5))
-    if temperature <= 0.0:
-        raise ValueError(
-            "build_pure_dephasing_displaced_total: requires temperature > 0 "
-            "(displaced T=0 ground state is a separate implementation path)"
-        )
-
-    n = n_levels_per_mode
-
-    # Discretisation: log-spaced modes between [omega_min_factor*ω_c,
-    # omega_max_factor*ω_c], with the closest mode snapped to the
-    # displacement frequency ω_disp so the coherent shift maps onto a
-    # single discrete mode. The geometric-midpoint widths are recomputed
-    # after the snap so the discretisation coupling g_c at the displaced
-    # mode reflects the snapped grid.
-    omega_min = omega_min_factor * omega_c
-    omega_max = omega_max_factor * omega_c
-    omega_modes = np.geomspace(omega_min, omega_max, n_bath_modes)
-    # Snap the index closest (in log-distance) to ω_disp.
-    snap_idx = int(np.argmin(np.abs(np.log(omega_modes) - np.log(omega_disp))))
-    omega_modes[snap_idx] = omega_disp
-
-    log_modes = np.log(omega_modes)
-    log_edges = np.empty(n_bath_modes + 1)
-    log_edges[1:-1] = 0.5 * (log_modes[:-1] + log_modes[1:])
-    log_edges[0] = log_modes[0] - 0.5 * (log_modes[1] - log_modes[0])
-    log_edges[-1] = log_modes[-1] + 0.5 * (log_modes[-1] - log_modes[-2])
-    domega_modes = np.exp(log_edges[1:]) - np.exp(log_edges[:-1])
-
-    J_modes = ohmic_spectral_density(omega_modes, alpha, omega_c)
-    g_modes = np.sqrt(J_modes * domega_modes)
-
-    # Discrete displacement amplitude on the resonant mode. The
-    # calibration α_disp = α₀ √J(ω_c) / g_c = α₀ / √(Δω_c) makes the
-    # initial-time discrete first cumulant ⟨B(0)⟩ = 2 g_c α_disp match
-    # the continuous convention 2 α₀ √J(ω_c) per cbg.cumulants
-    # _evaluate_displaced_first_cumulant for the delta-omega_c profile.
-    alpha_disp_continuous = alpha_0 * float(
-        np.sqrt(ohmic_spectral_density(omega_disp, alpha, omega_c))
+    alpha, omega_c, omega, temperature, displacement = _read_displaced_spec(
+        model_spec, "build_pure_dephasing_displaced_total"
     )
-    g_c = float(g_modes[snap_idx])
-    if g_c <= 0.0:
-        raise ValueError(
-            "build_pure_dephasing_displaced_total: resonant-mode coupling "
-            f"g_c={g_c} is non-positive; check spectral-density parameters"
-        )
-    alpha_disp = alpha_disp_continuous / g_c
+    return _build_spin_joint(
+        coupling_op=_SIGMA_Z,
+        alpha=alpha,
+        omega_c=omega_c,
+        omega=omega,
+        temperature=temperature,
+        n_bath_modes=n_bath_modes,
+        n_levels_per_mode=n_levels_per_mode,
+        omega_min_factor=omega_min_factor,
+        omega_max_factor=omega_max_factor,
+        initial_system_rho=initial_system_rho,
+        displacement=displacement,
+    )
 
-    a_single = np.diag(np.sqrt(np.arange(1, n)), k=1)
-    adag_single = a_single.T
-    n_single = adag_single @ a_single
-    I_single = np.eye(n, dtype=complex)
 
-    bath_dim = n**n_bath_modes
-    H_B = np.zeros((bath_dim, bath_dim), dtype=complex)
-    X_modes: list[np.ndarray] = []
-    for k in range(n_bath_modes):
-        ops_X = [I_single] * n_bath_modes
-        ops_X[k] = a_single + adag_single
-        X_modes.append(_kron_chain(ops_X))
+def build_spin_boson_sigma_x_displaced_total(
+    model_spec: dict[str, Any],
+    *,
+    n_bath_modes: int = 4,
+    n_levels_per_mode: int = 4,
+    omega_min_factor: float = 0.05,
+    omega_max_factor: float = 4.0,
+    initial_system_rho: np.ndarray | None = None,
+) -> tuple[np.ndarray, np.ndarray, int, int]:
+    """Build (H_total, rho_initial, system_dim, bath_dim) for the C2 displaced case.
 
-        ops_n = [I_single] * n_bath_modes
-        ops_n[k] = n_single
-        n_k_full = _kron_chain(ops_n)
-        H_B += omega_modes[k] * n_k_full
-
-    sigma_z = np.array([[1.0, 0.0], [0.0, -1.0]], dtype=complex)
-    I_S = np.eye(2, dtype=complex)
-    H_S = 0.5 * omega * sigma_z
-    H_total = np.kron(H_S, np.eye(bath_dim, dtype=complex)) + np.kron(I_S, H_B)
-    for k in range(n_bath_modes):
-        H_total += g_modes[k] * np.kron(sigma_z, X_modes[k])
-
-    # Per-mode initial states. Background thermal on every mode; the
-    # resonant mode then gets D(α_disp) applied to its thermal state.
-    levels = np.arange(n)
-    per_mode_rho: list[np.ndarray] = []
-    for k in range(n_bath_modes):
-        weights = np.exp(-omega_modes[k] * levels / temperature)
-        weights /= weights.sum()
-        rho_mode = np.diag(weights).astype(complex)
-        if k == snap_idx:
-            # D(α) = exp(α a† − α* a) on the truncated Fock space.
-            generator = alpha_disp * adag_single - np.conj(alpha_disp) * a_single
-            D = expm(generator)
-            rho_mode = D @ rho_mode @ D.conj().T
-        per_mode_rho.append(rho_mode)
-    rho_B = _kron_chain(per_mode_rho)
-
-    if initial_system_rho is None:
-        plus = np.array([[1.0], [1.0]], dtype=complex) / np.sqrt(2.0)
-        initial_system_rho = plus @ plus.conj().T
-    initial_system_rho = np.asarray(initial_system_rho, dtype=complex)
-    if initial_system_rho.shape != (2, 2):
-        raise ValueError(
-            f"initial_system_rho must be (2, 2); got {initial_system_rho.shape}"
-        )
-
-    rho_initial = np.kron(initial_system_rho, rho_B)
-    return H_total, rho_initial, 2, bath_dim
+    σ_x coupling under coherent-displaced bath (delta-omega_c). Same
+    discrete-displacement calibration as the σ_z displaced builder; the
+    coupling-operator change adds an effective time-dependent σ_x drive
+    in addition to the energy-relaxation channel.
+    """
+    alpha, omega_c, omega, temperature, displacement = _read_displaced_spec(
+        model_spec, "build_spin_boson_sigma_x_displaced_total"
+    )
+    return _build_spin_joint(
+        coupling_op=_SIGMA_X,
+        alpha=alpha,
+        omega_c=omega_c,
+        omega=omega,
+        temperature=temperature,
+        n_bath_modes=n_bath_modes,
+        n_levels_per_mode=n_levels_per_mode,
+        omega_min_factor=omega_min_factor,
+        omega_max_factor=omega_max_factor,
+        initial_system_rho=initial_system_rho,
+        displacement=displacement,
+    )
