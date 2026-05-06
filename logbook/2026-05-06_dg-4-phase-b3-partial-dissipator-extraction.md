@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-06
 **Type:** structural
-**Triggering commit:** _placeholder_
+**Triggering commit:** b699950
 **Triggering evidence:**
 - [`cbg/tcl_recursion.py`](../cbg/tcl_recursion.py): two new public functions — `L_n_dissipator_thermal_at_time` (callable form) and `L_n_dissipator_norm_thermal_on_grid` (per-t HS norm). Inline derivation block documents the convention `L_n^dissipator(t) := L_n(t) + i [K_n(t), · ]` with the explicit unitary-recovery oracle.
 - [`tests/test_tcl_recursion.py`](../tests/test_tcl_recursion.py): 8 new B.3 tests covering the unitary-recovery oracle, A3/A4 fixture behaviour, n=4 deferral propagation, Phase B.4 knob-threading consistency, and at_time/on_grid round-trip.
