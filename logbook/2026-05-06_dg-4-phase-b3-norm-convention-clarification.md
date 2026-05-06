@@ -3,7 +3,7 @@
 **Date:** 2026-05-06
 **Type:** structural-correction
 **Supersedes:** [`2026-05-06_dg-4-phase-b3-partial-dissipator-extraction.md`](2026-05-06_dg-4-phase-b3-partial-dissipator-extraction.md)
-**Triggering commit:** _placeholder_
+**Triggering commit:** 6efff7d
 **Triggering evidence:**
 - Numerical verification (this entry) of the wrong-sign Liouville-Frobenius residual.
 
