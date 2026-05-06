@@ -1,0 +1,330 @@
+{
+  "card_id": "D1",
+  "card_version": "v0.1.2",
+  "card_path": "benchmarks/benchmark_cards/D1_failure-envelope-convergence_v0.1.2.yaml",
+  "schema_version": "v0.1.3",
+  "ledger_entry": "CL-2026-005 v0.4 Entry 2 (recursive-series convergence; scope-limited)",
+  "verdict": "PASS",
+  "runner_version": "0.1.0",
+  "l4_source": "Path B numerical Richardson extraction (interaction-picture transformed)",
+  "path_b_params": {
+    "alpha_values": [
+      0.01,
+      0.015,
+      0.02,
+      0.025,
+      0.03
+    ],
+    "n_bath_modes": 4,
+    "n_levels_per_mode": 3
+  },
+  "baseline": {
+    "fit_relative_residual": 3.217290797527754e-05,
+    "l2_dissipator_avg": 27.423350328374323,
+    "l4_dissipator_avg": 1300.4894009029395,
+    "coefficient_ratio": 47.42270310996072
+  },
+  "max_baseline_r4": 47.42270310996072,
+  "threshold": 1.0,
+  "frozen_sweep": {
+    "parameter_name": "coupling_strength",
+    "start": 0.05,
+    "end": 1.0,
+    "n_points": 20,
+    "scheme": "log_uniform"
+  },
+  "alpha_crit": null,
+  "classification_counts": {
+    "passing": 0,
+    "convergence_failure": 20,
+    "truncation_artefact": 0,
+    "metric-undefined": 0
+  },
+  "per_alpha": [
+    {
+      "alpha_sq": 0.05,
+      "r_4_baseline": 2.371135155498036,
+      "classification": "convergence_failure",
+      "perturbed_r_4": {
+        "upper_cutoff_factor=20": 2.4840260859885315,
+        "upper_cutoff_factor=40": 2.3153703531542145,
+        "omega_c=9.0": 2.63183448131465,
+        "omega_c=11.0": 2.0735270004458983
+      }
+    },
+    {
+      "alpha_sq": 0.058538995686138955,
+      "r_4_baseline": 2.7760774127790393,
+      "classification": "convergence_failure",
+      "perturbed_r_4": {
+        "upper_cutoff_factor=20": 2.908247846638785,
+        "upper_cutoff_factor=40": 2.7107891023021717,
+        "omega_c=9.0": 3.0812989469662004,
+        "omega_c=11.0": 2.4276437626839016
+      }
+    },
+    {
+      "alpha_sq": 0.06853628031883592,
+      "r_4_baseline": 3.2501756738212,
+      "classification": "convergence_failure",
+      "perturbed_r_4": {
+        "upper_cutoff_factor=20": 3.404918162972216,
+        "upper_cutoff_factor=40": 3.1737374313139872,
+        "omega_c=9.0": 3.6075229152831794,
+        "omega_c=11.0": 2.842236555024702
+      }
+    },
+    {
+      "alpha_sq": 0.08024090035856693,
+      "r_4_baseline": 3.8052403949802605,
+      "classification": "convergence_failure",
+      "perturbed_r_4": {
+        "upper_cutoff_factor=20": 3.986409793077735,
+        "upper_cutoff_factor=40": 3.715748036012545,
+        "omega_c=9.0": 4.22361536750819,
+        "omega_c=11.0": 3.3276334686715496
+      }
+    },
+    {
+      "alpha_sq": 0.09394443439884112,
+      "r_4_baseline": 4.455099021329424,
+      "classification": "convergence_failure",
+      "perturbed_r_4": {
+        "upper_cutoff_factor=20": 4.667208513603192,
+        "upper_cutoff_factor=40": 4.350323165018353,
+        "omega_c=9.0": 4.944924035569443,
+        "omega_c=11.0": 3.8959264253523096
+      }
+    },
+    {
+      "alpha_sq": 0.10998825680021053,
+      "r_4_baseline": 5.215940447818502,
+      "classification": "convergence_failure",
+      "perturbed_r_4": {
+        "upper_cutoff_factor=20": 5.4642739808825675,
+        "upper_cutoff_factor=40": 5.093270979806397,
+        "omega_c=9.0": 5.789417735729691,
+        "omega_c=11.0": 4.561272404144274
+      }
+    },
+    {
+      "alpha_sq": 0.12877204180706942,
+      "r_4_baseline": 6.1067183074801035,
+      "classification": "convergence_failure",
+      "perturbed_r_4": {
+        "upper_cutoff_factor=20": 6.397462219895323,
+        "upper_cutoff_factor=40": 5.963099358304471,
+        "omega_c=9.0": 6.778133997142739,
+        "omega_c=11.0": 5.340246111790129
+      }
+    },
+    {
+      "alpha_sq": 0.15076371999678684,
+      "r_4_baseline": 7.149623133160871,
+      "classification": "convergence_failure",
+      "perturbed_r_4": {
+        "upper_cutoff_factor=20": 7.4900202658537856,
+        "upper_cutoff_factor=40": 6.9814769522360685,
+        "omega_c=9.0": 7.935703136376211,
+        "omega_c=11.0": 6.252252882020055
+      }
+    },
+    {
+      "alpha_sq": 0.17651113509036337,
+      "r_4_baseline": 8.370635154992472,
+      "classification": "convergence_failure",
+      "perturbed_r_4": {
+        "upper_cutoff_factor=20": 8.769165280638164,
+        "upper_cutoff_factor=40": 8.173772983796518,
+        "omega_c=9.0": 9.29096183333613,
+        "omega_c=11.0": 7.320012089784438
+      }
+    },
+    {
+      "alpha_sq": 0.20665569151220545,
+      "r_4_baseline": 9.800171504566949,
+      "classification": "convergence_failure",
+      "perturbed_r_4": {
+        "upper_cutoff_factor=20": 10.26676257068634,
+        "upper_cutoff_factor=40": 9.56968922875887,
+        "omega_c=9.0": 10.87767149363491,
+        "omega_c=11.0": 8.570123122927525
+      }
+    },
+    {
+      "alpha_sq": 0.2419483326789812,
+      "r_4_baseline": 11.473843948585333,
+      "classification": "convergence_failure",
+      "perturbed_r_4": {
+        "upper_cutoff_factor=20": 12.020119396720414,
+        "upper_cutoff_factor=40": 11.203999929600121,
+        "omega_c=9.0": 12.735359292822617,
+        "omega_c=11.0": 10.033728010454682
+      }
+    },
+    {
+      "alpha_sq": 0.283268248059268,
+      "r_4_baseline": 13.433346028193375,
+      "classification": "convergence_failure",
+      "perturbed_r_4": {
+        "upper_cutoff_factor=20": 14.072914350229835,
+        "upper_cutoff_factor=40": 13.117418070927258,
+        "omega_c=9.0": 14.910302854079461,
+        "omega_c=11.0": 11.747287214397971
+      }
+    },
+    {
+      "alpha_sq": 0.3316447750232326,
+      "r_4_baseline": 15.727491703896476,
+      "classification": "convergence_failure",
+      "perturbed_r_4": {
+        "upper_cutoff_factor=20": 16.47628544879015,
+        "upper_cutoff_factor=40": 15.35760959734584,
+        "omega_c=9.0": 17.45668308907966,
+        "omega_c=11.0": 13.753487911349563
+      }
+    },
+    {
+      "alpha_sq": 0.3882830410883108,
+      "r_4_baseline": 18.413431380163644,
+      "classification": "convergence_failure",
+      "perturbed_r_4": {
+        "upper_cutoff_factor=20": 19.290104056206417,
+        "upper_cutoff_factor=40": 17.98038083936869,
+        "omega_c=9.0": 20.43793392091858,
+        "omega_c=11.0": 16.10230739023713
+      }
+    },
+    {
+      "alpha_sq": 0.45459398534539097,
+      "r_4_baseline": 21.558075602608312,
+      "classification": "convergence_failure",
+      "perturbed_r_4": {
+        "upper_cutoff_factor=20": 22.584466362628785,
+        "upper_cutoff_factor=40": 21.051068727818794,
+        "omega_c=9.0": 23.928322512604925,
+        "omega_c=11.0": 18.852258057079503
+      }
+    },
+    {
+      "alpha_sq": 0.5322295069415712,
+      "r_4_baseline": 25.23976189405091,
+      "classification": "convergence_failure",
+      "perturbed_r_4": {
+        "upper_cutoff_factor=20": 26.44143957951354,
+        "upper_cutoff_factor=40": 24.646168428927982,
+        "omega_c=9.0": 28.01479936683844,
+        "omega_c=11.0": 22.071845061547112
+      }
+    },
+    {
+      "alpha_sq": 0.6231236162177701,
+      "r_4_baseline": 29.550206252700423,
+      "classification": "convergence_failure",
+      "perturbed_r_4": {
+        "upper_cutoff_factor=20": 30.957106349608942,
+        "upper_cutoff_factor=40": 28.85523894681739,
+        "omega_c=9.0": 32.79916438566808,
+        "omega_c=11.0": 25.841272856860677
+      }
+    },
+    {
+      "alpha_sq": 0.7295406136340672,
+      "r_4_baseline": 34.59678792702694,
+      "classification": "convergence_failure",
+      "perturbed_r_4": {
+        "upper_cutoff_factor=20": 36.24395830110207,
+        "upper_cutoff_factor=40": 33.78313416460505,
+        "omega_c=9.0": 38.40060284963173,
+        "omega_c=11.0": 30.254443205842147
+      }
+    },
+    {
+      "alpha_sq": 0.8541314966877566,
+      "r_4_baseline": 40.50522438428988,
+      "classification": "convergence_failure",
+      "perturbed_r_4": {
+        "upper_cutoff_factor=20": 42.43369837273628,
+        "upper_cutoff_factor=40": 39.55261490252138,
+        "omega_c=9.0": 44.958654491194544,
+        "omega_c=11.0": 35.4212944062666
+      }
+    },
+    {
+      "alpha_sq": 1.0,
+      "r_4_baseline": 47.42270310996072,
+      "classification": "convergence_failure",
+      "perturbed_r_4": {
+        "upper_cutoff_factor=20": 49.680521719770624,
+        "upper_cutoff_factor=40": 46.30740706308429,
+        "omega_c=9.0": 52.63668962629299,
+        "omega_c=11.0": 41.470540008917965
+      }
+    }
+  ],
+  "perturbations": [
+    {
+      "name": "upper_cutoff_factor=20",
+      "kind": "quadrature",
+      "key": "upper_cutoff_factor",
+      "value": 20.0,
+      "operational_in_path_b": true,
+      "evaluated": true,
+      "fit_relative_residual": 3.2842320561452486e-05,
+      "l2_dissipator_avg": 24.080274961741814,
+      "l4_dissipator_avg": 1196.320623254863,
+      "coefficient_ratio": 49.680521719770624
+    },
+    {
+      "name": "upper_cutoff_factor=40",
+      "kind": "quadrature",
+      "key": "upper_cutoff_factor",
+      "value": 40.0,
+      "operational_in_path_b": true,
+      "evaluated": true,
+      "fit_relative_residual": 3.260966372090827e-05,
+      "l2_dissipator_avg": 29.980456369122994,
+      "l4_dissipator_avg": 1388.3171970220164,
+      "coefficient_ratio": 46.30740706308429
+    },
+    {
+      "name": "omega_c=9.0",
+      "kind": "model_spec",
+      "key": "cutoff_frequency",
+      "value": 9.0,
+      "operational_in_path_b": true,
+      "evaluated": true,
+      "fit_relative_residual": 3.49454957726765e-05,
+      "l2_dissipator_avg": 25.450326355687803,
+      "l4_dissipator_avg": 1339.6209292722033,
+      "coefficient_ratio": 52.63668962629299
+    },
+    {
+      "name": "omega_c=11.0",
+      "kind": "model_spec",
+      "key": "cutoff_frequency",
+      "value": 11.0,
+      "operational_in_path_b": true,
+      "evaluated": true,
+      "fit_relative_residual": 3.0014821381335866e-05,
+      "l2_dissipator_avg": 29.552129498350663,
+      "l4_dissipator_avg": 1225.542768710076,
+      "coefficient_ratio": 41.470540008917965
+    }
+  ],
+  "test_case_results": [
+    {
+      "name": "dg4_failure_envelope_sweep",
+      "passed": true,
+      "error": 47.42270310996072,
+      "threshold": 1.0,
+      "notes": "DG-4 sweep runner: card D1 v0.1.2.\nL_4 source: Path B numerical Richardson extraction.\nPath B params: alpha_values=(0.01, 0.015, 0.02, 0.025, 0.03), n_bath_modes=4, n_levels_per_mode=3.\nBaseline fit relative residual: 3.217e-05.\nBaseline ||L_2^dis||_avg = 2.742e+01, ||L_4^dis||_avg = 1.300e+03, coefficient ratio = 4.742e+01.\nPer-alpha classifications: convergence_failure=20.\nPath B carries a finite-env extraction floor (sigma_z thermal zero-oracle ~few * 1e-2 at the default truncation per the 2026-05-06 pilot); verdicts are subject to this documented uncertainty until the analytic Path A (Companion Sec. IV) lands."
+    }
+  ],
+  "notes": "DG-4 sweep runner: card D1 v0.1.2.\nL_4 source: Path B numerical Richardson extraction.\nPath B params: alpha_values=(0.01, 0.015, 0.02, 0.025, 0.03), n_bath_modes=4, n_levels_per_mode=3.\nBaseline fit relative residual: 3.217e-05.\nBaseline ||L_2^dis||_avg = 2.742e+01, ||L_4^dis||_avg = 1.300e+03, coefficient ratio = 4.742e+01.\nPer-alpha classifications: convergence_failure=20.\nPath B carries a finite-env extraction floor (sigma_z thermal zero-oracle ~few * 1e-2 at the default truncation per the 2026-05-06 pilot); verdicts are subject to this documented uncertainty until the analytic Path A (Companion Sec. IV) lands.",
+  "computed_at_utc": "2026-05-06T21:11:54.001857+00:00",
+  "run_window_utc": {
+    "start": "2026-05-06T21:11:17.471703+00:00",
+    "end": "2026-05-06T21:11:54.001857+00:00"
+  }
+}
