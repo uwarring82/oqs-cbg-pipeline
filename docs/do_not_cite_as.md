@@ -21,7 +21,7 @@ The following uses are explicitly disallowed, by inheritance from CL-2026-005 v0
 
 1. **Reification.** Do not cite K(t) computed by this repository as "the physical Hamiltonian" of the open system. K(t) is a coordinate-dependent object under a chosen gauge.
 2. **Framework adjudication.** Do not cite agreement between this repository's K(t) and any specific experimental observation as evidence that the Hayden–Sorce gauge is preferable to the Hamiltonian of mean force, polaron-transformed, Mori-projector, or other gauges. Adjudication is the discriminant question for CL-2026-005 Entry 7 and proceeds only via fresh Council deliberation.
-3. **Universal validity.** Do not cite this repository as evidence that the CBG perturbative pipeline is convergent or reliable in arbitrary strong-coupling regimes. CL-2026-005 Entry 2 is COMPATIBLE *scope-limited*; the convergence question is open.
+3. **Universal validity.** Do not cite this repository as evidence that the CBG perturbative pipeline is convergent or reliable in arbitrary strong-coupling regimes. CL-2026-005 Entry 2 is COMPATIBLE *scope-limited*; DG-4 records a finite Path B numerical failure-envelope witness, not an analytic convergence guarantee.
 4. **Trapped-ion empirical claims absent stewardship-conflict flag.** Do not cite Tier 4 trapped-ion benchmarks without the stewardship-conflict flag attached. See [`stewardship_conflict.md`](stewardship_conflict.md).
 5. **DG-5 thermodynamic interpretation absent Council re-deliberation.** Do not cite DG-5 outputs as having transitioned CL-2026-005 Entry 7 from UNDERDETERMINED to COMPATIBLE or INCONSISTENT. Only fresh Council deliberation can effect that transition.
 

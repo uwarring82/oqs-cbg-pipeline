@@ -52,13 +52,13 @@ This index is the canonical source of truth for *current* plan status. Updating 
 |---|---|---|---|---|
 | [DG-1 Work Plan](dg-1-work-plan_v0.1.4.md) | v0.1.4 | verdict-reached | **Verdict: PASS** (2026-04-30; tag `v0.2.0`) | Sail v0.5 §9 (DG-1); CL-2026-005 v0.4 Entries 1, 3, 4 (1.B.3, 3.B.3, 4.B.2 deferred to DG-2 per v0.1.4 §1.1 operationalisability carve-out). See [logbook/2026-04-30_dg-1-pass.md](../logbook/2026-04-30_dg-1-pass.md). |
 | [DG-3 Work Plan](dg-3-work-plan_v0.1.0.md) | v0.1.0 | draft | Phase A: cards frozen; Phase B–D pending | Sail v0.5 §9 (DG-3); baseline pair implementation + cross-method runner wiring. Cards C1, C2 frozen. |
-| [DG-4 Work Plan](dg-4-work-plan_v0.1.4.md) | v0.1.4 | draft | Phase A.bis complete (D1 v0.1.1 frozen); B.0, B.1, B.2 (n=3), B.3 (n ∈ {0,1,2,3}), B.4 landed; B.2/B.3 (n=4) + Phase C–D pending | Sail v0.5 §9 (DG-4); CL-2026-005 v0.4 Entry 2. v0.1.4 supersedes v0.1.3 with two corrections surfaced by Phase B.3 review: (1) the metric becomes the **parity-aware even-order ratio** `r_4 = ‖L_4^dis‖ / ‖L_2^dis‖`, since Phase B.3 (commit `b699950`) confirmed `‖L_3^dis‖ = 0` for σ_x thermal — the adjacent-order ratio of v0.1.3 would have marked the fixture `metric-undefined`; (2) the `omega_c` reproducibility perturbation is encoded by mutating `frozen_parameters.model.bath_spectral_density.cutoff_frequency` directly, NOT via the `numerical.quadrature` allow-list (which would silently no-op `omega_c`). D1 v0.1.1 now carries those corrections. |
+| [DG-4 Work Plan](dg-4-work-plan_v0.1.4.md) | v0.1.4 | verdict-reached | **Verdict: PASS** via D1 v0.1.1 Path B numerical L_4 run (2026-05-06); analytic B.2/B.3 (n=4) Path A still pending | Sail v0.5 §9 (DG-4); CL-2026-005 v0.4 Entry 2. v0.1.4 supersedes v0.1.3 with two corrections surfaced by Phase B.3 review: (1) the metric becomes the **parity-aware even-order ratio** `r_4 = ‖L_4^dis‖ / ‖L_2^dis‖`, since Phase B.3 (commit `b699950`) confirmed `‖L_3^dis‖ = 0` for σ_x thermal; (2) the `omega_c` reproducibility perturbation is encoded by mutating `frozen_parameters.model.bath_spectral_density.cutoff_frequency` directly, NOT via the `numerical.quadrature` allow-list. D1 v0.1.1's full frozen run classified all 20 `coupling_strength` sweep points as `convergence_failure`, so DG-4 PASS is reached with the documented Path B finite-env caveat and the Path-B-specific limitation that `upper_cutoff_factor` is threaded but not consumed by `exact_finite_env`. |
 
 ### Auxiliary route plans
 
 | Plan | Version | Operational status | Parent | Purpose |
 |---|---|---|---|---|
-| [DG-4 Path B Richardson Extraction](dg-4-path-b-richardson-extraction_v0.1.0.md) | v0.1.0 | draft | DG-4 work plan v0.1.4 Phase B.2 Path B | Numerical `Lambda_t` reconstruction and even-alpha Richardson extraction via `benchmarks/exact_finite_env`; benchmark-side only, not a replacement for analytic `cbg.tcl_recursion` order-4 recursion. |
+| [DG-4 Path B Richardson Extraction](dg-4-path-b-richardson-extraction_v0.1.0.md) | v0.1.0 | consumed-by-verdict | DG-4 work plan v0.1.4 Phase B.2 Path B | Numerical `Lambda_t` reconstruction and even-alpha Richardson extraction via `benchmarks/exact_finite_env`; benchmark-side only, not a replacement for analytic `cbg.tcl_recursion` order-4 recursion. D1 v0.1.1 used this path for the 2026-05-06 DG-4 PASS verdict. |
 
 ### Superseded plans (retained for audit)
 
@@ -75,4 +75,4 @@ This index is the canonical source of truth for *current* plan status. Updating 
 
 ---
 
-*Last updated: 2026-05-06 (DG-4 Phase A.bis complete: D1 v0.1.1 frozen; active DG-4 work plan remains v0.1.4). CC-BY-4.0 (see ../LICENSE-docs).*
+*Last updated: 2026-05-06 (DG-4 verdict reached: D1 v0.1.1 PASS via Path B numerical L_4; active DG-4 work plan remains v0.1.4 for Path A follow-up). CC-BY-4.0 (see ../LICENSE-docs).*

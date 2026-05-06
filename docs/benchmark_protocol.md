@@ -2,7 +2,7 @@
 
 **Layer:** Repository protective scaffolding
 **Anchor:** Sail v0.5 §11 (four explicit content requirements)
-**Last updated:** 2026-05-06 (DG-4 Phase C sweep runner wired; D1 v0.1.1 runs through `_run_dg4_sweep` to a structured CardResult via Path B; no Phase D verdict)
+**Last updated:** 2026-05-06 (DG-4 PASS via D1 v0.1.1 Path B numerical failure-envelope verdict; analytic Path A still pending)
 
 ---
 
@@ -95,11 +95,15 @@ One DG-4 failure-envelope card is frozen:
 
 | Card | Model | Sweep parameter | Target cause label | Status |
 |---|---|---|---|---|
-| D1 v0.1.1 | spin_boson_sigma_x | coupling_strength (0.05 → 1.0, log-uniform, 20 points) | convergence failure via parity-aware `r_4 = <||L_4^dis||>_t / <||L_2^dis||>_t` | frozen-awaiting-run |
+| D1 v0.1.1 | spin_boson_sigma_x | coupling_strength (0.05 → 1.0, log-uniform, 20 points) | convergence failure via parity-aware `r_4 = <||L_4^dis||>_t / <||L_2^dis||>_t` | **pass** (Path B numerical L_4; all 20 points `convergence_failure`) |
 
 The v0.1.0 predecessor targeted pure_dephasing and is superseded: thermal pure dephasing is TCL-2 exact, so no order-4 convergence signal can appear. D1 v0.1.1 adopts the σ_x thermal model and the parity-aware even-order dissipator ratio specified by DG-4 work plan v0.1.4. The Path B numerical pilot recorded on 2026-05-06 confirmed `||L_4^dis|| > 0` in the σ_x fixture, but Path B remains benchmark-side numerical extraction with a finite-env floor, not analytic n=4 completion.
 
-As of 2026-05-06 (Phase C complete), `run_card(D1 v0.1.1)` routes through `reporting.benchmark_card._run_dg4_sweep` and produces a structured `CardResult` with verdict (PASS / FAIL / CONDITIONAL), per-α classifications, and an interpolated `α_crit` in `result.notes`. The runner consumes Path B numerical Richardson extraction via `benchmarks/numerical_tcl_extraction.path_b_dissipator_norm_coefficients` as the L_4 source. Path B carries a documented finite-env extraction floor; the runner records this as an explicit uncertainty band in the result notes. The structural fallback `_refuse_dg4_sweep` is retained for non-σ_x / non-thermal cards. Path A (Companion Sec. IV analytic) remains the preferred deliverable for a clean machine-precision verdict; once it lands, the runner can switch to the cbg analytic path. The card defines the sweep range frozen *before* any run, per the parameter-freezing protocol §6.
+As of 2026-05-06 (Phase D complete for D1), `run_card(D1 v0.1.1)` routes through `reporting.benchmark_card._run_dg4_sweep` and returns PASS. The full frozen run classified all 20 `coupling_strength` values from 0.05 to 1.0 as `convergence_failure`. No `α_crit` is interpolated inside the frozen range because the first swept point already fails; under this Path B run the boundary lies below `coupling_strength = 0.05`.
+
+Path B reproducibility caveat: `omega_c` perturbations are operational because they mutate `model.bath_spectral_density.cutoff_frequency` before exact finite-environment construction. `upper_cutoff_factor` perturbations are threaded through the runner's quadrature path, but the current `exact_finite_env` Path B extraction does not consume continuum quadrature controls. Result records must therefore treat the upper-cutoff check as a Path-B-specific limitation until analytic Path A or a quadrature-consuming extraction route lands.
+
+The runner consumes Path B numerical Richardson extraction via `benchmarks/numerical_tcl_extraction.path_b_dissipator_norm_coefficients` as the L_4 source. Path B carries a documented finite-env extraction floor; the result notes record this as an explicit uncertainty band. The structural fallback `_refuse_dg4_sweep` is retained for non-σ_x / non-thermal cards. Path A (Companion Sec. IV analytic) remains the preferred deliverable for machine-precision L_4 evaluation and future cross-validation; once it lands, the runner can switch to the cbg analytic path. The card defines the sweep range frozen *before* any run, per the parameter-freezing protocol §6.
 
 ## 5. DG-5 status tracking
 

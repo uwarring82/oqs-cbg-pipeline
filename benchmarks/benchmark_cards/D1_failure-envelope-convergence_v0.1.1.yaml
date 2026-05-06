@@ -2,7 +2,7 @@
 #
 # Anchor: Sail v0.5 §9 (DG-4); docs/benchmark_protocol.md §4 (cause-label taxonomy);
 #         SCHEMA.md v0.1.3; DG-4 work plan v0.1.4 (Phase A.bis)
-# Phase: A.bis (supersedure of D1 v0.1.0; frozen-awaiting-run)
+# Phase: D (Path B numerical verdict reached)
 #
 # This card supersedes D1 v0.1.0 after DG-4 Phase B work exposed three
 # load-bearing corrections:
@@ -30,7 +30,7 @@ date: "2026-05-06"
 dg_target: "DG-4"
 ledger_entry: "CL-2026-005 v0.4 Entry 2 (recursive-series convergence; scope-limited)"
 model: "spin_boson_sigma_x"
-status: "frozen-awaiting-run"
+status: "pass"
 supersedes: "D1_failure-envelope-convergence_v0.1.0.yaml"
 license: "CC-BY-4.0 (LICENSE-docs)"
 
@@ -198,11 +198,53 @@ acceptance_criterion:
 # ─── Result block ─────────────────────────────────────────────────────────────
 
 result:
-  verdict: null
-  evidence: []
+  verdict: "PASS"
+  evidence:
+    - "benchmarks/results/D1_failure-envelope-convergence_v0.1.1_result.json"
   commit_hash: ""
-  runner_version: ""
-  notes: ""
+  runner_version: "0.1.0"
+  notes: |
+    Verdict computed by reporting.benchmark_card.run_card through the DG-4
+    sweep runner _run_dg4_sweep, consuming the benchmark-side Path B numerical
+    Richardson extraction source for L_4.
+
+    Full frozen Phase D run:
+      * start_utc: 2026-05-06T19:44:36+00:00
+      * end_utc:   2026-05-06T19:45:12+00:00
+      * runner_version: 0.1.0
+
+    Baseline Path B fit:
+      * alpha_values = (0.01, 0.015, 0.02, 0.025, 0.03)
+      * n_bath_modes = 4
+      * n_levels_per_mode = 3
+      * fit_relative_residual = 4.744e-05
+      * <||L_2^dis||>_t = 4.218e+01
+      * <||L_4^dis||>_t = 1.962e+03
+      * coefficient ratio <||L_4^dis||>_t / <||L_2^dis||>_t = 4.651e+01
+
+    DG-4 PASS condition met: all 20 frozen coupling_strength sweep points
+    classified as convergence_failure under the D1 v0.1.1 parity-aware ratio
+    r_4 = coupling_strength * coefficient_ratio. The maximum baseline r_4 over
+    the frozen range was 4.651260562533e+01 against threshold 1.0.
+
+    Reproducibility caveat for the Path B route: omega_c perturbations are
+    operational model-spec mutations in exact_finite_env; upper_cutoff_factor
+    perturbations are threaded through the runner's quadrature path but are not
+    consumed by the current exact_finite_env Path B extraction. The
+    convergence_failure classification is therefore stable under the operational
+    omega_c checks and unchanged under the runner-threaded upper_cutoff_factor
+    checks, with the latter recorded as a Path-B-specific limitation until
+    analytic Path A or a quadrature-consuming extraction route lands.
+
+    No alpha_crit is bracketed inside the frozen sweep range. Because the
+    first swept point already classifies as convergence_failure, the boundary
+    lies below coupling_strength = 0.05 under this Path B run.
+
+    Caveat: this is a numerical-L_4 verdict. Path B carries the documented
+    finite-env extraction floor from the 2026-05-06 sigma_z thermal
+    zero-oracle pilot (~few * 1e-2 at the default truncation). Analytic Path A
+    (Companion Sec. IV closed form for L_4) remains pending and preferred for
+    machine-precision order-4 recursion.
 
 # ─── Failure-mode log ─────────────────────────────────────────────────────────
 
