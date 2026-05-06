@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-06
 **Type:** structural
-**Triggering commit:** _placeholder_
+**Triggering commit:** 55b1064
 **Triggering evidence:**
 - New runner branch [`reporting/benchmark_card.py:_run_dg4_sweep`](../reporting/benchmark_card.py).
 - New helper [`benchmarks/numerical_tcl_extraction.py:path_b_dissipator_norm_coefficients`](../benchmarks/numerical_tcl_extraction.py).
