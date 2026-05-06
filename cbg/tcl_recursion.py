@@ -157,22 +157,45 @@ def L_n_thermal_at_time(
         #   * For [A, A_I(τ)] = 0 (A = σ_z; commutator-structure
         #     degenerates), L_4 = 0 by Feynman-Vernon Gaussian-bath
         #     exactness — the entire TCL series truncates at order 2.
+        #     This is the strong falsification oracle: any candidate L_4
+        #     formula must give exactly 0 here.
         #   * For [A, A_I(τ)] ≠ 0 (A = σ_x), L_4 ≠ 0 and is the leading-
         #     order convergence-detection signal that D1 v0.1.1's
         #     ‖L_n^dissipator‖ ratio is designed to measure.
-        # Implementation requires either the explicit fourth-order TCL
-        # formula (nested triple integral over D̄_2 D̄_2 with the four-
-        # commutator structure plus the L_2 ∘ Λ_2 subtraction) or the
-        # Λ_t-inversion machinery itself. Routed to a dedicated commit;
-        # the parity expectation is recorded in the docstring of
-        # K_n_thermal_on_grid.
+        #
+        # Falsification of the obvious-looking candidate: a single
+        # nested-commutator [A(t),[A_I(s_1−t),[A_I(s_2−t),[A_I(s_3−t),X]]]]
+        # weighted by Wick(C(t−s_1)C(s_2−s_3) + perms) gives a complex-
+        # valued residual on σ_z ⇒ σ_x evaluation, while the Feynman-
+        # Vernon answer is real. The candidate is missing the C* / right-
+        # acting conjugate-pair structure that L_2 has, so it is rejected.
+        # See logbook routing note 2026-05-06_dg-4-phase-b2-tcl-order-3.md.
+        #
+        # Three concrete routes to a correct L_4 (DG-4 work plan v0.1.2):
+        #   Path A. Companion Sec. IV closed-form (Letter Eqs. 14-18 + Companion
+        #     Eqs. 19-28 truncated at n=4). Lowest-risk but requires the
+        #     paper text or an equivalent transcription accessible in the
+        #     repo (transcriptions/ currently has only the Letter App. D).
+        #   Path B. Numerical Λ_t reconstruction via Richardson extraction
+        #     from benchmarks/exact_finite_env at multiple coupling
+        #     strengths α; fit Λ_t = 1 + α² Λ_2 + α⁴ Λ_4 + … and recover
+        #     L_4 = ∂_t Λ_4 − L_2 ∘ Λ_2 numerically. Sidesteps the
+        #     analytic derivation but must live behind a clearly named
+        #     extraction module (e.g. benchmarks/numerical_tcl_extraction
+        #     or similar) — NOT promoted to cbg.tcl_recursion core API,
+        #     since cbg should not depend on benchmarks/.
+        #   Path C. Independent third-method extraction (HEOM, TEMPO,
+        #     pseudomode at order 4). Largest scope; properly its own work
+        #     plan rather than a DG-4 substep.
         raise NotImplementedError(
-            "L_n_thermal_at_time: n=4 is the next deferred piece of "
-            "Phase B.2 (DG-4 work plan v0.1.2 §3 Phase B). For thermal "
-            "Gaussian baths, L_4 = 0 when [A, A_I(τ)] = 0 (A = σ_z) and "
-            "is non-zero when [A, A_I(τ)] ≠ 0 (A = σ_x). Implementing "
-            "the fourth-order TCL formula or the Λ_t-inversion machinery "
-            "is the remaining gating piece."
+            "L_n_thermal_at_time: n=4 deferred. Three routes to a correct "
+            "L_4: (A) Companion Sec. IV closed form (paper-bearing); "
+            "(B) numerical Λ_t Richardson extraction via "
+            "benchmarks/exact_finite_env (kept behind a named extraction "
+            "module, not promoted to cbg.tcl_recursion core); (C) HEOM/"
+            "TEMPO/pseudomode third-method extraction (own work plan). "
+            "See the inline derivation/falsification notes above and "
+            "logbook/2026-05-06_dg-4-phase-b2-tcl-order-3.md for routing."
         )
 
     if n == 2:
