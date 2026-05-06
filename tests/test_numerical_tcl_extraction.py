@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from scipy.linalg import expm
 
 from benchmarks import numerical_tcl_extraction as nte
 from benchmarks.exact_finite_env import build_pure_dephasing_thermal_total
@@ -168,3 +169,159 @@ def test_fit_even_alpha_series_from_exact_env_squares_amplitude_for_coupling_str
     assert calls == [0.02**2, 0.04**2]
     assert spec["bath_spectral_density"]["coupling_strength"] == 0.01
     np.testing.assert_allclose(fit.coefficients[2], np.ones((2, 4, 4)), atol=1e-12)
+
+
+# ─── Picture-transform regression (D1 v0.1.2 supersedure) ─────────────────
+
+
+def _ad_unitary_per_t(H_S: np.ndarray, t_grid: np.ndarray) -> np.ndarray:
+    """Return Ad U(t) at each t as a stack of Liouville matrices."""
+    return np.array(
+        [np.kron(expm(-1j * H_S * t), expm(-1j * H_S * t).conj()) for t in t_grid]
+    )
+
+
+def test_adjoint_unitary_superoperator_acts_as_conjugation_in_row_major():
+    """Ad U as a Liouville matrix must equal the row-major conjugation."""
+    rng = np.random.default_rng(0)
+    d = 2
+    A = rng.standard_normal((d, d)) + 1j * rng.standard_normal((d, d))
+    U = expm(1j * (A + A.conj().T))  # arbitrary unitary
+    rho = rng.standard_normal((d, d)) + 1j * rng.standard_normal((d, d))
+
+    Ad_U = nte.adjoint_unitary_superoperator(U)
+    expected = U @ rho @ U.conj().T
+
+    # Row-major vec[i*d+j] = rho[i,j].
+    expected_vec = expected.reshape(d * d)
+    actual_vec = Ad_U @ rho.reshape(d * d)
+    np.testing.assert_allclose(actual_vec, expected_vec, atol=1e-12)
+
+
+def test_transform_to_interaction_picture_inverts_schrodinger_propagation():
+    """For Lambda^S = (Ad U(t)) Lambda^IP, the transform must recover Lambda^IP."""
+    d = 2
+    H_S = 0.5 * np.array([[1, 0], [0, -1]], dtype=complex)
+    t_grid = np.linspace(0.0, 1.0, 11)
+    rng = np.random.default_rng(0)
+    Lambda_IP = rng.standard_normal((t_grid.size, d * d, d * d)) + 1j * rng.standard_normal(
+        (t_grid.size, d * d, d * d)
+    )
+
+    Ad_U = _ad_unitary_per_t(H_S, t_grid)
+    Lambda_S = np.einsum("tij,tjk->tik", Ad_U, Lambda_IP)
+
+    recovered = nte.transform_to_interaction_picture(Lambda_S, t_grid, H_S)
+    np.testing.assert_allclose(recovered, Lambda_IP, atol=1e-12)
+
+
+def test_transform_to_interaction_picture_is_identity_when_H_S_is_zero():
+    """With H_S = 0, U(t) = I and the transform is a no-op."""
+    d = 2
+    t_grid = np.linspace(0.0, 1.0, 5)
+    rng = np.random.default_rng(0)
+    Lambda = rng.standard_normal((t_grid.size, d * d, d * d)) + 1j * rng.standard_normal(
+        (t_grid.size, d * d, d * d)
+    )
+    out = nte.transform_to_interaction_picture(Lambda, t_grid, np.zeros((d, d)))
+    np.testing.assert_allclose(out, Lambda, atol=1e-12)
+
+
+def test_picture_aware_extraction_recovers_truth_under_nontrivial_H_S():
+    """Synthetic IP truth + Ad U(t) propagation + IP transform + extraction must
+    recover the original L_2, L_4 coefficients.
+
+    Pins the v0.1.2 supersedure picture fix: order-4 extraction must be done
+    in the interaction picture so that ``Lambda_0 = id`` holds.
+    """
+    d = 2
+    H_S = 0.5 * np.array([[1, 0], [0, -1]], dtype=complex)
+    t_grid = np.linspace(0.0, 1.0, 21)
+    rng = np.random.default_rng(7)
+
+    # Constant-in-t synthetic L_2, L_4 in the interaction picture.
+    L2_IP = (
+        rng.standard_normal((d * d, d * d)) + 1j * rng.standard_normal((d * d, d * d))
+    ) * 0.1
+    L4_IP = (
+        rng.standard_normal((d * d, d * d)) + 1j * rng.standard_normal((d * d, d * d))
+    ) * 0.05
+
+    # IP map coefficients consistent with constant L_n per the order-4 expansion:
+    # Lambda_t = exp(t L) ≈ id + t (L_2 alpha² + L_4 alpha⁴) + (1/2) t² (L_2 alpha²)² + ...
+    # so Lambda_2(t) = t L_2 and Lambda_4(t) = t L_4 + (1/2) t² L_2².
+    Lambda2_IP = np.array([t * L2_IP for t in t_grid])
+    Lambda4_IP = np.array([t * L4_IP + 0.5 * t * t * (L2_IP @ L2_IP) for t in t_grid])
+
+    Ad_U = _ad_unitary_per_t(H_S, t_grid)
+    Lambda2_S = np.einsum("tij,tjk->tik", Ad_U, Lambda2_IP)
+    Lambda4_S = np.einsum("tij,tjk->tik", Ad_U, Lambda4_IP)
+
+    # Picture-aware path: transform to IP, then extract.
+    Lambda2_back = nte.transform_to_interaction_picture(Lambda2_S, t_grid, H_S)
+    Lambda4_back = nte.transform_to_interaction_picture(Lambda4_S, t_grid, H_S)
+    extraction = nte.extract_tcl_generators_order4(Lambda2_back, Lambda4_back, t_grid)
+
+    interior = t_grid.size // 2
+    np.testing.assert_allclose(extraction.L2[interior], L2_IP, atol=1e-6)
+    np.testing.assert_allclose(extraction.L4[interior], L4_IP, atol=1e-6)
+
+
+def test_buggy_direct_schrodinger_extraction_disagrees_with_truth():
+    """Direct application of the order-4 formula to raw Schrödinger maps must
+    produce a different ``L_2`` than the picture-aware extraction whenever
+    ``H_S != 0``. This pins the defect that motivated the v0.1.1 → v0.1.2
+    supersedure: without the IP transform, the extracted L_n is in the wrong
+    picture.
+    """
+    d = 2
+    H_S = 0.5 * np.array([[1, 0], [0, -1]], dtype=complex)
+    t_grid = np.linspace(0.0, 1.0, 21)
+    rng = np.random.default_rng(11)
+
+    L2_IP = (
+        rng.standard_normal((d * d, d * d)) + 1j * rng.standard_normal((d * d, d * d))
+    ) * 0.1
+    L4_IP = (
+        rng.standard_normal((d * d, d * d)) + 1j * rng.standard_normal((d * d, d * d))
+    ) * 0.05
+    Lambda2_IP = np.array([t * L2_IP for t in t_grid])
+    Lambda4_IP = np.array([t * L4_IP + 0.5 * t * t * (L2_IP @ L2_IP) for t in t_grid])
+
+    Ad_U = _ad_unitary_per_t(H_S, t_grid)
+    Lambda2_S = np.einsum("tij,tjk->tik", Ad_U, Lambda2_IP)
+    Lambda4_S = np.einsum("tij,tjk->tik", Ad_U, Lambda4_IP)
+
+    interior = t_grid.size // 2
+
+    # Picture-aware (correct).
+    Lambda2_back = nte.transform_to_interaction_picture(Lambda2_S, t_grid, H_S)
+    Lambda4_back = nte.transform_to_interaction_picture(Lambda4_S, t_grid, H_S)
+    correct = nte.extract_tcl_generators_order4(Lambda2_back, Lambda4_back, t_grid)
+
+    # Buggy (direct on Schrödinger maps).
+    buggy = nte.extract_tcl_generators_order4(Lambda2_S, Lambda4_S, t_grid)
+
+    # The buggy L_2 must differ noticeably from the correct one (well above
+    # finite-difference noise). We require at least 10% relative deviation.
+    correct_norm = np.linalg.norm(correct.L2[interior])
+    diff_norm = np.linalg.norm(buggy.L2[interior] - correct.L2[interior])
+    assert diff_norm / max(correct_norm, 1e-12) > 0.1, (
+        f"buggy direct-Schrödinger L_2 should differ from picture-aware L_2 by "
+        f">10% under H_S != 0, but got diff/correct = "
+        f"{diff_norm / max(correct_norm, 1e-12)}"
+    )
+
+
+def test_path_b_dissipator_norm_coefficients_requires_system_hamiltonian():
+    """v0.1.2 supersedure: H_S is required so the IP transform can run."""
+    with pytest.raises(TypeError, match="system_hamiltonian is required"):
+        nte.path_b_dissipator_norm_coefficients(
+            builder=lambda *a, **k: None,  # never reached
+            model_spec={
+                "system_dimension": 2,
+                "bath_spectral_density": {"coupling_strength": 0.0},
+            },
+            t_grid=np.linspace(0.0, 1.0, 3),
+            alpha_values=(0.01, 0.02),
+        )

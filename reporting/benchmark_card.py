@@ -1590,13 +1590,14 @@ def _path_b_evaluate(
 ) -> Any:
     """Run Path B Richardson extraction once at the given model_spec.
 
-    Returns a DissipatorNormCoefficients with l2_avg, l4_avg, etc. The
-    quadrature_kwargs (upper_cutoff_factor, quad_limit) currently apply only
-    to the cbg-side analytic L_2 path (not consumed by exact_finite_env);
-    they are documented in the runner notes and will become operational once
-    cbg.tcl_recursion path is fused with Path B (Path A landing).
+    Returns a DissipatorNormCoefficients with l2_avg, l4_avg, etc. Path B
+    requires the system Hamiltonian H_S to perform the Schrödinger ->
+    interaction picture transformation that the order-4 extractor depends
+    on; H_S is built from the model_spec via the spin-boson sigma_x
+    factory.
     """
     from benchmarks import exact_finite_env, numerical_tcl_extraction
+    from models import spin_boson_sigma_x
 
     # Inject the quadrature controls into the model_spec for downstream
     # consumers; exact_finite_env ignores them, but we record them in the
@@ -1605,6 +1606,8 @@ def _path_b_evaluate(
     if quadrature_kwargs:
         numerical_block = spec_with_quad.setdefault("numerical_overrides", {})
         numerical_block.update(quadrature_kwargs)
+
+    H_S, _A = spin_boson_sigma_x.system_arrays_from_spec(spec_with_quad)
 
     builder_kwargs = {
         "n_bath_modes": path_b_params["n_bath_modes"],
@@ -1616,6 +1619,7 @@ def _path_b_evaluate(
         t_grid,
         path_b_params["alpha_values"],
         builder_kwargs=builder_kwargs,
+        system_hamiltonian=H_S,
     )
 
 

@@ -31,6 +31,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
+from scipy.linalg import expm
 
 from cbg.basis import matrix_unit_basis
 from cbg.effective_hamiltonian import K_from_generator
@@ -221,10 +222,93 @@ def compose_time_local_superoperators(left: np.ndarray, right: np.ndarray) -> np
     return np.einsum("tij,tjk->tik", left_array, right_array)
 
 
+def adjoint_unitary_superoperator(unitary: np.ndarray) -> np.ndarray:
+    """Return the Liouville matrix of ``rho -> U rho U^dagger`` in row-major vec.
+
+    Row-major convention: ``vec(rho)[i*d+j] = rho[i,j]``. Then
+    ``vec(A rho B)[i*d+j] = A[i,k] rho[k,l] B[l,j]``, so the Liouville
+    matrix of ``rho -> A rho B`` is ``np.kron(A, B.T)``. For
+    ``rho -> U rho U^dagger`` this is ``np.kron(U, U.conj())``.
+    """
+    U = np.asarray(unitary, dtype=complex)
+    if U.ndim != 2 or U.shape[0] != U.shape[1]:
+        raise ValueError(f"unitary must be square; got shape {U.shape}")
+    return np.kron(U, U.conj())
+
+
+def transform_to_interaction_picture(
+    schrodinger_maps: np.ndarray,
+    t_grid: Sequence[float],
+    system_hamiltonian: np.ndarray,
+) -> np.ndarray:
+    """Transform raw Schrödinger-picture superoperators to the interaction picture.
+
+    For each time ``t``, computes ``U(t) = expm(-i H_S t)`` and applies
+    ``Ad U^dagger(t)`` from the left to the Liouville matrix
+    ``Lambda^S(t)``. The result satisfies ``Lambda_0^IP(t) = id`` (the
+    closed-system propagator becomes trivial in the interaction picture),
+    which is the assumption the order-4 extractor
+    ``extract_tcl_generators_order4`` relies on.
+
+    Parameters
+    ----------
+    schrodinger_maps:
+        Time-indexed Liouville matrices in row-major vec convention,
+        shape ``(n_t, d*d, d*d)``.
+    t_grid:
+        Times at which the maps are evaluated.
+    system_hamiltonian:
+        ``H_S`` as a ``(d, d)`` Hermitian matrix.
+
+    Returns
+    -------
+    Time-indexed Liouville matrices in the interaction picture, same
+    shape as ``schrodinger_maps``.
+    """
+    times = _as_time_grid(t_grid)
+    H_S = np.asarray(system_hamiltonian, dtype=complex)
+    if H_S.ndim != 2 or H_S.shape[0] != H_S.shape[1]:
+        raise ValueError(f"system_hamiltonian must be square; got shape {H_S.shape}")
+    d = H_S.shape[0]
+    maps = _as_time_superoperators(schrodinger_maps, "schrodinger_maps")
+    if maps.shape[1] != d * d:
+        raise ValueError(
+            f"schrodinger_maps Liouville dim {maps.shape[1]} does not match "
+            f"d*d = {d * d} from system_hamiltonian shape {H_S.shape}"
+        )
+    if maps.shape[0] != times.size:
+        raise ValueError(
+            f"schrodinger_maps time axis {maps.shape[0]} does not match "
+            f"t_grid size {times.size}"
+        )
+    out = np.empty_like(maps)
+    for ti, t in enumerate(times):
+        U_t = expm(-1j * H_S * t)
+        # Ad U^dagger acting from the left on Lambda^S in Liouville form:
+        # use np.kron(U^dagger, (U^dagger).conj()) = np.kron(U.conj().T, U.T).
+        Ad_U_dagger = np.kron(U_t.conj().T, U_t.T)
+        out[ti] = Ad_U_dagger @ maps[ti]
+    return out
+
+
 def extract_tcl_generators_order4(
     Lambda2: np.ndarray, Lambda4: np.ndarray, t_grid: Sequence[float]
 ) -> TCLOrder4Extraction:
-    """Extract ``L_2`` and ``L_4`` from fitted map coefficients."""
+    """Extract ``L_2`` and ``L_4`` from fitted map coefficients.
+
+    Uses the interaction-picture order-4 expansion of
+    ``L_t = (d/dt Lambda_t) Lambda_t^{-1}``, which collapses to
+
+        L_2 = d_t Lambda_2,
+        L_4 = d_t Lambda_4 - L_2 Lambda_2
+
+    only when the closed-system map is the identity at every ``t`` (i.e.
+    in the interaction picture, or when ``H_S = 0``). For raw
+    Schrödinger-picture maps with ``H_S != 0``, transform first via
+    :func:`transform_to_interaction_picture`; otherwise the omitted
+    ``Lambda_0^{-1}`` similarity and ``L_0 Lambda_n Lambda_0^{-1}``
+    correction terms make the extraction picture-dependent.
+    """
     lambda2 = _as_time_superoperators(Lambda2, "Lambda2")
     lambda4 = _as_time_superoperators(Lambda4, "Lambda4")
     if lambda2.shape != lambda4.shape:
@@ -329,36 +413,66 @@ def path_b_dissipator_norm_coefficients(
     *,
     system_dim: int = 2,
     builder_kwargs: Mapping[str, Any] | None = None,
+    system_hamiltonian: np.ndarray | None = None,
 ) -> DissipatorNormCoefficients:
     """Path B end-to-end: returns ||L_2^dis|| and ||L_4^dis|| coefficients.
 
     Pipeline:
-      1. Reconstruct Schrodinger-picture maps Lambda_t(alpha) at the
+      1. Reconstruct Schrödinger-picture maps Lambda_t(alpha) at the
          supplied alpha values via ``fit_even_alpha_series_from_exact_env``.
-      2. Convert to interaction picture by subtracting the alpha=0 closed-
-         system baseline that the fit already infers (the ``Lambda_0``
-         coefficient).  In practice we work with the alpha**2 and alpha**4
-         coefficients directly, which are picture-independent for the
-         dissipator part of L_n (the Hamiltonian piece transforms but is
-         removed by the dissipator extraction below).
-      3. Extract L_2 and L_4 generators via ``extract_tcl_generators_order4``.
-      4. For each grid time t, compute K_n via Letter Eq. (6) on the L_n
-         superoperator and form the dissipator residual
+      2. Subtract the alpha=0 closed-system baseline (the ``Lambda_0``
+         coefficient) before fitting, so the extracted ``Lambda_2`` and
+         ``Lambda_4`` are clean perturbative coefficients in the
+         Schrödinger picture.
+      3. Transform the perturbative coefficients to the interaction
+         picture via :func:`transform_to_interaction_picture` using
+         ``system_hamiltonian``. This is required because the order-4
+         extractor ``extract_tcl_generators_order4`` uses the
+         interaction-picture formula ``L_2 = d_t Lambda_2``,
+         ``L_4 = d_t Lambda_4 - L_2 Lambda_2`` which is the order-4
+         expansion of ``L_t = (d/dt Lambda_t) Lambda_t^{-1}`` only when
+         ``Lambda_0 = id`` (i.e. in the interaction picture, or when
+         ``H_S = 0``). For raw Schrödinger maps with ``H_S != 0`` the
+         omitted ``Lambda_0^{-1}`` similarity and ``L_0 Lambda_n
+         Lambda_0^{-1}`` correction terms make the extraction
+         picture-dependent. After the IP transform, the dissipator
+         norms are picture-invariant.
+      4. Extract L_2 and L_4 via ``extract_tcl_generators_order4``.
+      5. For each grid time t, compute K_n via Letter Eq. (6) on the
+         L_n superoperator and form the dissipator residual
          ``L_n^dis = L_n + i [K_n, .]`` (per DG-4 plan v0.1.4 sign).
-      5. Take the Liouville-Frobenius norm of L_n^dis at each t, average.
+      6. Take the Liouville-Frobenius norm of L_n^dis at each t, average.
 
     The returned values are the *coefficients* in the alpha-power
-    expansion (alpha-independent).  The runner scales them per swept
-    alpha**2 = coupling_strength.
+    expansion (alpha-independent). The runner scales them per swept
+    ``alpha**2 = coupling_strength``.
+
+    Parameters
+    ----------
+    system_hamiltonian:
+        ``H_S`` as a ``(d, d)`` Hermitian matrix. Required to perform
+        the interaction-picture transformation in step 3. Pass
+        ``np.zeros((d, d))`` only if the model truly has ``H_S = 0`` (no
+        unitary drift); for any non-trivial ``H_S`` this argument is
+        load-bearing and omitting it yields a picture-incorrect result.
 
     See logbook ``2026-05-06_dg-4-path-b-pilot-result.md`` for the
-    finite-env extraction floor characterisation: the sigma_z thermal
-    zero-oracle gives ~few * 1e-2 at (n_bath_modes=4, n_levels=3) on
-    a t in [0, 3] grid; sigma_x thermal signal is ~27x above that.
+    finite-env extraction floor characterisation, and
+    ``2026-05-06_dg-4-pass-path-b-superseded.md`` for the v0.1.1 verdict
+    supersedure that forced this picture fix.
     """
-    # The exact-env builder produces raw Schrodinger-picture maps; for the
+    if system_hamiltonian is None:
+        raise TypeError(
+            "path_b_dissipator_norm_coefficients: system_hamiltonian is "
+            "required since the v0.1.2 supersedure (DG-4 work plan v0.1.4 "
+            "Phase D). Raw Schrödinger-picture maps must be transformed to "
+            "the interaction picture before order-4 extraction; without H_S "
+            "the extracted L_n is picture-incorrect for any model with "
+            "H_S != 0. Pass np.zeros((d, d)) only if H_S is genuinely zero."
+        )
+    # The exact-env builder produces raw Schrödinger-picture maps; for the
     # alpha-power expansion we need a baseline (the closed-system map at
-    # alpha=0).  Compute it explicitly and pass as the fit baseline so the
+    # alpha=0). Compute it explicitly and pass as the fit baseline so the
     # extracted Lambda_2, Lambda_4 are clean perturbative coefficients.
     baseline_spec = deepcopy(dict(model_spec))
     _set_nested_value(baseline_spec, ("bath_spectral_density", "coupling_strength"), 0.0)
@@ -386,9 +500,18 @@ def path_b_dissipator_norm_coefficients(
             "orders 2 and 4; got coefficients for "
             f"{sorted(fit.coefficients.keys())!r}"
         )
-    extraction = extract_tcl_generators_order4(
-        fit.coefficients[2], fit.coefficients[4], t_grid
+    # Picture transform: Schrödinger -> interaction picture. The fit
+    # coefficients Lambda_2, Lambda_4 inherit the Schrödinger picture from
+    # the raw exact_finite_env builders; the order-4 extractor below
+    # assumes Lambda_0 = id (i.e. the interaction picture), so we conjugate
+    # by Ad U^dagger(t) at each grid time before extraction.
+    Lambda2_IP = transform_to_interaction_picture(
+        fit.coefficients[2], t_grid, system_hamiltonian
     )
+    Lambda4_IP = transform_to_interaction_picture(
+        fit.coefficients[4], t_grid, system_hamiltonian
+    )
+    extraction = extract_tcl_generators_order4(Lambda2_IP, Lambda4_IP, t_grid)
     l2_per_t = _liouville_dissipator_frobenius_norms(extraction.L2, system_dim)
     l4_per_t = _liouville_dissipator_frobenius_norms(extraction.L4, system_dim)
     return DissipatorNormCoefficients(
