@@ -146,10 +146,27 @@ def test_L_2_at_t0_returns_zero():
     np.testing.assert_allclose(L_2(sigma_x), np.zeros((2, 2), dtype=complex), atol=1e-12)
 
 
-def test_L_2_n_3_raises_pending_recursion():
+def test_L_n_thermal_at_time_n_3_returns_zero_post_phase_b2():
+    """Phase B.2 wires n=3 to return the zero superoperator (thermal
+    Gaussian D̄_1 = D̄_3 = 0 ⇒ L_3 = 0 identically)."""
     t = _coarse_t_grid()
-    with pytest.raises(NotImplementedError, match="pending fourth-order"):
-        tr.L_n_thermal_at_time(3, 5, t, _hs(), sigma_x, D_bar_2_array=None)
+    L_3 = tr.L_n_thermal_at_time(3, 5, t, _hs(), sigma_x, D_bar_2_array=None)
+    np.testing.assert_allclose(L_3(sigma_x), np.zeros((2, 2), dtype=complex), atol=1e-12)
+    np.testing.assert_allclose(L_3(sigma_z), np.zeros((2, 2), dtype=complex), atol=1e-12)
+
+
+def test_L_n_thermal_at_time_n_4_raises_pending_recursion():
+    """n=4 is the deferred Phase B.2 follow-up; clearly named in error."""
+    t = _coarse_t_grid()
+    with pytest.raises(NotImplementedError, match="n=4|deferred"):
+        tr.L_n_thermal_at_time(4, 5, t, _hs(), sigma_x, D_bar_2_array=None)
+
+
+def test_L_n_thermal_at_time_n_5_raises_out_of_scope():
+    """Orders n >= 5 are out of DG-4 Phase B scope altogether."""
+    t = _coarse_t_grid()
+    with pytest.raises(NotImplementedError, match="out of scope|not implemented"):
+        tr.L_n_thermal_at_time(5, 5, t, _hs(), sigma_x, D_bar_2_array=None)
 
 
 def test_L_2_requires_D_bar_2_array():
@@ -312,17 +329,56 @@ def test_K_total_negative_N_card_raises():
         )
 
 
-def test_K_total_N_card_3_raises_pending_recursion():
+def test_K_total_N_card_3_succeeds_post_phase_b2():
+    """DG-4 Phase B.2 wires n=3 (returns zero by Gaussianity), so
+    K_total at N_card=3 now matches K_total at N_card=2 for thermal."""
     t = _coarse_t_grid()
-    with pytest.raises(NotImplementedError, match="pending fourth-order"):
+    K_at_2 = tr.K_total_thermal_on_grid(
+        2, t, _hs(), sigma_x, bath_state=_thermal_state(), spectral_density=_ohmic_sd()
+    )
+    K_at_3 = tr.K_total_thermal_on_grid(
+        3, t, _hs(), sigma_x, bath_state=_thermal_state(), spectral_density=_ohmic_sd()
+    )
+    np.testing.assert_allclose(K_at_3, K_at_2, atol=1e-12)
+
+
+def test_K_total_N_card_4_raises_pending_recursion():
+    """DG-4 Phase B.2 covers n in {0, 1, 2, 3}; n=4 is the deferred
+    follow-up."""
+    t = _coarse_t_grid()
+    with pytest.raises(NotImplementedError, match="n=4|deferred"):
         tr.K_total_thermal_on_grid(
-            3,
+            4,
             t,
             _hs(),
             sigma_x,
             bath_state=_thermal_state(),
             spectral_density=_ohmic_sd(),
         )
+
+
+def test_K_3_thermal_pure_dephasing_is_zero():
+    """A3 fixture (σ_z + thermal Gaussian): K_3 = 0 by parity + thermal
+    D̄_1 = 0. This is the Phase B.2 falsification at the K_n level —
+    consistent with cbg.cumulants Phase B.1's D̄_3 = 0 witness."""
+    t = _coarse_t_grid()
+    K3 = tr.K_n_thermal_on_grid(
+        3, t, _hs(), sigma_z,
+        bath_state=_thermal_state(), spectral_density=_ohmic_sd(),
+    )
+    np.testing.assert_allclose(K3, np.zeros_like(K3), atol=1e-12)
+
+
+def test_K_3_thermal_sigma_x_is_zero():
+    """A4 fixture (σ_x + thermal Gaussian): K_3 = 0 by parity (odd-order
+    vanishing for σ_x parity-class theorem, Letter App. D), independent
+    of the σ_z Feynman-Vernon argument."""
+    t = _coarse_t_grid()
+    K3 = tr.K_n_thermal_on_grid(
+        3, t, _hs(), sigma_x,
+        bath_state=_thermal_state(), spectral_density=_ohmic_sd(),
+    )
+    np.testing.assert_allclose(K3, np.zeros_like(K3), atol=1e-12)
 
 
 def test_K_n_non_thermal_points_to_displaced_entry_point():
@@ -363,14 +419,32 @@ def test_L_n_shim_thermal_n_2_dispatches_to_thermal_at_time():
     np.testing.assert_allclose(via_shim(X), via_direct(X), atol=1e-12)
 
 
-def test_L_n_shim_n_3_raises_pending_recursion():
-    with pytest.raises(NotImplementedError, match="pending fourth-order"):
+def test_L_n_shim_n_3_returns_zero_post_phase_b2():
+    """The L_n shim now routes n=3 through L_n_thermal_at_time, which
+    returns the zero superoperator for thermal Gaussian baths."""
+    L3 = tr.L_n(
+        n=3,
+        t_idx=0,
+        t_grid=_coarse_t_grid(),
+        system_hamiltonian=_hs(),
+        coupling_operator=sigma_x,
+        bath_state=_thermal_state(),
+    )
+    X = sigma_z
+    out = L3(X)
+    np.testing.assert_allclose(out, np.zeros_like(X), atol=1e-12)
+
+
+def test_L_n_shim_n_4_raises_pending_recursion():
+    """n=4 is the deferred Phase B.2 follow-up."""
+    with pytest.raises(NotImplementedError, match="n=4|deferred"):
         tr.L_n(
-            n=3,
+            n=4,
             t_idx=0,
             t_grid=_coarse_t_grid(),
             system_hamiltonian=_hs(),
             coupling_operator=sigma_x,
+            bath_state=_thermal_state(),
         )
 
 

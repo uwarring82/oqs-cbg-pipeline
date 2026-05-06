@@ -2,7 +2,7 @@
 
 **Layer:** Repository protective scaffolding
 **Anchor:** Sail v0.5 §11 (four explicit content requirements)
-**Last updated:** 2026-05-05 (D1/E1 runner refusal paths wired — clean diagnostics for DG-4 sweep + scope-definition cards)
+**Last updated:** 2026-05-06 (DG-4 Phase B partial — TCL thermal-Gaussian recursion wired through n=3; n=4 deferred)
 
 ---
 
@@ -97,7 +97,7 @@ One DG-4 failure-envelope card is frozen:
 |---|---|---|---|---|
 | D1 | pure_dephasing | coupling_strength (0.05 → 1.0, log-uniform, 20 points) | convergence failure | frozen-awaiting-run |
 
-The runner does not yet support parameter sweeps; `run_card(D1)` raises `DG4SweepRunnerNotImplementedError` naming the two missing pieces (`cbg.tcl_recursion` at perturbative_order ≥ 3 and a sweep-block-aware runner branch consuming `frozen_parameters.sweep` per SCHEMA.md v0.1.3 Rule 17). The card defines the sweep range frozen *before* any run, per the parameter-freezing protocol §6.
+The runner does not yet support parameter sweeps; `run_card(D1)` raises `DG4SweepRunnerNotImplementedError` naming the two missing pieces. As of 2026-05-06, DG-4 work plan v0.1.2 Phase B has landed B.0, B.1, and B.2 (n=3) — `cbg.tcl_recursion` is wired through perturbative_order = 3 on the thermal-Gaussian path, with K_3 = 0 verified on A3/A4 fixtures. The two remaining gates before D1 v0.1.1 can be evaluated are (i) Phase B.2 (n=4) — the convergence-detection signal, where σ_z gives 0 by Feynman-Vernon and σ_x gives the leading non-trivial higher-order TCL contribution — and (ii) the sweep-block-aware runner branch consuming `frozen_parameters.sweep` per SCHEMA.md v0.1.3 Rule 17. The card defines the sweep range frozen *before* any run, per the parameter-freezing protocol §6.
 
 ## 5. DG-5 status tracking
 

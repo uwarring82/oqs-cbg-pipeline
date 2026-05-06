@@ -86,6 +86,10 @@ def L_n_thermal_at_time(
           The integrand is operator-valued; the trapezoidal rule is
           inlined for efficiency (avoids 4 separate scalar integrations
           per matrix entry).
+        - n = 3: L_3[X] = 0 (thermal Gaussian D̄_1 = D̄_3 = 0; see DG-4
+          Phase B.2 derivation in the n = 3 branch below).
+        - n = 4: pending; raises NotImplementedError. Non-zero in
+          general for [A, A_I(τ)] ≠ 0; zero for σ_z by Feynman-Vernon.
 
     Parameters
     ----------
@@ -111,7 +115,8 @@ def L_n_thermal_at_time(
     Raises
     ------
     NotImplementedError
-        For n >= 3 (pending fourth-order-recursion work).
+        For n = 4 (pending; see derivation note in the n = 4 branch).
+        For n >= 5 (out of DG-4 Phase B scope).
     ValueError
         For invalid arguments.
     """
@@ -124,6 +129,51 @@ def L_n_thermal_at_time(
         # For coherent-displaced benchmark-card cases, use
         # K_total_displaced_on_grid, which carries the D̄_1-driven term.
         return lambda X: np.zeros_like(np.asarray(X, dtype=complex))
+
+    if n == 3:
+        # DG-4 Phase B.2: thermal Gaussian L_3 = 0.
+        #
+        # The TCL recursion at order 3 is a single triple-time integral
+        # weighted by the third generalised cumulant D̄_3, plus product
+        # terms involving D̄_1 from the Λ_t-inversion bookkeeping. For a
+        # thermal Gaussian bath:
+        #   * D̄_3 = 0 by Gaussianity (verified to machine precision in
+        #     cbg.cumulants Phase B.1, test_D_bar_thermal_n3_all_left_*).
+        #   * D̄_1 = 0 by zero-mean (Phase B.0 odd-order vanishing).
+        # Both contributions therefore vanish, and L_3[X] = 0 identically
+        # for any system coupling A. (For coherent-displaced bath states
+        # the displacement-driven L_1 would propagate into a non-zero L_3
+        # via D̄_1 × D̄_2 cross terms; that path is out of scope at Phase
+        # B.2 — the thermal Gaussian D1 v0.1.1 fixture targets the
+        # L_4-level convergence signal, not L_3.)
+        d = np.asarray(coupling_operator).shape[0]
+        return lambda X: np.zeros((d, d), dtype=complex)
+
+    if n == 4:
+        # Pending: the thermal Gaussian L_4 has a non-trivial structure
+        # from (2,2) Wick contractions of D̄_2 mediated by the Λ_t-
+        # inversion subtraction L_4 = ∂_t Λ_4 − L_2 ∘ Λ_2. Two physical
+        # regimes:
+        #   * For [A, A_I(τ)] = 0 (A = σ_z; commutator-structure
+        #     degenerates), L_4 = 0 by Feynman-Vernon Gaussian-bath
+        #     exactness — the entire TCL series truncates at order 2.
+        #   * For [A, A_I(τ)] ≠ 0 (A = σ_x), L_4 ≠ 0 and is the leading-
+        #     order convergence-detection signal that D1 v0.1.1's
+        #     ‖L_n^dissipator‖ ratio is designed to measure.
+        # Implementation requires either the explicit fourth-order TCL
+        # formula (nested triple integral over D̄_2 D̄_2 with the four-
+        # commutator structure plus the L_2 ∘ Λ_2 subtraction) or the
+        # Λ_t-inversion machinery itself. Routed to a dedicated commit;
+        # the parity expectation is recorded in the docstring of
+        # K_n_thermal_on_grid.
+        raise NotImplementedError(
+            "L_n_thermal_at_time: n=4 is the next deferred piece of "
+            "Phase B.2 (DG-4 work plan v0.1.2 §3 Phase B). For thermal "
+            "Gaussian baths, L_4 = 0 when [A, A_I(τ)] = 0 (A = σ_z) and "
+            "is non-zero when [A, A_I(τ)] ≠ 0 (A = σ_x). Implementing "
+            "the fourth-order TCL formula or the Λ_t-inversion machinery "
+            "is the remaining gating piece."
+        )
 
     if n == 2:
         if D_bar_2_array is None:
@@ -180,8 +230,10 @@ def L_n_thermal_at_time(
         return L_2_apply
 
     raise NotImplementedError(
-        f"L_n_thermal_at_time: n={n} not implemented. K_n at orders "
-        f"n >= 3 is pending fourth-order-recursion work."
+        f"L_n_thermal_at_time: n={n} not implemented. DG-4 Phase B.2 "
+        f"covers n in {{0, 1, 2, 3}} on the thermal-Gaussian path "
+        f"(n=4 deferred; see the dedicated branch). Orders n >= 5 are "
+        f"out of scope for this plan revision."
     )
 
 
@@ -207,8 +259,14 @@ def K_n_thermal_on_grid(
     Parameters
     ----------
     n : int
-        Perturbative order; one of 0, 1, 2 in the currently implemented
-        thermal path.
+        Perturbative order; one of 0, 1, 2, 3 in the currently implemented
+        thermal path. n = 3 returns zeros for any system coupling under a
+        thermal Gaussian bath (Phase B.2; see L_n_thermal_at_time docstring).
+        n = 4 is the pending Phase B follow-up: the parity-class theorem
+        (Letter App. D) plus the Feynman-Vernon Gaussian-bath result
+        predicts K_4 = 0 for A = σ_z and K_4 ≠ 0 (∝ σ_z) for A = σ_x; the
+        latter is the leading-order convergence-detection signal D1 v0.1.1
+        targets.
     t_grid : ndarray, shape (n_t,)
         Time points.
     system_hamiltonian, coupling_operator : ndarray, shape (d, d)
@@ -474,10 +532,12 @@ def K_total_thermal_on_grid(
         raise ValueError(
             f"K_total_thermal_on_grid: N_card must be a non-negative integer; " f"got {N_card!r}"
         )
-    if N_card > 2:
+    if N_card > 3:
         raise NotImplementedError(
             f"K_total_thermal_on_grid: N_card={N_card} not implemented. "
-            f"K_n at orders n >= 3 is pending fourth-order-recursion work."
+            f"DG-4 Phase B.2 covers n in {{0, 1, 2, 3}} (n=3 returns zeros "
+            f"by Gaussianity). n=4 is the pending follow-up; see "
+            f"L_n_thermal_at_time(n=4)."
         )
 
     H_S = np.asarray(system_hamiltonian, dtype=complex)
@@ -512,9 +572,11 @@ def L_n(n: int, **kwargs):
     parameters) or K_n_thermal_on_grid (higher-level batched form) over
     this generic-stub shim.
     """
-    if n >= 3:
+    if n >= 4:
         raise NotImplementedError(
-            f"L_n: n={n} not implemented; n >= 3 is pending " f"fourth-order-recursion work."
+            f"L_n: n={n} not implemented; DG-4 Phase B.2 covers "
+            f"n in {{0, 1, 2, 3}} (n=3 returns zero by Gaussianity). "
+            f"n=4 is the next deferred piece; see L_n_thermal_at_time(n=4)."
         )
     bath_state = kwargs.get("bath_state")
     if bath_state is not None and bath_state.get("family") != "thermal":
