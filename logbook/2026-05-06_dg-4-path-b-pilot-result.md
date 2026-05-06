@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-06
 **Type:** experimental-result
-**Triggering commit:** _placeholder_
+**Triggering commit:** aa09a32
 **Triggering evidence:**
 - Path B scaffold: [`benchmarks/numerical_tcl_extraction.py`](../benchmarks/numerical_tcl_extraction.py) (commit `b35ba05`).
 - Auxiliary work plan: [`plans/dg-4-path-b-richardson-extraction_v0.1.0.md`](../plans/dg-4-path-b-richardson-extraction_v0.1.0.md).
