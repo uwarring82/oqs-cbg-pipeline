@@ -1,9 +1,11 @@
-"""Behaviour tests for cbg.cumulants (DG-1 Phase C.7).
+"""Behaviour tests for cbg.cumulants (DG-1 Phase C.7; DG-4 Phase B.1).
 
 Covers the canonical all-left time-ordered cumulants D̄_1 and D̄_2 used
 by Cards A3 and A4 at orders <= 2. Verifies dispatch, the
 displacement-convention stub, the connected-two-point invariance under
-displacement, and the generic D_bar interface.
+displacement, and the generic D_bar interface. DG-4 B.1 extends generic
+D_bar to mixed left/right ordering and n in {3, 4} thermal Gaussian
+cumulants.
 """
 
 from __future__ import annotations
@@ -202,19 +204,52 @@ def test_D_bar_n2_thermal_matches_pairwise_correlator():
     assert val == arr[0, 1]
 
 
-def test_D_bar_with_s_args_routes_to_dg2():
-    """Mixed left/right ordering is DG-2 territory."""
+def test_D_bar_mixed_n2_thermal_matches_pairwise_correlator():
+    """Mixed n=2 uses the B.0 flattening convention."""
     bs = {"family": "thermal", "temperature": 0.5}
     sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
-    with pytest.raises(NotImplementedError, match="DG-2"):
-        cumulants.D_bar((1.0,), (0.5,), bath_state=bs, spectral_density=sd)
+    val = cumulants.D_bar((1.0,), (0.5,), bath_state=bs, spectral_density=sd)
+    arr = cumulants.D_bar_2(np.array([1.0, 0.5]), bath_state=bs, spectral_density=sd)
+    assert val == arr[0, 1]
 
 
-def test_D_bar_higher_order_routes_to_dg2():
-    """n >= 3 cumulants are DG-2 territory."""
+def test_D_bar_thermal_n3_all_left_vanishes_by_gaussianity():
+    """Thermal Gaussian odd connected cumulants vanish."""
     bs = {"family": "thermal", "temperature": 0.5}
     sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
-    with pytest.raises(NotImplementedError, match="DG-2"):
+    val = cumulants.D_bar((1.0, 0.5, 0.25), (), bath_state=bs, spectral_density=sd)
+    assert val == pytest.approx(0.0 + 0.0j, abs=1e-14)
+
+
+def test_D_bar_thermal_n4_all_left_vanishes_by_gaussianity():
+    """D̄_4 subtracts all Wick pair partitions of the B.0 raw moment."""
+    bs = {"family": "thermal", "temperature": 0.5}
+    sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
+    val = cumulants.D_bar((0.0, 0.3, 0.8, 1.4), (), bath_state=bs, spectral_density=sd)
+    assert val == pytest.approx(0.0 + 0.0j, abs=1e-14)
+
+
+def test_D_bar_thermal_n4_mixed_left_right_vanishes_by_gaussianity():
+    """The B.1 falsification witness covers mixed left/right ordering."""
+    bs = {"family": "thermal", "temperature": 0.5}
+    sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
+    val = cumulants.D_bar((0.0, 0.3), (0.8, 1.4), bath_state=bs, spectral_density=sd)
+    assert val == pytest.approx(0.0 + 0.0j, abs=1e-14)
+
+
+def test_D_bar_higher_order_beyond_b1_scope_raises():
+    """B.1 lands n in {3, 4}; higher orders remain out of scope."""
+    bs = {"family": "thermal", "temperature": 0.5}
+    sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
+    with pytest.raises(NotImplementedError, match=r"\{3, 4\}"):
+        cumulants.D_bar((1.0, 0.5, 0.25, 0.125, 0.0625), (), bath_state=bs, spectral_density=sd)
+
+
+def test_D_bar_higher_order_non_thermal_routes_to_future_scope():
+    """B.1 higher cumulants are thermal-Gaussian only."""
+    bs = {"family": "coherent_displaced", "temperature": 0.0, "displacement_amplitude": 1.0}
+    sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
+    with pytest.raises(NotImplementedError, match="thermal Gaussian"):
         cumulants.D_bar((1.0, 0.5, 0.25), (), bath_state=bs, spectral_density=sd)
 
 

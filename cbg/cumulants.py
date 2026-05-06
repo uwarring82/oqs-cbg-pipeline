@@ -18,14 +18,16 @@ DG-1 scope (this module, C.7):
       temperature; the displacement (if any) leaves the connected
       part invariant.
     - These are the canonical *time-ordered* (all-left) cumulants
-      sufficient for K_1 and K_2 in Cards A3 and A4. The full
-      left/right ordering machinery of Companion Eq. (24) is DG-2
-      territory.
+      sufficient for K_1 and K_2 in Cards A3 and A4.
 
-DG-2 territory (stubbed here):
-    - General D_bar(τ_1^k, s_1^{n-k}) with mixed left/right indices.
-    - Cumulants for n ≥ 3 (recursive subtraction beyond the leading
-      product term D̄_1·D̄_1).
+DG-4 Phase B.1 scope (this module, 2026-05-06):
+    - Scalar generic D_bar(τ_1^k, s_1^{n-k}) supports mixed left/right
+      indices at total order n = 2 and thermal Gaussian cumulants at
+      n in {3, 4}. The mixed ordering follows cbg.bath_correlations'
+      B.0 convention: times = tau_args + reversed(s_args).
+
+DG-2 / later scope (stubbed here):
+    - Cumulants for n > 4.
     - Cumulants of non-Gaussian bath states (where D̄_3 etc. don't
       automatically vanish).
 
@@ -49,12 +51,18 @@ Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.3 §4 Phase C row C.7.
 
 from __future__ import annotations
 
+from math import factorial
 from typing import Any
 
 import numpy as np
 from scipy import integrate
 
-from cbg.bath_correlations import bath_two_point_thermal_array, ohmic_spectral_density
+from cbg.bath_correlations import (
+    bath_two_point_thermal_array,
+    n_point_ordered,
+    ohmic_spectral_density,
+    two_point,
+)
 from cbg.displacement_profiles import (
     REGISTERED_PROFILES,
     DisplacementProfile,
@@ -422,20 +430,28 @@ def D_bar(tau_args, s_args, **kwargs):
                               - Σ_{l,r} D̄(τ_1^l, s_1^r) ·
                                         D̄(τ_{l+1}^k, s_{r+1}^{n-k})
 
-    DG-1 implements the leaf cases for the canonical time-ordered
+    DG-1 implemented the leaf cases for the canonical time-ordered
     cumulants used by Cards A3 and A4:
 
         - k=1, n-k=0 (single τ argument) → D̄_1 = D_1 = ⟨B(τ)⟩.
         - k=2, n-k=0 (two τ arguments)   → D̄_2 = D_2 - D_1 ⊗ D_1
                                                  = connected two-point.
 
+    DG-4 Phase B.1 extends the scalar generic path to mixed left/right
+    indices and to total order n in {3, 4} for thermal Gaussian baths.
+    For n = 3 and n = 4 it evaluates the equivalent connected-cumulant
+    set-partition expansion over B.0's flattened operator order:
+
+        times = tuple(tau_args) + tuple(reversed(s_args))
+
+    This is the leaf accepted by the higher-order TCL recursion and
+    makes D̄_3 = D̄_4 = 0 for thermal Gaussian baths by Wick
+    factorisation.
+
     For the canonical (all-left, time-ordered) DG-1 use cases, callers
     should prefer D_bar_1(t_grid, ...) and D_bar_2(t_grid, ...), which
     return precomputed (n,) and (n, n) arrays respectively. The
     array-form helpers compose efficiently with cbg.tcl_recursion.
-
-    Mixed left/right indices (k != n) and orders n ≥ 3 are DG-2
-    territory and raise NotImplementedError here.
 
     Parameters
     ----------
@@ -449,40 +465,168 @@ def D_bar(tau_args, s_args, **kwargs):
     Raises
     ------
     NotImplementedError
-        For mixed left/right indices, or for total order n ≥ 3.
+        For total order n > 4, or n ≥ 3 outside the thermal Gaussian
+        B.1 path.
     """
-    n_left = len(tau_args)
-    n_right = len(s_args)
-    n_total = n_left + n_right
+    tau_args = tuple(float(t) for t in tau_args)
+    s_args = tuple(float(s) for s in s_args)
+    n_total = len(tau_args) + len(s_args)
 
-    if n_right > 0:
-        raise NotImplementedError(
-            "D_bar: mixed left/right ordering (s_args non-empty) is DG-2 "
-            "territory. The canonical all-left time-ordered cumulants "
-            "(s_args=()) are sufficient for Cards A3 and A4 at orders <= 2; "
-            "use D_bar_1 / D_bar_2 array helpers."
-        )
-    if n_total >= 3:
-        raise NotImplementedError(
-            f"D_bar: total order n={n_total} not implemented at DG-1. "
-            f"K_n at orders n >= 3 is DG-2 territory per Sail v0.5 §9 DG-2 "
-            f"and DG-1 work plan v0.1.3 §1.2."
-        )
-
-    # n_total in {1, 2} with all-left ordering: thin wrappers over the
-    # array-form helpers, sampled at the requested time arguments.
     bath_state = kwargs.get("bath_state")
     spectral_density = kwargs.get("spectral_density")
     if bath_state is None:
         raise ValueError("D_bar: bath_state kwarg required")
+    if n_total == 0:
+        raise ValueError("D_bar: at least one time argument is required")
 
-    t_grid = np.asarray(tau_args, dtype=float)
+    if spectral_density is None and n_total >= 2:
+        raise ValueError("D_bar: spectral_density kwarg required")
+
+    # Preserve the historical DG-1 all-left n=1 return shape: D_bar_1
+    # returns an array. The mixed/right-only scalar case below is needed
+    # by the B.1 recursion.
+    if n_total == 1 and len(s_args) == 0:
+        return D_bar_1(
+            np.asarray(tau_args, dtype=float),
+            bath_state=bath_state,
+            spectral_density=spectral_density,
+        )
+
+    times = _flatten_mixed_order(tau_args, s_args)
+    return _D_bar_scalar_from_flat_times(
+        times,
+        bath_state=bath_state,
+        spectral_density=spectral_density,
+    )
+
+
+def _flatten_mixed_order(
+    tau_args: tuple[float, ...], s_args: tuple[float, ...]
+) -> tuple[float, ...]:
+    """Flatten mixed left/right arguments using the DG-4 B.0 convention."""
+    return tau_args + tuple(reversed(s_args))
+
+
+def _D_bar_scalar_from_flat_times(
+    times: tuple[float, ...],
+    *,
+    bath_state: dict[str, Any],
+    spectral_density: dict[str, Any],
+) -> complex:
+    """Scalar connected cumulant for already-flattened operator times."""
+    n_total = len(times)
     if n_total == 1:
-        return D_bar_1(t_grid, bath_state=bath_state, spectral_density=spectral_density)
-    # n_total == 2
-    if spectral_density is None:
-        raise ValueError("D_bar: spectral_density kwarg required for n=2")
-    arr = D_bar_2(t_grid, bath_state=bath_state, spectral_density=spectral_density)
-    # arr is (2, 2); the requested cumulant is arr[0, 1] (or arr[1, 0]
-    # by Hermiticity). Return the [0, 1] entry — D̄_2(τ_1, τ_2).
-    return arr[0, 1]
+        return _D_bar_1_scalar(
+            times[0],
+            bath_state=bath_state,
+            spectral_density=spectral_density,
+        )
+    if n_total == 2:
+        arr = D_bar_2(
+            np.asarray(times, dtype=float),
+            bath_state=bath_state,
+            spectral_density=spectral_density,
+        )
+        return complex(arr[0, 1])
+    if n_total not in {3, 4}:
+        raise NotImplementedError(
+            f"D_bar: total order n={n_total} not implemented. "
+            f"DG-4 Phase B.1 supports n in {{3, 4}} only beyond the "
+            f"existing n <= 2 path."
+        )
+    if bath_state.get("family") != "thermal":
+        raise NotImplementedError(
+            f"D_bar: bath_state.family {bath_state.get('family')!r} "
+            f"not implemented for n >= 3. DG-4 Phase B.1 supports only "
+            f"thermal Gaussian baths."
+        )
+    return _joint_cumulant_from_raw_moments(
+        times,
+        bath_state=bath_state,
+        spectral_density=spectral_density,
+    )
+
+
+def _D_bar_1_scalar(
+    time: float,
+    *,
+    bath_state: dict[str, Any],
+    spectral_density: dict[str, Any] | None,
+) -> complex:
+    arr = D_bar_1(
+        np.asarray([time], dtype=float),
+        bath_state=bath_state,
+        spectral_density=spectral_density,
+    )
+    return complex(np.asarray(arr, dtype=complex)[0])
+
+
+def _joint_cumulant_from_raw_moments(
+    times: tuple[float, ...],
+    *,
+    bath_state: dict[str, Any],
+    spectral_density: dict[str, Any],
+) -> complex:
+    """Connected cumulant from raw ordered moments via set partitions."""
+    out = 0.0 + 0.0j
+    for partition in _set_partitions(tuple(range(len(times)))):
+        n_blocks = len(partition)
+        coefficient = ((-1) ** (n_blocks - 1)) * factorial(n_blocks - 1)
+        term = 1.0 + 0.0j
+        for block in partition:
+            block_times = tuple(times[idx] for idx in block)
+            term *= _raw_ordered_moment(
+                block_times,
+                bath_state=bath_state,
+                spectral_density=spectral_density,
+            )
+        out += coefficient * term
+    return complex(out)
+
+
+def _raw_ordered_moment(
+    times: tuple[float, ...],
+    *,
+    bath_state: dict[str, Any],
+    spectral_density: dict[str, Any],
+) -> complex:
+    """Raw ordered bath moment for one block of flattened operator times."""
+    n_total = len(times)
+    if n_total == 0:
+        return 1.0 + 0.0j
+    if n_total == 1:
+        return _D_bar_1_scalar(
+            times[0],
+            bath_state=bath_state,
+            spectral_density=spectral_density,
+        )
+    if n_total == 2:
+        return two_point(
+            times[0],
+            times[1],
+            bath_state=bath_state,
+            spectral_density=spectral_density,
+        )
+    if n_total in {3, 4}:
+        return n_point_ordered(
+            times,
+            (),
+            bath_state,
+            spectral_density=spectral_density,
+        )
+    raise NotImplementedError(f"_raw_ordered_moment: total order n={n_total} not implemented")
+
+
+def _set_partitions(indices: tuple[int, ...]):
+    """Yield set partitions of ``indices`` as tuples of ordered blocks."""
+    if not indices:
+        yield ()
+        return
+
+    first = indices[0]
+    for tail_partition in _set_partitions(indices[1:]):
+        yield ((first,),) + tail_partition
+        for block_idx, block in enumerate(tail_partition):
+            yield (
+                tail_partition[:block_idx] + ((first,) + block,) + tail_partition[block_idx + 1 :]
+            )
