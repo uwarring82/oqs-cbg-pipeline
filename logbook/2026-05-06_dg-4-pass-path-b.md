@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-06
 **Type:** dg-pass
-**Triggering commit:** (to be populated on commit)
+**Triggering commit:** d7ca897fbf5a3594400675061b7926b84c9552af
 **Triggering evidence:**
 - Card [D1 v0.1.1](../benchmarks/benchmark_cards/D1_failure-envelope-convergence_v0.1.1.yaml).
 - Result artefact [D1_failure-envelope-convergence_v0.1.1_result.json](../benchmarks/results/D1_failure-envelope-convergence_v0.1.1_result.json).

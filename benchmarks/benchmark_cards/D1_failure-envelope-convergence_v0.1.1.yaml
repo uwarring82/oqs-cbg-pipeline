@@ -201,7 +201,7 @@ result:
   verdict: "PASS"
   evidence:
     - "benchmarks/results/D1_failure-envelope-convergence_v0.1.1_result.json"
-  commit_hash: ""
+  commit_hash: "d7ca897fbf5a3594400675061b7926b84c9552af"
   runner_version: "0.1.0"
   notes: |
     Verdict computed by reporting.benchmark_card.run_card through the DG-4
