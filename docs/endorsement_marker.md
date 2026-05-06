@@ -54,4 +54,4 @@ If you use any output of this repository, cite the underlying papers (Colla, Bre
 
 ---
 
-*Repository version: post-`v0.5.0` (metadata 0.3.0.dev0). Not production-ready. DG-1 PASS (2026-04-30, tag `v0.2.0`); DG-2 structural sub-claims PASS (2026-05-04); DG-4 v0.1.1 PASS verdict (2026-05-06, tag `v0.5.0`) **superseded on review** the same day, v0.1.2 supersedure pending. DG-3 runner-complete; DG-5 scope-definition. Outputs are bounded by the live status in [`validity_envelope.md`](validity_envelope.md).*
+*Repository version: post-`v0.5.0` (metadata 0.3.0.dev0). Not production-ready. DG-1 PASS (2026-04-30, tag `v0.2.0`); DG-2 structural sub-claims PASS (2026-05-04); DG-4 PASS at D1 v0.1.2 (2026-05-06; picture-fixed Path B numerical L_4; supersedes the v0.1.1 verdict at tag `v0.5.0` that was downgraded on review the same day). DG-3 runner-complete; DG-5 scope-definition. Outputs are bounded by the live status in [`validity_envelope.md`](validity_envelope.md).*

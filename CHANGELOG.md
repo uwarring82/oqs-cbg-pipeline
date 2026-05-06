@@ -19,44 +19,58 @@ package release is made. The DG-anchoring tags are `v0.2.0` (DG-1 PASS) and
 
 ## [Unreleased]
 
-### Changed
-- DG-4 v0.1.1 PASS verdict recorded under tag `v0.5.0` was **superseded on
-  review** on 2026-05-06 the same day. Two HIGH-severity defects: (i) Path B
-  applies the interaction-picture order-4 formula `L_2 = Λ̇_2`,
-  `L_4 = Λ̇_4 - L_2 Λ_2` to raw Schrödinger-picture maps without the
-  `Λ_0⁻¹` similarity and the `L_0 Λ_n Λ_0⁻¹` correction, which is wrong
-  whenever `H_S ≠ 0`; (ii) the runner's "stable under all four perturbations"
-  PASS predicate is trivially satisfied for `upper_cutoff_factor ∈ {20, 40}`
-  because the current Path B path does not consume that knob. MEDIUM audit
-  gap: per-α + per-perturbation `r_4` not persisted in the result JSON.
-  See [`logbook/2026-05-06_dg-4-pass-path-b-superseded.md`](logbook/2026-05-06_dg-4-pass-path-b-superseded.md).
-- `docs/validity_envelope.md`, `docs/benchmark_protocol.md` §4, `README.md`,
-  `index.html`, `docs-site/`, `examples/README.md`, `docs/endorsement_marker.md`,
-  `project_dg2_blockers.md`, and `examples/dg4_walkthrough.ipynb` rolled back
-  to "DG-4 v0.1.1 PASS verdict superseded; v0.1.2 supersedure pending Path B
-  picture repair + operational `omega_max_factor` + audit-complete result JSON".
-- The `v0.5.0` git tag is left as immutable history (the verdict it anchored
-  remains in the repository on the record); only the verdict's authorisation
-  is downgraded.
+### Added
+- DG-4 PASS at D1 v0.1.2 (2026-05-06; verdict commit `6f88787`) via
+  picture-fixed Path B numerical L_4 extraction. All 20 frozen
+  `coupling_strength` sweep points classify as `convergence_failure` under
+  the parity-aware `r_4 = ⟨‖L_4^dis‖⟩_t / ⟨‖L_2^dis‖⟩_t` metric, with
+  stability across all four reproducibility perturbations
+  (`upper_cutoff_factor ∈ {20, 40}`, `omega_c ∈ {9, 11}`); maximum baseline
+  `r_4 ≈ 47.42`; minimum perturbed coefficient ratio `≈ 41.47`. See
+  [`logbook/2026-05-06_dg-4-pass-path-b-v012.md`](logbook/2026-05-06_dg-4-pass-path-b-v012.md).
+- `benchmarks/benchmark_cards/D1_failure-envelope-convergence_v0.1.2.yaml`
+  superseding v0.1.1; structurally identical (same model, metric, sweep,
+  perturbation set) but consumes the v0.1.1 supersedure repair commits.
+- `benchmarks/results/D1_failure-envelope-convergence_v0.1.2_result.json`
+  audit-complete: per-α + per-α-per-perturbation `r_4` plus per-perturbation
+  Path B fit residuals + dissipator-norm coefficients persisted.
+- Three v0.1.1 supersedure repair commits consumed by v0.1.2:
+  - `d67b453`: `benchmarks.numerical_tcl_extraction.transform_to_interaction_picture`
+    + `adjoint_unitary_superoperator` helpers, `path_b_dissipator_norm_coefficients`
+    now requires `system_hamiltonian` and applies the IP transform before
+    order-4 extraction. Six new regression tests pin picture invariance and
+    that direct-Schrödinger extraction disagrees with picture-aware extraction
+    by >10% under `H_S ≠ 0`.
+  - `a908cd6`: `reporting.benchmark_card._path_b_evaluate` threads
+    `numerical.quadrature.upper_cutoff_factor` into the finite-env builder
+    as `omega_max_factor`. New regression test
+    `test_dg4_path_b_upper_cutoff_factor_is_operational` pins that the
+    perturbation now produces a non-trivial coefficient delta.
+  - `5441467`: `CardResult.dg4_sweep_data` field, `_build_dg4_sweep_data`
+    helper, and `write_dg4_result_json(card, result, output_path)` writer
+    persist the audit-complete sweep table to disk. Three new tests pin
+    the audit shape, round-trip through the writer, and refusal on non-DG-4
+    results.
 
-### Pending (D1 v0.1.2 supersedure)
-- Repair Path B order-4 extraction: implement the general
-  `L_n = Λ̇_n Λ_0⁻¹ - L_0 Λ_n Λ_0⁻¹ + …` formula or transform raw maps to
-  the interaction picture before extraction. Add a regression test on a
-  fixture with `H_S ≠ 0` checking dissipator-norm picture invariance.
-- Thread `upper_cutoff_factor` into `exact_finite_env`'s `omega_max_factor`
-  so the perturbation is operational under Path B.
-- Persist per-α baseline and per-α-per-perturbation `r_4` plus
-  per-perturbation Path B fit residuals in the result JSON.
-- Freeze D1 v0.1.2 superseding v0.1.1 and re-run.
+### Changed
+- DG-4 row in `docs/validity_envelope.md`, `docs/benchmark_protocol.md` §4,
+  `README.md`, `index.html`, `docs-site/`, `examples/README.md`,
+  `docs/endorsement_marker.md`, `project_dg2_blockers.md`, and
+  `examples/dg4_walkthrough.ipynb` rolled forward from "v0.1.1 verdict
+  superseded; v0.1.2 supersedure pending" to "DG-4 PASS at D1 v0.1.2".
 
 ## [v0.5.0 git tag] — 2026-05-06
 
-DG-4 v0.1.1 PASS verdict via Path B numerical L_4 extraction (subsequently
-**superseded on review** the same day; see Unreleased section above and
-[`logbook/2026-05-06_dg-4-pass-path-b-superseded.md`](logbook/2026-05-06_dg-4-pass-path-b-superseded.md)).
-The original verdict log is at
-[`logbook/2026-05-06_dg-4-pass-path-b.md`](logbook/2026-05-06_dg-4-pass-path-b.md).
+DG-4 v0.1.1 PASS verdict via Path B numerical L_4 extraction. **Superseded
+on review** the same day for two HIGH-severity defects in the Path B
+extraction (picture / `Λ_0⁻¹` similarity error, and trivial PASS predicate
+for two of four perturbations). See
+[`logbook/2026-05-06_dg-4-pass-path-b.md`](logbook/2026-05-06_dg-4-pass-path-b.md)
+(original verdict) and
+[`logbook/2026-05-06_dg-4-pass-path-b-superseded.md`](logbook/2026-05-06_dg-4-pass-path-b-superseded.md)
+(supersedure citation). The repaired DG-4 PASS landed at D1 v0.1.2 the
+same day (verdict commit `6f88787`); see Unreleased section above. The
+`v0.5.0` git tag is left as immutable history of the v0.1.1 commit.
 
 ### Added
 - DG-4 failure-envelope card

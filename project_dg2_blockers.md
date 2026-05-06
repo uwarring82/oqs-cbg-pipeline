@@ -33,14 +33,14 @@ Remaining DG-2 work:
 
 **Why:** All structural sub-claims (Entries 1.A, 1.B.3 diagonal, 1.B.3
 off-diagonal + 1.D, 3.B.3, 4.B.2) closed cleanly under the Council-cleared
-registry on 2026-05-04. A DG-4 v0.1.1 PASS verdict via Path B numerical L_4
-was recorded on 2026-05-06 at tag `v0.5.0` and **superseded on review** the
-same day for two HIGH-severity defects in the Path B extraction; v0.1.2
-supersedure with repaired Path B and operational `omega_max_factor` is
-pending. The literal fourth-order CBG recursion (analytic K_2-K_4) remains a
-separate work track within DG-2 that does not block other Decision Gates;
-analytic Path A for L_4 is the natural deliverable that would unblock both
-DG-2's literal fourth-order recursion milestone and DG-4 cross-validation.
+registry on 2026-05-04. DG-4 has since passed at D1 v0.1.2 via picture-fixed
+Path B numerical L_4 (2026-05-06), superseding the v0.1.1 verdict at tag
+`v0.5.0` that was downgraded on review the same day. The literal fourth-order
+CBG recursion (analytic K_2-K_4) remains a separate work track within DG-2
+that does not block other Decision Gates; analytic Path A for L_4 is the
+natural deliverable that would unblock both DG-2's literal fourth-order
+recursion milestone and DG-4 cross-validation against the Path B v0.1.2
+verdict.
 
 **How to apply:** When asked to "advance DG-2," the only remaining work is
 the literal K_2-K_4 fourth-order recursion (Path A analytic preferred). Cite

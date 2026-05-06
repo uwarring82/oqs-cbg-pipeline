@@ -26,4 +26,4 @@ These documents inherit their authority from Council-cleared Ledger entry CL-202
 
 ---
 
-*Last updated: 2026-05-06 (DG-4 v0.1.1 PASS verdict at tag `v0.5.0` **superseded on review** the same day; v0.1.2 supersedure pending).*
+*Last updated: 2026-05-06 (DG-4 PASS at D1 v0.1.2 via picture-fixed Path B numerical L_4; supersedes the v0.1.1 verdict at tag `v0.5.0` that was downgraded on review the same day).*
