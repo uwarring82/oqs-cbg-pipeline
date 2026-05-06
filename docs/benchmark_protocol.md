@@ -2,7 +2,7 @@
 
 **Layer:** Repository protective scaffolding
 **Anchor:** Sail v0.5 §11 (four explicit content requirements)
-**Last updated:** 2026-05-06 (DG-4 Phase B partial — TCL thermal-Gaussian recursion wired through n=3; n=4 deferred)
+**Last updated:** 2026-05-06 (DG-4 D1 v0.1.1 supersedure — σ_x thermal parity-aware `r_4` card frozen; n=4 source and sweep runner still pending)
 
 ---
 
@@ -95,9 +95,11 @@ One DG-4 failure-envelope card is frozen:
 
 | Card | Model | Sweep parameter | Target cause label | Status |
 |---|---|---|---|---|
-| D1 | pure_dephasing | coupling_strength (0.05 → 1.0, log-uniform, 20 points) | convergence failure | frozen-awaiting-run |
+| D1 v0.1.1 | spin_boson_sigma_x | coupling_strength (0.05 → 1.0, log-uniform, 20 points) | convergence failure via parity-aware `r_4 = <||L_4^dis||>_t / <||L_2^dis||>_t` | frozen-awaiting-run |
 
-The runner does not yet support parameter sweeps; `run_card(D1)` raises `DG4SweepRunnerNotImplementedError` naming the two missing pieces. As of 2026-05-06, DG-4 work plan v0.1.2 Phase B has landed B.0, B.1, and B.2 (n=3) — `cbg.tcl_recursion` is wired through perturbative_order = 3 on the thermal-Gaussian path, with K_3 = 0 verified on A3/A4 fixtures. The two remaining gates before D1 v0.1.1 can be evaluated are (i) Phase B.2 (n=4) — the convergence-detection signal, where σ_z gives 0 by Feynman-Vernon and σ_x gives the leading non-trivial higher-order TCL contribution — and (ii) the sweep-block-aware runner branch consuming `frozen_parameters.sweep` per SCHEMA.md v0.1.3 Rule 17. The card defines the sweep range frozen *before* any run, per the parameter-freezing protocol §6.
+The v0.1.0 predecessor targeted pure_dephasing and is superseded: thermal pure dephasing is TCL-2 exact, so no order-4 convergence signal can appear. D1 v0.1.1 adopts the σ_x thermal model and the parity-aware even-order dissipator ratio specified by DG-4 work plan v0.1.4. The Path B numerical pilot recorded on 2026-05-06 confirmed `||L_4^dis|| > 0` in the σ_x fixture, but Path B remains benchmark-side numerical extraction with a finite-env floor, not analytic n=4 completion.
+
+The runner does not yet support parameter sweeps; `run_card(D1 v0.1.1)` raises `DG4SweepRunnerNotImplementedError` naming the two missing pieces. The remaining gates before D1 v0.1.1 can be evaluated are (i) a trusted order-4 `L_4` source for the parity-aware ratio (Path A analytic preferred; Path B numerical only with an uncertainty note) and (ii) the sweep-block-aware runner branch consuming `frozen_parameters.sweep` per SCHEMA.md v0.1.3 Rule 17. The card defines the sweep range frozen *before* any run, per the parameter-freezing protocol §6.
 
 ## 5. DG-5 status tracking
 

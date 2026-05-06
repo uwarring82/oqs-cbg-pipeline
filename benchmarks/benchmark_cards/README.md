@@ -40,6 +40,10 @@ See [`SCHEMA.md`](SCHEMA.md) §Supersedure and
 | B3 | DG-2 | CL-2026-005 v0.4 Entry 1.A (basis-independence) | **pass** (2026-05-04) | [B3_cross-basis-structural-identity_v0.1.0.yaml](B3_cross-basis-structural-identity_v0.1.0.yaml) |
 | B4-conv-registry | DG-2 | CL-2026-005 v0.4 Entry 3.B.3 (time-dependent shift; coherent-displaced bath, pure-dephasing) | **pass** (2026-05-04) | [B4-conv-registry_v0.1.0.yaml](B4-conv-registry_v0.1.0.yaml) |
 | B5-conv-registry | DG-2 | CL-2026-005 v0.4 Entry 4.B.2 (eigenbasis rotation; coherent-displaced bath, σ_x coupling) | **pass** (2026-05-04) | [B5-conv-registry_v0.2.0.yaml](B5-conv-registry_v0.2.0.yaml) |
+| C1 | DG-3 | CL-2026-005 v0.4 Entry 3 (cross-method corroboration) | frozen-awaiting-run | [C1_cross-method-pure-dephasing_v0.1.0.yaml](C1_cross-method-pure-dephasing_v0.1.0.yaml) |
+| C2 | DG-3 | CL-2026-005 v0.4 Entry 4 (cross-method corroboration) | frozen-awaiting-run | [C2_cross-method-spin-boson_v0.1.0.yaml](C2_cross-method-spin-boson_v0.1.0.yaml) |
+| D1 | DG-4 | CL-2026-005 v0.4 Entry 2 (recursive-series convergence; scope-limited) | frozen-awaiting-run | [D1_failure-envelope-convergence_v0.1.1.yaml](D1_failure-envelope-convergence_v0.1.1.yaml) |
+| E1 | DG-5 | CL-2026-005 v0.4 Entries 6–7 (thermodynamic discriminant scope) | scope-definition | [E1_thermodynamic-discriminant-fano-anderson_v0.1.0.yaml](E1_thermodynamic-discriminant-fano-anderson_v0.1.0.yaml) |
 
 The three DG-1 cards reached the **PASS** verdict per [DG-1 work plan v0.1.4](../../plans/dg-1-work-plan_v0.1.4.md) §4 Phase D; see [logbook/2026-04-30_dg-1-pass.md](../../logbook/2026-04-30_dg-1-pass.md) for the verdict logbook entry and [benchmarks/results/](../results/) for the JSON evidence artefacts.
 
@@ -53,6 +57,8 @@ Card B4-conv-registry is the fourth DG-2 card and reached **pass** at runner ver
 
 Card B5-conv-registry v0.2.0 is the σ_x sibling of B4-conv-registry under the same Council-cleared profile registry, and reached **pass** at runner version 0.1.0 across all four cleared profiles. The verdict commit registered the σ_x-specific `_dyn_handler_sigma_x_displaced` under (spin_boson_sigma_x, displaced_bath_*) keys, reusing the displaced-bath TCL recursion that landed with B4's verdict commit. All four test_cases returned errors at exactly 0.0 — structurally exact agreement, because the same D̄_1 array drives both the runner's K_1 computation and the predicted σ_x channel (single-source-of-truth pattern; floating-point error cancels), and the σ_y channel is zero by the parity-class theorem of Letter end-matter Eq. (A.43)-(A.45) at order ≤ N_card = 2. The v0.1.0 predecessor card is retained at HEAD with `status: superseded` per SCHEMA.md §Card lifecycle (see superseded-cards table below).
 
+Card D1 v0.1.1 is the active DG-4 failure-envelope card after Phase A.bis supersedure. It switches the target model from pure_dephasing to spin_boson_sigma_x, adopts the parity-aware even-order ratio `r_4 = <||L_4^dis||>_t / <||L_2^dis||>_t`, and freezes the operational reproducibility perturbation set (`upper_cutoff_factor` via numerical quadrature, `omega_c` via model-spec mutation). The v0.1.0 predecessor is retained with `status: superseded`.
+
 The index is updated atomically when cards are committed, when their `status` field changes per [SCHEMA.md](SCHEMA.md) §Card lifecycle, or when a successor card is added.
 
 ### Superseded cards (retained for audit)
@@ -63,3 +69,4 @@ The index is updated atomically when cards are committed, when their `status` fi
 | A3 | v0.1.0 | [v0.1.1](A3_pure-dephasing_v0.1.1.yaml) | 2026-04-30 | Entry 3.B.3 (time-dependent shift in non-thermal bath) deferred to DG-2; displacement convention on multi-mode bath under-specified. See A3 v0.1.1 `failure_mode_log[0]`. |
 | A4 | v0.1.0 | [v0.1.1](A4_sigma-x-thermal_v0.1.1.yaml) | 2026-04-30 | Entry 4.B.2 (eigenbasis rotation in non-thermal bath) deferred to DG-2; same displacement-convention gap as A3. See A4 v0.1.1 `failure_mode_log[0]`. |
 | B5-conv-registry | v0.1.0 | [v0.2.0](B5-conv-registry_v0.2.0.yaml) | 2026-05-04 | Card-design correction: v0.1.0's predicted transverse vector used the interaction-picture form `D̄_1(t)·(cos(ωt), -sin(ωt))`, but the Schrödinger-picture runner computes `K_1(t) = D̄_1(t)·σ_x` (constant direction, zero σ_y component at order ≤ N_card = 2 by parity-class theorem). v0.2.0 corrects the prediction to `(D̄_1(t), 0)`. Card-internal correction; no Council deliberation, no convention change. See B5 v0.2.0 `failure_mode_log[0]`. |
+| D1 | v0.1.0 | [v0.1.1](D1_failure-envelope-convergence_v0.1.1.yaml) | 2026-05-06 | DG-4 Phase A.bis correction: pure_dephasing thermal is TCL-2 exact and cannot expose the intended order-4 convergence failure; adjacent-order ratios are parity-blind in the σ_x thermal fixture. v0.1.1 switches to spin_boson_sigma_x, parity-aware `r_4`, and operational reproducibility perturbations. |

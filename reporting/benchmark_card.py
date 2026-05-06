@@ -150,12 +150,11 @@ class DG4SweepRunnerNotImplementedError(NotImplementedError):
     """Raised when ``run_card`` is asked to run a DG-4 sweep card.
 
     The DG-4 failure-envelope runner is not yet implemented. It would
-    require (i) extending ``cbg.tcl_recursion`` to orders n ≥ 3 (which
-    is the canonical-unfilled DG-2 milestone per
-    ``docs/validity_envelope.md``) and (ii) wiring the
-    ``frozen_parameters.sweep`` block (SCHEMA.md v0.1.3 Rule 17) into
-    the runner. Card D1 v0.1.0 will become runnable when both pieces
-    land.
+    require (i) a trusted order-4 L_4 source (analytic Path A preferred;
+    benchmark-side Path B numerical extraction only with an uncertainty
+    note) and (ii) wiring the ``frozen_parameters.sweep`` block
+    (SCHEMA.md v0.1.3 Rule 17) into the runner. Card D1 v0.1.1 will
+    become runnable when both pieces land.
     """
 
 
@@ -1372,11 +1371,12 @@ def _refuse_dg4_sweep(card: BenchmarkCard) -> None:
         f"run_card: card {card.card_id} {card.version} (dg_target=DG-4) "
         f"requires the DG-4 failure-envelope sweep runner, which is not "
         f"yet implemented.{sweep_summary} Two pieces are missing: (i) "
-        f"cbg.tcl_recursion at perturbative_order >= 3 (the canonical-"
-        f"unfilled DG-2 milestone per docs/validity_envelope.md), and "
-        f"(ii) a sweep-block-aware runner branch consuming "
-        f"frozen_parameters.sweep (SCHEMA.md v0.1.3 Rule 17). Card "
-        f"becomes runnable when both land."
+        f"a trusted order-4 L_4 source for the parity-aware "
+        f"r_4 = ||L_4^dis|| / ||L_2^dis|| metric (analytic Path A "
+        f"preferred; Path B numerical extraction must carry its finite-env "
+        f"floor in result.notes), and (ii) a sweep-block-aware runner "
+        f"branch consuming frozen_parameters.sweep (SCHEMA.md v0.1.3 "
+        f"Rule 17). Card becomes runnable when both land."
     )
 
 

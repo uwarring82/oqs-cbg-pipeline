@@ -370,13 +370,14 @@ def test_rule10_primary_without_data_source_raises(a1_data):
 # ─── SCHEMA.md v0.1.3 additions: Rules 17, 18, scope-definition status ──────
 
 
-D1_PATH = CARDS_DIR / "D1_failure-envelope-convergence_v0.1.0.yaml"
+D1_PATH = CARDS_DIR / "D1_failure-envelope-convergence_v0.1.1.yaml"
+D1_V010_PATH = CARDS_DIR / "D1_failure-envelope-convergence_v0.1.0.yaml"
 E1_PATH = CARDS_DIR / "E1_thermodynamic-discriminant-fano-anderson_v0.1.0.yaml"
 
 
 @pytest.fixture
 def d1_data() -> dict:
-    """Fresh copy of Card D1 v0.1.0's parsed dict (carries sweep block)."""
+    """Fresh copy of Card D1 v0.1.1's parsed dict (carries sweep block)."""
     return copy.deepcopy(_load_raw(D1_PATH))
 
 
@@ -397,7 +398,30 @@ def test_valid_status_includes_scope_definition():
 def test_load_card_d1_succeeds():
     card = bc.load_card(D1_PATH)
     assert card.card_id == "D1"
+    assert card.version == "v0.1.1"
     assert card.schema_version == "v0.1.3"
+    assert card.model == "spin_boson_sigma_x"
+
+
+def test_load_card_d1_v010_superseded():
+    card = bc.load_card(D1_V010_PATH)
+    assert card.status == "superseded"
+    assert card.superseded_by == "D1_failure-envelope-convergence_v0.1.1.yaml"
+
+
+def test_d1_v011_freezes_parity_aware_metric_and_operational_perturbations():
+    card = bc.load_card(D1_PATH)
+    fp = card.frozen_parameters
+    assert fp["model"]["coupling_operator"] == "sigma_x"
+    assert "bath_mode_cutoff" not in fp["truncation"]
+    assert fp["comparison"]["error_metric"] == "convergence_ratio_parity_aware"
+    assert fp["numerical"]["quadrature"]["upper_cutoff_factor"] == 30.0
+    perturbations = {p["name"]: p for p in fp["reproducibility"]["perturbations"]}
+    assert perturbations["upper_cutoff_factor"]["pathway"] == "quadrature_kwargs_allow_list"
+    assert perturbations["omega_c"]["target_path"] == (
+        "model.bath_spectral_density.cutoff_frequency"
+    )
+    assert perturbations["omega_c"]["pathway"] == "model_spec_mutation"
 
 
 def test_load_card_e1_succeeds():
@@ -792,7 +816,7 @@ def test_cross_method_relative_frobenius_shape_mismatch_raises():
 # ─── Runner: refusal paths for D1 (DG-4) and E1 (scope-definition) ──────────
 
 
-D1_PATH_FOR_RUN = CARDS_DIR / "D1_failure-envelope-convergence_v0.1.0.yaml"
+D1_PATH_FOR_RUN = CARDS_DIR / "D1_failure-envelope-convergence_v0.1.1.yaml"
 E1_PATH_FOR_RUN = CARDS_DIR / "E1_thermodynamic-discriminant-fano-anderson_v0.1.0.yaml"
 
 
@@ -835,7 +859,7 @@ def test_run_card_d1_raises_dg4_sweep_error():
     # Sweep summary surfaced from the card's frozen sweep block.
     assert "coupling_strength" in msg
     # Missing-pieces section names both gaps explicitly.
-    assert "tcl_recursion" in msg
+    assert "L_4" in msg or "n=4" in msg
     assert "Rule 17" in msg or "sweep" in msg.lower()
 
 

@@ -26,7 +26,8 @@ date: "2026-05-05"
 dg_target: "DG-4"
 ledger_entry: "CL-2026-005 v0.4 Entry 2 (recursive-series convergence; scope-limited)"
 model: "pure_dephasing"
-status: "frozen-awaiting-run"
+status: "superseded"
+superseded_by: "D1_failure-envelope-convergence_v0.1.1.yaml"
 license: "CC-BY-4.0 (LICENSE-docs)"
 
 # ─── Gauge block ──────────────────────────────────────────────────────────────
