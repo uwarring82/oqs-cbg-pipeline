@@ -9,6 +9,7 @@ Covers:
 - bath_two_point_thermal_array shape, stationarity, Hermitian
   conjugation under time-reversal.
 - two_point dispatch on (bath_state.family, spectral_density.family).
+- n_point_ordered at n = 3, 4 for thermal Gaussian baths.
 - Composability with Cards A3/A4 frozen_parameters.
 """
 
@@ -258,12 +259,74 @@ def test_two_point_unknown_bath_state_family_raises():
         bc.two_point(1.0, 0.0, bath_state=bs, spectral_density=sd)
 
 
-# ─── n_point_ordered: still stubbed at DG-2 ────────────────────────────────
+# ─── n_point_ordered: DG-4 Phase B.0 thermal Gaussian leaf ─────────────────
 
 
-def test_n_point_ordered_remains_stubbed_at_dg1():
-    with pytest.raises(NotImplementedError, match="DG-2"):
-        bc.n_point_ordered((), (), {}, None)
+def test_n_point_ordered_thermal_n3_vanishes():
+    """Zero-mean Gaussian baths have vanishing odd raw correlations."""
+    bs = {"family": "thermal", "temperature": 0.5}
+    sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
+    val = bc.n_point_ordered((0.0, 0.4), (0.9,), bs, spectral_density=sd)
+    assert val == 0.0 + 0.0j
+
+
+def test_n_point_ordered_thermal_n4_wick_all_left():
+    """All-left n=4 correlation is the three Wick pairings of C(t_i, t_j)."""
+    bs = {"family": "thermal", "temperature": 0.5}
+    sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
+    times = (0.0, 0.3, 0.8, 1.4)
+
+    val = bc.n_point_ordered(times, (), bs, spectral_density=sd)
+    c01 = bc.two_point(times[0], times[1], bath_state=bs, spectral_density=sd)
+    c02 = bc.two_point(times[0], times[2], bath_state=bs, spectral_density=sd)
+    c03 = bc.two_point(times[0], times[3], bath_state=bs, spectral_density=sd)
+    c12 = bc.two_point(times[1], times[2], bath_state=bs, spectral_density=sd)
+    c13 = bc.two_point(times[1], times[3], bath_state=bs, spectral_density=sd)
+    c23 = bc.two_point(times[2], times[3], bath_state=bs, spectral_density=sd)
+    expected = c01 * c23 + c02 * c13 + c03 * c12
+
+    assert val == pytest.approx(expected, rel=1e-12)
+
+
+def test_n_point_ordered_thermal_n4_mixed_left_right_ordering():
+    """Mixed left/right path flattens as tau_args + reversed(s_args)."""
+    bs = {"family": "thermal", "temperature": 0.5}
+    sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
+    tau_args = (0.0, 0.3)
+    s_args = (0.8, 1.4)
+    flattened = tau_args + tuple(reversed(s_args))
+
+    val = bc.n_point_ordered(tau_args, s_args, bs, spectral_density=sd)
+    expected = bc.n_point_ordered(flattened, (), bs, spectral_density=sd)
+
+    assert val == pytest.approx(expected, rel=1e-12)
+
+
+def test_n_point_ordered_requires_spectral_density():
+    bs = {"family": "thermal", "temperature": 0.5}
+    with pytest.raises(ValueError, match="spectral_density"):
+        bc.n_point_ordered((0.0, 0.1, 0.2), (), bs)
+
+
+def test_n_point_ordered_rejects_non_thermal_bath_state():
+    bs = {"family": "coherent_displaced", "temperature": 0.0}
+    sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
+    with pytest.raises(NotImplementedError, match="thermal Gaussian"):
+        bc.n_point_ordered((0.0, 0.1, 0.2), (), bs, spectral_density=sd)
+
+
+def test_n_point_ordered_rejects_orders_outside_b0_scope():
+    bs = {"family": "thermal", "temperature": 0.5}
+    sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
+    with pytest.raises(NotImplementedError, match=r"\{3, 4\}"):
+        bc.n_point_ordered((0.0, 0.1), (), bs, spectral_density=sd)
+
+
+def test_n_point_ordered_rejects_explicit_B_op_path():
+    bs = {"family": "thermal", "temperature": 0.5}
+    sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
+    with pytest.raises(NotImplementedError, match="explicit B_op"):
+        bc.n_point_ordered((0.0, 0.1, 0.2), (), bs, object(), spectral_density=sd)
 
 
 # ─── Composability with Cards A3 and A4 ────────────────────────────────────

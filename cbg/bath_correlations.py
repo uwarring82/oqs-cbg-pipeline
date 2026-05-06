@@ -29,10 +29,15 @@ DG-1 scope (C.6):
       `bath_state: coherent_displaced` spec is a model-layer
       responsibility (models/pure_dephasing.py, models/spin_boson_sigma_x.py).
 
-DG-2 scope (stubbed here):
+DG-4 Phase B.0 scope (this module, 2026-05-05):
+    - Raw ordered n-point correlations for n in {3, 4} on thermal
+      Gaussian ohmic baths, using Wick factorisation into the existing
+      two-point correlator.
+
+DG-2 / later scope (stubbed here):
     - Non-ohmic spectral densities (Drude–Lorentz, sub-/super-ohmic).
-    - n-point ordered correlations for n ≥ 3 (Companion Eq. (15) at
-      higher orders), needed for K_n at orders ≥ 3.
+    - n-point ordered correlations beyond n = 4, explicit finite-bath
+      operator traces, and non-Gaussian states.
 
 The module is physically separated from time-grid integration to prevent
 accidental importation of Markovian solver defaults from libraries like
@@ -357,18 +362,107 @@ def two_point(
 # ─── n-point ordered correlator (DG-2 territory) ────────────────────────────
 
 
-def n_point_ordered(tau_args, s_args, bath_state, B_op):
-    """Ordered n-point correlation per Companion Eq. (15) at n ≥ 3.
+def n_point_ordered(
+    tau_args,
+    s_args,
+    bath_state,
+    B_op=None,
+    *,
+    spectral_density: dict[str, Any] | None = None,
+) -> complex:
+    """Ordered n-point bath correlation per Companion Eq. (15).
 
-    DG-2 territory. Cards A3 and A4 (DG-1) only require the two-point
-    function, which is provided by `two_point` above. Higher-order
-    n-point correlations enter K_n at orders n ≥ 3 (DG-2), and the full
-    parity-decomposition machinery of Letter Eq. (D.5)-(D.6) becomes
-    operative at those orders.
+    Implements the DG-4 Phase B.0 leaf case for thermal Gaussian ohmic
+    baths at total order n in {3, 4}. Thermal Gaussian baths have zero
+    first cumulant, so odd raw correlations vanish. The n = 4 raw
+    correlation is evaluated by Wick factorisation into the existing
+    connected two-point correlator:
+
+        D(t1, t2, t3, t4) =
+            C(t1, t2) C(t3, t4)
+          + C(t1, t3) C(t2, t4)
+          + C(t1, t4) C(t2, t3)
+
+    The flattened operator order used here is the left-acting sequence
+    followed by the reversed right-acting sequence:
+
+        times = tuple(tau_args) + tuple(reversed(s_args))
+
+    This pins the mixed left/right convention for the B.1 cumulant
+    recursion while preserving the existing all-left behaviour when
+    ``s_args == ()``.
+
+    Parameters
+    ----------
+    tau_args, s_args : sequence of float
+        Left and right time arguments in Companion Eq. (15).
+    bath_state : dict
+        Currently requires ``family == "thermal"``.
+    B_op : object, optional
+        Retained for the historical stub signature. Explicit finite-bath
+        operator traces are not implemented in this path; pass ``None``.
+    spectral_density : dict, keyword-only
+        Required ohmic spectral-density mapping consumed by ``two_point``.
+
+    Returns
+    -------
+    complex
+        Ordered raw bath correlation at the requested arguments.
     """
-    raise NotImplementedError(
-        "n_point_ordered: not implemented at DG-1. n-point bath "
-        "correlations for n >= 3 are required by K_n at orders n >= 3, "
-        "which is DG-2 territory per Sail v0.5 §9 DG-2 and DG-1 work plan "
-        "v0.1.3 §1.2."
-    )
+    tau_args = tuple(float(t) for t in tau_args)
+    s_args = tuple(float(s) for s in s_args)
+    n_total = len(tau_args) + len(s_args)
+
+    if B_op is not None:
+        raise NotImplementedError(
+            "n_point_ordered: explicit B_op finite-bath traces are not "
+            "implemented. Pass spectral_density for the thermal Gaussian "
+            "ohmic Wick-factorised path."
+        )
+    if spectral_density is None:
+        raise ValueError("n_point_ordered: spectral_density kwarg required")
+    if bath_state.get("family") != "thermal":
+        raise NotImplementedError(
+            f"n_point_ordered: bath_state.family {bath_state.get('family')!r} "
+            f"not implemented for n >= 3. DG-4 Phase B.0 supports only "
+            f"thermal Gaussian baths."
+        )
+    if n_total not in {3, 4}:
+        raise NotImplementedError(
+            f"n_point_ordered: total order n={n_total} not implemented. "
+            f"DG-4 Phase B.0 supports n in {{3, 4}} only."
+        )
+
+    if n_total % 2 == 1:
+        return 0.0 + 0.0j
+
+    times = tau_args + tuple(reversed(s_args))
+    out = 0.0 + 0.0j
+    for pairs in _wick_pairings(tuple(range(n_total))):
+        term = 1.0 + 0.0j
+        for i, j in pairs:
+            term *= two_point(
+                times[i],
+                times[j],
+                bath_state=bath_state,
+                spectral_density=spectral_density,
+            )
+        out += term
+    return complex(out)
+
+
+def _wick_pairings(indices: tuple[int, ...]):
+    """Yield all pair partitions of ``indices``.
+
+    Small recursive helper for Wick factorisation. B.0 uses it at n = 4,
+    where it yields the three standard pairings.
+    """
+    if not indices:
+        yield ()
+        return
+    first = indices[0]
+    rest = indices[1:]
+    for pos, second in enumerate(rest):
+        remaining = rest[:pos] + rest[pos + 1 :]
+        for tail in _wick_pairings(remaining):
+            yield ((first, second),) + tail
