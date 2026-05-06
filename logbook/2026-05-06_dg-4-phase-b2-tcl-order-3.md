@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-06
 **Type:** structural
-**Triggering commit:** _placeholder_
+**Triggering commit:** ca3471b
 **Triggering evidence:**
 - [`cbg/tcl_recursion.py`](../cbg/tcl_recursion.py): `L_n_thermal_at_time` extended with the n=3 branch (returns the zero superoperator for any system coupling under a thermal Gaussian bath); `K_n_thermal_on_grid` now accepts n=3; `K_total_thermal_on_grid` cap raised from 2 to 3; the `L_n` shim accepts n=3. n=4 raises a structured `NotImplementedError` naming the missing pieces.
 - [`tests/test_tcl_recursion.py`](../tests/test_tcl_recursion.py): 6 new tests covering K_3 = 0 on A3 / A4 fixtures, the L_n_thermal_at_time n=3 zero-superop contract, the n=4 / n=5 deferral guards, the K_total N_card=3 equivalence to N_card=2, and the K_total N_card=4 deferral.
