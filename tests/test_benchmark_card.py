@@ -950,6 +950,49 @@ def test_dg4_sweep_runner_refuses_non_thermal_with_clear_error():
     assert "thermal" in msg.lower()
 
 
+def test_dg4_path_b_upper_cutoff_factor_is_operational():
+    """v0.1.2 supersedure repair: the upper_cutoff_factor perturbation must
+    now produce a non-trivial change in the Path B coefficients via the
+    finite-env builder's omega_max_factor knob. A pure no-op (the v0.1.1
+    bug) would give exactly equal baseline and perturbed coefficients,
+    making the runner's "stable under all four perturbations" PASS
+    predicate trivially satisfied. This test pins that the predicate is
+    now genuinely tested."""
+    card = _reduced_d1_v011_card()
+    fp = card.frozen_parameters
+    grid_times = bc.build_time_grid(fp["numerical"]["time_grid"]).times
+    path_b_params = bc._resolve_path_b_params(fp)
+    base_quad = bc._quadrature_kwargs(fp)
+    base_model = bc._model_spec_for_dg4(fp)
+
+    # Baseline run.
+    baseline = bc._path_b_evaluate(base_model, grid_times, path_b_params, base_quad)
+
+    # Perturb upper_cutoff_factor downward via _apply_dg4_perturbation.
+    perturbation = {
+        "name": "upper_cutoff_factor=20",
+        "kind": "quadrature",
+        "key": "upper_cutoff_factor",
+        "value": 20.0,
+    }
+    perturbed_spec, perturbed_quad = bc._apply_dg4_perturbation(
+        base_model, base_quad, perturbation
+    )
+    perturbed = bc._path_b_evaluate(perturbed_spec, grid_times, path_b_params, perturbed_quad)
+
+    # The l_2 and l_4 coefficients must differ — a no-op perturbation would
+    # give exactly equal floats. We require >= 1% relative deviation in at
+    # least one of l2_avg / l4_avg, well above any expected numerical noise.
+    base_l2, base_l4 = baseline.l2_avg, baseline.l4_avg
+    pert_l2, pert_l4 = perturbed.l2_avg, perturbed.l4_avg
+    rel_l2 = abs(pert_l2 - base_l2) / max(abs(base_l2), 1e-300)
+    rel_l4 = abs(pert_l4 - base_l4) / max(abs(base_l4), 1e-300)
+    assert max(rel_l2, rel_l4) > 1e-2, (
+        "upper_cutoff_factor perturbation must produce a non-trivial change "
+        "in Path B coefficients; got rel_l2={:.3e}, rel_l4={:.3e}".format(rel_l2, rel_l4)
+    )
+
+
 def test_run_card_e1_refusal_takes_precedence_over_model_factory():
     """E1's model 'fano_anderson' has no model factory; if the scope-
     definition refusal did not fire first, run_card would raise a generic

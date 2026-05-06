@@ -1595,24 +1595,25 @@ def _path_b_evaluate(
     interaction picture transformation that the order-4 extractor depends
     on; H_S is built from the model_spec via the spin-boson sigma_x
     factory.
+
+    The card-level ``numerical.quadrature.upper_cutoff_factor`` is threaded
+    into the finite-environment builder as ``omega_max_factor``, so the
+    DG-4 reproducibility perturbation on this knob is operational under
+    Path B (per the v0.1.2 supersedure repair).
     """
     from benchmarks import exact_finite_env, numerical_tcl_extraction
     from models import spin_boson_sigma_x
 
-    # Inject the quadrature controls into the model_spec for downstream
-    # consumers; exact_finite_env ignores them, but we record them in the
-    # spec so the runner notes can attest the perturbation was attempted.
     spec_with_quad = deepcopy(model_spec)
-    if quadrature_kwargs:
-        numerical_block = spec_with_quad.setdefault("numerical_overrides", {})
-        numerical_block.update(quadrature_kwargs)
-
     H_S, _A = spin_boson_sigma_x.system_arrays_from_spec(spec_with_quad)
 
-    builder_kwargs = {
+    builder_kwargs: dict[str, Any] = {
         "n_bath_modes": path_b_params["n_bath_modes"],
         "n_levels_per_mode": path_b_params["n_levels_per_mode"],
     }
+    if "upper_cutoff_factor" in quadrature_kwargs:
+        builder_kwargs["omega_max_factor"] = float(quadrature_kwargs["upper_cutoff_factor"])
+
     return numerical_tcl_extraction.path_b_dissipator_norm_coefficients(
         exact_finite_env.build_spin_boson_sigma_x_thermal_total,
         spec_with_quad,
