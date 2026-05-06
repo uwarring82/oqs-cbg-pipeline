@@ -357,6 +357,203 @@ def K_n_thermal_on_grid(
     return K
 
 
+# ─── L_n^dissipator (Phase B.3) ──────────────────────────────────────────────
+#
+# Convention: with cbg.effective_hamiltonian using L[X] = -i[K, X] + dissipator,
+# the dissipator residual after subtracting the Hamiltonian piece is
+#
+#     L_n^dissipator(t) := L_n(t) + i [K_n(t), · ]
+#
+# The unitary-recovery oracle (Risk R8 in DG-4 work plan v0.1.3): for any
+# purely unitary L = -i [H, ·], K_from_generator returns H (or its traceless
+# part), so L^dissipator = L + i [K, ·] = -i [H, ·] + i [H, ·] = 0 exactly.
+# Tests guarantee this for n=0 (where L_0 = -i [H_S, ·] is purely unitary).
+#
+# Phase B.3 partial: n in {0, 1, 2, 3}. n=4 is gated by L_n_thermal_at_time
+# at the L-level; the deferral propagates here.
+
+
+def L_n_dissipator_thermal_at_time(
+    n: int,
+    t_idx: int,
+    t_grid: np.ndarray,
+    system_hamiltonian: np.ndarray,
+    coupling_operator: np.ndarray,
+    *,
+    bath_state: dict[str, Any],
+    spectral_density: dict[str, Any],
+    basis: list | None = None,
+    upper_cutoff_factor: float = 30.0,
+    quad_limit: int = 200,
+    K_n_array: np.ndarray | None = None,
+    D_bar_2_array: np.ndarray | None = None,
+) -> Callable[[np.ndarray], np.ndarray]:
+    """Return a callable that applies L_n^dissipator[X] at t_grid[t_idx].
+
+    L_n^dissipator(t) := L_n(t) + i [K_n(t), · ]
+
+    For purely unitary L_n with K_n = H, the dissipator vanishes
+    identically (the Risk R8 unitary-recovery oracle gating Phase B.3
+    acceptance). For thermal Gaussian baths n ∈ {0, 1, 3} all give the
+    zero superoperator; n = 2 carries the leading dissipator.
+
+    Parameters
+    ----------
+    n : int
+        Perturbative order; one of {0, 1, 2, 3}. n=4 raises (gated by
+        L_n_thermal_at_time(n=4)); n>=5 is out of scope.
+    t_idx : int
+        Index into t_grid at which to evaluate.
+    t_grid, system_hamiltonian, coupling_operator : as in K_n_thermal_on_grid.
+    bath_state, spectral_density : as in K_n_thermal_on_grid; consumed for
+        n=2 K_n / D_bar_2 construction. Required even at n in {0, 1, 3}
+        for signature uniformity (the K_n call still flows through but
+        returns zeros at those orders).
+    basis : optional HS-orthonormal basis for Letter Eq. (6) extraction.
+    upper_cutoff_factor, quad_limit : forwarded to D_bar_2.
+    K_n_array : optional precomputed (n_t, d, d) K_n array; useful when
+        evaluating across many t_idx values to amortise the K_n cost.
+    D_bar_2_array : optional precomputed (n_t, n_t) D_bar_2 array; same
+        amortisation rationale.
+
+    Returns
+    -------
+    callable (X: (d, d) ndarray) -> (d, d) ndarray
+    """
+    H_S = np.asarray(system_hamiltonian, dtype=complex)
+    A = np.asarray(coupling_operator, dtype=complex)
+    t_grid = np.asarray(t_grid, dtype=float)
+    d = H_S.shape[0]
+
+    if basis is None:
+        basis = matrix_unit_basis(d)
+
+    if K_n_array is None:
+        K_n_array = K_n_thermal_on_grid(
+            n,
+            t_grid,
+            H_S,
+            A,
+            bath_state=bath_state,
+            spectral_density=spectral_density,
+            basis=basis,
+            upper_cutoff_factor=upper_cutoff_factor,
+            quad_limit=quad_limit,
+        )
+
+    if D_bar_2_array is None and n == 2:
+        D_bar_2_array = D_bar_2(
+            t_grid,
+            bath_state=bath_state,
+            spectral_density=spectral_density,
+            upper_cutoff_factor=upper_cutoff_factor,
+            quad_limit=quad_limit,
+        )
+
+    L_n_apply = L_n_thermal_at_time(n, t_idx, t_grid, H_S, A, D_bar_2_array=D_bar_2_array)
+    K_t = np.asarray(K_n_array[t_idx], dtype=complex)
+
+    def L_n_dis_apply(X: np.ndarray) -> np.ndarray:
+        X = np.asarray(X, dtype=complex)
+        return L_n_apply(X) + 1j * (K_t @ X - X @ K_t)
+
+    return L_n_dis_apply
+
+
+def L_n_dissipator_norm_thermal_on_grid(
+    n: int,
+    t_grid: np.ndarray,
+    system_hamiltonian: np.ndarray,
+    coupling_operator: np.ndarray,
+    *,
+    bath_state: dict[str, Any],
+    spectral_density: dict[str, Any],
+    basis: list | None = None,
+    upper_cutoff_factor: float = 30.0,
+    quad_limit: int = 200,
+) -> np.ndarray:
+    """Return ||L_n^dissipator(t)||_F at every t in t_grid.
+
+    The norm is the Frobenius norm of the d²×d² Liouville-representation
+    matrix of the superoperator L_n^dissipator in the supplied (or
+    matrix-unit) HS-orthonormal basis: the standard Hilbert-Schmidt
+    norm of a superoperator. This is the per-t signal that DG-4 work
+    plan v0.1.3 §1.1 designates as the convergence-ratio numerator
+    (D1 v0.1.1's metric).
+
+    For thermal Gaussian baths under the runner-facing thermal path,
+    n ∈ {0, 1, 3} return all zeros and n = 2 returns the dephasing /
+    relaxation dissipator's norm at each grid time. n = 4 is deferred
+    along with L_n_thermal_at_time(n=4).
+
+    Parameters
+    ----------
+    Same as L_n_dissipator_thermal_at_time, minus t_idx and the
+    optional precomputed-array shortcuts.
+
+    Returns
+    -------
+    ndarray, shape (n_t,), dtype float
+        ||L_n^dissipator(t)||_F at each t in t_grid.
+    """
+    H_S = np.asarray(system_hamiltonian, dtype=complex)
+    A = np.asarray(coupling_operator, dtype=complex)
+    t_grid = np.asarray(t_grid, dtype=float)
+    d = H_S.shape[0]
+
+    if basis is None:
+        basis = matrix_unit_basis(d)
+
+    # Precompute K_n and (when n=2) D_bar_2 once; amortise across t_idx.
+    K_n_array = K_n_thermal_on_grid(
+        n,
+        t_grid,
+        H_S,
+        A,
+        bath_state=bath_state,
+        spectral_density=spectral_density,
+        basis=basis,
+        upper_cutoff_factor=upper_cutoff_factor,
+        quad_limit=quad_limit,
+    )
+    D = None
+    if n == 2:
+        D = D_bar_2(
+            t_grid,
+            bath_state=bath_state,
+            spectral_density=spectral_density,
+            upper_cutoff_factor=upper_cutoff_factor,
+            quad_limit=quad_limit,
+        )
+
+    n_t = len(t_grid)
+    norms = np.zeros(n_t, dtype=float)
+    d_sq = d * d
+    for t_idx in range(n_t):
+        L_dis = L_n_dissipator_thermal_at_time(
+            n,
+            t_idx,
+            t_grid,
+            H_S,
+            A,
+            bath_state=bath_state,
+            spectral_density=spectral_density,
+            basis=basis,
+            upper_cutoff_factor=upper_cutoff_factor,
+            quad_limit=quad_limit,
+            K_n_array=K_n_array,
+            D_bar_2_array=D,
+        )
+        # Liouville matrix in the HS-orthonormal basis: M[α, β] = ⟨F_α, L[F_β]⟩.
+        L_matrix = np.zeros((d_sq, d_sq), dtype=complex)
+        for col, F_col in enumerate(basis):
+            L_F = L_dis(F_col)
+            for row, F_row in enumerate(basis):
+                L_matrix[row, col] = np.trace(F_row.conj().T @ L_F)
+        norms[t_idx] = float(np.linalg.norm(L_matrix, ord="fro"))
+    return norms
+
+
 # ─── Displaced-bath L_n / K_n / K_total (Council Act 2 cleared, 2026-05-04) ──
 #
 # The displaced-bath path is structurally similar to the thermal path: K_0

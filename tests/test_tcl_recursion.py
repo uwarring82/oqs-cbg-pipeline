@@ -169,6 +169,127 @@ def test_L_n_thermal_at_time_n_5_raises_out_of_scope():
         tr.L_n_thermal_at_time(5, 5, t, _hs(), sigma_x, D_bar_2_array=None)
 
 
+# ─── L_n^dissipator (DG-4 Phase B.3 partial, n in {0, 1, 2, 3}) ─────────────
+
+
+def test_L_0_dissipator_unitary_recovery_oracle():
+    """Risk R8 oracle: for purely unitary L_0 = -i[H_S, ·] with K_0 = H_S,
+    the dissipator residual L_0 + i[K_0, ·] must vanish to machine
+    precision. This is the Phase B.3 acceptance gate against sign errors
+    in the dissipator-extraction convention."""
+    t = _coarse_t_grid()
+    norms = tr.L_n_dissipator_norm_thermal_on_grid(
+        0, t, _hs(), sigma_z, bath_state=_thermal_state(), spectral_density=_ohmic_sd()
+    )
+    assert np.max(np.abs(norms)) < 1e-12
+
+
+def test_L_1_dissipator_thermal_is_zero():
+    """L_1 = 0 thermal Gaussian (D̄_1 = 0), K_1 = 0, so dissipator = 0."""
+    t = _coarse_t_grid()
+    norms = tr.L_n_dissipator_norm_thermal_on_grid(
+        1, t, _hs(), sigma_x, bath_state=_thermal_state(), spectral_density=_ohmic_sd()
+    )
+    assert np.max(np.abs(norms)) < 1e-12
+
+
+def test_L_2_dissipator_pure_dephasing_thermal_is_nonzero():
+    """For σ_z thermal, K_2 = 0 (parity-class theorem) so the entire L_2
+    is dissipator. The norm must be strictly positive for at least
+    some t > 0 (the dephasing rate growing with the time integral)."""
+    t = _coarse_t_grid(t_end=5.0, n_points=11)
+    norms = tr.L_n_dissipator_norm_thermal_on_grid(
+        2, t, _hs(), sigma_z, bath_state=_thermal_state(), spectral_density=_ohmic_sd()
+    )
+    # ||L_2^dis|| at t=t_grid[0] vanishes (zero-length integral); at later
+    # t values it must be strictly positive.
+    assert norms[0] < 1e-12
+    assert norms[-1] > 1e-2  # generous lower bound for the C1-style fixture
+
+
+def test_L_2_dissipator_sigma_x_thermal_is_nonzero():
+    """For σ_x thermal, K_2 ∝ σ_z (Lamb shift) and L_2 has both Hamiltonian
+    and dissipator parts; the dissipator carries energy relaxation +
+    dephasing and must be non-zero at t > 0."""
+    t = _coarse_t_grid(t_end=5.0, n_points=11)
+    norms = tr.L_n_dissipator_norm_thermal_on_grid(
+        2, t, _hs(), sigma_x, bath_state=_thermal_state(), spectral_density=_ohmic_sd()
+    )
+    assert norms[0] < 1e-12
+    assert norms[-1] > 1e-2
+
+
+def test_L_3_dissipator_thermal_is_zero():
+    """L_3 = 0 thermal Gaussian (Phase B.2), K_3 = 0; dissipator = 0."""
+    t = _coarse_t_grid()
+    norms = tr.L_n_dissipator_norm_thermal_on_grid(
+        3, t, _hs(), sigma_x, bath_state=_thermal_state(), spectral_density=_ohmic_sd()
+    )
+    assert np.max(np.abs(norms)) < 1e-12
+
+
+def test_L_n_dissipator_n_4_raises_pending():
+    """n=4 deferral propagates from L_n_thermal_at_time(n=4)."""
+    t = _coarse_t_grid()
+    with pytest.raises(NotImplementedError, match="n=4|deferred"):
+        tr.L_n_dissipator_norm_thermal_on_grid(
+            4, t, _hs(), sigma_x, bath_state=_thermal_state(), spectral_density=_ohmic_sd()
+        )
+
+
+def test_L_n_dissipator_threads_quadrature_kwargs(monkeypatch):
+    """Phase B.4 knob-threading propagates through the B.3 wrappers."""
+    seen = {}
+
+    def fake_D_bar_2(
+        t_grid, *, bath_state, spectral_density, upper_cutoff_factor=30.0, quad_limit=200
+    ):
+        seen.update({"upper_cutoff_factor": upper_cutoff_factor, "quad_limit": quad_limit})
+        return np.zeros((len(t_grid), len(t_grid)), dtype=complex)
+
+    monkeypatch.setattr(tr, "D_bar_2", fake_D_bar_2)
+
+    t = _coarse_t_grid()
+    norms = tr.L_n_dissipator_norm_thermal_on_grid(
+        2,
+        t,
+        _hs(),
+        sigma_x,
+        bath_state=_thermal_state(),
+        spectral_density=_ohmic_sd(),
+        upper_cutoff_factor=20.0,
+        quad_limit=100,
+    )
+    assert norms.shape == (len(t),)
+    assert seen == {"upper_cutoff_factor": 20.0, "quad_limit": 100}
+
+
+def test_L_n_dissipator_at_time_returns_callable_matching_norm():
+    """The at_time entry returns a callable that is consistent with the
+    on-grid norm (the per-t Liouville matrix from the callable, taken
+    in Frobenius norm, equals the corresponding entry of the norm
+    array)."""
+    t = _coarse_t_grid(t_end=2.0, n_points=5)
+    bs = _thermal_state()
+    sd = _ohmic_sd()
+    norms = tr.L_n_dissipator_norm_thermal_on_grid(
+        2, t, _hs(), sigma_x, bath_state=bs, spectral_density=sd
+    )
+    # Re-compute via the at_time callable at t_idx=3 and confirm match.
+    L_dis = tr.L_n_dissipator_thermal_at_time(
+        2, 3, t, _hs(), sigma_x, bath_state=bs, spectral_density=sd
+    )
+    from cbg.basis import matrix_unit_basis
+
+    basis = matrix_unit_basis(2)
+    L_matrix = np.zeros((4, 4), dtype=complex)
+    for col, F_col in enumerate(basis):
+        L_F = L_dis(F_col)
+        for row, F_row in enumerate(basis):
+            L_matrix[row, col] = np.trace(F_row.conj().T @ L_F)
+    assert np.isclose(np.linalg.norm(L_matrix, ord="fro"), norms[3])
+
+
 def test_L_2_requires_D_bar_2_array():
     t = _coarse_t_grid()
     with pytest.raises(ValueError, match="D_bar_2_array"):
