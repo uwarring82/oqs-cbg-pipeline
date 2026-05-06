@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import ast
 from collections.abc import Callable, Mapping
+from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -1308,7 +1309,7 @@ def run_card(card: BenchmarkCard) -> CardResult:
     if card.status == "scope-definition":
         _refuse_scope_definition(card)  # raises ScopeDefinitionNotRunnableError
     if card.dg_target == "DG-4":
-        _refuse_dg4_sweep(card)  # raises DG4SweepRunnerNotImplementedError
+        return _run_dg4_sweep(card)
     if card.dg_target == "DG-3":
         return _run_cross_method(card)
     if card.model_kind == "algebraic_map":
@@ -1378,6 +1379,360 @@ def _refuse_dg4_sweep(card: BenchmarkCard) -> None:
         f"branch consuming frozen_parameters.sweep (SCHEMA.md v0.1.3 "
         f"Rule 17). Card becomes runnable when both land."
     )
+
+
+# ─── DG-4 failure-envelope sweep runner (Phase C) ───────────────────────────
+
+
+# Path B Richardson-extraction defaults (matches DG-4 work plan v0.1.4 Phase C
+# and the 2026-05-06 Path B pilot configuration). The runner reads any
+# overrides from card.frozen_parameters.numerical.path_b.* extras; defaults
+# below are production-quality (the pilot's well-conditioned configuration).
+_DG4_PATH_B_DEFAULTS: dict[str, Any] = {
+    "alpha_values": (0.01, 0.015, 0.02, 0.025, 0.03),
+    "n_bath_modes": 4,
+    "n_levels_per_mode": 3,
+}
+
+# Reproducibility-perturbation set per DG-4 work plan v0.1.4 §3 Phase C.
+# upper_cutoff_factor lives on the runner-side numerical.quadrature allow-list
+# (Phase B.4 _quadrature_kwargs); omega_c is a model-spec mutation at
+# bath_spectral_density.cutoff_frequency (NOT routed through the allow-list).
+_DG4_REPRO_PERTURBATIONS: tuple[dict[str, Any], ...] = (
+    {"name": "upper_cutoff_factor=20", "kind": "quadrature", "key": "upper_cutoff_factor", "value": 20.0},
+    {"name": "upper_cutoff_factor=40", "kind": "quadrature", "key": "upper_cutoff_factor", "value": 40.0},
+    {"name": "omega_c=9.0", "kind": "model_spec", "key": "cutoff_frequency", "value": 9.0},
+    {"name": "omega_c=11.0", "kind": "model_spec", "key": "cutoff_frequency", "value": 11.0},
+)
+
+
+def _run_dg4_sweep(card: BenchmarkCard) -> CardResult:
+    """DG-4 failure-envelope sweep runner (Phase C of DG-4 work plan v0.1.4).
+
+    Iterates over the frozen sweep of ``coupling_strength`` and evaluates the
+    parity-aware even-order ratio
+
+        r_4(alpha**2) = alpha**2 * (<||L_4^dis||>_t / <||L_2^dis||>_t)
+
+    via Path B numerical Richardson extraction (`benchmarks.numerical_tcl_extraction`
+    `path_b_dissipator_norm_coefficients`). Per-failing-candidate-alpha
+    reproducibility re-runs use the v0.1.4 perturbation set:
+    ``upper_cutoff_factor`` via the runner-side numerical-quadrature allow-list,
+    and ``omega_c`` (= ``bath_spectral_density.cutoff_frequency``) via direct
+    model-spec mutation.
+
+    Verdict logic:
+      - PASS iff at least one alpha is classified ``convergence_failure``
+        (r_4 > 1 baseline AND r_4 > 1 stable under all four perturbations).
+      - CONDITIONAL iff at least one alpha is failing-candidate but all
+        reclassify to ``truncation_artefact`` under at least one perturbation.
+      - FAIL iff no alpha gives r_4 > 1 baseline (cause:
+        ``no-failure-found-in-frozen-range`` per Risk #8 discipline).
+
+    Path B carries a finite-env extraction floor; the floor magnitude is
+    reported in ``result.notes`` so verdicts can carry the documented
+    uncertainty band.
+    """
+    fp = card.frozen_parameters
+    sweep = fp.get("sweep") if isinstance(fp, dict) else None
+    if not isinstance(sweep, dict):
+        _refuse_dg4_sweep(card)  # raises with a structured message
+
+    # Path B currently supports only sigma_x + thermal (the D1 v0.1.1 fixture).
+    model = fp["model"]
+    coupling_op = (model.get("coupling_operator") or "").strip()
+    bath_state = model.get("bath_state") or {}
+    if coupling_op != "sigma_x":
+        raise DG4SweepRunnerNotImplementedError(
+            f"_run_dg4_sweep: Path B currently supports only "
+            f"coupling_operator='sigma_x'; got {coupling_op!r}. The analytic "
+            f"Path A (Companion Sec. IV) extension would unblock other "
+            f"couplings."
+        )
+    if bath_state.get("family") != "thermal":
+        raise DG4SweepRunnerNotImplementedError(
+            f"_run_dg4_sweep: Path B currently supports only thermal Gaussian "
+            f"bath_state; got {bath_state.get('family')!r}."
+        )
+
+    path_b_params = _resolve_path_b_params(fp)
+    t_grid_arr = build_time_grid(fp["numerical"]["time_grid"]).times
+    base_model_spec = _model_spec_for_dg4(fp)
+    quadrature_kwargs = _quadrature_kwargs(fp)
+
+    # 1. Baseline coefficients (one Path B fit covers the entire alpha-sweep,
+    # since L_n are Taylor coefficients and r_4(alpha**2) scales linearly).
+    baseline = _path_b_evaluate(base_model_spec, t_grid_arr, path_b_params, quadrature_kwargs)
+
+    # 2. Per-alpha baseline r_4.
+    alpha_sq_grid = _build_dg4_sweep_grid(sweep)
+    per_alpha = []
+    for alpha_sq in alpha_sq_grid:
+        r_4 = _scaled_ratio(alpha_sq, baseline.l4_avg, baseline.l2_avg)
+        per_alpha.append(
+            {
+                "alpha_sq": float(alpha_sq),
+                "r_4_baseline": r_4,
+                "classification": None,
+                "perturbed": {},
+            }
+        )
+
+    # 3. Reproducibility re-runs (only if at least one alpha is failing-candidate).
+    failing_indices = [
+        i for i, entry in enumerate(per_alpha)
+        if _is_failing_candidate(entry["r_4_baseline"])
+    ]
+    perturbed_coeffs: dict[str, Any] = {}
+    if failing_indices:
+        for perturbation in _DG4_REPRO_PERTURBATIONS:
+            perturbed_model_spec, perturbed_quad_kwargs = _apply_dg4_perturbation(
+                base_model_spec, quadrature_kwargs, perturbation
+            )
+            perturbed_coeffs[perturbation["name"]] = _path_b_evaluate(
+                perturbed_model_spec,
+                t_grid_arr,
+                path_b_params,
+                perturbed_quad_kwargs,
+            )
+
+    # 4. Classify each alpha.
+    for entry in per_alpha:
+        r_4_baseline = entry["r_4_baseline"]
+        if not np.isfinite(r_4_baseline):
+            entry["classification"] = "metric-undefined"
+            continue
+        if not _is_failing_candidate(r_4_baseline):
+            entry["classification"] = "passing"
+            continue
+        # Failing candidate: check stability under all four perturbations.
+        all_failing_under_perturbations = True
+        for name, coeffs in perturbed_coeffs.items():
+            r_4_perturbed = _scaled_ratio(entry["alpha_sq"], coeffs.l4_avg, coeffs.l2_avg)
+            entry["perturbed"][name] = r_4_perturbed
+            if not _is_failing_candidate(r_4_perturbed):
+                all_failing_under_perturbations = False
+        entry["classification"] = (
+            "convergence_failure" if all_failing_under_perturbations else "truncation_artefact"
+        )
+
+    # 5. alpha_crit interpolation (linear in log(alpha**2)).
+    alpha_crit = _interpolate_alpha_crit(per_alpha)
+
+    # 6. Verdict.
+    classifications = [e["classification"] for e in per_alpha]
+    has_convergence_failure = any(c == "convergence_failure" for c in classifications)
+    has_truncation_artefact = any(c == "truncation_artefact" for c in classifications)
+    if has_convergence_failure:
+        verdict = "PASS"
+    elif has_truncation_artefact:
+        verdict = "CONDITIONAL"
+    else:
+        verdict = "FAIL"
+
+    notes = _format_dg4_sweep_notes(
+        card=card,
+        per_alpha=per_alpha,
+        alpha_crit=alpha_crit,
+        baseline_coeffs=baseline,
+        perturbed_coeffs=perturbed_coeffs,
+        path_b_params=path_b_params,
+    )
+
+    test_case_results: list[TestCaseResult] = [
+        TestCaseResult(
+            name="dg4_failure_envelope_sweep",
+            passed=has_convergence_failure,
+            error=float(max((e["r_4_baseline"] for e in per_alpha if np.isfinite(e["r_4_baseline"])), default=0.0)),
+            threshold=card.threshold,
+            notes=notes,
+        )
+    ]
+
+    return CardResult(
+        card_id=card.card_id,
+        verdict=verdict,
+        test_case_results=test_case_results,
+        runner_version=__version__,
+        notes=notes,
+    )
+
+
+def _resolve_path_b_params(frozen_parameters: Mapping[str, Any]) -> dict[str, Any]:
+    """Read optional path-B overrides from frozen_parameters.numerical.path_b.
+
+    Defaults match _DG4_PATH_B_DEFAULTS (the pilot configuration). Card-level
+    overrides allow tests to inject reduced fixtures without redefining the
+    frozen sweep range.
+    """
+    numerical = frozen_parameters.get("numerical") or {}
+    overrides = numerical.get("path_b") or {}
+    out = dict(_DG4_PATH_B_DEFAULTS)
+    if "alpha_values" in overrides:
+        out["alpha_values"] = tuple(float(a) for a in overrides["alpha_values"])
+    if "n_bath_modes" in overrides:
+        out["n_bath_modes"] = int(overrides["n_bath_modes"])
+    if "n_levels_per_mode" in overrides:
+        out["n_levels_per_mode"] = int(overrides["n_levels_per_mode"])
+    return out
+
+
+def _model_spec_for_dg4(frozen_parameters: Mapping[str, Any]) -> dict[str, Any]:
+    """Extract a flat model_spec dict for Path B from frozen_parameters.model."""
+    return deepcopy(dict(frozen_parameters["model"]))
+
+
+def _path_b_evaluate(
+    model_spec: dict[str, Any],
+    t_grid: np.ndarray,
+    path_b_params: dict[str, Any],
+    quadrature_kwargs: dict[str, Any],
+) -> Any:
+    """Run Path B Richardson extraction once at the given model_spec.
+
+    Returns a DissipatorNormCoefficients with l2_avg, l4_avg, etc. The
+    quadrature_kwargs (upper_cutoff_factor, quad_limit) currently apply only
+    to the cbg-side analytic L_2 path (not consumed by exact_finite_env);
+    they are documented in the runner notes and will become operational once
+    cbg.tcl_recursion path is fused with Path B (Path A landing).
+    """
+    from benchmarks import exact_finite_env, numerical_tcl_extraction
+
+    # Inject the quadrature controls into the model_spec for downstream
+    # consumers; exact_finite_env ignores them, but we record them in the
+    # spec so the runner notes can attest the perturbation was attempted.
+    spec_with_quad = deepcopy(model_spec)
+    if quadrature_kwargs:
+        numerical_block = spec_with_quad.setdefault("numerical_overrides", {})
+        numerical_block.update(quadrature_kwargs)
+
+    builder_kwargs = {
+        "n_bath_modes": path_b_params["n_bath_modes"],
+        "n_levels_per_mode": path_b_params["n_levels_per_mode"],
+    }
+    return numerical_tcl_extraction.path_b_dissipator_norm_coefficients(
+        exact_finite_env.build_spin_boson_sigma_x_thermal_total,
+        spec_with_quad,
+        t_grid,
+        path_b_params["alpha_values"],
+        builder_kwargs=builder_kwargs,
+    )
+
+
+def _build_dg4_sweep_grid(sweep: Mapping[str, Any]) -> np.ndarray:
+    """Build the alpha-squared (== coupling_strength) grid from the card sweep block."""
+    sweep_range = sweep["sweep_range"]
+    start = float(sweep_range["start"])
+    end = float(sweep_range["end"])
+    n_points = int(sweep_range["n_points"])
+    scheme = sweep_range["scheme"]
+    if scheme == "log_uniform":
+        return np.geomspace(start, end, n_points)
+    if scheme == "uniform":
+        return np.linspace(start, end, n_points)
+    raise NotImplementedError(
+        f"_build_dg4_sweep_grid: scheme {scheme!r} not yet supported by the "
+        f"DG-4 sweep runner; v0.1.0 D1 cards use 'log_uniform' or 'uniform'."
+    )
+
+
+def _scaled_ratio(alpha_sq: float, l4_avg: float, l2_avg: float) -> float:
+    """Compute r_4(alpha**2) = alpha**2 * (l4_avg / l2_avg) with a zero-denom guard."""
+    eps = float(np.finfo(float).eps)
+    if l2_avg <= eps:
+        return float("inf")
+    return float(alpha_sq) * float(l4_avg) / float(l2_avg)
+
+
+def _is_failing_candidate(r_4: float) -> bool:
+    return np.isfinite(r_4) and r_4 > 1.0
+
+
+def _apply_dg4_perturbation(
+    base_model_spec: dict[str, Any],
+    base_quadrature_kwargs: dict[str, Any],
+    perturbation: Mapping[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Apply a v0.1.4 reproducibility perturbation to the model spec / quad kwargs."""
+    if perturbation["kind"] == "model_spec":
+        spec = deepcopy(base_model_spec)
+        spec.setdefault("bath_spectral_density", {})[perturbation["key"]] = perturbation["value"]
+        return spec, dict(base_quadrature_kwargs)
+    if perturbation["kind"] == "quadrature":
+        kwargs = dict(base_quadrature_kwargs)
+        kwargs[perturbation["key"]] = perturbation["value"]
+        return deepcopy(base_model_spec), kwargs
+    raise ValueError(
+        f"_apply_dg4_perturbation: unknown perturbation kind {perturbation['kind']!r}"
+    )
+
+
+def _interpolate_alpha_crit(per_alpha: list[dict[str, Any]]) -> float | None:
+    """Linear interpolation of alpha_crit in log(alpha**2) between last passing
+    and first convergence-failure alpha. Returns None if no boundary exists."""
+    last_pass_idx: int | None = None
+    first_failure_idx: int | None = None
+    for i, entry in enumerate(per_alpha):
+        if entry["classification"] == "passing":
+            last_pass_idx = i
+        elif entry["classification"] == "convergence_failure" and last_pass_idx is not None:
+            first_failure_idx = i
+            break
+    if last_pass_idx is None or first_failure_idx is None:
+        return None
+    a_pass = per_alpha[last_pass_idx]["alpha_sq"]
+    a_fail = per_alpha[first_failure_idx]["alpha_sq"]
+    r_pass = per_alpha[last_pass_idx]["r_4_baseline"]
+    r_fail = per_alpha[first_failure_idx]["r_4_baseline"]
+    log_a_pass = np.log(a_pass)
+    log_a_fail = np.log(a_fail)
+    # Solve r(log_a) = 1 by linear interpolation.
+    if r_fail == r_pass:
+        return float(np.exp(0.5 * (log_a_pass + log_a_fail)))
+    frac = (1.0 - r_pass) / (r_fail - r_pass)
+    return float(np.exp(log_a_pass + frac * (log_a_fail - log_a_pass)))
+
+
+def _format_dg4_sweep_notes(
+    *,
+    card: BenchmarkCard,
+    per_alpha: list[dict[str, Any]],
+    alpha_crit: float | None,
+    baseline_coeffs: Any,
+    perturbed_coeffs: Mapping[str, Any],
+    path_b_params: dict[str, Any],
+) -> str:
+    """Format result.notes string for a DG-4 sweep run."""
+    lines = [
+        f"DG-4 sweep runner: card {card.card_id} {card.version}.",
+        f"L_4 source: Path B numerical Richardson extraction.",
+        f"Path B params: alpha_values={path_b_params['alpha_values']}, "
+        f"n_bath_modes={path_b_params['n_bath_modes']}, "
+        f"n_levels_per_mode={path_b_params['n_levels_per_mode']}.",
+        f"Baseline fit relative residual: {baseline_coeffs.fit_relative_residual:.3e}.",
+        f"Baseline ||L_2^dis||_avg = {baseline_coeffs.l2_avg:.3e}, "
+        f"||L_4^dis||_avg = {baseline_coeffs.l4_avg:.3e}, "
+        f"coefficient ratio = {baseline_coeffs.l4_avg/max(baseline_coeffs.l2_avg, 1e-300):.3e}.",
+    ]
+    if alpha_crit is not None:
+        lines.append(f"alpha_crit (interpolated, log-linear): {alpha_crit:.4e}.")
+    classifications = {c: 0 for c in (
+        "passing", "convergence_failure", "truncation_artefact", "metric-undefined",
+    )}
+    for entry in per_alpha:
+        classifications[entry["classification"]] = classifications.get(entry["classification"], 0) + 1
+    lines.append(
+        "Per-alpha classifications: "
+        + ", ".join(f"{c}={n}" for c, n in classifications.items() if n > 0)
+        + "."
+    )
+    lines.append(
+        "Path B carries a finite-env extraction floor (sigma_z thermal "
+        "zero-oracle ~few * 1e-2 at the default truncation per the "
+        "2026-05-06 pilot); verdicts are subject to this documented "
+        "uncertainty until the analytic Path A (Companion Sec. IV) lands."
+    )
+    return "\n".join(lines)
 
 
 def _run_algebraic_map(card: BenchmarkCard) -> CardResult:

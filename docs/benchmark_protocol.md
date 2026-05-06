@@ -2,7 +2,7 @@
 
 **Layer:** Repository protective scaffolding
 **Anchor:** Sail v0.5 §11 (four explicit content requirements)
-**Last updated:** 2026-05-06 (DG-4 D1 v0.1.1 supersedure — σ_x thermal parity-aware `r_4` card frozen; n=4 source and sweep runner still pending)
+**Last updated:** 2026-05-06 (DG-4 Phase C sweep runner wired; D1 v0.1.1 runs through `_run_dg4_sweep` to a structured CardResult via Path B; no Phase D verdict)
 
 ---
 
@@ -99,7 +99,7 @@ One DG-4 failure-envelope card is frozen:
 
 The v0.1.0 predecessor targeted pure_dephasing and is superseded: thermal pure dephasing is TCL-2 exact, so no order-4 convergence signal can appear. D1 v0.1.1 adopts the σ_x thermal model and the parity-aware even-order dissipator ratio specified by DG-4 work plan v0.1.4. The Path B numerical pilot recorded on 2026-05-06 confirmed `||L_4^dis|| > 0` in the σ_x fixture, but Path B remains benchmark-side numerical extraction with a finite-env floor, not analytic n=4 completion.
 
-The runner does not yet support parameter sweeps; `run_card(D1 v0.1.1)` raises `DG4SweepRunnerNotImplementedError` naming the two missing pieces. The remaining gates before D1 v0.1.1 can be evaluated are (i) a trusted order-4 `L_4` source for the parity-aware ratio (Path A analytic preferred; Path B numerical only with an uncertainty note) and (ii) the sweep-block-aware runner branch consuming `frozen_parameters.sweep` per SCHEMA.md v0.1.3 Rule 17. The card defines the sweep range frozen *before* any run, per the parameter-freezing protocol §6.
+As of 2026-05-06 (Phase C complete), `run_card(D1 v0.1.1)` routes through `reporting.benchmark_card._run_dg4_sweep` and produces a structured `CardResult` with verdict (PASS / FAIL / CONDITIONAL), per-α classifications, and an interpolated `α_crit` in `result.notes`. The runner consumes Path B numerical Richardson extraction via `benchmarks/numerical_tcl_extraction.path_b_dissipator_norm_coefficients` as the L_4 source. Path B carries a documented finite-env extraction floor; the runner records this as an explicit uncertainty band in the result notes. The structural fallback `_refuse_dg4_sweep` is retained for non-σ_x / non-thermal cards. Path A (Companion Sec. IV analytic) remains the preferred deliverable for a clean machine-precision verdict; once it lands, the runner can switch to the cbg analytic path. The card defines the sweep range frozen *before* any run, per the parameter-freezing protocol §6.
 
 ## 5. DG-5 status tracking
 

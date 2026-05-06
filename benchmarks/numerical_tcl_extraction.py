@@ -33,6 +33,7 @@ from typing import Any
 import numpy as np
 
 from cbg.basis import matrix_unit_basis
+from cbg.effective_hamiltonian import K_from_generator
 
 
 @dataclass(frozen=True)
@@ -285,6 +286,159 @@ def fit_even_alpha_series_from_exact_env(
             )
         )
     return fit_even_alpha_series(alphas, np.asarray(maps), orders=orders, baseline=baseline)
+
+
+@dataclass(frozen=True)
+class DissipatorNormCoefficients:
+    """Time-averaged dissipator norm coefficients of L_2 and L_4.
+
+    The norms are *coefficients* in the alpha-power expansion
+    ``L_t(alpha) = L_0 + alpha**2 L_2 + alpha**4 L_4 + O(alpha**6)``,
+    so they are independent of any specific swept coupling strength.
+    The convergence-ratio metric for D1 v0.1.1 evaluates as
+
+        r_4(alpha**2) = alpha**2 * (l4_avg / l2_avg)
+
+    at each swept ``coupling_strength = alpha**2``.
+
+    Attributes
+    ----------
+    l2_per_t, l4_per_t : ndarray, shape (n_t,)
+        Per-grid-time Liouville-Frobenius norm of L_n^dissipator with
+        ``L_n^dissipator := L_n + i [K_n, .]`` (the corrected sign per
+        DG-4 work plan v0.1.4).
+    l2_avg, l4_avg : float
+        Time-averaged scalars.
+    fit_relative_residual : float
+        Path B Richardson polynomial fit's relative residual norm; see
+        EvenAlphaFit.
+    """
+
+    l2_per_t: np.ndarray
+    l4_per_t: np.ndarray
+    l2_avg: float
+    l4_avg: float
+    fit_relative_residual: float
+
+
+def path_b_dissipator_norm_coefficients(
+    builder: ExactEnvBuilder,
+    model_spec: Mapping[str, Any],
+    t_grid: Sequence[float],
+    alpha_values: Sequence[float],
+    *,
+    system_dim: int = 2,
+    builder_kwargs: Mapping[str, Any] | None = None,
+) -> DissipatorNormCoefficients:
+    """Path B end-to-end: returns ||L_2^dis|| and ||L_4^dis|| coefficients.
+
+    Pipeline:
+      1. Reconstruct Schrodinger-picture maps Lambda_t(alpha) at the
+         supplied alpha values via ``fit_even_alpha_series_from_exact_env``.
+      2. Convert to interaction picture by subtracting the alpha=0 closed-
+         system baseline that the fit already infers (the ``Lambda_0``
+         coefficient).  In practice we work with the alpha**2 and alpha**4
+         coefficients directly, which are picture-independent for the
+         dissipator part of L_n (the Hamiltonian piece transforms but is
+         removed by the dissipator extraction below).
+      3. Extract L_2 and L_4 generators via ``extract_tcl_generators_order4``.
+      4. For each grid time t, compute K_n via Letter Eq. (6) on the L_n
+         superoperator and form the dissipator residual
+         ``L_n^dis = L_n + i [K_n, .]`` (per DG-4 plan v0.1.4 sign).
+      5. Take the Liouville-Frobenius norm of L_n^dis at each t, average.
+
+    The returned values are the *coefficients* in the alpha-power
+    expansion (alpha-independent).  The runner scales them per swept
+    alpha**2 = coupling_strength.
+
+    See logbook ``2026-05-06_dg-4-path-b-pilot-result.md`` for the
+    finite-env extraction floor characterisation: the sigma_z thermal
+    zero-oracle gives ~few * 1e-2 at (n_bath_modes=4, n_levels=3) on
+    a t in [0, 3] grid; sigma_x thermal signal is ~27x above that.
+    """
+    # The exact-env builder produces raw Schrodinger-picture maps; for the
+    # alpha-power expansion we need a baseline (the closed-system map at
+    # alpha=0).  Compute it explicitly and pass as the fit baseline so the
+    # extracted Lambda_2, Lambda_4 are clean perturbative coefficients.
+    baseline_spec = deepcopy(dict(model_spec))
+    _set_nested_value(baseline_spec, ("bath_spectral_density", "coupling_strength"), 0.0)
+    baseline_maps = reconstruct_schrodinger_maps_from_exact_env(
+        builder,
+        baseline_spec,
+        t_grid,
+        system_dim=system_dim,
+        builder_kwargs=builder_kwargs,
+    )
+
+    fit = fit_even_alpha_series_from_exact_env(
+        builder,
+        model_spec,
+        alpha_values,
+        t_grid,
+        system_dim=system_dim,
+        builder_kwargs=builder_kwargs,
+        orders=(2, 4),
+        baseline=baseline_maps,
+    )
+    if 2 not in fit.coefficients or 4 not in fit.coefficients:
+        raise ValueError(
+            "path_b_dissipator_norm_coefficients: Path B fit must include "
+            "orders 2 and 4; got coefficients for "
+            f"{sorted(fit.coefficients.keys())!r}"
+        )
+    extraction = extract_tcl_generators_order4(
+        fit.coefficients[2], fit.coefficients[4], t_grid
+    )
+    l2_per_t = _liouville_dissipator_frobenius_norms(extraction.L2, system_dim)
+    l4_per_t = _liouville_dissipator_frobenius_norms(extraction.L4, system_dim)
+    return DissipatorNormCoefficients(
+        l2_per_t=l2_per_t,
+        l4_per_t=l4_per_t,
+        l2_avg=float(np.mean(l2_per_t)),
+        l4_avg=float(np.mean(l4_per_t)),
+        fit_relative_residual=float(fit.relative_residual_norm),
+    )
+
+
+def _liouville_dissipator_frobenius_norms(
+    L_array: np.ndarray, system_dim: int
+) -> np.ndarray:
+    """For each t in L_array shape (n_t, d^2, d^2), compute ||L^dis||_F.
+
+    L^dis := L + i [K, .] under the repository convention
+    L[X] = -i [K, X] + dissipator (cbg.effective_hamiltonian:82).
+    K is extracted from L via Letter Eq. (6) using the matrix-unit basis.
+    The returned norm is the Frobenius (= Hilbert-Schmidt) norm of the
+    d^2 x d^2 Liouville matrix of L^dis in the matrix-unit basis.
+    """
+    L_array = np.asarray(L_array, dtype=complex)
+    if L_array.ndim != 3:
+        raise ValueError(
+            f"L_array must have shape (n_t, d^2, d^2); got {L_array.shape}"
+        )
+    n_t, d_sq_a, d_sq_b = L_array.shape
+    if d_sq_a != d_sq_b or d_sq_a != system_dim * system_dim:
+        raise ValueError(
+            f"L_array shape {L_array.shape} inconsistent with system_dim={system_dim}"
+        )
+
+    d = system_dim
+    basis = matrix_unit_basis(d)
+    norms = np.zeros(n_t, dtype=float)
+    for t_idx in range(n_t):
+        L_matrix = L_array[t_idx]
+
+        def L_apply(X, _M=L_matrix, _d=d):
+            return (_M @ X.reshape(_d * _d)).reshape(_d, _d)
+
+        K = K_from_generator(L_apply, basis)
+        L_dis_matrix = np.zeros((d * d, d * d), dtype=complex)
+        for col, F_col in enumerate(basis):
+            L_F = L_apply(F_col) + 1j * (K @ F_col - F_col @ K)
+            for row, F_row in enumerate(basis):
+                L_dis_matrix[row, col] = np.trace(F_row.conj().T @ L_F)
+        norms[t_idx] = float(np.linalg.norm(L_dis_matrix, ord="fro"))
+    return norms
 
 
 def _as_alpha_values(alpha_values: Sequence[float]) -> np.ndarray:

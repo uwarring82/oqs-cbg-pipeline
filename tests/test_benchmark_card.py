@@ -845,32 +845,109 @@ def test_run_card_e1_raises_scope_definition_error():
     assert "failure_mode_log" in msg or "result.notes" in msg
 
 
-def test_run_card_d1_raises_dg4_sweep_error():
-    """run_card on a DG-4 sweep card raises a clean
-    DG4SweepRunnerNotImplementedError naming the missing pieces, not the
-    legacy KeyError that came from the dynamical runner mistakenly seeing
-    a sweep-bearing model spec."""
-    card = bc.load_card(D1_PATH_FOR_RUN)
+def _reduced_d1_v011_card(
+    *,
+    n_points_sweep: int = 4,
+    t_end: float = 1.0,
+    n_t: int = 11,
+    alpha_values=(0.01, 0.02, 0.03),
+    n_bath_modes: int = 2,
+    n_levels_per_mode: int = 2,
+) -> bc.BenchmarkCard:
+    """Load D1 v0.1.1 with a reduced fixture for fast Phase C smoke tests.
+
+    The frozen card targets n_bath_modes=4, n_levels=3, 20-point sweep.
+    Production runs at full resolution take ~150s; tests override via the
+    runner-side numerical.path_b extras block + a smaller sweep grid.
+    """
+    data = copy.deepcopy(_load_raw(D1_PATH_FOR_RUN))
+    data["frozen_parameters"]["numerical"]["time_grid"]["t_end"] = t_end
+    data["frozen_parameters"]["numerical"]["time_grid"]["n_points"] = n_t
+    data["frozen_parameters"]["sweep"]["sweep_range"]["n_points"] = n_points_sweep
+    data["frozen_parameters"]["numerical"]["path_b"] = {
+        "alpha_values": list(alpha_values),
+        "n_bath_modes": n_bath_modes,
+        "n_levels_per_mode": n_levels_per_mode,
+    }
+    bc.validate_card_data(data)
+    return bc._data_to_card(data)
+
+
+def test_run_card_d1_runs_dg4_sweep_to_verdict():
+    """Phase C of the DG-4 work plan v0.1.4: run_card on D1 v0.1.1
+    routes through _run_dg4_sweep (no longer raises) and returns a
+    CardResult with a structured DG-4 verdict.
+    """
+    card = _reduced_d1_v011_card()
+    result = bc.run_card(card)
+    assert result.card_id == "D1"
+    assert result.verdict in {"PASS", "FAIL", "CONDITIONAL"}
+    assert result.runner_version == bc.__version__
+    assert len(result.test_case_results) == 1
+    tcr = result.test_case_results[0]
+    assert tcr.name == "dg4_failure_envelope_sweep"
+    # Verdict-vs-passed parity: PASS iff the single test_case passed.
+    assert tcr.passed == (result.verdict == "PASS")
+
+
+def test_run_card_d1_dispatches_to_dg4_runner_not_dynamical():
+    """D1 v0.1.1 has no test_cases (it carries a sweep block instead).
+    If dispatch fell through to _run_dynamical, that would raise KeyError.
+    The DG-4 branch must fire first."""
+    card = _reduced_d1_v011_card()
+    # If this raises KeyError, the DG-4 dispatch is broken.
+    bc.run_card(card)
+
+
+def test_run_card_d1_notes_record_path_b_floor_caveat():
+    """Path B is benchmark-side numerical extraction with a documented
+    finite-env floor; the verdict notes must call this out so verdicts
+    carry the uncertainty band per DG-4 work plan v0.1.4 §3 Phase C."""
+    card = _reduced_d1_v011_card()
+    result = bc.run_card(card)
+    assert "Path B" in result.notes
+    assert "finite-env" in result.notes or "uncertainty" in result.notes
+
+
+def test_run_card_d1_alpha_crit_interpolation_when_boundary_present():
+    """When the sweep grid spans both passing (r_4 ≤ 1) and convergence-
+    failure (r_4 > 1) regions, the runner reports an interpolated
+    alpha_crit in result.notes."""
+    card = _reduced_d1_v011_card()
+    result = bc.run_card(card)
+    if result.verdict == "PASS":
+        assert "alpha_crit" in result.notes
+    # FAIL or CONDITIONAL outcomes don't always have alpha_crit; only PASS
+    # guarantees a boundary-interpolation entry.
+
+
+def test_dg4_sweep_runner_refuses_non_sigma_x_with_clear_error():
+    """The Path B helper currently supports only sigma_x + thermal. A DG-4
+    card with a different coupling operator must raise the structured
+    DG4SweepRunnerNotImplementedError, not silently produce a meaningless
+    verdict."""
+    card = _reduced_d1_v011_card()
+    # Mutate the card in-memory to trigger the refusal branch.
+    card.frozen_parameters["model"]["coupling_operator"] = "sigma_z"
     with pytest.raises(bc.DG4SweepRunnerNotImplementedError) as exc_info:
         bc.run_card(card)
     msg = str(exc_info.value)
-    assert "D1" in msg
-    assert "DG-4" in msg
-    # Sweep summary surfaced from the card's frozen sweep block.
-    assert "coupling_strength" in msg
-    # Missing-pieces section names both gaps explicitly.
-    assert "L_4" in msg or "n=4" in msg
-    assert "Rule 17" in msg or "sweep" in msg.lower()
+    assert "sigma_x" in msg or "Path A" in msg
 
 
-def test_run_card_d1_refusal_takes_precedence_over_dynamical_dispatch():
-    """D1's frozen_parameters has no 'test_cases' key; if the DG-4 refusal
-    branch did not fire first, run_card would raise a KeyError from the
-    dynamical handler. The refusal path must take precedence so the
-    error message is actionable."""
-    card = bc.load_card(D1_PATH_FOR_RUN)
-    with pytest.raises(bc.DG4SweepRunnerNotImplementedError):
+def test_dg4_sweep_runner_refuses_non_thermal_with_clear_error():
+    """Path B Phase C wiring also requires thermal Gaussian; non-thermal
+    bath states route to the structured deferral."""
+    card = _reduced_d1_v011_card()
+    card.frozen_parameters["model"]["bath_state"] = {
+        "family": "coherent_displaced",
+        "displacement_profile": "delta-omega_c",
+        "parameters": {"alpha_0": 1.0, "omega_c": 10.0},
+    }
+    with pytest.raises(bc.DG4SweepRunnerNotImplementedError) as exc_info:
         bc.run_card(card)
+    msg = str(exc_info.value)
+    assert "thermal" in msg.lower()
 
 
 def test_run_card_e1_refusal_takes_precedence_over_model_factory():
