@@ -950,6 +950,104 @@ def test_dg4_sweep_runner_refuses_non_thermal_with_clear_error():
     assert "thermal" in msg.lower()
 
 
+def test_dg4_sweep_data_contains_per_alpha_and_per_perturbation_payload(tmp_path):
+    """v0.1.2 supersedure audit completeness: the runner must persist the
+    full sweep table — per-alpha r_4_baseline, per-alpha-per-perturbation
+    r_4, per-perturbation Path B fit residuals + dissipator-norm
+    coefficients — so the result JSON is reconstruction-complete.
+    """
+    card = _reduced_d1_v011_card()
+    result = bc.run_card(card)
+    sweep = result.dg4_sweep_data
+    assert sweep is not None, "dg4_sweep_data must be populated by the DG-4 runner"
+
+    # Path B params shape.
+    assert "alpha_values" in sweep["path_b_params"]
+    assert "n_bath_modes" in sweep["path_b_params"]
+    assert "n_levels_per_mode" in sweep["path_b_params"]
+
+    # Baseline coefficients fully audited.
+    for key in (
+        "fit_relative_residual",
+        "l2_dissipator_avg",
+        "l4_dissipator_avg",
+        "coefficient_ratio",
+    ):
+        assert key in sweep["baseline"]
+        assert isinstance(sweep["baseline"][key], float)
+
+    # Per-alpha entries: one per swept point, with r_4_baseline +
+    # classification + perturbed_r_4 dict.
+    n_swept = card.frozen_parameters["sweep"]["sweep_range"]["n_points"]
+    assert len(sweep["per_alpha"]) == n_swept
+    for entry in sweep["per_alpha"]:
+        assert "alpha_sq" in entry
+        assert "r_4_baseline" in entry
+        assert "classification" in entry
+        assert "perturbed_r_4" in entry
+        # When the alpha is a failing candidate, all four perturbations were
+        # evaluated and recorded.
+        if entry["classification"] in ("convergence_failure", "truncation_artefact"):
+            assert set(entry["perturbed_r_4"]).issuperset(
+                {p["name"] for p in bc._DG4_REPRO_PERTURBATIONS}
+            )
+
+    # Per-perturbation records, one per perturbation in the v0.1.4 set.
+    perturbation_names = {p["name"] for p in sweep["perturbations"]}
+    assert perturbation_names == {p["name"] for p in bc._DG4_REPRO_PERTURBATIONS}
+    # All four are now operational (post-2b repair).
+    for p in sweep["perturbations"]:
+        assert p["operational_in_path_b"] is True
+
+    # Top-level rollups.
+    assert isinstance(sweep["max_baseline_r4"], float)
+    assert isinstance(sweep["classification_counts"], dict)
+    assert "alpha_crit" in sweep  # may be None or a float
+
+
+def test_write_dg4_result_json_round_trip(tmp_path):
+    """The audit-complete writer must produce a JSON artefact containing
+    the full sweep table; reconstruction from the file alone must agree
+    with the in-memory sweep data."""
+    import json
+
+    card = _reduced_d1_v011_card()
+    result = bc.run_card(card)
+    out = tmp_path / "D1_v0.1.2_test_result.json"
+    written = bc.write_dg4_result_json(
+        card,
+        result,
+        out,
+        run_window_utc={"start": "2026-05-06T00:00:00Z", "end": "2026-05-06T00:00:01Z"},
+        computed_at_utc="2026-05-06T00:00:01Z",
+    )
+    assert written == out
+    assert out.exists()
+    payload = json.loads(out.read_text())
+    assert payload["card_id"] == card.card_id
+    assert payload["verdict"] == result.verdict
+    assert payload["per_alpha"] == result.dg4_sweep_data["per_alpha"]
+    assert payload["perturbations"] == result.dg4_sweep_data["perturbations"]
+    assert payload["baseline"] == result.dg4_sweep_data["baseline"]
+    assert payload["alpha_crit"] == result.dg4_sweep_data["alpha_crit"]
+    assert payload["computed_at_utc"] == "2026-05-06T00:00:01Z"
+    assert payload["run_window_utc"]["start"] == "2026-05-06T00:00:00Z"
+
+
+def test_write_dg4_result_json_refuses_non_dg4_results(tmp_path):
+    """The writer is for DG-4 sweep results only. Pass a CardResult with
+    no sweep payload and the writer must refuse cleanly."""
+    fake = bc.CardResult(
+        card_id="X1",
+        verdict="PASS",
+        test_case_results=[],
+        runner_version="0.0.0",
+    )
+    card = _reduced_d1_v011_card()
+    with pytest.raises(ValueError, match="dg4_sweep_data"):
+        bc.write_dg4_result_json(card, fake, tmp_path / "out.json")
+
+
 def test_dg4_path_b_upper_cutoff_factor_is_operational():
     """v0.1.2 supersedure repair: the upper_cutoff_factor perturbation must
     now produce a non-trivial change in the Path B coefficients via the

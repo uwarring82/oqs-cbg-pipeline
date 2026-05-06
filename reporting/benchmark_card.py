@@ -240,6 +240,12 @@ class CardResult:
     test_case_results: list[TestCaseResult]
     runner_version: str
     notes: str = ""
+    # DG-4 audit-completeness payload. Populated only by ``_run_dg4_sweep``.
+    # Persists the full sweep table (per-alpha r_4 baseline + per-perturbation
+    # r_4, per-perturbation Path B fit residuals and dissipator-norm
+    # coefficients) so the result JSON written from this CardResult is
+    # reproducibility-complete (DG-4 work plan v0.1.4 audit requirement).
+    dg4_sweep_data: dict[str, Any] | None = None
 
 
 # ─── Loader ──────────────────────────────────────────────────────────────────
@@ -1549,13 +1555,109 @@ def _run_dg4_sweep(card: BenchmarkCard) -> CardResult:
         )
     ]
 
+    sweep_data = _build_dg4_sweep_data(
+        path_b_params=path_b_params,
+        baseline_coeffs=baseline,
+        perturbed_coeffs=perturbed_coeffs,
+        per_alpha=per_alpha,
+        alpha_crit=alpha_crit,
+    )
+
     return CardResult(
         card_id=card.card_id,
         verdict=verdict,
         test_case_results=test_case_results,
         runner_version=__version__,
         notes=notes,
+        dg4_sweep_data=sweep_data,
     )
+
+
+def _coefficients_to_dict(coeffs: Any) -> dict[str, float]:
+    """Serialise a DissipatorNormCoefficients dataclass to a plain dict.
+
+    Drops the per-time arrays (l2_per_t, l4_per_t) — those are large and
+    not needed for audit reconstruction; the runtime invariant is that
+    ``l2_avg = mean(l2_per_t)`` and likewise for l4.
+    """
+    return {
+        "fit_relative_residual": float(coeffs.fit_relative_residual),
+        "l2_dissipator_avg": float(coeffs.l2_avg),
+        "l4_dissipator_avg": float(coeffs.l4_avg),
+        "coefficient_ratio": float(coeffs.l4_avg / max(coeffs.l2_avg, 1e-300)),
+    }
+
+
+def _build_dg4_sweep_data(
+    *,
+    path_b_params: dict[str, Any],
+    baseline_coeffs: Any,
+    perturbed_coeffs: Mapping[str, Any],
+    per_alpha: list[dict[str, Any]],
+    alpha_crit: float | None,
+) -> dict[str, Any]:
+    """Assemble the audit-complete DG-4 sweep payload (v0.1.2 supersedure).
+
+    Persists per-alpha r_4_baseline, per-alpha-per-perturbation r_4, and
+    per-perturbation Path B fit residuals + dissipator-norm coefficients,
+    so the verdict's evidence is reproducibility-complete from the
+    artefact alone.
+    """
+    counts = {c: 0 for c in (
+        "passing", "convergence_failure", "truncation_artefact", "metric-undefined",
+    )}
+    for entry in per_alpha:
+        cls = entry["classification"]
+        counts[cls] = counts.get(cls, 0) + 1
+
+    perturbation_records: list[dict[str, Any]] = []
+    for spec in _DG4_REPRO_PERTURBATIONS:
+        name = spec["name"]
+        coeffs = perturbed_coeffs.get(name)
+        rec: dict[str, Any] = {
+            "name": name,
+            "kind": spec["kind"],
+            "key": spec["key"],
+            "value": spec["value"],
+            "operational_in_path_b": True,
+            "evaluated": coeffs is not None,
+        }
+        if coeffs is not None:
+            rec.update(_coefficients_to_dict(coeffs))
+        perturbation_records.append(rec)
+
+    return {
+        "path_b_params": {
+            "alpha_values": [float(a) for a in path_b_params["alpha_values"]],
+            "n_bath_modes": int(path_b_params["n_bath_modes"]),
+            "n_levels_per_mode": int(path_b_params["n_levels_per_mode"]),
+        },
+        "baseline": _coefficients_to_dict(baseline_coeffs),
+        "per_alpha": [
+            {
+                "alpha_sq": float(entry["alpha_sq"]),
+                "r_4_baseline": (
+                    float(entry["r_4_baseline"])
+                    if np.isfinite(entry["r_4_baseline"])
+                    else None
+                ),
+                "classification": entry["classification"],
+                "perturbed_r_4": {
+                    name: float(value) for name, value in entry["perturbed"].items()
+                },
+            }
+            for entry in per_alpha
+        ],
+        "perturbations": perturbation_records,
+        "alpha_crit": float(alpha_crit) if alpha_crit is not None else None,
+        "classification_counts": counts,
+        "max_baseline_r4": float(
+            max(
+                (e["r_4_baseline"] for e in per_alpha if np.isfinite(e["r_4_baseline"])),
+                default=0.0,
+            )
+        ),
+    }
 
 
 def _resolve_path_b_params(frozen_parameters: Mapping[str, Any]) -> dict[str, Any]:
@@ -2569,6 +2671,96 @@ def _quadrature_kwargs(frozen_parameters: Mapping[str, Any]) -> dict[str, Any]:
     if "quad_limit" in quadrature:
         out["quad_limit"] = quadrature["quad_limit"]
     return out
+
+
+# ─── DG-4 audit-complete result-JSON writer ─────────────────────────────────
+
+
+def write_dg4_result_json(
+    card: BenchmarkCard,
+    run_result: CardResult,
+    output_path: Path | str,
+    *,
+    run_window_utc: Mapping[str, str] | None = None,
+    computed_at_utc: str | None = None,
+    indent: int = 2,
+) -> Path:
+    """Write an audit-complete DG-4 result JSON artefact.
+
+    Persists the full sweep table from ``run_result.dg4_sweep_data`` plus
+    card-level metadata, so a reader can reconstruct the verdict from the
+    artefact alone (DG-4 work plan v0.1.4 audit requirement, addressing
+    the v0.1.1 supersedure's MEDIUM finding).
+
+    Returns the path the JSON was written to.
+    """
+    import json
+
+    if run_result.dg4_sweep_data is None:
+        raise ValueError(
+            "write_dg4_result_json: run_result has no dg4_sweep_data; "
+            "this writer is for DG-4 sweep verdicts only."
+        )
+    sweep = run_result.dg4_sweep_data
+    output_path = Path(output_path)
+
+    payload: dict[str, Any] = {
+        "card_id": card.card_id,
+        "card_version": card.version,
+        "card_path": (
+            str(card.source_path) if getattr(card, "source_path", None) else None
+        ),
+        "schema_version": card.schema_version,
+        "ledger_entry": card.ledger_entry,
+        "verdict": run_result.verdict,
+        "runner_version": run_result.runner_version,
+        "l4_source": "Path B numerical Richardson extraction (interaction-picture transformed)",
+        "path_b_params": sweep["path_b_params"],
+        "baseline": sweep["baseline"],
+        "max_baseline_r4": sweep["max_baseline_r4"],
+        "threshold": card.threshold,
+        "frozen_sweep": _summarise_frozen_sweep(card),
+        "alpha_crit": sweep["alpha_crit"],
+        "classification_counts": sweep["classification_counts"],
+        "per_alpha": sweep["per_alpha"],
+        "perturbations": sweep["perturbations"],
+        "test_case_results": [
+            {
+                "name": tcr.name,
+                "passed": tcr.passed,
+                "error": float(tcr.error),
+                "threshold": float(tcr.threshold),
+                "notes": tcr.notes,
+            }
+            for tcr in run_result.test_case_results
+        ],
+        "notes": run_result.notes,
+    }
+    if computed_at_utc is not None:
+        payload["computed_at_utc"] = computed_at_utc
+    if run_window_utc is not None:
+        payload["run_window_utc"] = dict(run_window_utc)
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w") as f:
+        json.dump(payload, f, indent=indent)
+        f.write("\n")
+    return output_path
+
+
+def _summarise_frozen_sweep(card: BenchmarkCard) -> dict[str, Any]:
+    """Extract the frozen sweep block summary for the result JSON."""
+    sweep = card.frozen_parameters.get("sweep") if isinstance(card.frozen_parameters, dict) else None
+    if not isinstance(sweep, dict):
+        return {}
+    sweep_range = sweep.get("sweep_range", {})
+    return {
+        "parameter_name": sweep.get("parameter_name"),
+        "start": sweep_range.get("start"),
+        "end": sweep_range.get("end"),
+        "n_points": sweep_range.get("n_points"),
+        "scheme": sweep_range.get("scheme"),
+    }
 
 
 # ─── Result-block writer (in-memory) ─────────────────────────────────────────
