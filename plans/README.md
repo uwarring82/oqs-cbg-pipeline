@@ -54,6 +54,12 @@ This index is the canonical source of truth for *current* plan status. Updating 
 | [DG-3 Work Plan](dg-3-work-plan_v0.1.0.md) | v0.1.0 | draft | Phase A: cards frozen; Phase B–D pending | Sail v0.5 §9 (DG-3); baseline pair implementation + cross-method runner wiring. Cards C1, C2 frozen. |
 | [DG-4 Work Plan](dg-4-work-plan_v0.1.4.md) | v0.1.4 | draft | Phase A complete; B.0, B.1, B.2 (n=3), B.3 (n ∈ {0,1,2,3}), B.4 landed; Phase A.bis (D1 v0.1.1) + B.2/B.3 (n=4) + Phase C–D pending | Sail v0.5 §9 (DG-4); CL-2026-005 v0.4 Entry 2. v0.1.4 supersedes v0.1.3 with two corrections surfaced by Phase B.3 review: (1) the metric becomes the **parity-aware even-order ratio** `r_4 = ‖L_4^dis‖ / ‖L_2^dis‖`, since Phase B.3 (commit `b699950`) confirmed `‖L_3^dis‖ = 0` for σ_x thermal — the adjacent-order ratio of v0.1.3 would have marked the fixture `metric-undefined`; (2) the `omega_c` reproducibility perturbation is encoded by mutating `frozen_parameters.model.bath_spectral_density.cutoff_frequency` directly, NOT via the `numerical.quadrature` allow-list (which would silently no-op `omega_c`). |
 
+### Auxiliary route plans
+
+| Plan | Version | Operational status | Parent | Purpose |
+|---|---|---|---|---|
+| [DG-4 Path B Richardson Extraction](dg-4-path-b-richardson-extraction_v0.1.0.md) | v0.1.0 | draft | DG-4 work plan v0.1.4 Phase B.2 Path B | Numerical `Lambda_t` reconstruction and even-alpha Richardson extraction via `benchmarks/exact_finite_env`; benchmark-side only, not a replacement for analytic `cbg.tcl_recursion` order-4 recursion. |
+
 ### Superseded plans (retained for audit)
 
 | Plan | Version | Superseded by | Date |
@@ -69,4 +75,4 @@ This index is the canonical source of truth for *current* plan status. Updating 
 
 ---
 
-*Last updated: 2026-05-06 (DG-4 work plan v0.1.4 supersedes v0.1.3: parity-aware even-order metric `r_4 = ‖L_4^dis‖/‖L_2^dis‖`; `omega_c` perturbation placed at `model.bath_spectral_density.cutoff_frequency`, not in `numerical.quadrature`). CC-BY-4.0 (see ../LICENSE-docs).*
+*Last updated: 2026-05-06 (DG-4 Path B auxiliary Richardson-extraction plan v0.1.0 added; active DG-4 work plan remains v0.1.4). CC-BY-4.0 (see ../LICENSE-docs).*

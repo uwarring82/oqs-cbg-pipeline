@@ -11,4 +11,8 @@ finite-truncation/solver assumptions that fail in correlated
 regimes. Full clearance requires at least one additional method
 family from a non-overlapping failure-mode class (HEOM, TEMPO,
 MCTDH, pseudomode/chain-mapping). See docs/benchmark_protocol.md §3.
+
+DG-4 Path B adds numerical_tcl_extraction.py as a benchmark-side extraction aid:
+it may reconstruct finite-environment maps and fit even TCL coefficients, but it
+is not an analytic recursion module and must not be imported by cbg/.
 """
