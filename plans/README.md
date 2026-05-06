@@ -52,7 +52,7 @@ This index is the canonical source of truth for *current* plan status. Updating 
 |---|---|---|---|---|
 | [DG-1 Work Plan](dg-1-work-plan_v0.1.4.md) | v0.1.4 | verdict-reached | **Verdict: PASS** (2026-04-30; tag `v0.2.0`) | Sail v0.5 §9 (DG-1); CL-2026-005 v0.4 Entries 1, 3, 4 (1.B.3, 3.B.3, 4.B.2 deferred to DG-2 per v0.1.4 §1.1 operationalisability carve-out). See [logbook/2026-04-30_dg-1-pass.md](../logbook/2026-04-30_dg-1-pass.md). |
 | [DG-3 Work Plan](dg-3-work-plan_v0.1.0.md) | v0.1.0 | draft | Phase A: cards frozen; Phase B–D pending | Sail v0.5 §9 (DG-3); baseline pair implementation + cross-method runner wiring. Cards C1, C2 frozen. |
-| [DG-4 Work Plan](dg-4-work-plan_v0.1.3.md) | v0.1.3 | draft | Phase A complete; B.0, B.1, B.2 (n=3), B.4 landed; Phase A.bis (D1 v0.1.1) + B.2 (n=4) + B.3 + Phase C–D pending | Sail v0.5 §9 (DG-4); CL-2026-005 v0.4 Entry 2 (recursive-series convergence; scope-limited). v0.1.3 supersedes v0.1.2 with an empirical narrowing of D1 v0.1.1's load-bearing reproducibility-perturbation set: Phase B.4 implementation (commit `c7e9999`) revealed that `quad_limit` is a no-op witness for production-like tuples (SciPy converges before 100 subintervals), so v0.1.3 drops it from the load-bearing set and adds `omega_c` ±1 as a substitute that genuinely changes the spectrum. This is Risk R6 firing as anticipated by v0.1.2. |
+| [DG-4 Work Plan](dg-4-work-plan_v0.1.4.md) | v0.1.4 | draft | Phase A complete; B.0, B.1, B.2 (n=3), B.3 (n ∈ {0,1,2,3}), B.4 landed; Phase A.bis (D1 v0.1.1) + B.2/B.3 (n=4) + Phase C–D pending | Sail v0.5 §9 (DG-4); CL-2026-005 v0.4 Entry 2. v0.1.4 supersedes v0.1.3 with two corrections surfaced by Phase B.3 review: (1) the metric becomes the **parity-aware even-order ratio** `r_4 = ‖L_4^dis‖ / ‖L_2^dis‖`, since Phase B.3 (commit `b699950`) confirmed `‖L_3^dis‖ = 0` for σ_x thermal — the adjacent-order ratio of v0.1.3 would have marked the fixture `metric-undefined`; (2) the `omega_c` reproducibility perturbation is encoded by mutating `frozen_parameters.model.bath_spectral_density.cutoff_frequency` directly, NOT via the `numerical.quadrature` allow-list (which would silently no-op `omega_c`). |
 
 ### Superseded plans (retained for audit)
 
@@ -65,7 +65,8 @@ This index is the canonical source of truth for *current* plan status. Updating 
 | [DG-4 Work Plan v0.1.0](dg-4-work-plan_v0.1.0.md) | v0.1.0 | [v0.1.1](dg-4-work-plan_v0.1.1.md) | 2026-05-05 |
 | [DG-4 Work Plan v0.1.1](dg-4-work-plan_v0.1.1.md) | v0.1.1 | [v0.1.2](dg-4-work-plan_v0.1.2.md) | 2026-05-05 |
 | [DG-4 Work Plan v0.1.2](dg-4-work-plan_v0.1.2.md) | v0.1.2 | [v0.1.3](dg-4-work-plan_v0.1.3.md) | 2026-05-06 |
+| [DG-4 Work Plan v0.1.3](dg-4-work-plan_v0.1.3.md) | v0.1.3 | [v0.1.4](dg-4-work-plan_v0.1.4.md) | 2026-05-06 |
 
 ---
 
-*Last updated: 2026-05-06 (DG-4 work plan v0.1.3 supersedes v0.1.2: empirical narrowing of D1 v0.1.1's load-bearing reproducibility-perturbation set after Phase B.4 implementation; quad_limit out, omega_c in). CC-BY-4.0 (see ../LICENSE-docs).*
+*Last updated: 2026-05-06 (DG-4 work plan v0.1.4 supersedes v0.1.3: parity-aware even-order metric `r_4 = ‖L_4^dis‖/‖L_2^dis‖`; `omega_c` perturbation placed at `model.bath_spectral_density.cutoff_frequency`, not in `numerical.quadrature`). CC-BY-4.0 (see ../LICENSE-docs).*
