@@ -25,6 +25,8 @@ DG-4 Phase B.1 scope (this module, 2026-05-06):
       indices at total order n = 2 and thermal Gaussian cumulants at
       n in {3, 4}. The mixed ordering follows cbg.bath_correlations'
       B.0 convention: times = tau_args + reversed(s_args).
+    - Phase B.4 threads ``quad_limit`` and ``upper_cutoff_factor``
+      through D_bar_2 and the scalar generic D_bar path.
 
 DG-2 / later scope (stubbed here):
     - Cumulants for n > 4.
@@ -361,6 +363,8 @@ def D_bar_2(
     *,
     bath_state: dict[str, Any],
     spectral_density: dict[str, Any],
+    upper_cutoff_factor: float = 30.0,
+    quad_limit: int = 200,
 ) -> np.ndarray:
     """Second generalised cumulant D̄_2(τ, s) = ⟨B(τ) B(s)⟩_connected on
     the time grid.
@@ -383,6 +387,9 @@ def D_bar_2(
         The card's bath_spectral_density mapping. Required keys: family
         ("ohmic" at DG-1), coupling_strength (= alpha), cutoff_frequency
         (= omega_c).
+    upper_cutoff_factor, quad_limit : optional
+        Quadrature controls forwarded to
+        ``bath_correlations.bath_two_point_thermal_array``.
 
     Returns
     -------
@@ -414,7 +421,14 @@ def D_bar_2(
     omega_c = float(spectral_density["cutoff_frequency"])
     temperature = float(bath_state["temperature"])
 
-    return bath_two_point_thermal_array(t_grid, alpha, omega_c, temperature)
+    return bath_two_point_thermal_array(
+        t_grid,
+        alpha,
+        omega_c,
+        temperature,
+        upper_cutoff_factor=upper_cutoff_factor,
+        quad_limit=quad_limit,
+    )
 
 
 # ─── Generic D_bar dispatch (existing-stub signature) ───────────────────────
@@ -460,7 +474,9 @@ def D_bar(tau_args, s_args, **kwargs):
     s_args : tuple of float
         Right-time arguments (s_1, ..., s_{n-k}).
     **kwargs
-        bath_state, spectral_density (as for D_bar_1, D_bar_2).
+        bath_state, spectral_density (as for D_bar_1, D_bar_2), and
+        optional quadrature controls ``upper_cutoff_factor`` and
+        ``quad_limit``.
 
     Raises
     ------
@@ -474,6 +490,8 @@ def D_bar(tau_args, s_args, **kwargs):
 
     bath_state = kwargs.get("bath_state")
     spectral_density = kwargs.get("spectral_density")
+    upper_cutoff_factor = float(kwargs.get("upper_cutoff_factor", 30.0))
+    quad_limit = int(kwargs.get("quad_limit", 200))
     if bath_state is None:
         raise ValueError("D_bar: bath_state kwarg required")
     if n_total == 0:
@@ -497,6 +515,8 @@ def D_bar(tau_args, s_args, **kwargs):
         times,
         bath_state=bath_state,
         spectral_density=spectral_density,
+        upper_cutoff_factor=upper_cutoff_factor,
+        quad_limit=quad_limit,
     )
 
 
@@ -512,6 +532,8 @@ def _D_bar_scalar_from_flat_times(
     *,
     bath_state: dict[str, Any],
     spectral_density: dict[str, Any],
+    upper_cutoff_factor: float = 30.0,
+    quad_limit: int = 200,
 ) -> complex:
     """Scalar connected cumulant for already-flattened operator times."""
     n_total = len(times)
@@ -526,6 +548,8 @@ def _D_bar_scalar_from_flat_times(
             np.asarray(times, dtype=float),
             bath_state=bath_state,
             spectral_density=spectral_density,
+            upper_cutoff_factor=upper_cutoff_factor,
+            quad_limit=quad_limit,
         )
         return complex(arr[0, 1])
     if n_total not in {3, 4}:
@@ -544,6 +568,8 @@ def _D_bar_scalar_from_flat_times(
         times,
         bath_state=bath_state,
         spectral_density=spectral_density,
+        upper_cutoff_factor=upper_cutoff_factor,
+        quad_limit=quad_limit,
     )
 
 
@@ -566,6 +592,8 @@ def _joint_cumulant_from_raw_moments(
     *,
     bath_state: dict[str, Any],
     spectral_density: dict[str, Any],
+    upper_cutoff_factor: float = 30.0,
+    quad_limit: int = 200,
 ) -> complex:
     """Connected cumulant from raw ordered moments via set partitions."""
     out = 0.0 + 0.0j
@@ -579,6 +607,8 @@ def _joint_cumulant_from_raw_moments(
                 block_times,
                 bath_state=bath_state,
                 spectral_density=spectral_density,
+                upper_cutoff_factor=upper_cutoff_factor,
+                quad_limit=quad_limit,
             )
         out += coefficient * term
     return complex(out)
@@ -589,6 +619,8 @@ def _raw_ordered_moment(
     *,
     bath_state: dict[str, Any],
     spectral_density: dict[str, Any],
+    upper_cutoff_factor: float = 30.0,
+    quad_limit: int = 200,
 ) -> complex:
     """Raw ordered bath moment for one block of flattened operator times."""
     n_total = len(times)
@@ -606,6 +638,8 @@ def _raw_ordered_moment(
             times[1],
             bath_state=bath_state,
             spectral_density=spectral_density,
+            upper_cutoff_factor=upper_cutoff_factor,
+            quad_limit=quad_limit,
         )
     if n_total in {3, 4}:
         return n_point_ordered(
@@ -613,6 +647,8 @@ def _raw_ordered_moment(
             (),
             bath_state,
             spectral_density=spectral_density,
+            upper_cutoff_factor=upper_cutoff_factor,
+            quad_limit=quad_limit,
         )
     raise NotImplementedError(f"_raw_ordered_moment: total order n={n_total} not implemented")
 

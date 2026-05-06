@@ -629,6 +629,50 @@ def test_run_card_dynamical_uses_correct_runner_version():
     assert result.runner_version == bc.__version__
 
 
+def test_run_card_dynamical_threads_quadrature_extras(monkeypatch):
+    seen = {}
+
+    def fake_K_total_thermal_on_grid(
+        N_card,
+        t_grid,
+        system_hamiltonian,
+        coupling_operator,
+        *,
+        bath_state,
+        spectral_density,
+        basis=None,
+        upper_cutoff_factor=30.0,
+        quad_limit=200,
+    ):
+        seen.update(
+            {
+                "N_card": N_card,
+                "upper_cutoff_factor": upper_cutoff_factor,
+                "quad_limit": quad_limit,
+                "basis": basis,
+            }
+        )
+        return np.repeat(np.asarray(system_hamiltonian)[None, :, :], len(t_grid), axis=0)
+
+    monkeypatch.setattr(bc, "K_total_thermal_on_grid", fake_K_total_thermal_on_grid)
+
+    card = bc.load_card(A3_PATH)
+    card.frozen_parameters["numerical"]["quadrature"] = {
+        "upper_cutoff_factor": 20.0,
+        "quad_limit": 100,
+        "ignored_future_key": "kept out of cbg.tcl_recursion",
+    }
+    result = bc.run_card(card)
+
+    assert result.verdict == "PASS"
+    assert seen == {
+        "N_card": 2,
+        "upper_cutoff_factor": 20.0,
+        "quad_limit": 100,
+        "basis": None,
+    }
+
+
 # ─── Runner: DG-3 cross-method cards ────────────────────────────────────────
 
 

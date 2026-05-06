@@ -160,6 +160,14 @@ def test_bath_two_point_negative_temperature_raises():
         bc.bath_two_point_thermal(0.0, alpha=0.05, omega_c=10.0, temperature=-0.1)
 
 
+def test_bath_two_point_upper_cutoff_factor_is_operational():
+    """B.4 smoke: changing the cutoff factor moves the finite-T correlator."""
+    common = {"alpha": 0.05, "omega_c": 10.0, "temperature": 0.5, "quad_limit": 200}
+    val_30 = bc.bath_two_point_thermal(0.1, upper_cutoff_factor=30.0, **common)
+    val_20 = bc.bath_two_point_thermal(0.1, upper_cutoff_factor=20.0, **common)
+    assert abs(val_30 - val_20) > 1e-9
+
+
 # ─── bath_two_point_thermal_array ──────────────────────────────────────────
 
 
@@ -215,6 +223,40 @@ def test_bath_two_point_array_2d_grid_raises():
         bc.bath_two_point_thermal_array(t, alpha=0.05, omega_c=10.0, temperature=0.5)
 
 
+def test_bath_two_point_array_threads_quadrature_knobs(monkeypatch):
+    calls = []
+
+    def fake_scalar(
+        t_diff,
+        alpha,
+        omega_c,
+        temperature,
+        *,
+        upper_cutoff_factor=30.0,
+        quad_limit=200,
+    ):
+        calls.append((t_diff, alpha, omega_c, temperature, upper_cutoff_factor, quad_limit))
+        return complex(t_diff)
+
+    monkeypatch.setattr(bc, "bath_two_point_thermal", fake_scalar)
+
+    t = np.array([0.0, 1.0])
+    C = bc.bath_two_point_thermal_array(
+        t,
+        alpha=0.05,
+        omega_c=10.0,
+        temperature=0.5,
+        upper_cutoff_factor=20.0,
+        quad_limit=100,
+    )
+
+    assert C.shape == (2, 2)
+    assert calls == [
+        (0.0, 0.05, 10.0, 0.5, 20.0, 100),
+        (1.0, 0.05, 10.0, 0.5, 20.0, 100),
+    ]
+
+
 # ─── two_point: generic dispatch ───────────────────────────────────────────
 
 
@@ -243,6 +285,54 @@ def test_two_point_uses_only_time_difference():
     val_a = bc.two_point(1.0, 0.0, bath_state=bs, spectral_density=sd)
     val_b = bc.two_point(11.0, 10.0, bath_state=bs, spectral_density=sd)
     assert val_a == pytest.approx(val_b, rel=1e-10)
+
+
+def test_two_point_threads_quadrature_knobs(monkeypatch):
+    seen = {}
+
+    def fake_scalar(
+        t_diff,
+        alpha,
+        omega_c,
+        temperature,
+        *,
+        upper_cutoff_factor=30.0,
+        quad_limit=200,
+    ):
+        seen.update(
+            {
+                "t_diff": t_diff,
+                "alpha": alpha,
+                "omega_c": omega_c,
+                "temperature": temperature,
+                "upper_cutoff_factor": upper_cutoff_factor,
+                "quad_limit": quad_limit,
+            }
+        )
+        return 1.0 + 0.0j
+
+    monkeypatch.setattr(bc, "bath_two_point_thermal", fake_scalar)
+    bs = {"family": "thermal", "temperature": 0.5}
+    sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
+
+    val = bc.two_point(
+        1.0,
+        0.25,
+        bath_state=bs,
+        spectral_density=sd,
+        upper_cutoff_factor=40.0,
+        quad_limit=400,
+    )
+
+    assert val == 1.0 + 0.0j
+    assert seen == {
+        "t_diff": 0.75,
+        "alpha": 0.05,
+        "omega_c": 10.0,
+        "temperature": 0.5,
+        "upper_cutoff_factor": 40.0,
+        "quad_limit": 400,
+    }
 
 
 def test_two_point_unknown_spectral_density_family_raises():
@@ -314,6 +404,39 @@ def test_n_point_ordered_thermal_n4_hermitian_reflection():
     reflected = bc.n_point_ordered(tuple(reversed(flattened)), (), bs, spectral_density=sd)
 
     assert val == pytest.approx(reflected.conjugate(), rel=1e-12, abs=1e-14)
+
+
+def test_n_point_ordered_threads_quadrature_knobs(monkeypatch):
+    calls = []
+
+    def fake_two_point(
+        t1,
+        t2,
+        *,
+        bath_state,
+        spectral_density,
+        upper_cutoff_factor=30.0,
+        quad_limit=200,
+    ):
+        calls.append((t1, t2, bath_state, spectral_density, upper_cutoff_factor, quad_limit))
+        return 1.0 + 0.0j
+
+    monkeypatch.setattr(bc, "two_point", fake_two_point)
+    bs = {"family": "thermal", "temperature": 0.5}
+    sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
+
+    val = bc.n_point_ordered(
+        (0.0, 0.3, 0.8, 1.4),
+        (),
+        bs,
+        spectral_density=sd,
+        upper_cutoff_factor=20.0,
+        quad_limit=100,
+    )
+
+    assert val == 3.0 + 0.0j
+    assert len(calls) == 6
+    assert all(call[4:] == (20.0, 100) for call in calls)
 
 
 def test_n_point_ordered_requires_spectral_density():

@@ -15,6 +15,10 @@ for thermal Gaussian baths, K_n_thermal_on_grid / K_total_thermal_on_grid,
 and K_total_displaced_on_grid for the Council-cleared coherent-displaced
 DG-2 structural cards B4/B5 at perturbative_order <= 2.
 
+DG-4 Phase B.4 threads the two operational quadrature controls
+(``quad_limit`` and ``upper_cutoff_factor``) through the runner-facing
+thermal/displaced K-grid entry points.
+
 Pending scope covers L_n at orders n >= 3 (full Companion Eq. (28)
 recursion) and canonical_lindblad_form, the full K + dissipator
 decomposition with traceless jump operators (Companion Eq. (43)).
@@ -272,6 +276,8 @@ def K_n_thermal_on_grid(
     bath_state: dict[str, Any],
     spectral_density: dict[str, Any],
     basis: list | None = None,
+    upper_cutoff_factor: float = 30.0,
+    quad_limit: int = 200,
 ) -> np.ndarray:
     """Compute K_n(t) at every t in t_grid for a thermal Gaussian bath.
 
@@ -300,6 +306,8 @@ def K_n_thermal_on_grid(
     basis : list of (d, d) ndarrays, optional
         HS-orthonormal basis for Letter Eq. (6). Defaults to the
         matrix-unit basis at the system dimension d.
+    upper_cutoff_factor, quad_limit : optional
+        Quadrature controls forwarded through D̄_2 construction for n = 2.
 
     Returns
     -------
@@ -334,7 +342,13 @@ def K_n_thermal_on_grid(
     # For n = 2, precompute the D̄_2 array once (reused across all t_idx).
     D = None
     if n == 2:
-        D = D_bar_2(t_grid, bath_state=bath_state, spectral_density=spectral_density)
+        D = D_bar_2(
+            t_grid,
+            bath_state=bath_state,
+            spectral_density=spectral_density,
+            upper_cutoff_factor=upper_cutoff_factor,
+            quad_limit=quad_limit,
+        )
 
     K = np.zeros((len(t_grid), d, d), dtype=complex)
     for t_idx in range(len(t_grid)):
@@ -403,6 +417,8 @@ def K_total_displaced_on_grid(
     bath_state: dict[str, Any],
     spectral_density: dict[str, Any],
     basis: list | None = None,
+    upper_cutoff_factor: float = 30.0,
+    quad_limit: int = 200,
 ) -> np.ndarray:
     """Compute K(t) = Σ_{n=0}^{N_card} K_n(t) for a coherent-displaced bath.
 
@@ -427,6 +443,8 @@ def K_total_displaced_on_grid(
         Card bath_spectral_density (ohmic at v0.1.0).
     basis : list of (d, d) ndarrays, optional
         HS-orthonormal basis for Letter Eq. (6); defaults to matrix_unit.
+    upper_cutoff_factor, quad_limit : optional
+        Quadrature controls forwarded through D̄_2 construction for n = 2.
 
     Returns
     -------
@@ -495,6 +513,8 @@ def K_total_displaced_on_grid(
             t_grid,
             bath_state=bs_for_d2,
             spectral_density=spectral_density,
+            upper_cutoff_factor=upper_cutoff_factor,
+            quad_limit=quad_limit,
         )
 
     K = np.zeros((len(t_grid), d, d), dtype=complex)
@@ -530,6 +550,8 @@ def K_total_thermal_on_grid(
     bath_state: dict[str, Any],
     spectral_density: dict[str, Any],
     basis: list | None = None,
+    upper_cutoff_factor: float = 30.0,
+    quad_limit: int = 200,
 ) -> np.ndarray:
     """Compute K(t) = Σ_{n=0}^{N_card} K_n(t) at every t in t_grid for a
     thermal Gaussian bath.
@@ -544,7 +566,8 @@ def K_total_thermal_on_grid(
         .perturbative_order; must be in {0, 1, 2} for the implemented
         low-order path.
     t_grid, system_hamiltonian, coupling_operator, bath_state,
-    spectral_density, basis : as in K_n_thermal_on_grid.
+    spectral_density, basis, upper_cutoff_factor, quad_limit : as in
+        K_n_thermal_on_grid.
 
     Returns
     -------
@@ -576,6 +599,8 @@ def K_total_thermal_on_grid(
             bath_state=bath_state,
             spectral_density=spectral_density,
             basis=basis,
+            upper_cutoff_factor=upper_cutoff_factor,
+            quad_limit=quad_limit,
         )
     return K
 

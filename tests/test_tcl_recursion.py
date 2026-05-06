@@ -342,6 +342,74 @@ def test_K_total_N_card_3_succeeds_post_phase_b2():
     np.testing.assert_allclose(K_at_3, K_at_2, atol=1e-12)
 
 
+def test_K_total_thermal_threads_quadrature_knobs(monkeypatch):
+    seen = {}
+
+    def fake_D_bar_2(
+        t_grid,
+        *,
+        bath_state,
+        spectral_density,
+        upper_cutoff_factor=30.0,
+        quad_limit=200,
+    ):
+        seen.update({"upper_cutoff_factor": upper_cutoff_factor, "quad_limit": quad_limit})
+        return np.zeros((len(t_grid), len(t_grid)), dtype=complex)
+
+    monkeypatch.setattr(tr, "D_bar_2", fake_D_bar_2)
+
+    t = _coarse_t_grid()
+    K = tr.K_total_thermal_on_grid(
+        2,
+        t,
+        _hs(),
+        sigma_x,
+        bath_state=_thermal_state(),
+        spectral_density=_ohmic_sd(),
+        upper_cutoff_factor=20.0,
+        quad_limit=100,
+    )
+
+    assert K.shape == (len(t), 2, 2)
+    assert seen == {"upper_cutoff_factor": 20.0, "quad_limit": 100}
+
+
+def test_K_total_displaced_threads_quadrature_knobs(monkeypatch):
+    seen = {}
+
+    def fake_D_bar_1(t_grid, *, bath_state, spectral_density):
+        return np.zeros(len(t_grid), dtype=complex)
+
+    def fake_D_bar_2(
+        t_grid,
+        *,
+        bath_state,
+        spectral_density,
+        upper_cutoff_factor=30.0,
+        quad_limit=200,
+    ):
+        seen.update({"upper_cutoff_factor": upper_cutoff_factor, "quad_limit": quad_limit})
+        return np.zeros((len(t_grid), len(t_grid)), dtype=complex)
+
+    monkeypatch.setattr(tr, "D_bar_1", fake_D_bar_1)
+    monkeypatch.setattr(tr, "D_bar_2", fake_D_bar_2)
+
+    t = _coarse_t_grid()
+    K = tr.K_total_displaced_on_grid(
+        2,
+        t,
+        _hs(),
+        sigma_x,
+        bath_state={"family": "coherent_displaced"},
+        spectral_density=_ohmic_sd(),
+        upper_cutoff_factor=40.0,
+        quad_limit=400,
+    )
+
+    assert K.shape == (len(t), 2, 2)
+    assert seen == {"upper_cutoff_factor": 40.0, "quad_limit": 400}
+
+
 def test_K_total_N_card_4_raises_pending_recursion():
     """DG-4 Phase B.2 covers n in {0, 1, 2, 3}; n=4 is the deferred
     follow-up."""
@@ -363,8 +431,12 @@ def test_K_3_thermal_pure_dephasing_is_zero():
     consistent with cbg.cumulants Phase B.1's D̄_3 = 0 witness."""
     t = _coarse_t_grid()
     K3 = tr.K_n_thermal_on_grid(
-        3, t, _hs(), sigma_z,
-        bath_state=_thermal_state(), spectral_density=_ohmic_sd(),
+        3,
+        t,
+        _hs(),
+        sigma_z,
+        bath_state=_thermal_state(),
+        spectral_density=_ohmic_sd(),
     )
     np.testing.assert_allclose(K3, np.zeros_like(K3), atol=1e-12)
 
@@ -375,8 +447,12 @@ def test_K_3_thermal_sigma_x_is_zero():
     of the σ_z Feynman-Vernon argument."""
     t = _coarse_t_grid()
     K3 = tr.K_n_thermal_on_grid(
-        3, t, _hs(), sigma_x,
-        bath_state=_thermal_state(), spectral_density=_ohmic_sd(),
+        3,
+        t,
+        _hs(),
+        sigma_x,
+        bath_state=_thermal_state(),
+        spectral_density=_ohmic_sd(),
     )
     np.testing.assert_allclose(K3, np.zeros_like(K3), atol=1e-12)
 

@@ -34,6 +34,11 @@ DG-4 Phase B.0 scope (this module, 2026-05-05):
       Gaussian ohmic baths, using Wick factorisation into the existing
       two-point correlator.
 
+DG-4 Phase B.4 scope (this module, 2026-05-06):
+    - ``quad_limit`` and ``upper_cutoff_factor`` are threaded through
+      the array, generic two-point, and n-point ordered entry points so
+      D1 reproducibility perturbations can reach the quadrature leaf.
+
 DG-2 / later scope (stubbed here):
     - Non-ohmic spectral densities (Drude–Lorentz, sub-/super-ohmic).
     - n-point ordered correlations beyond n = 4, explicit finite-bath
@@ -237,6 +242,9 @@ def bath_two_point_thermal_array(
     alpha: float,
     omega_c: float,
     temperature: float,
+    *,
+    upper_cutoff_factor: float = 30.0,
+    quad_limit: int = 200,
 ) -> np.ndarray:
     """Tabulate C[j, k] = C(t_grid[j] - t_grid[k]) on a (n, n) grid.
 
@@ -250,6 +258,8 @@ def bath_two_point_thermal_array(
         Time points at which to tabulate.
     alpha, omega_c, temperature : float
         See bath_two_point_thermal.
+    upper_cutoff_factor, quad_limit : optional
+        Quadrature controls forwarded to ``bath_two_point_thermal``.
 
     Returns
     -------
@@ -269,7 +279,17 @@ def bath_two_point_thermal_array(
 
     unique_pos = np.unique(np.abs(diff))
     c_vals = np.array(
-        [bath_two_point_thermal(float(t), alpha, omega_c, temperature) for t in unique_pos],
+        [
+            bath_two_point_thermal(
+                float(t),
+                alpha,
+                omega_c,
+                temperature,
+                upper_cutoff_factor=upper_cutoff_factor,
+                quad_limit=quad_limit,
+            )
+            for t in unique_pos
+        ],
         dtype=complex,
     )
     # Map: |diff| → C(|diff|); for negative diff, conjugate.
@@ -294,6 +314,8 @@ def two_point(
     *,
     bath_state: dict[str, Any],
     spectral_density: dict[str, Any],
+    upper_cutoff_factor: float = 30.0,
+    quad_limit: int = 200,
 ) -> complex:
     """Connected two-point bath correlator at the requested bath state.
 
@@ -319,6 +341,8 @@ def two_point(
         The card's `bath_spectral_density` mapping. Required keys:
         `family`, plus family-specific parameters (for ohmic:
         `coupling_strength` (= alpha), `cutoff_frequency` (= omega_c)).
+    upper_cutoff_factor, quad_limit : optional
+        Quadrature controls forwarded to ``bath_two_point_thermal``.
 
     Returns
     -------
@@ -356,7 +380,14 @@ def two_point(
     omega_c = float(spectral_density["cutoff_frequency"])
     temperature = float(bath_state["temperature"])
 
-    return bath_two_point_thermal(t1 - t2, alpha, omega_c, temperature)
+    return bath_two_point_thermal(
+        t1 - t2,
+        alpha,
+        omega_c,
+        temperature,
+        upper_cutoff_factor=upper_cutoff_factor,
+        quad_limit=quad_limit,
+    )
 
 
 # ─── n-point ordered correlator (DG-2 territory) ────────────────────────────
@@ -369,6 +400,8 @@ def n_point_ordered(
     B_op=None,
     *,
     spectral_density: dict[str, Any] | None = None,
+    upper_cutoff_factor: float = 30.0,
+    quad_limit: int = 200,
 ) -> complex:
     """Ordered n-point bath correlation per Companion Eq. (15).
 
@@ -403,6 +436,9 @@ def n_point_ordered(
         operator traces are not implemented in this path; pass ``None``.
     spectral_density : dict, keyword-only
         Required ohmic spectral-density mapping consumed by ``two_point``.
+    upper_cutoff_factor, quad_limit : optional
+        Quadrature controls forwarded to the Wick-factorised two-point
+        leaves.
 
     Returns
     -------
@@ -446,6 +482,8 @@ def n_point_ordered(
                 times[j],
                 bath_state=bath_state,
                 spectral_density=spectral_density,
+                upper_cutoff_factor=upper_cutoff_factor,
+                quad_limit=quad_limit,
             )
         out += term
     return complex(out)

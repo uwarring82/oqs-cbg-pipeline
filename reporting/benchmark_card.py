@@ -38,7 +38,7 @@ Anchor: SCHEMA.md v0.1.3; DG-1 work plan v0.1.4 §4 Phase C rows C.4 and C.10.
 from __future__ import annotations
 
 import ast
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -1333,8 +1333,10 @@ def _refuse_scope_definition(card: BenchmarkCard) -> None:
         change = (entry.get("change") or "").strip()
         reason = (entry.get("reason") or "").strip()
         if change or reason:
-            preconditions.append(f"failure_mode_log entry {entry.get('date', '?')}: "
-                                 f"change={change!r}; reason={reason!r}")
+            preconditions.append(
+                f"failure_mode_log entry {entry.get('date', '?')}: "
+                f"change={change!r}; reason={reason!r}"
+            )
     notes = (card.result.get("notes") or "").strip() if card.result else ""
     if notes:
         preconditions.append(f"result.notes: {notes!r}")
@@ -2118,6 +2120,7 @@ def _run_dynamical(card: BenchmarkCard) -> CardResult:
     sd = fp["model"]["bath_spectral_density"]
     N_card = fp["truncation"]["perturbative_order"]
     threshold = card.threshold
+    quadrature_kwargs = _quadrature_kwargs(fp)
 
     test_case_results: list[TestCaseResult] = []
     for case in fp["model"]["test_cases"]:
@@ -2131,6 +2134,7 @@ def _run_dynamical(card: BenchmarkCard) -> CardResult:
                 A,
                 bath_state=bs,
                 spectral_density=sd,
+                **quadrature_kwargs,
             )
         elif bs_family == "coherent_displaced":
             # Council Act 2 (2026-05-04) lifted the standing carve-out under
@@ -2144,6 +2148,7 @@ def _run_dynamical(card: BenchmarkCard) -> CardResult:
                 A,
                 bath_state=bs,
                 spectral_density=sd,
+                **quadrature_kwargs,
             )
         else:
             raise NotImplementedError(
@@ -2187,6 +2192,23 @@ def _run_dynamical(card: BenchmarkCard) -> CardResult:
         test_case_results=test_case_results,
         runner_version=__version__,
     )
+
+
+def _quadrature_kwargs(frozen_parameters: Mapping[str, Any]) -> dict[str, Any]:
+    """Extract optional quadrature controls from frozen_parameters.numerical.
+
+    DG-4 Phase B.4 accepts an ad-hoc ``numerical.quadrature`` extras block
+    until SCHEMA.md formalises it. Unknown keys are ignored here so future
+    numerical controls do not accidentally leak into cbg.tcl_recursion.
+    """
+    numerical = frozen_parameters.get("numerical") or {}
+    quadrature = numerical.get("quadrature") or {}
+    out: dict[str, Any] = {}
+    if "upper_cutoff_factor" in quadrature:
+        out["upper_cutoff_factor"] = quadrature["upper_cutoff_factor"]
+    if "quad_limit" in quadrature:
+        out["quad_limit"] = quadrature["quad_limit"]
+    return out
 
 
 # ─── Result-block writer (in-memory) ─────────────────────────────────────────

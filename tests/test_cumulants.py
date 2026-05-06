@@ -156,6 +156,52 @@ def test_D_bar_2_shape_and_dtype():
     assert result.dtype == complex
 
 
+def test_D_bar_2_threads_quadrature_knobs(monkeypatch):
+    seen = {}
+
+    def fake_array(
+        t_grid,
+        alpha,
+        omega_c,
+        temperature,
+        *,
+        upper_cutoff_factor=30.0,
+        quad_limit=200,
+    ):
+        seen.update(
+            {
+                "t_grid": np.asarray(t_grid),
+                "alpha": alpha,
+                "omega_c": omega_c,
+                "temperature": temperature,
+                "upper_cutoff_factor": upper_cutoff_factor,
+                "quad_limit": quad_limit,
+            }
+        )
+        return np.eye(len(t_grid), dtype=complex)
+
+    monkeypatch.setattr(cumulants, "bath_two_point_thermal_array", fake_array)
+
+    t = np.linspace(0.0, 1.0, 3)
+    bs = {"family": "thermal", "temperature": 0.5}
+    sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
+    result = cumulants.D_bar_2(
+        t,
+        bath_state=bs,
+        spectral_density=sd,
+        upper_cutoff_factor=20.0,
+        quad_limit=100,
+    )
+
+    np.testing.assert_array_equal(result, np.eye(3, dtype=complex))
+    np.testing.assert_array_equal(seen["t_grid"], t)
+    assert seen["alpha"] == 0.05
+    assert seen["omega_c"] == 10.0
+    assert seen["temperature"] == 0.5
+    assert seen["upper_cutoff_factor"] == 20.0
+    assert seen["quad_limit"] == 100
+
+
 def test_D_bar_2_unknown_spectral_density_raises():
     t = np.linspace(0.0, 3.0, 7)
     bs = {"family": "thermal", "temperature": 0.5}
@@ -235,6 +281,38 @@ def test_D_bar_thermal_n4_mixed_left_right_vanishes_by_gaussianity():
     sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
     val = cumulants.D_bar((0.0, 0.3), (0.8, 1.4), bath_state=bs, spectral_density=sd)
     assert val == pytest.approx(0.0 + 0.0j, abs=1e-14)
+
+
+def test_D_bar_scalar_path_threads_quadrature_knobs(monkeypatch):
+    seen = {}
+
+    def fake_array(
+        t_grid,
+        alpha,
+        omega_c,
+        temperature,
+        *,
+        upper_cutoff_factor=30.0,
+        quad_limit=200,
+    ):
+        seen.update({"upper_cutoff_factor": upper_cutoff_factor, "quad_limit": quad_limit})
+        return np.array([[0.0, 2.0], [3.0, 0.0]], dtype=complex)
+
+    monkeypatch.setattr(cumulants, "bath_two_point_thermal_array", fake_array)
+    bs = {"family": "thermal", "temperature": 0.5}
+    sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
+
+    val = cumulants.D_bar(
+        (1.0,),
+        (0.5,),
+        bath_state=bs,
+        spectral_density=sd,
+        upper_cutoff_factor=40.0,
+        quad_limit=400,
+    )
+
+    assert val == 2.0 + 0.0j
+    assert seen == {"upper_cutoff_factor": 40.0, "quad_limit": 400}
 
 
 def test_D_bar_higher_order_beyond_b1_scope_raises():
