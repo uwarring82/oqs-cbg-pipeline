@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-06
 **Type:** dg-downgrade
-**Triggering commit:** (to be populated on commit)
+**Triggering commit:** 018c188
 **Triggering evidence:**
 - Reviewer findings on the DG-4 v0.5.0 documentation rollout, recorded in this conversation's review pass.
 - Path B extraction code: [`benchmarks/numerical_tcl_extraction.py`](../benchmarks/numerical_tcl_extraction.py).
