@@ -302,6 +302,20 @@ def test_n_point_ordered_thermal_n4_mixed_left_right_ordering():
     assert val == pytest.approx(expected, rel=1e-12)
 
 
+def test_n_point_ordered_thermal_n4_hermitian_reflection():
+    """Hermitian B gives D(t1..t4)* = D(t4..t1)."""
+    bs = {"family": "thermal", "temperature": 0.5}
+    sd = {"family": "ohmic", "coupling_strength": 0.05, "cutoff_frequency": 10.0}
+    tau_args = (0.1, 0.7)
+    s_args = (1.3, 2.1)
+    flattened = tau_args + tuple(reversed(s_args))
+
+    val = bc.n_point_ordered(tau_args, s_args, bs, spectral_density=sd)
+    reflected = bc.n_point_ordered(tuple(reversed(flattened)), (), bs, spectral_density=sd)
+
+    assert val == pytest.approx(reflected.conjugate(), rel=1e-12, abs=1e-14)
+
+
 def test_n_point_ordered_requires_spectral_density():
     bs = {"family": "thermal", "temperature": 0.5}
     with pytest.raises(ValueError, match="spectral_density"):
