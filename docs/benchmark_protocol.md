@@ -2,7 +2,7 @@
 
 **Layer:** Repository protective scaffolding
 **Anchor:** Sail v0.5 §11 (four explicit content requirements)
-**Last updated:** 2026-05-06 (DG-4 PASS via D1 v0.1.1 Path B numerical failure-envelope verdict; analytic Path A still pending)
+**Last updated:** 2026-05-06 (DG-4 PASS via D1 v0.1.1 Path B numerical verdict **superseded on review**; v0.1.2 supersedure pending Path B repair + operational `omega_max_factor`)
 
 ---
 
@@ -95,15 +95,20 @@ One DG-4 failure-envelope card is frozen:
 
 | Card | Model | Sweep parameter | Target cause label | Status |
 |---|---|---|---|---|
-| D1 v0.1.1 | spin_boson_sigma_x | coupling_strength (0.05 → 1.0, log-uniform, 20 points) | convergence failure via parity-aware `r_4 = <||L_4^dis||>_t / <||L_2^dis||>_t` | **pass** (Path B numerical L_4; all 20 points `convergence_failure`) |
+| D1 v0.1.1 | spin_boson_sigma_x | coupling_strength (0.05 → 1.0, log-uniform, 20 points) | convergence failure via parity-aware `r_4 = <||L_4^dis||>_t / <||L_2^dis||>_t` | runner-complete; v0.1.1 PASS verdict **superseded on review** (2026-05-06); v0.1.2 supersedure pending |
 
-The v0.1.0 predecessor targeted pure_dephasing and is superseded: thermal pure dephasing is TCL-2 exact, so no order-4 convergence signal can appear. D1 v0.1.1 adopts the σ_x thermal model and the parity-aware even-order dissipator ratio specified by DG-4 work plan v0.1.4. The Path B numerical pilot recorded on 2026-05-06 confirmed `||L_4^dis|| > 0` in the σ_x fixture, but Path B remains benchmark-side numerical extraction with a finite-env floor, not analytic n=4 completion.
+The v0.1.0 predecessor targeted pure_dephasing and is superseded: thermal pure dephasing is TCL-2 exact, so no order-4 convergence signal can appear. D1 v0.1.1 adopts the σ_x thermal model and the parity-aware even-order dissipator ratio specified by DG-4 work plan v0.1.4.
 
-As of 2026-05-06 (Phase D complete for D1), `run_card(D1 v0.1.1)` routes through `reporting.benchmark_card._run_dg4_sweep` and returns PASS. The full frozen run classified all 20 `coupling_strength` values from 0.05 to 1.0 as `convergence_failure`. No `α_crit` is interpolated inside the frozen range because the first swept point already fails; under this Path B run the boundary lies below `coupling_strength = 0.05`.
+As of 2026-05-06, `run_card(D1 v0.1.1)` routes through `reporting.benchmark_card._run_dg4_sweep` and produces a structured CardResult; on the full frozen run it returned PASS, and the verdict was tagged `v0.5.0`. Reviewer-side analysis subsequently surfaced two HIGH-severity defects that supersede the verdict:
 
-Path B reproducibility caveat: `omega_c` perturbations are operational because they mutate `model.bath_spectral_density.cutoff_frequency` before exact finite-environment construction. `upper_cutoff_factor` perturbations are threaded through the runner's quadrature path, but the current `exact_finite_env` Path B extraction does not consume continuum quadrature controls. Result records must therefore treat the upper-cutoff check as a Path-B-specific limitation until analytic Path A or a quadrature-consuming extraction route lands.
+1. **Path B picture/baseline extraction is in the wrong frame.** [`benchmarks/numerical_tcl_extraction.py`](../benchmarks/numerical_tcl_extraction.py) computes `L_2 = dΛ_2/dt` and `L_4 = dΛ_4/dt - L_2 Λ_2`. This is the order-4 expansion of `L_t = Λ̇_t Λ_t⁻¹` only when the closed-system map `Λ_0` is the identity (interaction picture, or `H_S = 0`). The Path B path reconstructs raw Schrödinger-picture maps and only subtracts the closed-system baseline as the polynomial-fit baseline; it does not apply `Λ_0⁻¹` and does not include the `L_0 Λ_n Λ_0⁻¹` correction. For σ_x thermal at `H_S = (ω/2) σ_z`, neither omitted piece vanishes, so the extracted `‖L_n^dis‖` is not the picture-invariant quantity the metric is supposed to be.
+2. **PASS predicate trivially satisfied for two of four perturbations.** The runner requires `r_4 > 1` to be stable under all four perturbations including `upper_cutoff_factor ∈ {20, 40}`. But `_path_b_evaluate` records that `exact_finite_env` ignores the threaded quadrature_kwargs, so `r_4_perturbed == r_4_baseline` for those two perturbations: the predicate evaluates trivially. The result JSON records `operational_in_path_b: false` for both and still records `verdict: PASS`. Honest caveat ≠ predicate satisfaction.
 
-The runner consumes Path B numerical Richardson extraction via `benchmarks/numerical_tcl_extraction.path_b_dissipator_norm_coefficients` as the L_4 source. Path B carries a documented finite-env extraction floor; the result notes record this as an explicit uncertainty band. The structural fallback `_refuse_dg4_sweep` is retained for non-σ_x / non-thermal cards. Path A (Companion Sec. IV analytic) remains the preferred deliverable for machine-precision L_4 evaluation and future cross-validation; once it lands, the runner can switch to the cbg analytic path. The card defines the sweep range frozen *before* any run, per the parameter-freezing protocol §6.
+A MEDIUM audit-completeness gap was also recorded: per-α `r_4_baseline` and per-α-per-perturbation `r_4` values are computed in memory but not persisted in the result JSON; only aggregate counts are written. For a cause-labelled DG-4 verdict the full sweep table must be auditable from the artefact alone.
+
+The supersedure is recorded in [`logbook/2026-05-06_dg-4-pass-path-b-superseded.md`](../logbook/2026-05-06_dg-4-pass-path-b-superseded.md). The v0.5.0 git tag is left as immutable history; the verdict it anchored is downgraded on the record.
+
+D1 v0.1.2 supersedure work (in scope of DG-4 work plan v0.1.4 Phase D, no plan bump needed): (a) repair Path B picture handling — implement the general `L_n = Λ̇_n Λ_0⁻¹ - L_0 Λ_n Λ_0⁻¹ + …` extraction or transform raw maps to the interaction picture before extraction, with a regression test on a fixture with `H_S ≠ 0` checking dissipator-norm picture invariance; (b) thread `upper_cutoff_factor` into `exact_finite_env`'s `omega_max_factor` so the perturbation is operational; (c) persist per-α + per-perturbation `r_4` and per-perturbation residuals in the result JSON; (d) freeze D1 v0.1.2 superseding v0.1.1 and re-run. Path A (Companion Sec. IV analytic) remains the preferred deliverable for machine-precision L_4 evaluation and follows the v0.1.2 verdict.
 
 ## 5. DG-5 status tracking
 

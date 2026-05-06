@@ -1,5 +1,7 @@
 # DG-4 PASS — Path B numerical failure-envelope verdict
 
+> **Superseded by:** [`2026-05-06_dg-4-pass-path-b-superseded.md`](2026-05-06_dg-4-pass-path-b-superseded.md). The PASS verdict recorded here was downgraded on review of Path B's picture/baseline extraction and of the runner's PASS-predicate triviality on two of the four reproducibility perturbations. This entry remains at HEAD as the immutable record of what was claimed; the superseding entry is the live status.
+
 **Date:** 2026-05-06
 **Type:** dg-pass
 **Triggering commit:** d7ca897fbf5a3594400675061b7926b84c9552af

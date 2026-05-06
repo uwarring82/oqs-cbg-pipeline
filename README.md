@@ -2,7 +2,7 @@
 
 **Numerical pipeline for the Colla–Breuer–Gasbarri minimal-dissipation effective-Hamiltonian construction in non-Markovian open quantum systems.**
 
-[![Status](https://img.shields.io/badge/status-DG--1%20PASS%20%7C%20DG--2%20structural%20PASS%20%7C%20DG--4%20PASS-green)](docs/validity_envelope.md)
+[![Status](https://img.shields.io/badge/status-DG--1%20PASS%20%7C%20DG--2%20structural%20PASS%20%7C%20DG--4%20verdict%20superseded-yellow)](docs/validity_envelope.md)
 [![Sail](https://img.shields.io/badge/sail-v0.5-blue)](sail/sail-cbg-pipeline_v0.5.md)
 [![Ledger](https://img.shields.io/badge/ledger-CL--2026--005%20v0.4%20cleared-green)](ledger/CL-2026-005_v0.4.md)
 [![Code license](https://img.shields.io/badge/code%20license-MIT-blue)](LICENSE)
@@ -22,7 +22,7 @@ A Sail-internal repository implementing the construction of:
 > *Recursive perturbation approach to time-convolutionless master equations: Explicit construction of generalized Lindblad generators for arbitrary open systems*,
 > **Phys. Rev. A 112, 052222 (2025)**. DOI: [10.1103/9j8d-jxgd](https://doi.org/10.1103/9j8d-jxgd)
 
-The implemented surface computes the minimal-dissipation effective Hamiltonian K(t) from TCL generators, runs the frozen DG-1 and DG-2 structural benchmark cards, records a DG-4 failure-envelope PASS via Path B numerical L_4 extraction, and records exactly which sub-claims are supported inside the validity envelope. Full analytic fourth-order recursive K_n(t) computation, cross-method validation, and thermodynamic-discriminant work remain future milestones.
+The implemented surface computes the minimal-dissipation effective Hamiltonian K(t) from TCL generators, runs the frozen DG-1 and DG-2 structural benchmark cards, exposes a DG-4 failure-envelope sweep runner on D1 v0.1.1, and records exactly which sub-claims are supported inside the validity envelope. The 2026-05-06 v0.5.0-tagged DG-4 PASS verdict was **superseded on review** for two HIGH-severity defects in the Path B order-4 extraction (wrong picture for `H_S ≠ 0`; PASS predicate trivially satisfied for two of four reproducibility perturbations) and a MEDIUM audit-completeness gap; v0.1.2 supersedure pending. Full analytic fourth-order recursive K_n(t) computation, cross-method validation, and thermodynamic-discriminant work remain future milestones.
 
 A static public landing page for the repository is tracked at [`index.html`](index.html).
 
@@ -30,7 +30,7 @@ A static public landing page for the repository is tracked at [`index.html`](ind
 
 - **Not** a claim that K(t) is the unique physical Hamiltonian of an open system. K(t) is a coordinate-dependent object under the Hayden–Sorce minimal-dissipation gauge. See [`docs/do_not_cite_as.md`](docs/do_not_cite_as.md).
 - **Not** an adjudication between competing strong-coupling thermodynamic frameworks. That question is the discriminant for CL-2026-005 Entry 7 and is reserved for fresh Council deliberation.
-- **Not** production-ready. DG-1 has passed, DG-2 structural sub-claims have passed under the Council-cleared displacement-profile registry, and DG-4 has passed by finding a reproducible convergence-failure envelope via Path B numerical L_4 extraction. The literal analytic fourth-order K_2-K_4 recursion, DG-3 cross-method validation, and DG-5 thermodynamic discriminant have not been completed. See [`docs/validity_envelope.md`](docs/validity_envelope.md) for the live status.
+- **Not** production-ready. DG-1 has passed and DG-2 structural sub-claims have passed under the Council-cleared displacement-profile registry. DG-4 ran to a v0.1.1 PASS verdict on 2026-05-06 (tag `v0.5.0`) via Path B numerical L_4 extraction, but that verdict was **superseded on review** the same day; v0.1.2 supersedure with repaired Path B and operational `omega_max_factor` is pending. The literal analytic fourth-order K_2-K_4 recursion, DG-3 cross-method validation, and DG-5 thermodynamic discriminant have not been completed. See [`docs/validity_envelope.md`](docs/validity_envelope.md) for the live status.
 
 ## Installation
 
@@ -113,7 +113,7 @@ Every layer consumes the layer above unidirectionally. The repository never modi
 | DG-1 | Formula implementation (CL-2026-005 Entries 1, 3, 4 reproduced) | **PASS** (2026-04-30) |
 | DG-2 | Structural identities and displaced-bath registry checks | **STRUCTURAL SUB-CLAIMS PASS** (2026-05-04); literal K_2-K_4 fourth-order recursion pending |
 | DG-3 | Cross-method validation (≥2 methods, non-overlapping failures) | RUNNER REACHABLE; failure-asymmetry clearance pending |
-| DG-4 | Failure envelope (cause-labelled, reproducible) | **PASS** (2026-05-06; Path B numerical L_4, analytic Path A pending) |
+| DG-4 | Failure envelope (cause-labelled, reproducible) | RUNNER-COMPLETE; v0.1.1 PASS verdict **SUPERSEDED on review** (2026-05-06) — v0.1.2 supersedure pending |
 | DG-5 | Thermodynamic discriminant (distinguishable observable) | NOT YET ATTEMPTED |
 
 Live status: [`docs/validity_envelope.md`](docs/validity_envelope.md).
@@ -185,4 +185,4 @@ The steward holds a structural conflict on CL-2026-005 Entry 6 (co-authorship of
 
 ---
 
-*Repository metadata version: 0.3.0.dev0. Initialised 2026-04-29. Sail v0.5. Ledger CL-2026-005 v0.4. DG-1 PASS; DG-2 structural sub-claims PASS; literal K_2-K_4 fourth-order recursion pending.*
+*Repository metadata version: 0.3.0.dev0. Initialised 2026-04-29. Sail v0.5. Ledger CL-2026-005 v0.4. DG-1 PASS (tag `v0.2.0`); DG-2 structural sub-claims PASS; DG-3 runner-complete (no PASS); DG-4 v0.1.1 PASS verdict (tag `v0.5.0`, 2026-05-06) **superseded on review** the same day, v0.1.2 supersedure pending; DG-5 scope-definition.*
