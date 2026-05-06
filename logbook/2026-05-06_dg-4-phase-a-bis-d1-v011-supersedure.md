@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-06
 **Type:** structural
-**Triggering commit:** (to be populated on commit)
+**Triggering commit:** 3f32ed3
 **Triggering evidence:**
 - Card [`D1_failure-envelope-convergence_v0.1.1.yaml`](../benchmarks/benchmark_cards/D1_failure-envelope-convergence_v0.1.1.yaml) added.
 - Card [`D1_failure-envelope-convergence_v0.1.0.yaml`](../benchmarks/benchmark_cards/D1_failure-envelope-convergence_v0.1.0.yaml) marked `status: superseded`.
