@@ -153,6 +153,9 @@
 <li class="toctree-l1"><a class="reference internal" href="numerical.html"><code class="docutils literal notranslate"><span class="pre">numerical</span></code> — Numerical primitives</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reporting.html"><code class="docutils literal notranslate"><span class="pre">reporting</span></code> — Benchmark-card schema, loader, validator, runner</a></li>
 </ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Worked examples</a></li>
+</ul>
 
     </div>
 </nav></div>
@@ -346,6 +349,7 @@
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decision-gate-status-snapshot">Decision-Gate status snapshot</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#packages">Packages</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#worked-examples">Worked examples</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-links">Quick links</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-these-pages">Building these pages</a></li>
 </ul>
@@ -399,9 +403,17 @@ passed any Decision Gate.</p>
 <td><p><strong>PARTIAL</strong> — structural sub-claims PASS under Council-cleared registry; K_2-K_4 recursion pending (2026-05-04)</p></td>
 <td><p><a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B1_pseudo-kraus-diagonal_v0.1.0.yaml">B1</a> (Entry 1.B.3 diagonal); <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B2_pseudo-kraus-offdiagonal_v0.1.0.yaml">B2</a> (Entry 1.B.3 off-diagonal + Entry 1.D); <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B3_cross-basis-structural-identity_v0.1.0.yaml">B3</a> (Entry 1.A basis-independence); <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B4-conv-registry_v0.1.0.yaml">B4-conv-registry</a> (Entry 3.B.3) + <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B5-conv-registry_v0.2.0.yaml">B5-conv-registry v0.2.0</a> (Entry 4.B.2), each under all four Council-cleared displacement profiles. Literal K_2-K_4 numerical recursion at order &gt;= 4 = future plan.</p></td>
 </tr>
-<tr class="row-even"><td><p>DG-3 / DG-4 / DG-5</p></td>
-<td><p>NOT YET ATTEMPTED</p></td>
-<td><p>—</p></td>
+<tr class="row-even"><td><p>DG-3</p></td>
+<td><p>RUNNER-COMPLETE; failure-asymmetry clearance pending</p></td>
+<td><p>Cards <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/C1_cross-method-pure-dephasing_v0.1.0.yaml">C1</a> (pure-dephasing) + <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/C2_cross-method-spin-boson_v0.1.0.yaml">C2</a> (spin-boson σ_x) reachable on all four thermal + displaced fixtures via <code class="docutils literal notranslate"><span class="pre">_run_cross_method</span></code>; both currently FAIL convergence in finite-bath truncation. Failure-asymmetry-cleared PASS requires either bath-convergence under the cleared registry or a third reference method from a non-overlapping failure-mode class.</p></td>
+</tr>
+<tr class="row-odd"><td><p>DG-4</p></td>
+<td><p><strong>PASS</strong> at D1 v0.1.2 (2026-05-06)</p></td>
+<td><p>Card <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/D1_failure-envelope-convergence_v0.1.2.yaml">D1 v0.1.2</a> — spin-boson σ_x thermal, parity-aware ratio <code class="docutils literal notranslate"><span class="pre">r_4</span> <span class="pre">=</span> <span class="pre">⟨‖L_4^dis‖⟩_t</span> <span class="pre">/</span> <span class="pre">⟨‖L_2^dis‖⟩_t</span></code>. All 20 swept <code class="docutils literal notranslate"><span class="pre">coupling_strength</span></code> points classify <code class="docutils literal notranslate"><span class="pre">convergence_failure</span></code> with stability across all four perturbations (<code class="docutils literal notranslate"><span class="pre">upper_cutoff_factor</span> <span class="pre">∈</span> <span class="pre">{20,</span> <span class="pre">40}</span></code>, <code class="docutils literal notranslate"><span class="pre">omega_c</span> <span class="pre">∈</span> <span class="pre">{9,</span> <span class="pre">11}</span></code>); max baseline <code class="docutils literal notranslate"><span class="pre">r_4</span> <span class="pre">≈</span> <span class="pre">47.42</span></code>. v0.1.2 supersedes the v0.5.0-tagged v0.1.1 verdict that was superseded on review the same day; consumes Path B picture fix + operational <code class="docutils literal notranslate"><span class="pre">omega_max_factor</span></code> + audit-complete result JSON. Path A analytic L_4 cross-validation remains pending. See <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/logbook/2026-05-06_dg-4-pass-path-b-v012.md">v0.1.2 verdict log</a>.</p></td>
+</tr>
+<tr class="row-even"><td><p>DG-5</p></td>
+<td><p>SCOPE-DEFINITION (preconditions unmet)</p></td>
+<td><p>Card <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/E1_thermodynamic-discriminant-fano-anderson_v0.1.0.yaml">E1</a> — Fano–Anderson + Hamiltonian of mean force discriminant. <code class="docutils literal notranslate"><span class="pre">run_card(E1)</span></code> raises <code class="docutils literal notranslate"><span class="pre">ScopeDefinitionNotRunnableError</span></code> listing missing preconditions (model factory, HMF reference, fermionic-bath support).</p></td>
 </tr>
 </tbody>
 </table>
@@ -437,6 +449,14 @@ passed any Decision Gate.</p>
 <li class="toctree-l2"><a class="reference internal" href="reporting.html#module-reporting.benchmark_card"><code class="docutils literal notranslate"><span class="pre">reporting.benchmark_card</span></code></a></li>
 </ul>
 </li>
+</ul>
+</div>
+</section>
+<section id="worked-examples">
+<h2>Worked examples<a class="headerlink" href="#worked-examples" title="Link to this heading">#</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Worked examples</a></li>
 </ul>
 </div>
 </section>
@@ -506,6 +526,7 @@ event for audit-trail purposes.</p>
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decision-gate-status-snapshot">Decision-Gate status snapshot</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#packages">Packages</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#worked-examples">Worked examples</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-links">Quick links</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-these-pages">Building these pages</a></li>
 </ul>

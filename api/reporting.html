@@ -47,6 +47,7 @@
     <link rel="canonical" href="/oqs-cbg-pipeline/api/reporting.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Worked examples" href="examples.html" />
     <link rel="prev" title="numerical — Numerical primitives" href="numerical.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -150,6 +151,9 @@
 <li class="toctree-l1"><a class="reference internal" href="models.html"><code class="docutils literal notranslate"><span class="pre">models</span></code> — System–environment model factories</a></li>
 <li class="toctree-l1"><a class="reference internal" href="numerical.html"><code class="docutils literal notranslate"><span class="pre">numerical</span></code> — Numerical primitives</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">reporting</span></code> — Benchmark-card schema, loader, validator, runner</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Worked examples</a></li>
 </ul>
 
     </div>
@@ -345,6 +349,8 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-reporting.benchmark_card"><code class="docutils literal notranslate"><span class="pre">reporting.benchmark_card</span></code></a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.SchemaValidationError"><code class="docutils literal notranslate"><span class="pre">SchemaValidationError</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.GaugeAnnotationError"><code class="docutils literal notranslate"><span class="pre">GaugeAnnotationError</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.ScopeDefinitionNotRunnableError"><code class="docutils literal notranslate"><span class="pre">ScopeDefinitionNotRunnableError</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.DG4SweepRunnerNotImplementedError"><code class="docutils literal notranslate"><span class="pre">DG4SweepRunnerNotImplementedError</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.TestCaseHandlerNotFoundError"><code class="docutils literal notranslate"><span class="pre">TestCaseHandlerNotFoundError</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.BenchmarkCard"><code class="docutils literal notranslate"><span class="pre">BenchmarkCard</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.BenchmarkCard.schema_version"><code class="docutils literal notranslate"><span class="pre">BenchmarkCard.schema_version</span></code></a></li>
@@ -389,12 +395,14 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.CardResult.test_case_results"><code class="docutils literal notranslate"><span class="pre">CardResult.test_case_results</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.CardResult.runner_version"><code class="docutils literal notranslate"><span class="pre">CardResult.runner_version</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.CardResult.notes"><code class="docutils literal notranslate"><span class="pre">CardResult.notes</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.CardResult.dg4_sweep_data"><code class="docutils literal notranslate"><span class="pre">CardResult.dg4_sweep_data</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.load_card"><code class="docutils literal notranslate"><span class="pre">load_card()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.validate_card_data"><code class="docutils literal notranslate"><span class="pre">validate_card_data()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.verify_gauge_annotation"><code class="docutils literal notranslate"><span class="pre">verify_gauge_annotation()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.run_card"><code class="docutils literal notranslate"><span class="pre">run_card()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.write_dg4_result_json"><code class="docutils literal notranslate"><span class="pre">write_dg4_result_json()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.populate_result"><code class="docutils literal notranslate"><span class="pre">populate_result()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.validate_card"><code class="docutils literal notranslate"><span class="pre">validate_card()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.write_card"><code class="docutils literal notranslate"><span class="pre">write_card()</span></code></a></li>
@@ -434,19 +442,19 @@ dynamical-card runner. Provides the infrastructure that Cards A1, A3,
 A4 depend on:</p>
 <blockquote>
 <div><dl class="simple">
-<dt>load_card(path)           — Read a YAML card and validate it against</dt><dd><p>SCHEMA.md v0.1.2.</p>
+<dt>load_card(path)           — Read a YAML card and validate it against</dt><dd><p>SCHEMA.md v0.1.3.</p>
 </dd>
-<dt>validate_card_data(data)  — Validate an already-parsed card dict</dt><dd><p>against the 16 schema rules.</p>
+<dt>validate_card_data(data)  — Validate an already-parsed card dict</dt><dd><p>against the 18 schema rules.</p>
 </dd>
 <dt>verify_gauge_annotation   — Enforce the canonical Hayden–Sorce</dt><dd><p>minimal-dissipation gauge block.</p>
 </dd>
-<dt>run_card(card)            — Dispatch by model_kind. algebraic_map</dt><dd><p>cards (A1) run via Letter Eq. (6) on
-the registered test-case handlers;
-dynamical cards (A3, A4) run via the
-TCL2 thermal-bath path through
-cbg.tcl_recursion (thermal-only at
-DG-1; coherent_displaced is deferred to
-DG-2 per plan v0.1.4 §1.1).</p>
+<dt>run_card(card)            — Dispatch by DG target / model_kind.</dt><dd><p>algebraic_map cards (A1, B1–B3) run via
+Letter Eq. (6) on registered handlers;
+structural dynamical cards (A3, A4, B4,
+B5) run via the TCL2 paths through
+cbg.tcl_recursion; DG-3 dynamical cards
+run through the cross-method reference
+branch.</p>
 </dd>
 <dt>populate_result           — Mutate the in-memory card with the</dt><dd><p>verdict + metadata. Disk serialisation
 is deferred (Phase D verdict commit needs
@@ -454,18 +462,19 @@ a comment-preserving YAML library).</p>
 </dd>
 </dl>
 </div></blockquote>
-<p>Test-case handlers live in two registries — _TEST_CASE_HANDLERS for
-algebraic_map cards (keyed by test_cases[i].name) and
-_DYNAMICAL_TEST_CASE_HANDLERS for dynamical cards (keyed by
-(card.model, test_cases[i].name)). New test cases require new entries;
-the registries make the runner-side support surface explicit and
-auditable.</p>
-<p>Anchor: SCHEMA.md v0.1.2; DG-1 work plan v0.1.4 §4 Phase C rows C.4 and C.10.</p>
+<p>Test-case handlers live in explicit registries — _TEST_CASE_HANDLERS for
+algebraic_map cards (keyed by test_cases[i].name),
+_DYNAMICAL_TEST_CASE_HANDLERS for TCL structural dynamical cards, and
+_CROSS_METHOD_TEST_CASE_HANDLERS for DG-3 reference-method comparisons
+(the last two keyed by (card.model, test_cases[i].name)). New test cases
+require new entries; the registries make the runner-side support surface
+explicit and auditable.</p>
+<p>Anchor: SCHEMA.md v0.1.3; DG-1 work plan v0.1.4 §4 Phase C rows C.4 and C.10.</p>
 <dl class="py exception">
 <dt class="sig sig-object py" id="reporting.benchmark_card.SchemaValidationError">
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">reporting.benchmark_card.</span></span><span class="sig-name descname"><span class="pre">SchemaValidationError</span></span><a class="reference internal" href="_modules/reporting/benchmark_card.html#SchemaValidationError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#reporting.benchmark_card.SchemaValidationError" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
-<p>A card YAML violates one of the SCHEMA.md v0.1.2 validation rules.</p>
+<p>A card YAML violates one of the SCHEMA.md v0.1.3 validation rules.</p>
 </dd></dl>
 
 <dl class="py exception">
@@ -473,6 +482,34 @@ auditable.</p>
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">reporting.benchmark_card.</span></span><span class="sig-name descname"><span class="pre">GaugeAnnotationError</span></span><a class="reference internal" href="_modules/reporting/benchmark_card.html#GaugeAnnotationError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#reporting.benchmark_card.GaugeAnnotationError" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
 <p>A card’s gauge block does not match the canonical Hayden–Sorce form.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="reporting.benchmark_card.ScopeDefinitionNotRunnableError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">reporting.benchmark_card.</span></span><span class="sig-name descname"><span class="pre">ScopeDefinitionNotRunnableError</span></span><a class="reference internal" href="_modules/reporting/benchmark_card.html#ScopeDefinitionNotRunnableError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#reporting.benchmark_card.ScopeDefinitionNotRunnableError" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">NotImplementedError</span></code></a></p>
+<p>Raised when <code class="docutils literal notranslate"><span class="pre">run_card</span></code> is called on a <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">scope-definition</span></code> card.</p>
+<p>Scope-definition cards (SCHEMA.md v0.1.3 Rule 18) are design-target
+cards whose preconditions are not yet met (e.g. model API stubbed,
+competing-framework reference missing). They freeze the <em>intended</em>
+parameter scaffold and acceptance criterion so future implementation
+work is bounded and auditable, but they are intentionally not
+runnable: attempting to run one indicates a workflow mistake (the
+card must transition to <code class="docutils literal notranslate"><span class="pre">frozen-awaiting-run</span></code> first via
+supersedure) rather than a runner bug.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="reporting.benchmark_card.DG4SweepRunnerNotImplementedError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">reporting.benchmark_card.</span></span><span class="sig-name descname"><span class="pre">DG4SweepRunnerNotImplementedError</span></span><a class="reference internal" href="_modules/reporting/benchmark_card.html#DG4SweepRunnerNotImplementedError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#reporting.benchmark_card.DG4SweepRunnerNotImplementedError" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">NotImplementedError</span></code></a></p>
+<p>Raised when <code class="docutils literal notranslate"><span class="pre">run_card</span></code> is asked to run a DG-4 sweep card.</p>
+<p>The DG-4 failure-envelope runner is not yet implemented. It would
+require (i) a trusted order-4 L_4 source (analytic Path A preferred;
+benchmark-side Path B numerical extraction only with an uncertainty
+note) and (ii) wiring the <code class="docutils literal notranslate"><span class="pre">frozen_parameters.sweep</span></code> block
+(SCHEMA.md v0.1.3 Rule 17) into the runner. Card D1 v0.1.1 will
+become runnable when both pieces land.</p>
 </dd></dl>
 
 <dl class="py exception">
@@ -502,12 +539,12 @@ properties surface frequently-accessed nested values.</p>
 <li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
 <li><p><strong>status</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
 <li><p><strong>license</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
-<li><p><strong>gauge</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
-<li><p><strong>frozen_parameters</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
-<li><p><strong>acceptance_criterion</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
-<li><p><strong>result</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
-<li><p><strong>failure_mode_log</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em><em>]</em>)</p></li>
-<li><p><strong>stewardship_flag</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
+<li><p><strong>gauge</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
+<li><p><strong>frozen_parameters</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
+<li><p><strong>acceptance_criterion</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
+<li><p><strong>result</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
+<li><p><strong>failure_mode_log</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em><em>]</em>)</p></li>
+<li><p><strong>stewardship_flag</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
 <li><p><strong>supersedes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> | </em><em>None</em>)</p></li>
 <li><p><strong>superseded_by</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> | </em><em>None</em>)</p></li>
 <li><p><strong>source_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><em>Path</em></a><em> | </em><em>None</em>)</p></li>
@@ -561,32 +598,32 @@ properties surface frequently-accessed nested values.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="reporting.benchmark_card.BenchmarkCard.gauge">
-<span class="sig-name descname"><span class="pre">gauge</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#reporting.benchmark_card.BenchmarkCard.gauge" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">gauge</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#reporting.benchmark_card.BenchmarkCard.gauge" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="reporting.benchmark_card.BenchmarkCard.frozen_parameters">
-<span class="sig-name descname"><span class="pre">frozen_parameters</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#reporting.benchmark_card.BenchmarkCard.frozen_parameters" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">frozen_parameters</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#reporting.benchmark_card.BenchmarkCard.frozen_parameters" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="reporting.benchmark_card.BenchmarkCard.acceptance_criterion">
-<span class="sig-name descname"><span class="pre">acceptance_criterion</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#reporting.benchmark_card.BenchmarkCard.acceptance_criterion" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">acceptance_criterion</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#reporting.benchmark_card.BenchmarkCard.acceptance_criterion" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="reporting.benchmark_card.BenchmarkCard.result">
-<span class="sig-name descname"><span class="pre">result</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#reporting.benchmark_card.BenchmarkCard.result" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">result</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#reporting.benchmark_card.BenchmarkCard.result" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="reporting.benchmark_card.BenchmarkCard.failure_mode_log">
-<span class="sig-name descname"><span class="pre">failure_mode_log</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#reporting.benchmark_card.BenchmarkCard.failure_mode_log" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">failure_mode_log</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#reporting.benchmark_card.BenchmarkCard.failure_mode_log" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="reporting.benchmark_card.BenchmarkCard.stewardship_flag">
-<span class="sig-name descname"><span class="pre">stewardship_flag</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#reporting.benchmark_card.BenchmarkCard.stewardship_flag" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">stewardship_flag</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#reporting.benchmark_card.BenchmarkCard.stewardship_flag" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -628,7 +665,7 @@ properties surface frequently-accessed nested values.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="reporting.benchmark_card.TestCaseResult">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">reporting.benchmark_card.</span></span><span class="sig-name descname"><span class="pre">TestCaseResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'str'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">passed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'bool'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'float'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'float'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'str'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hpta_residual</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'Optional[float]'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hpta_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'Optional[float]'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hermiticity_residual</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'Optional[float]'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hermiticity_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'Optional[float]'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/reporting/benchmark_card.html#TestCaseResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#reporting.benchmark_card.TestCaseResult" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">reporting.benchmark_card.</span></span><span class="sig-name descname"><span class="pre">TestCaseResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'str'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">passed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'bool'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'float'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'float'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'str'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hpta_residual</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'float</span> <span class="pre">|</span> <span class="pre">None'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hpta_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'float</span> <span class="pre">|</span> <span class="pre">None'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hermiticity_residual</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'float</span> <span class="pre">|</span> <span class="pre">None'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hermiticity_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'float</span> <span class="pre">|</span> <span class="pre">None'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/reporting/benchmark_card.html#TestCaseResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#reporting.benchmark_card.TestCaseResult" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -694,16 +731,17 @@ properties surface frequently-accessed nested values.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="reporting.benchmark_card.CardResult">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">reporting.benchmark_card.</span></span><span class="sig-name descname"><span class="pre">CardResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">card_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'str'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verdict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'str'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_case_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'List[TestCaseResult]'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runner_version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'str'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'str'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/reporting/benchmark_card.html#CardResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#reporting.benchmark_card.CardResult" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">reporting.benchmark_card.</span></span><span class="sig-name descname"><span class="pre">CardResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">card_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'str'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verdict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'str'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_case_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'list[TestCaseResult]'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runner_version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'str'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'str'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dg4_sweep_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'dict[str,</span> <span class="pre">Any]</span> <span class="pre">|</span> <span class="pre">None'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/reporting/benchmark_card.html#CardResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#reporting.benchmark_card.CardResult" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>card_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
 <li><p><strong>verdict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
-<li><p><strong>test_case_results</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a><em>[</em><a class="reference internal" href="#reporting.benchmark_card.TestCaseResult" title="reporting.benchmark_card.TestCaseResult"><em>TestCaseResult</em></a><em>]</em>)</p></li>
+<li><p><strong>test_case_results</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference internal" href="#reporting.benchmark_card.TestCaseResult" title="reporting.benchmark_card.TestCaseResult"><em>TestCaseResult</em></a><em>]</em>)</p></li>
 <li><p><strong>runner_version</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
 <li><p><strong>notes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+<li><p><strong>dg4_sweep_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -719,7 +757,7 @@ properties surface frequently-accessed nested values.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="reporting.benchmark_card.CardResult.test_case_results">
-<span class="sig-name descname"><span class="pre">test_case_results</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#reporting.benchmark_card.TestCaseResult" title="reporting.benchmark_card.TestCaseResult"><span class="pre">TestCaseResult</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#reporting.benchmark_card.CardResult.test_case_results" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">test_case_results</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#reporting.benchmark_card.TestCaseResult" title="reporting.benchmark_card.TestCaseResult"><span class="pre">TestCaseResult</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#reporting.benchmark_card.CardResult.test_case_results" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -732,13 +770,18 @@ properties surface frequently-accessed nested values.</p>
 <span class="sig-name descname"><span class="pre">notes</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></span><a class="headerlink" href="#reporting.benchmark_card.CardResult.notes" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="reporting.benchmark_card.CardResult.dg4_sweep_data">
+<span class="sig-name descname"><span class="pre">dg4_sweep_data</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#reporting.benchmark_card.CardResult.dg4_sweep_data" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="reporting.benchmark_card.load_card">
 <span class="sig-prename descclassname"><span class="pre">reporting.benchmark_card.</span></span><span class="sig-name descname"><span class="pre">load_card</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/reporting/benchmark_card.html#load_card"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#reporting.benchmark_card.load_card" title="Link to this definition">#</a></dt>
 <dd><p>Load and validate a benchmark card YAML file.</p>
-<p>Validates against SCHEMA.md v0.1.2 (16 rules); raises SchemaValidationError
+<p>Validates against SCHEMA.md v0.1.3 (18 rules); raises SchemaValidationError
 on any rule violation. The returned BenchmarkCard tracks its source_path
 so the runner can resolve relative evidence paths later.</p>
 <dl class="field-list simple">
@@ -754,13 +797,13 @@ so the runner can resolve relative evidence paths later.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="reporting.benchmark_card.validate_card_data">
 <span class="sig-prename descclassname"><span class="pre">reporting.benchmark_card.</span></span><span class="sig-name descname"><span class="pre">validate_card_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/reporting/benchmark_card.html#validate_card_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#reporting.benchmark_card.validate_card_data" title="Link to this definition">#</a></dt>
-<dd><p>Validate a parsed card dict against SCHEMA.md v0.1.2.</p>
-<p>Implements all 16 validation rules. Raises SchemaValidationError with
+<dd><p>Validate a parsed card dict against SCHEMA.md v0.1.3.</p>
+<p>Implements all 18 validation rules. Raises SchemaValidationError with
 a “rule N: …” prefix identifying the failing rule. Iteration order
 mirrors the schema’s rule numbering for auditability.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
@@ -789,10 +832,10 @@ artefact emitters (plots, tables, exports) can call it independently.</p>
 <dt class="sig sig-object py" id="reporting.benchmark_card.run_card">
 <span class="sig-prename descclassname"><span class="pre">reporting.benchmark_card.</span></span><span class="sig-name descname"><span class="pre">run_card</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">card</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/reporting/benchmark_card.html#run_card"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#reporting.benchmark_card.run_card" title="Link to this definition">#</a></dt>
 <dd><p>Run a benchmark card to verdict.</p>
-<p>Dispatches by model_kind. algebraic_map cards (A1) run end-to-end
-using cbg.basis + cbg.effective_hamiltonian + numerical.tensor_ops.
-dynamical cards (A3, A4) raise NotImplementedError pointing at the
-yet-unimplemented C.5–C.10 modules.</p>
+<p>Dispatches by DG target / model_kind. DG-3 cards use the dedicated
+cross-method branch; algebraic_map cards run end-to-end using
+cbg.basis + cbg.effective_hamiltonian + numerical.tensor_ops; other
+dynamical cards use the TCL structural-identity runner.</p>
 <p>Verifies the gauge annotation before any computation; raises
 GaugeAnnotationError if the canonical block has been tampered with.</p>
 <dl class="field-list simple">
@@ -801,6 +844,32 @@ GaugeAnnotationError if the canonical block has been tampered with.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#reporting.benchmark_card.CardResult" title="reporting.benchmark_card.CardResult"><em>CardResult</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="reporting.benchmark_card.write_dg4_result_json">
+<span class="sig-prename descclassname"><span class="pre">reporting.benchmark_card.</span></span><span class="sig-name descname"><span class="pre">write_dg4_result_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">card</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_window_utc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">computed_at_utc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/reporting/benchmark_card.html#write_dg4_result_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#reporting.benchmark_card.write_dg4_result_json" title="Link to this definition">#</a></dt>
+<dd><p>Write an audit-complete DG-4 result JSON artefact.</p>
+<p>Persists the full sweep table from <code class="docutils literal notranslate"><span class="pre">run_result.dg4_sweep_data</span></code> plus
+card-level metadata, so a reader can reconstruct the verdict from the
+artefact alone (DG-4 work plan v0.1.4 audit requirement, addressing
+the v0.1.1 supersedure’s MEDIUM finding).</p>
+<p>Returns the path the JSON was written to.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>card</strong> (<a class="reference internal" href="#reporting.benchmark_card.BenchmarkCard" title="reporting.benchmark_card.BenchmarkCard"><em>BenchmarkCard</em></a>)</p></li>
+<li><p><strong>run_result</strong> (<a class="reference internal" href="#reporting.benchmark_card.CardResult" title="reporting.benchmark_card.CardResult"><em>CardResult</em></a>)</p></li>
+<li><p><strong>output_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><em>Path</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+<li><p><strong>run_window_utc</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>computed_at_utc</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>indent</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><em>Path</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -823,7 +892,7 @@ case-folded (“PASS” → “pass”, etc.) per SCHEMA.md §Status values.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>card</strong> (<a class="reference internal" href="#reporting.benchmark_card.BenchmarkCard" title="reporting.benchmark_card.BenchmarkCard"><em>BenchmarkCard</em></a>)</p></li>
 <li><p><strong>run_result</strong> (<a class="reference internal" href="#reporting.benchmark_card.CardResult" title="reporting.benchmark_card.CardResult"><em>CardResult</em></a>)</p></li>
-<li><p><strong>evidence_paths</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>evidence_paths</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
 <li><p><strong>notes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
 </ul>
 </dd>
@@ -894,6 +963,15 @@ structure survives the round-trip; the library choice is deferred.</p>
         <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">numerical</span></code> — Numerical primitives</p>
       </div>
     </a>
+    <a class="right-next"
+       href="examples.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Worked examples</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
 </div>
                 </footer>
               
@@ -915,6 +993,8 @@ structure survives the round-trip; the library choice is deferred.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-reporting.benchmark_card"><code class="docutils literal notranslate"><span class="pre">reporting.benchmark_card</span></code></a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.SchemaValidationError"><code class="docutils literal notranslate"><span class="pre">SchemaValidationError</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.GaugeAnnotationError"><code class="docutils literal notranslate"><span class="pre">GaugeAnnotationError</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.ScopeDefinitionNotRunnableError"><code class="docutils literal notranslate"><span class="pre">ScopeDefinitionNotRunnableError</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.DG4SweepRunnerNotImplementedError"><code class="docutils literal notranslate"><span class="pre">DG4SweepRunnerNotImplementedError</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.TestCaseHandlerNotFoundError"><code class="docutils literal notranslate"><span class="pre">TestCaseHandlerNotFoundError</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.BenchmarkCard"><code class="docutils literal notranslate"><span class="pre">BenchmarkCard</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.BenchmarkCard.schema_version"><code class="docutils literal notranslate"><span class="pre">BenchmarkCard.schema_version</span></code></a></li>
@@ -959,12 +1039,14 @@ structure survives the round-trip; the library choice is deferred.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.CardResult.test_case_results"><code class="docutils literal notranslate"><span class="pre">CardResult.test_case_results</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.CardResult.runner_version"><code class="docutils literal notranslate"><span class="pre">CardResult.runner_version</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.CardResult.notes"><code class="docutils literal notranslate"><span class="pre">CardResult.notes</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.CardResult.dg4_sweep_data"><code class="docutils literal notranslate"><span class="pre">CardResult.dg4_sweep_data</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.load_card"><code class="docutils literal notranslate"><span class="pre">load_card()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.validate_card_data"><code class="docutils literal notranslate"><span class="pre">validate_card_data()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.verify_gauge_annotation"><code class="docutils literal notranslate"><span class="pre">verify_gauge_annotation()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.run_card"><code class="docutils literal notranslate"><span class="pre">run_card()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.write_dg4_result_json"><code class="docutils literal notranslate"><span class="pre">write_dg4_result_json()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.populate_result"><code class="docutils literal notranslate"><span class="pre">populate_result()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.validate_card"><code class="docutils literal notranslate"><span class="pre">validate_card()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting.benchmark_card.write_card"><code class="docutils literal notranslate"><span class="pre">write_card()</span></code></a></li>

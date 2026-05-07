@@ -151,6 +151,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../../numerical.html"><code class="docutils literal notranslate"><span class="pre">numerical</span></code> — Numerical primitives</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../reporting.html"><code class="docutils literal notranslate"><span class="pre">reporting</span></code> — Benchmark-card schema, loader, validator, runner</a></li>
 </ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Worked examples</a></li>
+</ul>
 
     </div>
 </nav></div>
@@ -322,13 +325,12 @@
 <span class="sd">verifiable by verify_orthonormality.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 
 <div class="viewcode-block" id="matrix_unit_basis">
 <a class="viewcode-back" href="../../cbg.html#cbg.basis.matrix_unit_basis">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">matrix_unit_basis</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">matrix_unit_basis</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Matrix-unit basis {|j⟩⟨k|}, j,k ∈ {0, ..., d-1}.</span>
 
 <span class="sd">    The basis used in Letter Eq. (7). Each element E_{j,k} is the d×d</span>
@@ -371,7 +373,7 @@
 
 <div class="viewcode-block" id="su_d_generator_basis">
 <a class="viewcode-back" href="../../cbg.html#cbg.basis.su_d_generator_basis">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">su_d_generator_basis</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">su_d_generator_basis</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generators of su(d) plus the identity, normalised for Hilbert–Schmidt.</span>
 
 <span class="sd">    For d = 2, returns the normalised Pauli basis</span>
@@ -408,12 +410,12 @@
             <span class="s2">&quot;Higher-d cross-basis fixtures are a separate DG-2 freeze.&quot;</span>
         <span class="p">)</span>
     <span class="n">inv_sqrt2</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
-    <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+    <span class="n">identity_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
     <span class="n">sigma_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
     <span class="n">sigma_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="n">j</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
     <span class="n">sigma_z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">[</span>
-        <span class="n">inv_sqrt2</span> <span class="o">*</span> <span class="n">I</span><span class="p">,</span>
+        <span class="n">inv_sqrt2</span> <span class="o">*</span> <span class="n">identity_2</span><span class="p">,</span>
         <span class="n">inv_sqrt2</span> <span class="o">*</span> <span class="n">sigma_x</span><span class="p">,</span>
         <span class="n">inv_sqrt2</span> <span class="o">*</span> <span class="n">sigma_y</span><span class="p">,</span>
         <span class="n">inv_sqrt2</span> <span class="o">*</span> <span class="n">sigma_z</span><span class="p">,</span>
@@ -423,8 +425,7 @@
 
 <div class="viewcode-block" id="verify_orthonormality">
 <a class="viewcode-back" href="../../cbg.html#cbg.basis.verify_orthonormality">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">verify_orthonormality</span><span class="p">(</span><span class="n">basis</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
-                          <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">verify_orthonormality</span><span class="p">(</span><span class="n">basis</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Verify Tr(F_α† F_β) = δ_αβ to within `tol`.</span>
 
 <span class="sd">    Returns True iff every pairwise Hilbert–Schmidt inner product is</span>

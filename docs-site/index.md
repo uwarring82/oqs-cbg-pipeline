@@ -47,6 +47,14 @@ numerical
 reporting
 ```
 
+## Worked examples
+
+```{toctree}
+:maxdepth: 1
+
+examples
+```
+
 ## Quick links
 
 - [Source on GitHub](https://github.com/uwarring82/oqs-cbg-pipeline)

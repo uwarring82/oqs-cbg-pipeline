@@ -152,6 +152,9 @@
 <li class="toctree-l1"><a class="reference internal" href="numerical.html"><code class="docutils literal notranslate"><span class="pre">numerical</span></code> — Numerical primitives</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reporting.html"><code class="docutils literal notranslate"><span class="pre">reporting</span></code> — Benchmark-card schema, loader, validator, runner</a></li>
 </ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Worked examples</a></li>
+</ul>
 
     </div>
 </nav></div>
@@ -375,9 +378,16 @@ operators to the dynamical-card runner. Each module exposes a
 <code class="docutils literal notranslate"><span class="pre">system_arrays_from_spec(model_spec)</span></code> factory that consumes the
 <code class="docutils literal notranslate"><span class="pre">frozen_parameters.model</span></code> block of a benchmark card and returns
 <code class="docutils literal notranslate"><span class="pre">(H_S,</span> <span class="pre">A)</span></code> arrays, plus model-specific diagnostics where useful.</p>
-<p>DG-1 currently exercises <code class="docutils literal notranslate"><span class="pre">pure_dephasing</span></code> (Card A3) and
-<code class="docutils literal notranslate"><span class="pre">spin_boson_sigma_x</span></code> (Card A4); the remaining modules are scaffolds for
-DG-2+ work and may carry <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code> stubs at this version.</p>
+<p><code class="docutils literal notranslate"><span class="pre">pure_dephasing</span></code> is exercised by DG-1 Card A3 and DG-2 Cards B1, B2, B3,
+B4-conv-registry, plus DG-3 Card C1; <code class="docutils literal notranslate"><span class="pre">spin_boson_sigma_x</span></code> is exercised by
+DG-1 Card A4, DG-2 Card B5-conv-registry, DG-3 Card C2, and DG-4 Card
+D1 v0.1.2 (PASS via picture-fixed Path B numerical L_4, 2026-05-06,
+superseding the v0.5.0-tagged v0.1.1 verdict that was downgraded on
+review the same day). <code class="docutils literal notranslate"><span class="pre">fano_anderson</span></code> is referenced by DG-5 Card E1 as a
+scope-definition entry; <code class="docutils literal notranslate"><span class="pre">run_card(E1)</span></code> raises
+<code class="docutils literal notranslate"><span class="pre">ScopeDefinitionNotRunnableError</span></code> because the model factory, the HMF
+reference, and fermionic-bath support in <code class="docutils literal notranslate"><span class="pre">cbg.bath_correlations</span></code> are not
+yet implemented. <code class="docutils literal notranslate"><span class="pre">jaynes_cummings</span></code> remains a scaffold for future plans.</p>
 <section id="module-models.pure_dephasing">
 <span id="models-pure-dephasing"></span><h2><code class="docutils literal notranslate"><span class="pre">models.pure_dephasing</span></code><a class="headerlink" href="#module-models.pure_dephasing" title="Link to this heading">#</a></h2>
 <p>models.pure_dephasing — Spin under pure dephasing, A = sigma_z.</p>
@@ -573,10 +583,10 @@ feature vs. models.pure_dephasing).</p>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – On any validation mismatch.</p>
 </dd>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>model_spec</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p>
+<dd class="field-even"><p><strong>model_spec</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.14)"><em>Tuple</em></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>]</p>
 </dd>
 </dl>
 </dd></dl>

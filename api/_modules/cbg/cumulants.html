@@ -151,6 +151,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../../numerical.html"><code class="docutils literal notranslate"><span class="pre">numerical</span></code> — Numerical primitives</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../reporting.html"><code class="docutils literal notranslate"><span class="pre">reporting</span></code> — Benchmark-card schema, loader, validator, runner</a></li>
 </ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Worked examples</a></li>
+</ul>
 
     </div>
 </nav></div>
@@ -317,14 +320,18 @@
 <span class="sd">      temperature; the displacement (if any) leaves the connected</span>
 <span class="sd">      part invariant.</span>
 <span class="sd">    - These are the canonical *time-ordered* (all-left) cumulants</span>
-<span class="sd">      sufficient for K_1 and K_2 in Cards A3 and A4. The full</span>
-<span class="sd">      left/right ordering machinery of Companion Eq. (24) is DG-2</span>
-<span class="sd">      territory.</span>
+<span class="sd">      sufficient for K_1 and K_2 in Cards A3 and A4.</span>
 
-<span class="sd">DG-2 territory (stubbed here):</span>
-<span class="sd">    - General D_bar(τ_1^k, s_1^{n-k}) with mixed left/right indices.</span>
-<span class="sd">    - Cumulants for n ≥ 3 (recursive subtraction beyond the leading</span>
-<span class="sd">      product term D̄_1·D̄_1).</span>
+<span class="sd">DG-4 Phase B.1 scope (this module, 2026-05-06):</span>
+<span class="sd">    - Scalar generic D_bar(τ_1^k, s_1^{n-k}) supports mixed left/right</span>
+<span class="sd">      indices at total order n = 2 and thermal Gaussian cumulants at</span>
+<span class="sd">      n in {3, 4}. The mixed ordering follows cbg.bath_correlations&#39;</span>
+<span class="sd">      B.0 convention: times = tau_args + reversed(s_args).</span>
+<span class="sd">    - Phase B.4 threads ``quad_limit`` and ``upper_cutoff_factor``</span>
+<span class="sd">      through D_bar_2 and the scalar generic D_bar path.</span>
+
+<span class="sd">DG-2 / later scope (stubbed here):</span>
+<span class="sd">    - Cumulants for n &gt; 4.</span>
 <span class="sd">    - Cumulants of non-Gaussian bath states (where D̄_3 etc. don&#39;t</span>
 <span class="sd">      automatically vanish).</span>
 
@@ -348,17 +355,22 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">factorial</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">integrate</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">cbg.bath_correlations</span><span class="w"> </span><span class="kn">import</span> <span class="n">bath_two_point_thermal_array</span><span class="p">,</span> <span class="n">ohmic_spectral_density</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">cbg.displacement_profiles</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">DisplacementProfile</span><span class="p">,</span>
-    <span class="n">REGISTERED_PROFILES</span><span class="p">,</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cbg.bath_correlations</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">bath_two_point_thermal_array</span><span class="p">,</span>
+    <span class="n">n_point_ordered</span><span class="p">,</span>
+    <span class="n">ohmic_spectral_density</span><span class="p">,</span>
+    <span class="n">two_point</span><span class="p">,</span>
 <span class="p">)</span>
-
+<span class="kn">from</span><span class="w"> </span><span class="nn">cbg.displacement_profiles</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">REGISTERED_PROFILES</span><span class="p">,</span>
+    <span class="n">DisplacementProfile</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="c1"># ─── First generalised cumulant D̄_1(t) ─────────────────────────────────────</span>
 
@@ -368,8 +380,8 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">D_bar_1</span><span class="p">(</span>
     <span class="n">t_grid</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">bath_state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-    <span class="n">spectral_density</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">bath_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">spectral_density</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;First generalised cumulant D̄_1(t) = ⟨B(t)⟩ on the time grid.</span>
 
@@ -405,16 +417,16 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">t_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t_grid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">t_grid</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;D_bar_1: t_grid must be 1D; got shape </span><span class="si">{</span><span class="n">t_grid</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;D_bar_1: t_grid must be 1D; got shape </span><span class="si">{</span><span class="n">t_grid</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="n">family</span> <span class="o">=</span> <span class="n">bath_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;family&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">&quot;thermal&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">t_grid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">&quot;coherent_displaced&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">_D_bar_1_coherent_displaced</span><span class="p">(</span>
-            <span class="n">t_grid</span><span class="p">,</span> <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span> <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+            <span class="n">t_grid</span><span class="p">,</span>
+            <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span>
+            <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
         <span class="sa">f</span><span class="s2">&quot;D_bar_1: bath_state.family </span><span class="si">{</span><span class="n">family</span><span class="si">!r}</span><span class="s2"> not implemented. &quot;</span>
@@ -431,8 +443,8 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_D_bar_1_coherent_displaced</span><span class="p">(</span>
     <span class="n">t_grid</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">bath_state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-    <span class="n">spectral_density</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">bath_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">spectral_density</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;⟨B(t)⟩ for a coherent-displaced bosonic bath under one of the four</span>
 <span class="sd">    Council-cleared displacement-mode profiles (subsidiary briefing v0.3.0</span>
@@ -528,16 +540,22 @@
     <span class="c1"># Build the DisplacementProfile via the registered constructor. For</span>
     <span class="c1"># sqrt-J the constructor takes a callable J built from the spec.</span>
     <span class="k">if</span> <span class="n">profile_name</span> <span class="o">==</span> <span class="s2">&quot;sqrt-J&quot;</span><span class="p">:</span>
+
         <span class="k">def</span><span class="w"> </span><span class="nf">J</span><span class="p">(</span><span class="n">w</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">ohmic_spectral_density</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">alpha_sd</span><span class="p">,</span> <span class="n">omega_c</span><span class="p">))</span>
+
         <span class="n">profile</span> <span class="o">=</span> <span class="n">REGISTERED_PROFILES</span><span class="p">[</span><span class="n">profile_name</span><span class="p">](</span>
-            <span class="n">alpha_0</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;alpha_0&quot;</span><span class="p">],</span> <span class="n">J</span><span class="o">=</span><span class="n">J</span><span class="p">,</span>
+            <span class="n">alpha_0</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;alpha_0&quot;</span><span class="p">],</span>
+            <span class="n">J</span><span class="o">=</span><span class="n">J</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">profile</span> <span class="o">=</span> <span class="n">REGISTERED_PROFILES</span><span class="p">[</span><span class="n">profile_name</span><span class="p">](</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">_evaluate_displaced_first_cumulant</span><span class="p">(</span>
-        <span class="n">t_grid</span><span class="p">,</span> <span class="n">profile</span><span class="p">,</span> <span class="n">alpha_sd</span><span class="o">=</span><span class="n">alpha_sd</span><span class="p">,</span> <span class="n">omega_c</span><span class="o">=</span><span class="n">omega_c</span><span class="p">,</span>
+        <span class="n">t_grid</span><span class="p">,</span>
+        <span class="n">profile</span><span class="p">,</span>
+        <span class="n">alpha_sd</span><span class="o">=</span><span class="n">alpha_sd</span><span class="p">,</span>
+        <span class="n">omega_c</span><span class="o">=</span><span class="n">omega_c</span><span class="p">,</span>
     <span class="p">)</span>
 
 
@@ -585,12 +603,19 @@
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">t_grid</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">t</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
                 <span class="n">integral</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">integrate</span><span class="o">.</span><span class="n">quad</span><span class="p">(</span>
-                    <span class="n">amplitude</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">_QUAD_LIMIT</span><span class="p">,</span>
+                    <span class="n">amplitude</span><span class="p">,</span>
+                    <span class="mf">0.0</span><span class="p">,</span>
+                    <span class="n">upper</span><span class="p">,</span>
+                    <span class="n">limit</span><span class="o">=</span><span class="n">_QUAD_LIMIT</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">integral</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">integrate</span><span class="o">.</span><span class="n">quad</span><span class="p">(</span>
-                    <span class="n">amplitude</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="p">,</span>
-                    <span class="n">weight</span><span class="o">=</span><span class="s2">&quot;cos&quot;</span><span class="p">,</span> <span class="n">wvar</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="n">limit</span><span class="o">=</span><span class="n">_QUAD_LIMIT</span><span class="p">,</span>
+                    <span class="n">amplitude</span><span class="p">,</span>
+                    <span class="mf">0.0</span><span class="p">,</span>
+                    <span class="n">upper</span><span class="p">,</span>
+                    <span class="n">weight</span><span class="o">=</span><span class="s2">&quot;cos&quot;</span><span class="p">,</span>
+                    <span class="n">wvar</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">),</span>
+                    <span class="n">limit</span><span class="o">=</span><span class="n">_QUAD_LIMIT</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">alpha_0</span> <span class="o">*</span> <span class="n">integral</span>
         <span class="k">return</span> <span class="n">result</span>
@@ -605,19 +630,26 @@
             <span class="k">if</span> <span class="n">omega</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
                 <span class="k">return</span> <span class="mf">0.0</span>
             <span class="n">J_w</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">ohmic_spectral_density</span><span class="p">(</span><span class="n">omega</span><span class="p">,</span> <span class="n">alpha_sd</span><span class="p">,</span> <span class="n">omega_c</span><span class="p">))</span>
-            <span class="n">envelope</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="n">omega</span> <span class="o">-</span> <span class="n">omega_d</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">Delta_omega</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span>
+            <span class="n">envelope</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="n">omega</span> <span class="o">-</span> <span class="n">omega_d</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">Delta_omega</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span>
             <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">J_w</span><span class="p">))</span> <span class="o">*</span> <span class="n">envelope</span>
 
         <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">t_grid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">t_grid</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">t</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
                 <span class="n">integral</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">integrate</span><span class="o">.</span><span class="n">quad</span><span class="p">(</span>
-                    <span class="n">amplitude</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">_QUAD_LIMIT</span><span class="p">,</span>
+                    <span class="n">amplitude</span><span class="p">,</span>
+                    <span class="mf">0.0</span><span class="p">,</span>
+                    <span class="n">upper</span><span class="p">,</span>
+                    <span class="n">limit</span><span class="o">=</span><span class="n">_QUAD_LIMIT</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">integral</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">integrate</span><span class="o">.</span><span class="n">quad</span><span class="p">(</span>
-                    <span class="n">amplitude</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="p">,</span>
-                    <span class="n">weight</span><span class="o">=</span><span class="s2">&quot;cos&quot;</span><span class="p">,</span> <span class="n">wvar</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="n">limit</span><span class="o">=</span><span class="n">_QUAD_LIMIT</span><span class="p">,</span>
+                    <span class="n">amplitude</span><span class="p">,</span>
+                    <span class="mf">0.0</span><span class="p">,</span>
+                    <span class="n">upper</span><span class="p">,</span>
+                    <span class="n">weight</span><span class="o">=</span><span class="s2">&quot;cos&quot;</span><span class="p">,</span>
+                    <span class="n">wvar</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">),</span>
+                    <span class="n">limit</span><span class="o">=</span><span class="n">_QUAD_LIMIT</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">alpha_0</span> <span class="o">*</span> <span class="n">integral</span>
         <span class="k">return</span> <span class="n">result</span>
@@ -636,8 +668,10 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">D_bar_2</span><span class="p">(</span>
     <span class="n">t_grid</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">bath_state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-    <span class="n">spectral_density</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">bath_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">spectral_density</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">upper_cutoff_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">,</span>
+    <span class="n">quad_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Second generalised cumulant D̄_2(τ, s) = ⟨B(τ) B(s)⟩_connected on</span>
 <span class="sd">    the time grid.</span>
@@ -660,6 +694,9 @@
 <span class="sd">        The card&#39;s bath_spectral_density mapping. Required keys: family</span>
 <span class="sd">        (&quot;ohmic&quot; at DG-1), coupling_strength (= alpha), cutoff_frequency</span>
 <span class="sd">        (= omega_c).</span>
+<span class="sd">    upper_cutoff_factor, quad_limit : optional</span>
+<span class="sd">        Quadrature controls forwarded to</span>
+<span class="sd">        ``bath_correlations.bath_two_point_thermal_array``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -692,7 +729,12 @@
     <span class="n">temperature</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">bath_state</span><span class="p">[</span><span class="s2">&quot;temperature&quot;</span><span class="p">])</span>
 
     <span class="k">return</span> <span class="n">bath_two_point_thermal_array</span><span class="p">(</span>
-        <span class="n">t_grid</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">omega_c</span><span class="p">,</span> <span class="n">temperature</span>
+        <span class="n">t_grid</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">,</span>
+        <span class="n">omega_c</span><span class="p">,</span>
+        <span class="n">temperature</span><span class="p">,</span>
+        <span class="n">upper_cutoff_factor</span><span class="o">=</span><span class="n">upper_cutoff_factor</span><span class="p">,</span>
+        <span class="n">quad_limit</span><span class="o">=</span><span class="n">quad_limit</span><span class="p">,</span>
     <span class="p">)</span></div>
 
 
@@ -712,20 +754,28 @@
 <span class="sd">                              - Σ_{l,r} D̄(τ_1^l, s_1^r) ·</span>
 <span class="sd">                                        D̄(τ_{l+1}^k, s_{r+1}^{n-k})</span>
 
-<span class="sd">    DG-1 implements the leaf cases for the canonical time-ordered</span>
+<span class="sd">    DG-1 implemented the leaf cases for the canonical time-ordered</span>
 <span class="sd">    cumulants used by Cards A3 and A4:</span>
 
 <span class="sd">        - k=1, n-k=0 (single τ argument) → D̄_1 = D_1 = ⟨B(τ)⟩.</span>
 <span class="sd">        - k=2, n-k=0 (two τ arguments)   → D̄_2 = D_2 - D_1 ⊗ D_1</span>
 <span class="sd">                                                 = connected two-point.</span>
 
+<span class="sd">    DG-4 Phase B.1 extends the scalar generic path to mixed left/right</span>
+<span class="sd">    indices and to total order n in {3, 4} for thermal Gaussian baths.</span>
+<span class="sd">    For n = 3 and n = 4 it evaluates the equivalent connected-cumulant</span>
+<span class="sd">    set-partition expansion over B.0&#39;s flattened operator order:</span>
+
+<span class="sd">        times = tuple(tau_args) + tuple(reversed(s_args))</span>
+
+<span class="sd">    This is the leaf accepted by the higher-order TCL recursion and</span>
+<span class="sd">    makes D̄_3 = D̄_4 = 0 for thermal Gaussian baths by Wick</span>
+<span class="sd">    factorisation.</span>
+
 <span class="sd">    For the canonical (all-left, time-ordered) DG-1 use cases, callers</span>
 <span class="sd">    should prefer D_bar_1(t_grid, ...) and D_bar_2(t_grid, ...), which</span>
 <span class="sd">    return precomputed (n,) and (n, n) arrays respectively. The</span>
 <span class="sd">    array-form helpers compose efficiently with cbg.tcl_recursion.</span>
-
-<span class="sd">    Mixed left/right indices (k != n) and orders n ≥ 3 are DG-2</span>
-<span class="sd">    territory and raise NotImplementedError here.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -734,51 +784,199 @@
 <span class="sd">    s_args : tuple of float</span>
 <span class="sd">        Right-time arguments (s_1, ..., s_{n-k}).</span>
 <span class="sd">    **kwargs</span>
-<span class="sd">        bath_state, spectral_density (as for D_bar_1, D_bar_2).</span>
+<span class="sd">        bath_state, spectral_density (as for D_bar_1, D_bar_2), and</span>
+<span class="sd">        optional quadrature controls ``upper_cutoff_factor`` and</span>
+<span class="sd">        ``quad_limit``.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    NotImplementedError</span>
-<span class="sd">        For mixed left/right indices, or for total order n ≥ 3.</span>
+<span class="sd">        For total order n &gt; 4, or n ≥ 3 outside the thermal Gaussian</span>
+<span class="sd">        B.1 path.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">n_left</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tau_args</span><span class="p">)</span>
-    <span class="n">n_right</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s_args</span><span class="p">)</span>
-    <span class="n">n_total</span> <span class="o">=</span> <span class="n">n_left</span> <span class="o">+</span> <span class="n">n_right</span>
+    <span class="n">tau_args</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tau_args</span><span class="p">)</span>
+    <span class="n">s_args</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">s_args</span><span class="p">)</span>
+    <span class="n">n_total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tau_args</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">s_args</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">n_right</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="s2">&quot;D_bar: mixed left/right ordering (s_args non-empty) is DG-2 &quot;</span>
-            <span class="s2">&quot;territory. The canonical all-left time-ordered cumulants &quot;</span>
-            <span class="s2">&quot;(s_args=()) are sufficient for Cards A3 and A4 at orders &lt;= 2; &quot;</span>
-            <span class="s2">&quot;use D_bar_1 / D_bar_2 array helpers.&quot;</span>
-        <span class="p">)</span>
-    <span class="k">if</span> <span class="n">n_total</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;D_bar: total order n=</span><span class="si">{</span><span class="n">n_total</span><span class="si">}</span><span class="s2"> not implemented at DG-1. &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;K_n at orders n &gt;= 3 is DG-2 territory per Sail v0.5 §9 DG-2 &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;and DG-1 work plan v0.1.3 §1.2.&quot;</span>
-        <span class="p">)</span>
-
-    <span class="c1"># n_total in {1, 2} with all-left ordering: thin wrappers over the</span>
-    <span class="c1"># array-form helpers, sampled at the requested time arguments.</span>
     <span class="n">bath_state</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bath_state&quot;</span><span class="p">)</span>
     <span class="n">spectral_density</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;spectral_density&quot;</span><span class="p">)</span>
+    <span class="n">upper_cutoff_factor</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;upper_cutoff_factor&quot;</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">))</span>
+    <span class="n">quad_limit</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;quad_limit&quot;</span><span class="p">,</span> <span class="mi">200</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">bath_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;D_bar: bath_state kwarg required&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n_total</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;D_bar: at least one time argument is required&quot;</span><span class="p">)</span>
 
-    <span class="n">t_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tau_args</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">spectral_density</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">n_total</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;D_bar: spectral_density kwarg required&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Preserve the historical DG-1 all-left n=1 return shape: D_bar_1</span>
+    <span class="c1"># returns an array. The mixed/right-only scalar case below is needed</span>
+    <span class="c1"># by the B.1 recursion.</span>
+    <span class="k">if</span> <span class="n">n_total</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">s_args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">D_bar_1</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tau_args</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+            <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span>
+            <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">times</span> <span class="o">=</span> <span class="n">_flatten_mixed_order</span><span class="p">(</span><span class="n">tau_args</span><span class="p">,</span> <span class="n">s_args</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_D_bar_scalar_from_flat_times</span><span class="p">(</span>
+        <span class="n">times</span><span class="p">,</span>
+        <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span>
+        <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+        <span class="n">upper_cutoff_factor</span><span class="o">=</span><span class="n">upper_cutoff_factor</span><span class="p">,</span>
+        <span class="n">quad_limit</span><span class="o">=</span><span class="n">quad_limit</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_flatten_mixed_order</span><span class="p">(</span>
+    <span class="n">tau_args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">s_args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Flatten mixed left/right arguments using the DG-4 B.0 convention.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">tau_args</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">s_args</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_D_bar_scalar_from_flat_times</span><span class="p">(</span>
+    <span class="n">times</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">bath_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">spectral_density</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">upper_cutoff_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">,</span>
+    <span class="n">quad_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scalar connected cumulant for already-flattened operator times.&quot;&quot;&quot;</span>
+    <span class="n">n_total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">n_total</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">D_bar_1</span><span class="p">(</span><span class="n">t_grid</span><span class="p">,</span> <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span>
-                       <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">)</span>
-    <span class="c1"># n_total == 2</span>
-    <span class="k">if</span> <span class="n">spectral_density</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;D_bar: spectral_density kwarg required for n=2&quot;</span><span class="p">)</span>
-    <span class="n">arr</span> <span class="o">=</span> <span class="n">D_bar_2</span><span class="p">(</span><span class="n">t_grid</span><span class="p">,</span> <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span>
-                  <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">)</span>
-    <span class="c1"># arr is (2, 2); the requested cumulant is arr[0, 1] (or arr[1, 0]</span>
-    <span class="c1"># by Hermiticity). Return the [0, 1] entry — D̄_2(τ_1, τ_2).</span>
-    <span class="k">return</span> <span class="n">arr</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="n">_D_bar_1_scalar</span><span class="p">(</span>
+            <span class="n">times</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span>
+            <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">n_total</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">D_bar_2</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+            <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span>
+            <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+            <span class="n">upper_cutoff_factor</span><span class="o">=</span><span class="n">upper_cutoff_factor</span><span class="p">,</span>
+            <span class="n">quad_limit</span><span class="o">=</span><span class="n">quad_limit</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="nb">complex</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">n_total</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">}:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;D_bar: total order n=</span><span class="si">{</span><span class="n">n_total</span><span class="si">}</span><span class="s2"> not implemented. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;DG-4 Phase B.1 supports n in </span><span class="se">{{</span><span class="s2">3, 4</span><span class="se">}}</span><span class="s2"> only beyond the &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;existing n &lt;= 2 path.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">bath_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;family&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;thermal&quot;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;D_bar: bath_state.family </span><span class="si">{</span><span class="n">bath_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;family&#39;</span><span class="p">)</span><span class="si">!r}</span><span class="s2"> &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;not implemented for n &gt;= 3. DG-4 Phase B.1 supports only &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;thermal Gaussian baths.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">_joint_cumulant_from_raw_moments</span><span class="p">(</span>
+        <span class="n">times</span><span class="p">,</span>
+        <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span>
+        <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+        <span class="n">upper_cutoff_factor</span><span class="o">=</span><span class="n">upper_cutoff_factor</span><span class="p">,</span>
+        <span class="n">quad_limit</span><span class="o">=</span><span class="n">quad_limit</span><span class="p">,</span>
+    <span class="p">)</span>
 
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_D_bar_1_scalar</span><span class="p">(</span>
+    <span class="n">time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">bath_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">spectral_density</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">D_bar_1</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">time</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span>
+        <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="nb">complex</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_joint_cumulant_from_raw_moments</span><span class="p">(</span>
+    <span class="n">times</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">bath_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">spectral_density</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">upper_cutoff_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">,</span>
+    <span class="n">quad_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Connected cumulant from raw ordered moments via set partitions.&quot;&quot;&quot;</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="o">+</span> <span class="mf">0.0</span><span class="n">j</span>
+    <span class="k">for</span> <span class="n">partition</span> <span class="ow">in</span> <span class="n">_set_partitions</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)))):</span>
+        <span class="n">n_blocks</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">partition</span><span class="p">)</span>
+        <span class="n">coefficient</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="n">n_blocks</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="n">factorial</span><span class="p">(</span><span class="n">n_blocks</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">term</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">0.0</span><span class="n">j</span>
+        <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">partition</span><span class="p">:</span>
+            <span class="n">block_times</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">times</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">block</span><span class="p">)</span>
+            <span class="n">term</span> <span class="o">*=</span> <span class="n">_raw_ordered_moment</span><span class="p">(</span>
+                <span class="n">block_times</span><span class="p">,</span>
+                <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span>
+                <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+                <span class="n">upper_cutoff_factor</span><span class="o">=</span><span class="n">upper_cutoff_factor</span><span class="p">,</span>
+                <span class="n">quad_limit</span><span class="o">=</span><span class="n">quad_limit</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">out</span> <span class="o">+=</span> <span class="n">coefficient</span> <span class="o">*</span> <span class="n">term</span>
+    <span class="k">return</span> <span class="nb">complex</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_raw_ordered_moment</span><span class="p">(</span>
+    <span class="n">times</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">bath_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">spectral_density</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">upper_cutoff_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">,</span>
+    <span class="n">quad_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raw ordered bath moment for one block of flattened operator times.&quot;&quot;&quot;</span>
+    <span class="n">n_total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n_total</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">0.0</span><span class="n">j</span>
+    <span class="k">if</span> <span class="n">n_total</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_D_bar_1_scalar</span><span class="p">(</span>
+            <span class="n">times</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span>
+            <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">n_total</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">two_point</span><span class="p">(</span>
+            <span class="n">times</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">times</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span>
+            <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+            <span class="n">upper_cutoff_factor</span><span class="o">=</span><span class="n">upper_cutoff_factor</span><span class="p">,</span>
+            <span class="n">quad_limit</span><span class="o">=</span><span class="n">quad_limit</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">n_total</span> <span class="ow">in</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">}:</span>
+        <span class="k">return</span> <span class="n">n_point_ordered</span><span class="p">(</span>
+            <span class="n">times</span><span class="p">,</span>
+            <span class="p">(),</span>
+            <span class="n">bath_state</span><span class="p">,</span>
+            <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+            <span class="n">upper_cutoff_factor</span><span class="o">=</span><span class="n">upper_cutoff_factor</span><span class="p">,</span>
+            <span class="n">quad_limit</span><span class="o">=</span><span class="n">quad_limit</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;_raw_ordered_moment: total order n=</span><span class="si">{</span><span class="n">n_total</span><span class="si">}</span><span class="s2"> not implemented&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_set_partitions</span><span class="p">(</span><span class="n">indices</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Yield set partitions of ``indices`` as tuples of ordered blocks.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">indices</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="p">()</span>
+        <span class="k">return</span>
+
+    <span class="n">first</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">tail_partition</span> <span class="ow">in</span> <span class="n">_set_partitions</span><span class="p">(</span><span class="n">indices</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+        <span class="k">yield</span> <span class="p">((</span><span class="n">first</span><span class="p">,),)</span> <span class="o">+</span> <span class="n">tail_partition</span>
+        <span class="k">for</span> <span class="n">block_idx</span><span class="p">,</span> <span class="n">block</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tail_partition</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="p">(</span>
+                <span class="n">tail_partition</span><span class="p">[:</span><span class="n">block_idx</span><span class="p">]</span> <span class="o">+</span> <span class="p">((</span><span class="n">first</span><span class="p">,)</span> <span class="o">+</span> <span class="n">block</span><span class="p">,)</span> <span class="o">+</span> <span class="n">tail_partition</span><span class="p">[</span><span class="n">block_idx</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span>
+            <span class="p">)</span>
 </pre></div>
 
                 </article>

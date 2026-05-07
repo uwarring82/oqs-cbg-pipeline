@@ -152,6 +152,9 @@
 <li class="toctree-l1"><a class="reference internal" href="numerical.html"><code class="docutils literal notranslate"><span class="pre">numerical</span></code> — Numerical primitives</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reporting.html"><code class="docutils literal notranslate"><span class="pre">reporting</span></code> — Benchmark-card schema, loader, validator, runner</a></li>
 </ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Worked examples</a></li>
+</ul>
 
     </div>
 </nav></div>
@@ -358,6 +361,8 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.interaction_picture"><code class="docutils literal notranslate"><span class="pre">interaction_picture()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.L_n_thermal_at_time"><code class="docutils literal notranslate"><span class="pre">L_n_thermal_at_time()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.K_n_thermal_on_grid"><code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.L_n_dissipator_thermal_at_time"><code class="docutils literal notranslate"><span class="pre">L_n_dissipator_thermal_at_time()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.L_n_dissipator_norm_thermal_on_grid"><code class="docutils literal notranslate"><span class="pre">L_n_dissipator_norm_thermal_on_grid()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.L_1_displaced_at_time"><code class="docutils literal notranslate"><span class="pre">L_1_displaced_at_time()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.K_total_displaced_on_grid"><code class="docutils literal notranslate"><span class="pre">K_total_displaced_on_grid()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.K_total_thermal_on_grid"><code class="docutils literal notranslate"><span class="pre">K_total_thermal_on_grid()</span></code></a></li>
@@ -562,7 +567,7 @@ sequence is E_{0,0}, E_{0,1}, E_{1,0}, E_{1,1}.</p>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – if d is not a positive integer.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -598,7 +603,7 @@ separate freeze.</p>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -615,7 +620,7 @@ on the basis-independence identity (Letter Eq. (6)).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>basis</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a><em>[</em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a><em>]</em>) – List of d×d numpy arrays. All elements must share the
+<li><p><strong>basis</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a><em>]</em>) – List of d×d numpy arrays. All elements must share the
 same shape; otherwise numpy will raise on the inner product.</p></li>
 <li><p><strong>tol</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Absolute tolerance for each pairwise inner product.</p></li>
 </ul>
@@ -645,6 +650,9 @@ memory kernel — TCL is time-local; see bath_correlations.py docstring).</p>
 for thermal Gaussian baths, K_n_thermal_on_grid / K_total_thermal_on_grid,
 and K_total_displaced_on_grid for the Council-cleared coherent-displaced
 DG-2 structural cards B4/B5 at perturbative_order &lt;= 2.</p>
+<p>DG-4 Phase B.4 threads the two operational quadrature controls
+(<code class="docutils literal notranslate"><span class="pre">quad_limit</span></code> and <code class="docutils literal notranslate"><span class="pre">upper_cutoff_factor</span></code>) through the runner-facing
+thermal/displaced K-grid entry points.</p>
 <p>Pending scope covers L_n at orders n &gt;= 3 (full Companion Eq. (28)
 recursion) and canonical_lindblad_form, the full K + dissipator
 decomposition with traceless jump operators (Companion Eq. (43)).</p>
@@ -690,6 +698,10 @@ The integrand is operator-valued; the trapezoidal rule is
 inlined for efficiency (avoids 4 separate scalar integrations
 per matrix entry).</p>
 </li>
+<li><p>n = 3: L_3[X] = 0 (thermal Gaussian D̄_1 = D̄_3 = 0; see DG-4
+Phase B.2 derivation in the n = 3 branch below).</p></li>
+<li><p>n = 4: pending; raises NotImplementedError. Non-zero in
+general for [A, A_I(τ)] ≠ 0; zero for σ_z by Feynman-Vernon.</p></li>
 </ul>
 </dd>
 </dl>
@@ -715,7 +727,8 @@ construct.</p></li>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><strong>NotImplementedError</strong></a> – For n &gt;= 3 (pending fourth-order-recursion work).</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><strong>NotImplementedError</strong></a> – For n = 4 (pending; see derivation note in the n = 4 branch).
+    For n &gt;= 5 (out of DG-4 Phase B scope).</p></li>
 <li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – For invalid arguments.</p></li>
 </ul>
 </dd>
@@ -724,7 +737,7 @@ construct.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cbg.tcl_recursion.K_n_thermal_on_grid">
-<span class="sig-prename descclassname"><span class="pre">cbg.tcl_recursion.</span></span><span class="sig-name descname"><span class="pre">K_n_thermal_on_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_hamiltonian</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coupling_operator</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/tcl_recursion.html#K_n_thermal_on_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.tcl_recursion.K_n_thermal_on_grid" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cbg.tcl_recursion.</span></span><span class="sig-name descname"><span class="pre">K_n_thermal_on_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_hamiltonian</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coupling_operator</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_cutoff_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quad_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/tcl_recursion.html#K_n_thermal_on_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.tcl_recursion.K_n_thermal_on_grid" title="Link to this definition">#</a></dt>
 <dd><p>Compute K_n(t) at every t in t_grid for a thermal Gaussian bath.</p>
 <p>For each t_idx, applies Letter Eq. (6) — K = (1/(2id)) Σ_α [F_α†, L[F_α]] —
 to L_n_thermal_at_time(n, t_idx, …) using the matrix-unit basis (or
@@ -732,8 +745,14 @@ a caller-supplied HS-orthonormal basis).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Perturbative order; one of 0, 1, 2 in the currently implemented
-thermal path.</p></li>
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Perturbative order; one of 0, 1, 2, 3 in the currently implemented
+thermal path. n = 3 returns zeros for any system coupling under a
+thermal Gaussian bath (Phase B.2; see L_n_thermal_at_time docstring).
+n = 4 is the pending Phase B follow-up: the parity-class theorem
+(Letter App. D) plus the Feynman-Vernon Gaussian-bath result
+predicts K_4 = 0 for A = σ_z and K_4 ≠ 0 (∝ σ_z) for A = σ_x; the
+latter is the leading-order convergence-detection signal D1 v0.1.1
+targets.</p></li>
 <li><p><strong>t_grid</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>n_t</em><em>,</em><em>)</em>) – Time points.</p></li>
 <li><p><strong>system_hamiltonian</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>d</em><em>, </em><em>d</em><em>)</em>) – H_S and A.</p></li>
 <li><p><strong>coupling_operator</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>d</em><em>, </em><em>d</em><em>)</em>) – H_S and A.</p></li>
@@ -743,6 +762,8 @@ Used only for n = 2 (where D̄_2 is built); ignored for n in {0, 1}.</p></li>
 Used only for n = 2 (where D̄_2 is built); ignored for n in {0, 1}.</p></li>
 <li><p><strong>basis</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>(</em><em>d</em><em>, </em><em>d</em><em>) </em><em>ndarrays</em><em>, </em><em>optional</em>) – HS-orthonormal basis for Letter Eq. (6). Defaults to the
 matrix-unit basis at the system dimension d.</p></li>
+<li><p><strong>upper_cutoff_factor</strong> (<em>optional</em>) – Quadrature controls forwarded through D̄_2 construction for n = 2.</p></li>
+<li><p><strong>quad_limit</strong> (<em>optional</em>) – Quadrature controls forwarded through D̄_2 construction for n = 2.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -755,6 +776,86 @@ matrix-unit basis at the system dimension d.</p></li>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><strong>NotImplementedError</strong></a> – If bath_state.family is not “thermal” in this thermal-only path.
     Use K_total_displaced_on_grid for Council-cleared coherent-
     displaced benchmark-card cases.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.tcl_recursion.L_n_dissipator_thermal_at_time">
+<span class="sig-prename descclassname"><span class="pre">cbg.tcl_recursion.</span></span><span class="sig-name descname"><span class="pre">L_n_dissipator_thermal_at_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_hamiltonian</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coupling_operator</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_cutoff_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quad_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K_n_array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D_bar_2_array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/tcl_recursion.html#L_n_dissipator_thermal_at_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.tcl_recursion.L_n_dissipator_thermal_at_time" title="Link to this definition">#</a></dt>
+<dd><p>Return a callable that applies L_n^dissipator[X] at t_grid[t_idx].</p>
+<p>L_n^dissipator(t) := L_n(t) + i [K_n(t), · ]</p>
+<p>For purely unitary L_n with K_n = H, the dissipator vanishes
+identically (the Risk R8 unitary-recovery oracle gating Phase B.3
+acceptance). For thermal Gaussian baths n ∈ {0, 1, 3} all give the
+zero superoperator; n = 2 carries the leading dissipator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Perturbative order; one of {0, 1, 2, 3}. n=4 raises (gated by
+L_n_thermal_at_time(n=4)); n&gt;=5 is out of scope.</p></li>
+<li><p><strong>t_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Index into t_grid at which to evaluate.</p></li>
+<li><p><strong>t_grid</strong> (<em>as in K_n_thermal_on_grid.</em>)</p></li>
+<li><p><strong>system_hamiltonian</strong> (<em>as in K_n_thermal_on_grid.</em>)</p></li>
+<li><p><strong>coupling_operator</strong> (<em>as in K_n_thermal_on_grid.</em>)</p></li>
+<li><p><strong>bath_state</strong> (<em>as in K_n_thermal_on_grid; consumed for</em>) – n=2 K_n / D_bar_2 construction. Required even at n in {0, 1, 3}
+for signature uniformity (the K_n call still flows through but
+returns zeros at those orders).</p></li>
+<li><p><strong>spectral_density</strong> (<em>as in K_n_thermal_on_grid; consumed for</em>) – n=2 K_n / D_bar_2 construction. Required even at n in {0, 1, 3}
+for signature uniformity (the K_n call still flows through but
+returns zeros at those orders).</p></li>
+<li><p><strong>basis</strong> (<em>optional HS-orthonormal basis for Letter Eq.</em><em> (</em><em>6</em><em>) </em><em>extraction.</em>)</p></li>
+<li><p><strong>upper_cutoff_factor</strong> (<em>forwarded to D_bar_2.</em>)</p></li>
+<li><p><strong>quad_limit</strong> (<em>forwarded to D_bar_2.</em>)</p></li>
+<li><p><strong>K_n_array</strong> (<em>optional precomputed</em><em> (</em><em>n_t</em><em>, </em><em>d</em><em>, </em><em>d</em><em>) </em><em>K_n array; useful when</em>) – evaluating across many t_idx values to amortise the K_n cost.</p></li>
+<li><p><strong>D_bar_2_array</strong> (<em>optional precomputed</em><em> (</em><em>n_t</em><em>, </em><em>n_t</em><em>) </em><em>D_bar_2 array; same</em>) – amortisation rationale.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>callable (X</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(d, d) ndarray) -&gt; (d, d) ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cbg.tcl_recursion.L_n_dissipator_norm_thermal_on_grid">
+<span class="sig-prename descclassname"><span class="pre">cbg.tcl_recursion.</span></span><span class="sig-name descname"><span class="pre">L_n_dissipator_norm_thermal_on_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_hamiltonian</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coupling_operator</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_cutoff_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quad_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/tcl_recursion.html#L_n_dissipator_norm_thermal_on_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.tcl_recursion.L_n_dissipator_norm_thermal_on_grid" title="Link to this definition">#</a></dt>
+<dd><p>Return ||L_n^dissipator(t)||_F at every t in t_grid.</p>
+<p>The norm is the Frobenius norm of the d²×d² Liouville-representation
+matrix of the superoperator L_n^dissipator in the supplied (or
+matrix-unit) HS-orthonormal basis: the standard Hilbert-Schmidt
+norm of a superoperator. This is the per-t signal that DG-4 work
+plan v0.1.3 §1.1 designates as the convergence-ratio numerator
+(D1 v0.1.1’s metric).</p>
+<p>For thermal Gaussian baths under the runner-facing thermal path,
+n ∈ {0, 1, 3} return all zeros and n = 2 returns the dephasing /
+relaxation dissipator’s norm at each grid time. n = 4 is deferred
+along with L_n_thermal_at_time(n=4).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>L_n_dissipator_thermal_at_time</strong> (<em>Same as</em>)</p></li>
+<li><p><strong>the</strong> (<em>minus t_idx and</em>)</p></li>
+<li><p><strong>shortcuts.</strong> (<em>optional precomputed-array</em>)</p></li>
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>t_grid</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
+<li><p><strong>system_hamiltonian</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
+<li><p><strong>coupling_operator</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
+<li><p><strong>bath_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
+<li><p><strong>spectral_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
+<li><p><strong>basis</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>upper_cutoff_factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>)</p></li>
+<li><p><strong>quad_limit</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>||L_n^dissipator(t)||_F at each t in t_grid.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray, shape (n_t,), dtype float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -786,7 +887,7 @@ spectral_density.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cbg.tcl_recursion.K_total_displaced_on_grid">
-<span class="sig-prename descclassname"><span class="pre">cbg.tcl_recursion.</span></span><span class="sig-name descname"><span class="pre">K_total_displaced_on_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N_card</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_hamiltonian</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coupling_operator</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/tcl_recursion.html#K_total_displaced_on_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.tcl_recursion.K_total_displaced_on_grid" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cbg.tcl_recursion.</span></span><span class="sig-name descname"><span class="pre">K_total_displaced_on_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N_card</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_hamiltonian</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coupling_operator</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_cutoff_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quad_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/tcl_recursion.html#K_total_displaced_on_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.tcl_recursion.K_total_displaced_on_grid" title="Link to this definition">#</a></dt>
 <dd><p>Compute K(t) = Σ_{n=0}^{N_card} K_n(t) for a coherent-displaced bath.</p>
 <p>Reuses <code class="docutils literal notranslate"><span class="pre">L_n_thermal_at_time</span></code> for n = 0 (bare Liouvillian, bath-state-
 independent) and n = 2 (TCL2 dissipator, D̄_2 invariant under
@@ -805,6 +906,8 @@ path’s range; v0.1.0 cards use N_card = 2).</p></li>
 <code class="docutils literal notranslate"><span class="pre">displacement_profile</span></code> key per the §6.1 registry-clearance-gate.</p></li>
 <li><p><strong>spectral_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Card bath_spectral_density (ohmic at v0.1.0).</p></li>
 <li><p><strong>basis</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>(</em><em>d</em><em>, </em><em>d</em><em>) </em><em>ndarrays</em><em>, </em><em>optional</em>) – HS-orthonormal basis for Letter Eq. (6); defaults to matrix_unit.</p></li>
+<li><p><strong>upper_cutoff_factor</strong> (<em>optional</em>) – Quadrature controls forwarded through D̄_2 construction for n = 2.</p></li>
+<li><p><strong>quad_limit</strong> (<em>optional</em>) – Quadrature controls forwarded through D̄_2 construction for n = 2.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -824,7 +927,7 @@ path’s range; v0.1.0 cards use N_card = 2).</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cbg.tcl_recursion.K_total_thermal_on_grid">
-<span class="sig-prename descclassname"><span class="pre">cbg.tcl_recursion.</span></span><span class="sig-name descname"><span class="pre">K_total_thermal_on_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N_card</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_hamiltonian</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coupling_operator</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/tcl_recursion.html#K_total_thermal_on_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.tcl_recursion.K_total_thermal_on_grid" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cbg.tcl_recursion.</span></span><span class="sig-name descname"><span class="pre">K_total_thermal_on_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N_card</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_hamiltonian</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coupling_operator</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_cutoff_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quad_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/tcl_recursion.html#K_total_thermal_on_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.tcl_recursion.K_total_thermal_on_grid" title="Link to this definition">#</a></dt>
 <dd><p>Compute K(t) = Σ_{n=0}^{N_card} K_n(t) at every t in t_grid for a
 thermal Gaussian bath.</p>
 <p>The runner-facing entry point: returns the full effective Hamiltonian
@@ -838,9 +941,11 @@ low-order path.</p></li>
 <li><p><strong>t_grid</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
 <li><p><strong>system_hamiltonian</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
 <li><p><strong>coupling_operator</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
-<li><p><strong>bath_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
-<li><p><strong>spectral_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
+<li><p><strong>bath_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
+<li><p><strong>spectral_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
 <li><p><strong>basis</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>upper_cutoff_factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>)</p></li>
+<li><p><strong>quad_limit</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -848,10 +953,14 @@ low-order path.</p></li>
 </dd>
 </dl>
 <p>:param :
-:param spectral_density:
-:type spectral_density: as in K_n_thermal_on_grid.
-:param basis:
-:type basis: as in K_n_thermal_on_grid.</p>
+:param spectral_density: K_n_thermal_on_grid.
+:type spectral_density: as in
+:param basis: K_n_thermal_on_grid.
+:type basis: as in
+:param upper_cutoff_factor: K_n_thermal_on_grid.
+:type upper_cutoff_factor: as in
+:param quad_limit: K_n_thermal_on_grid.
+:type quad_limit: as in</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>K(t_grid).</p>
@@ -865,9 +974,11 @@ low-order path.</p></li>
 <li><p><strong>t_grid</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
 <li><p><strong>system_hamiltonian</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
 <li><p><strong>coupling_operator</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
-<li><p><strong>bath_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
-<li><p><strong>spectral_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
+<li><p><strong>bath_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
+<li><p><strong>spectral_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
 <li><p><strong>basis</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>upper_cutoff_factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>)</p></li>
+<li><p><strong>quad_limit</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -901,7 +1012,7 @@ cbg.effective_hamiltonian.K_from_generator). The full K + traceless-
 dissipator decomposition remains pending.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>L_generator</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><em>Callable</em></a>)</p>
+<dd class="field-odd"><p><strong>L_generator</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><em>Callable</em></a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -931,15 +1042,20 @@ bath_correlations.bath_two_point_thermal_array at the spec’s
 temperature; the displacement (if any) leaves the connected
 part invariant.</p></li>
 <li><p>These are the canonical <em>time-ordered</em> (all-left) cumulants
-sufficient for K_1 and K_2 in Cards A3 and A4. The full
-left/right ordering machinery of Companion Eq. (24) is DG-2
-territory.</p></li>
+sufficient for K_1 and K_2 in Cards A3 and A4.</p></li>
 </ul>
 </dd>
-<dt>DG-2 territory (stubbed here):</dt><dd><ul class="simple">
-<li><p>General D_bar(τ_1^k, s_1^{n-k}) with mixed left/right indices.</p></li>
-<li><p>Cumulants for n ≥ 3 (recursive subtraction beyond the leading
-product term D̄_1·D̄_1).</p></li>
+<dt>DG-4 Phase B.1 scope (this module, 2026-05-06):</dt><dd><ul class="simple">
+<li><p>Scalar generic D_bar(τ_1^k, s_1^{n-k}) supports mixed left/right
+indices at total order n = 2 and thermal Gaussian cumulants at
+n in {3, 4}. The mixed ordering follows cbg.bath_correlations’
+B.0 convention: times = tau_args + reversed(s_args).</p></li>
+<li><p>Phase B.4 threads <code class="docutils literal notranslate"><span class="pre">quad_limit</span></code> and <code class="docutils literal notranslate"><span class="pre">upper_cutoff_factor</span></code>
+through D_bar_2 and the scalar generic D_bar path.</p></li>
+</ul>
+</dd>
+<dt>DG-2 / later scope (stubbed here):</dt><dd><ul class="simple">
+<li><p>Cumulants for n &gt; 4.</p></li>
 <li><p>Cumulants of non-Gaussian bath states (where D̄_3 etc. don’t
 automatically vanish).</p></li>
 </ul>
@@ -1000,7 +1116,7 @@ when a displacement convention is fixed. Ignored for thermal.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cbg.cumulants.D_bar_2">
-<span class="sig-prename descclassname"><span class="pre">cbg.cumulants.</span></span><span class="sig-name descname"><span class="pre">D_bar_2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_grid</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_density</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/cumulants.html#D_bar_2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.cumulants.D_bar_2" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cbg.cumulants.</span></span><span class="sig-name descname"><span class="pre">D_bar_2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_grid</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_cutoff_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quad_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/cumulants.html#D_bar_2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.cumulants.D_bar_2" title="Link to this definition">#</a></dt>
 <dd><p>Second generalised cumulant D̄_2(τ, s) = ⟨B(τ) B(s)⟩_connected on
 the time grid.</p>
 <p>For a Gaussian bath state (thermal or coherent_displaced), the
@@ -1018,6 +1134,10 @@ temperature.</p></li>
 <li><p><strong>spectral_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – The card’s bath_spectral_density mapping. Required keys: family
 (“ohmic” at DG-1), coupling_strength (= alpha), cutoff_frequency
 (= omega_c).</p></li>
+<li><p><strong>upper_cutoff_factor</strong> (<em>optional</em>) – Quadrature controls forwarded to
+<code class="docutils literal notranslate"><span class="pre">bath_correlations.bath_two_point_thermal_array</span></code>.</p></li>
+<li><p><strong>quad_limit</strong> (<em>optional</em>) – Quadrature controls forwarded to
+<code class="docutils literal notranslate"><span class="pre">bath_correlations.bath_two_point_thermal_array</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1051,7 +1171,7 @@ Companion Eq. (27):</p>
 </dd>
 </dl>
 </div></blockquote>
-<p>DG-1 implements the leaf cases for the canonical time-ordered
+<p>DG-1 implemented the leaf cases for the canonical time-ordered
 cumulants used by Cards A3 and A4:</p>
 <blockquote>
 <div><ul class="simple">
@@ -1063,22 +1183,33 @@ cumulants used by Cards A3 and A4:</p>
 </li>
 </ul>
 </div></blockquote>
+<p>DG-4 Phase B.1 extends the scalar generic path to mixed left/right
+indices and to total order n in {3, 4} for thermal Gaussian baths.
+For n = 3 and n = 4 it evaluates the equivalent connected-cumulant
+set-partition expansion over B.0’s flattened operator order:</p>
+<blockquote>
+<div><p>times = tuple(tau_args) + tuple(reversed(s_args))</p>
+</div></blockquote>
+<p>This is the leaf accepted by the higher-order TCL recursion and
+makes D̄_3 = D̄_4 = 0 for thermal Gaussian baths by Wick
+factorisation.</p>
 <p>For the canonical (all-left, time-ordered) DG-1 use cases, callers
 should prefer D_bar_1(t_grid, …) and D_bar_2(t_grid, …), which
 return precomputed (n,) and (n, n) arrays respectively. The
 array-form helpers compose efficiently with cbg.tcl_recursion.</p>
-<p>Mixed left/right indices (k != n) and orders n ≥ 3 are DG-2
-territory and raise NotImplementedError here.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>tau_args</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Left-time arguments (τ_1, …, τ_k).</p></li>
 <li><p><strong>s_args</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Right-time arguments (s_1, …, s_{n-k}).</p></li>
-<li><p><strong>**kwargs</strong> – bath_state, spectral_density (as for D_bar_1, D_bar_2).</p></li>
+<li><p><strong>**kwargs</strong> – bath_state, spectral_density (as for D_bar_1, D_bar_2), and
+optional quadrature controls <code class="docutils literal notranslate"><span class="pre">upper_cutoff_factor</span></code> and
+<code class="docutils literal notranslate"><span class="pre">quad_limit</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><strong>NotImplementedError</strong></a> – For mixed left/right indices, or for total order n ≥ 3.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><strong>NotImplementedError</strong></a> – For total order n &gt; 4, or n ≥ 3 outside the thermal Gaussian
+    B.1 path.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1120,10 +1251,22 @@ responsibility (models/pure_dephasing.py, models/spin_boson_sigma_x.py).</p>
 </li>
 </ul>
 </dd>
-<dt>DG-2 scope (stubbed here):</dt><dd><ul class="simple">
+<dt>DG-4 Phase B.0 scope (this module, 2026-05-05):</dt><dd><ul class="simple">
+<li><p>Raw ordered n-point correlations for n in {3, 4} on thermal
+Gaussian ohmic baths, using Wick factorisation into the existing
+two-point correlator.</p></li>
+</ul>
+</dd>
+<dt>DG-4 Phase B.4 scope (this module, 2026-05-06):</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">quad_limit</span></code> and <code class="docutils literal notranslate"><span class="pre">upper_cutoff_factor</span></code> are threaded through
+the array, generic two-point, and n-point ordered entry points so
+D1 reproducibility perturbations can reach the quadrature leaf.</p></li>
+</ul>
+</dd>
+<dt>DG-2 / later scope (stubbed here):</dt><dd><ul class="simple">
 <li><p>Non-ohmic spectral densities (Drude–Lorentz, sub-/super-ohmic).</p></li>
-<li><p>n-point ordered correlations for n ≥ 3 (Companion Eq. (15) at
-higher orders), needed for K_n at orders ≥ 3.</p></li>
+<li><p>n-point ordered correlations beyond n = 4, explicit finite-bath
+operator traces, and non-Gaussian states.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1209,7 +1352,7 @@ Defaults to 200; adequate for ohmic at T ≲ 10 ω_c.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cbg.bath_correlations.bath_two_point_thermal_array">
-<span class="sig-prename descclassname"><span class="pre">cbg.bath_correlations.</span></span><span class="sig-name descname"><span class="pre">bath_two_point_thermal_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">omega_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/bath_correlations.html#bath_two_point_thermal_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.bath_correlations.bath_two_point_thermal_array" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cbg.bath_correlations.</span></span><span class="sig-name descname"><span class="pre">bath_two_point_thermal_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">omega_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_cutoff_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quad_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/bath_correlations.html#bath_two_point_thermal_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.bath_correlations.bath_two_point_thermal_array" title="Link to this definition">#</a></dt>
 <dd><p>Tabulate C[j, k] = C(t_grid[j] - t_grid[k]) on a (n, n) grid.</p>
 <p>Exploits stationarity (the connected two-point depends only on
 t_1 - t_2) and Hermiticity (C(-t) = conj(C(t))) to evaluate
@@ -1221,6 +1364,8 @@ C only on a 1D array of unique time differences and broadcast.</p>
 <li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – See bath_two_point_thermal.</p></li>
 <li><p><strong>omega_c</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – See bath_two_point_thermal.</p></li>
 <li><p><strong>temperature</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – See bath_two_point_thermal.</p></li>
+<li><p><strong>upper_cutoff_factor</strong> (<em>optional</em>) – Quadrature controls forwarded to <code class="docutils literal notranslate"><span class="pre">bath_two_point_thermal</span></code>.</p></li>
+<li><p><strong>quad_limit</strong> (<em>optional</em>) – Quadrature controls forwarded to <code class="docutils literal notranslate"><span class="pre">bath_two_point_thermal</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1234,7 +1379,7 @@ C only on a 1D array of unique time differences and broadcast.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cbg.bath_correlations.two_point">
-<span class="sig-prename descclassname"><span class="pre">cbg.bath_correlations.</span></span><span class="sig-name descname"><span class="pre">two_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t2</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_density</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/bath_correlations.html#two_point"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.bath_correlations.two_point" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cbg.bath_correlations.</span></span><span class="sig-name descname"><span class="pre">two_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t2</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_cutoff_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quad_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/bath_correlations.html#two_point"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.bath_correlations.two_point" title="Link to this definition">#</a></dt>
 <dd><p>Connected two-point bath correlator at the requested bath state.</p>
 <p>Dispatches by (bath_state.family, spectral_density.family) to the
 appropriate evaluator. For DG-1, supports:</p>
@@ -1260,6 +1405,8 @@ For thermal: also <cite>temperature</cite>. For coherent_displaced: also
 <li><p><strong>spectral_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – The card’s <cite>bath_spectral_density</cite> mapping. Required keys:
 <cite>family</cite>, plus family-specific parameters (for ohmic:
 <cite>coupling_strength</cite> (= alpha), <cite>cutoff_frequency</cite> (= omega_c)).</p></li>
+<li><p><strong>upper_cutoff_factor</strong> (<em>optional</em>) – Quadrature controls forwarded to <code class="docutils literal notranslate"><span class="pre">bath_two_point_thermal</span></code>.</p></li>
+<li><p><strong>quad_limit</strong> (<em>optional</em>) – Quadrature controls forwarded to <code class="docutils literal notranslate"><span class="pre">bath_two_point_thermal</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1280,13 +1427,55 @@ For thermal: also <cite>temperature</cite>. For coherent_displaced: also
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cbg.bath_correlations.n_point_ordered">
-<span class="sig-prename descclassname"><span class="pre">cbg.bath_correlations.</span></span><span class="sig-name descname"><span class="pre">n_point_ordered</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tau_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_op</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/bath_correlations.html#n_point_ordered"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.bath_correlations.n_point_ordered" title="Link to this definition">#</a></dt>
-<dd><p>Ordered n-point correlation per Companion Eq. (15) at n ≥ 3.</p>
-<p>DG-2 territory. Cards A3 and A4 (DG-1) only require the two-point
-function, which is provided by <cite>two_point</cite> above. Higher-order
-n-point correlations enter K_n at orders n ≥ 3 (DG-2), and the full
-parity-decomposition machinery of Letter Eq. (D.5)-(D.6) becomes
-operative at those orders.</p>
+<span class="sig-prename descclassname"><span class="pre">cbg.bath_correlations.</span></span><span class="sig-name descname"><span class="pre">n_point_ordered</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tau_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_op</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_cutoff_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quad_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/bath_correlations.html#n_point_ordered"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.bath_correlations.n_point_ordered" title="Link to this definition">#</a></dt>
+<dd><p>Ordered n-point bath correlation per Companion Eq. (15).</p>
+<p>Implements the DG-4 Phase B.0 leaf case for thermal Gaussian ohmic
+baths at total order n in {3, 4}. Thermal Gaussian baths have zero
+first cumulant, so odd raw correlations vanish. The n = 4 raw
+correlation is evaluated by Wick factorisation into the existing
+connected two-point correlator:</p>
+<blockquote>
+<div><dl>
+<dt>D(t1, t2, t3, t4) =</dt><dd><blockquote>
+<div><p>C(t1, t2) C(t3, t4)</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>C(t1, t3) C(t2, t4)</p></li>
+<li><p>C(t1, t4) C(t2, t3)</p></li>
+</ul>
+</dd>
+</dl>
+</div></blockquote>
+<p>The flattened operator order used here is the left-acting sequence
+followed by the reversed right-acting sequence:</p>
+<blockquote>
+<div><p>times = tuple(tau_args) + tuple(reversed(s_args))</p>
+</div></blockquote>
+<p>This pins the mixed left/right convention for the B.1 cumulant
+recursion while preserving the existing all-left behaviour when
+<code class="docutils literal notranslate"><span class="pre">s_args</span> <span class="pre">==</span> <span class="pre">()</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tau_args</strong> (<em>sequence</em><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Left and right time arguments in Companion Eq. (15).</p></li>
+<li><p><strong>s_args</strong> (<em>sequence</em><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Left and right time arguments in Companion Eq. (15).</p></li>
+<li><p><strong>bath_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Currently requires <code class="docutils literal notranslate"><span class="pre">family</span> <span class="pre">==</span> <span class="pre">&quot;thermal&quot;</span></code>.</p></li>
+<li><p><strong>B_op</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><em>object</em></a><em>, </em><em>optional</em>) – Retained for the historical stub signature. Explicit finite-bath
+operator traces are not implemented in this path; pass <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>spectral_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, </em><em>keyword-only</em>) – Required ohmic spectral-density mapping consumed by <code class="docutils literal notranslate"><span class="pre">two_point</span></code>.</p></li>
+<li><p><strong>upper_cutoff_factor</strong> (<em>optional</em>) – Quadrature controls forwarded to the Wick-factorised two-point
+leaves.</p></li>
+<li><p><strong>quad_limit</strong> (<em>optional</em>) – Quadrature controls forwarded to the Wick-factorised two-point
+leaves.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Ordered raw bath correlation at the requested arguments.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.14)">complex</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -1402,6 +1591,8 @@ agreement to within <cite>tol</cite>. Returns (passed: bool, residual: float).</
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.interaction_picture"><code class="docutils literal notranslate"><span class="pre">interaction_picture()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.L_n_thermal_at_time"><code class="docutils literal notranslate"><span class="pre">L_n_thermal_at_time()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.K_n_thermal_on_grid"><code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.L_n_dissipator_thermal_at_time"><code class="docutils literal notranslate"><span class="pre">L_n_dissipator_thermal_at_time()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.L_n_dissipator_norm_thermal_on_grid"><code class="docutils literal notranslate"><span class="pre">L_n_dissipator_norm_thermal_on_grid()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.L_1_displaced_at_time"><code class="docutils literal notranslate"><span class="pre">L_1_displaced_at_time()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.K_total_displaced_on_grid"><code class="docutils literal notranslate"><span class="pre">K_total_displaced_on_grid()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cbg.tcl_recursion.K_total_thermal_on_grid"><code class="docutils literal notranslate"><span class="pre">K_total_thermal_on_grid()</span></code></a></li>

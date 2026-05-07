@@ -39,13 +39,30 @@ fi
 
 echo ">>> Installing docs dependencies ..."
 "${VENV}/bin/python" -m pip install --quiet --upgrade pip
-"${VENV}/bin/python" -m pip install --quiet sphinx myst-parser sphinx-book-theme
+"${VENV}/bin/python" -m pip install --quiet sphinx myst-parser sphinx-book-theme nbconvert
 "${VENV}/bin/python" -m pip install --quiet -e ".[docs]" 2>/dev/null || \
     "${VENV}/bin/python" -m pip install --quiet -e .
 
 echo ">>> Building docs from ${SOURCE_DIR} -> ${OUTPUT_DIR} ..."
 rm -rf "${OUTPUT_DIR}"
 "${VENV}/bin/sphinx-build" -b html -E -d "${DOCTREE_DIR}" "${SOURCE_DIR}" "${OUTPUT_DIR}"
+
+# Render example notebooks to static HTML alongside the API docs.
+# The intro page (docs-site/examples.md) links to these as siblings; their
+# outputs reflect the committed-on-disk notebook state (some notebooks are
+# checked in without outputs to keep diffs clean — re-execute locally with
+# `jupyter nbconvert --to notebook --execute --inplace examples/<nb>.ipynb`
+# before rebuilding the docs to populate them).
+EXAMPLES_SRC="${REPO_ROOT}/examples"
+EXAMPLES_OUT="${OUTPUT_DIR}/examples"
+if compgen -G "${EXAMPLES_SRC}/*.ipynb" > /dev/null; then
+    echo ">>> Rendering example notebooks -> ${EXAMPLES_OUT}/ ..."
+    mkdir -p "${EXAMPLES_OUT}"
+    "${VENV}/bin/jupyter" nbconvert \
+        --to html \
+        --output-dir "${EXAMPLES_OUT}" \
+        "${EXAMPLES_SRC}"/*.ipynb
+fi
 
 # Remove Sphinx's tiny .buildinfo incremental-build manifest from the
 # served tree. It is harmless but it is internal Sphinx state and adds

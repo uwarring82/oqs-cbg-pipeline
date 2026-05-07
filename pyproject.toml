@@ -35,7 +35,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=7", "pytest-cov", "black", "ruff", "mypy", "types-PyYAML"]
-docs = ["sphinx", "myst-parser", "sphinx-book-theme"]
+docs = ["sphinx", "myst-parser", "sphinx-book-theme", "nbconvert"]
 
 [project.urls]
 Repository = "https://github.com/uwarring82/oqs-cbg-pipeline"

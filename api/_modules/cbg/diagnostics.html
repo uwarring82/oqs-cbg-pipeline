@@ -151,6 +151,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../../numerical.html"><code class="docutils literal notranslate"><span class="pre">numerical</span></code> — Numerical primitives</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../reporting.html"><code class="docutils literal notranslate"><span class="pre">reporting</span></code> — Benchmark-card schema, loader, validator, runner</a></li>
 </ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Worked examples</a></li>
+</ul>
 
     </div>
 </nav></div>
@@ -328,13 +331,15 @@
 <span class="n">CAUSE_TRUNCATION_ARTEFACT</span> <span class="o">=</span> <span class="s2">&quot;truncation_artefact&quot;</span>
 <span class="n">CAUSE_BENCHMARK_DISAGREEMENT</span> <span class="o">=</span> <span class="s2">&quot;benchmark_disagreement&quot;</span>
 
-<span class="n">VALID_CAUSE_LABELS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span>
-    <span class="n">CAUSE_CONVERGENCE_FAILURE</span><span class="p">,</span>
-    <span class="n">CAUSE_TCL_SINGULARITY</span><span class="p">,</span>
-    <span class="n">CAUSE_PROJECTION_AMBIGUITY</span><span class="p">,</span>
-    <span class="n">CAUSE_TRUNCATION_ARTEFACT</span><span class="p">,</span>
-    <span class="n">CAUSE_BENCHMARK_DISAGREEMENT</span><span class="p">,</span>
-<span class="p">})</span>
+<span class="n">VALID_CAUSE_LABELS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="n">CAUSE_CONVERGENCE_FAILURE</span><span class="p">,</span>
+        <span class="n">CAUSE_TCL_SINGULARITY</span><span class="p">,</span>
+        <span class="n">CAUSE_PROJECTION_AMBIGUITY</span><span class="p">,</span>
+        <span class="n">CAUSE_TRUNCATION_ARTEFACT</span><span class="p">,</span>
+        <span class="n">CAUSE_BENCHMARK_DISAGREEMENT</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
 
 
 <div class="viewcode-block" id="perturbative_order_norms">
@@ -357,7 +362,7 @@
 <a class="viewcode-back" href="../../cbg.html#cbg.diagnostics.basis_independence_check">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">basis_independence_check</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">basis_a</span><span class="p">,</span> <span class="n">basis_b</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Universal-default DG-2 structural-identity check.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Computes K via Letter Eq. (6) under two different bases and verifies</span>
 <span class="sd">    agreement to within `tol`. Returns (passed: bool, residual: float).</span>
 <span class="sd">    &quot;&quot;&quot;</span>

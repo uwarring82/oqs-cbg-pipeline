@@ -30,7 +30,9 @@ passed any Decision Gate.
 |---|---|---|
 | DG-1 | **PASS** (2026-04-30; tag `v0.2.0`) | Cards [A1](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/A1_closed-form-K_v0.1.1.yaml), [A3](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/A3_pure-dephasing_v0.1.1.yaml), [A4](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/A4_sigma-x-thermal_v0.1.1.yaml) |
 | DG-2 | **PARTIAL** — structural sub-claims PASS under Council-cleared registry; K_2-K_4 recursion pending (2026-05-04) | [B1](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B1_pseudo-kraus-diagonal_v0.1.0.yaml) (Entry 1.B.3 diagonal); [B2](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B2_pseudo-kraus-offdiagonal_v0.1.0.yaml) (Entry 1.B.3 off-diagonal + Entry 1.D); [B3](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B3_cross-basis-structural-identity_v0.1.0.yaml) (Entry 1.A basis-independence); [B4-conv-registry](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B4-conv-registry_v0.1.0.yaml) (Entry 3.B.3) + [B5-conv-registry v0.2.0](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B5-conv-registry_v0.2.0.yaml) (Entry 4.B.2), each under all four Council-cleared displacement profiles. Literal K_2-K_4 numerical recursion at order >= 4 = future plan. |
-| DG-3 / DG-4 / DG-5 | NOT YET ATTEMPTED | — |
+| DG-3 | RUNNER-COMPLETE; failure-asymmetry clearance pending | Cards [C1](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/C1_cross-method-pure-dephasing_v0.1.0.yaml) (pure-dephasing) + [C2](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/C2_cross-method-spin-boson_v0.1.0.yaml) (spin-boson σ_x) reachable on all four thermal + displaced fixtures via `_run_cross_method`; both currently FAIL convergence in finite-bath truncation. Failure-asymmetry-cleared PASS requires either bath-convergence under the cleared registry or a third reference method from a non-overlapping failure-mode class. |
+| DG-4 | **PASS** at D1 v0.1.2 (2026-05-06) | Card [D1 v0.1.2](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/D1_failure-envelope-convergence_v0.1.2.yaml) — spin-boson σ_x thermal, parity-aware ratio `r_4 = ⟨‖L_4^dis‖⟩_t / ⟨‖L_2^dis‖⟩_t`. All 20 swept `coupling_strength` points classify `convergence_failure` with stability across all four perturbations (`upper_cutoff_factor ∈ {20, 40}`, `omega_c ∈ {9, 11}`); max baseline `r_4 ≈ 47.42`. v0.1.2 supersedes the v0.5.0-tagged v0.1.1 verdict that was superseded on review the same day; consumes Path B picture fix + operational `omega_max_factor` + audit-complete result JSON. Path A analytic L_4 cross-validation remains pending. See [v0.1.2 verdict log](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/logbook/2026-05-06_dg-4-pass-path-b-v012.md). |
+| DG-5 | SCOPE-DEFINITION (preconditions unmet) | Card [E1](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/E1_thermodynamic-discriminant-fano-anderson_v0.1.0.yaml) — Fano–Anderson + Hamiltonian of mean force discriminant. `run_card(E1)` raises `ScopeDefinitionNotRunnableError` listing missing preconditions (model factory, HMF reference, fermionic-bath support). |
 
 ## Packages
 
@@ -43,6 +45,14 @@ cbg
 models
 numerical
 reporting
+```
+
+## Worked examples
+
+```{toctree}
+:maxdepth: 1
+
+examples
 ```
 
 ## Quick links

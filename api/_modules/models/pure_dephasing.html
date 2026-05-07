@@ -151,6 +151,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../../numerical.html"><code class="docutils literal notranslate"><span class="pre">numerical</span></code> — Numerical primitives</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../reporting.html"><code class="docutils literal notranslate"><span class="pre">reporting</span></code> — Benchmark-card schema, loader, validator, runner</a></li>
 </ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Worked examples</a></li>
+</ul>
 
     </div>
 </nav></div>
@@ -339,10 +342,9 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-
 
 <span class="n">structural_constraints</span> <span class="o">=</span> <span class="p">(</span>
     <span class="s2">&quot;basis_independence&quot;</span><span class="p">,</span>
@@ -392,7 +394,7 @@
 
 <div class="viewcode-block" id="system_arrays_from_spec">
 <a class="viewcode-back" href="../../models.html#models.pure_dephasing.system_arrays_from_spec">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">system_arrays_from_spec</span><span class="p">(</span><span class="n">model_spec</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">system_arrays_from_spec</span><span class="p">(</span><span class="n">model_spec</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Build (H_S, A) numpy arrays from a card&#39;s frozen_parameters.model dict.</span>
 
 <span class="sd">    Validates:</span>
@@ -420,8 +422,7 @@
     <span class="n">d</span> <span class="o">=</span> <span class="n">model_spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;system_dimension&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">d</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;pure_dephasing.system_arrays_from_spec: system_dimension must &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;be 2; got </span><span class="si">{</span><span class="n">d</span><span class="si">!r}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;pure_dephasing.system_arrays_from_spec: system_dimension must &quot;</span> <span class="sa">f</span><span class="s2">&quot;be 2; got </span><span class="si">{</span><span class="n">d</span><span class="si">!r}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
 
     <span class="n">h_str</span> <span class="o">=</span> <span class="p">(</span><span class="n">model_spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;system_hamiltonian&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>

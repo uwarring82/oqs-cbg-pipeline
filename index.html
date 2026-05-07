@@ -201,6 +201,18 @@
 </section>
 
 <section>
+<h2>Worked examples</h2>
+<p>Four runnable notebooks demonstrate the validated surface gate by gate, each exercising the cards that anchor a passed (or partially passed) Decision Gate verdict. They are demonstrations of verdicts, not tutorials on the underlying theory. Browse the rendered notebooks via the <a href="api/examples.html">worked-examples index</a>:</p>
+<ul class="refs">
+  <li><a href="api/examples/dg1_walkthrough.html"><code>dg1_walkthrough</code></a> — DG-1 PASS (cards A1, A3): algebraic <em>K</em> = <em>H<sub>S</sub></em> exactly; pure-dephasing <em>K</em>(<em>t</em>) ∝ σ<sub>z</sub> at machine precision.</li>
+  <li><a href="api/examples/dg2_structural.html"><code>dg2_structural</code></a> — DG-2 structural sub-claims PASS (cards B3, B4): basis-independence at machine precision on a dissipative <em>L</em>; displaced-bath <em>K</em>(<em>t</em>) recovers the thermal <em>K</em> as α₀ → 0.</li>
+  <li><a href="api/examples/dg3_cross_method.html"><code>dg3_cross_method</code></a> — DG-3 RUNNER-COMPLETE (cards C1, C2): runner reachable on all four C1+C2 fixtures; both cards return clean FAIL at the frozen <code>1.0e-6</code> threshold under finite-bath truncation, demonstrating the failure-asymmetry-clearance gap.</li>
+  <li><a href="api/examples/dg4_walkthrough.html"><code>dg4_walkthrough</code></a> — DG-4 PASS at D1 v0.1.2 (σ<sub>x</sub> thermal, parity-aware <em>r</em><sub>4</sub>) via picture-fixed Path B numerical <em>L</em><sub>4</sub>; <code>run_card</code> returns <code>verdict = PASS</code> with all four reproducibility perturbations operational.</li>
+</ul>
+<p style="font-size:0.92rem;color:var(--stone);">Notebook source lives at <a href="https://github.com/uwarring82/oqs-cbg-pipeline/tree/main/examples"><code>examples/</code></a>. All numerical outputs are coordinate-dependent under the Hayden–Sorce gauge; citation discipline applies as for any other pipeline output.</p>
+</section>
+
+<section>
 <h2>What the pipeline does</h2>
 <p>Starting from a microscopic open-system model, the pipeline computes the effective Hamiltonian <em>K</em>(<em>t</em>) of the time-convolutionless master equation under the Hayden–Sorce minimal-dissipation gauge, together with its perturbative expansion order by order, and the canonical generalised-Lindblad form of the corresponding generator. It is built around the basis-independent operational expression (Letter Eq. (6)) and the recursive perturbative construction introduced in the seed papers below.</p>
 <p>The pipeline aims to expose the <em>scope of applicability</em> of the construction rather than to confirm it. Concretely, this means: side-by-side comparison against numerically exact and standard approximate methods, explicit identification of regimes where the perturbative hierarchy fails, structural-identity checks at every computed order, and tracking of the gauge dependence wherever competing effective-Hamiltonian descriptions are available.</p>
