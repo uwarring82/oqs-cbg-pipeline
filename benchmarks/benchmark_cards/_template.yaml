@@ -1,7 +1,7 @@
 # Benchmark-card template — `oqs-cbg-pipeline`
 #
 # Anchor: SCHEMA.md (this directory); docs/benchmark_protocol.md §1, §4
-# Schema version: v0.1.2
+# Schema version: v0.1.3
 # Status: template — copy and rename to <card_id>_<short-tag>_v<version>.yaml
 #         before editing. The leading underscore in this file's name marks it
 #         as not-a-card; the runner ignores files whose basename begins with `_`.
@@ -40,7 +40,7 @@
 
 # ─── Top-level metadata ───────────────────────────────────────────────────────
 
-schema_version: "v0.1.2"        # the SCHEMA.md dialect this card claims to satisfy
+schema_version: "v0.1.3"        # the SCHEMA.md dialect this card claims to satisfy
 card_id: "TBD-CARD-ID"          # e.g. "A1", "A3", "A4". Pattern: ^[A-E][0-9]+$
 version: "v0.1.0"               # semver of THIS card; increments on supersedure
 date: "TBD-YYYY-MM-DD"          # ISO-8601, steward local timezone (Europe/Berlin)
