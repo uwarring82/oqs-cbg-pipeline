@@ -20,20 +20,36 @@ From a repository checkout with the package installed:
 
 ```bash
 pip install -e ".[dev]"
-pip install jupyter        # only needed if not already installed
+pip install jupyter ipykernel    # only needed if not already installed
+
+# One-time: register the project's interpreter as a named kernel so
+# nbconvert / Jupyter Lab don't fall through to whatever bare `python`
+# happens to be on PATH (which is often a different interpreter than
+# the one that has cbg/ installed).
+python -m ipykernel install --user --name oqs-cbg \
+    --display-name "Python (oqs-cbg-pipeline)"
 
 jupyter notebook examples/
 ```
 
-Or non-interactively (no GUI), executing in place. Use `python -m jupyter`
-(rather than bare `jupyter`) so the active interpreter is used regardless of
-whatever kernelspec the local Jupyter has registered:
+Or non-interactively (no GUI), executing in place. The
+`--ExecutePreprocessor.kernel_name=oqs-cbg` flag pins the kernel
+registered above so `import cbg` resolves whether or not the system's
+default `python3` kernel matches:
 
 ```bash
-python -m jupyter nbconvert --to notebook --execute --inplace examples/dg1_walkthrough.ipynb
-python -m jupyter nbconvert --to notebook --execute --inplace examples/dg2_structural.ipynb
-python -m jupyter nbconvert --to notebook --execute --inplace examples/dg3_cross_method.ipynb
-python -m jupyter nbconvert --to notebook --execute --inplace examples/dg4_walkthrough.ipynb
+python -m jupyter nbconvert --to notebook --execute --inplace \
+    --ExecutePreprocessor.kernel_name=oqs-cbg \
+    examples/dg1_walkthrough.ipynb
+python -m jupyter nbconvert --to notebook --execute --inplace \
+    --ExecutePreprocessor.kernel_name=oqs-cbg \
+    examples/dg2_structural.ipynb
+python -m jupyter nbconvert --to notebook --execute --inplace \
+    --ExecutePreprocessor.kernel_name=oqs-cbg \
+    examples/dg3_cross_method.ipynb
+python -m jupyter nbconvert --to notebook --execute --inplace \
+    --ExecutePreprocessor.kernel_name=oqs-cbg \
+    examples/dg4_walkthrough.ipynb
 ```
 
 ## Scope

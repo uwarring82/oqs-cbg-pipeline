@@ -58,7 +58,10 @@ EXAMPLES_OUT="${OUTPUT_DIR}/examples"
 if compgen -G "${EXAMPLES_SRC}/*.ipynb" > /dev/null; then
     echo ">>> Rendering example notebooks -> ${EXAMPLES_OUT}/ ..."
     mkdir -p "${EXAMPLES_OUT}"
-    "${VENV}/bin/jupyter" nbconvert \
+    # Use `python -m jupyter` so the active venv interpreter is used for any
+    # in-process plumbing (avoids the kernelspec issue Codex flagged in
+    # round-3 audit M4 where bare `jupyter` inherited the wrong `python`).
+    "${VENV}/bin/python" -m jupyter nbconvert \
         --to html \
         --output-dir "${EXAMPLES_OUT}" \
         "${EXAMPLES_SRC}"/*.ipynb
