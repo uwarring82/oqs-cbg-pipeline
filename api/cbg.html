@@ -415,15 +415,15 @@ perturbative expansion (Letter Eq. (15), (16); Companion Eq. (45)).</p>
 <span id="cbg-effective-hamiltonian"></span><h2><code class="docutils literal notranslate"><span class="pre">cbg.effective_hamiltonian</span></code><a class="headerlink" href="#module-cbg.effective_hamiltonian" title="Link to this heading">#</a></h2>
 <p>cbg.effective_hamiltonian — Effective Hamiltonian K(t) under the
 Hayden–Sorce minimal-dissipation gauge.</p>
-<dl class="simple">
-<dt>Implements:</dt><dd><p>K = (1 / 2id) Σ_α [F_α†, L[F_α]]                       (Letter Eq. (6))
-K = (1 / 2id) Σ_{j,k} [<a href="#id1"><span class="problematic" id="id2">|j⟩⟨k|</span></a>, L[<a href="#id3"><span class="problematic" id="id4">|k⟩⟨j|</span></a>]]              (Letter Eq. (7))</p>
-</dd>
-</dl>
-<p>and records the pending recursive perturbative series surface</p>
-<blockquote>
-<div><p>K(t) = Σ_n λ^n K_n(t)                                    (Letter Eq. (15))</p>
-</div></blockquote>
+<p>Implements:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>K = (1 / 2id) Σ_α [F_α†, L[F_α]]                       (Letter Eq. (6))
+K = (1 / 2id) Σ_{j,k} [|j⟩⟨k|, L[|k⟩⟨j|]]              (Letter Eq. (7))
+</pre></div>
+</div>
+<p>and records the pending recursive perturbative series surface:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">K</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">=</span> <span class="n">Σ_n</span> <span class="n">λ</span><span class="o">^</span><span class="n">n</span> <span class="n">K_n</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>                                    <span class="p">(</span><span class="n">Letter</span> <span class="n">Eq</span><span class="o">.</span> <span class="p">(</span><span class="mi">15</span><span class="p">))</span>
+</pre></div>
+</div>
 <p>with K_n given by Letter Eq. (16) (companion paper Eq. (45)). The full
 K_2-K_4 recursive computation at perturbative_order &gt;= 4 is not yet
 implemented.</p>
@@ -443,11 +443,11 @@ DG-2 fourth-order K_2-K_4 recursion proper              PENDING</p>
 <span class="sig-prename descclassname"><span class="pre">cbg.effective_hamiltonian.</span></span><span class="sig-name descname"><span class="pre">K_from_generator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">generator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/effective_hamiltonian.html#K_from_generator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.effective_hamiltonian.K_from_generator" title="Link to this definition">#</a></dt>
 <dd><p>Compute K from a TCL generator L using Letter Eq. (6).</p>
 <p>Implements the basis-independent operational form:</p>
-<blockquote>
-<div><p>K = (1 / 2id) Σ_α [F_α†, L[F_α]]                       (Letter Eq. (6))</p>
-</div></blockquote>
-<p>For the matrix-unit basis F_α = <a href="#id5"><span class="problematic" id="id6">|j⟩⟨k|</span></a>, this reduces to
-Letter Eq. (7) under the relabelling (j, k) ↔ α.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>K = (1 / 2id) Σ_α [F_α†, L[F_α]]                       (Letter Eq. (6))
+</pre></div>
+</div>
+<p>For the matrix-unit basis <code class="docutils literal notranslate"><span class="pre">F_α</span> <span class="pre">=</span> <span class="pre">|j⟩⟨k|</span></code>, this reduces to
+Letter Eq. (7) under the relabelling <code class="docutils literal notranslate"><span class="pre">(j,</span> <span class="pre">k)</span> <span class="pre">↔</span> <span class="pre">α</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -514,33 +514,22 @@ card, including basis-independence where applicable.</p>
 structural-identity check for DG-2 (Sail v0.5 §9). DG-1 cards (specifically
 Card A1) use the matrix-unit basis only; cross-basis verification is the
 DG-2 universal default check.</p>
-<dl class="simple">
-<dt>Implementations:</dt><dd><ul class="simple">
-<li><dl class="simple">
-<dt>matrix_unit_basis(d):       {<a href="#id7"><span class="problematic" id="id8">|j⟩⟨k|</span></a>} basis, used in Letter Eq. (7).</dt><dd><p>Implemented at DG-1 Phase C C.1.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>su_d_generator_basis(d):    {1/√d, σ_i/√d}, used in Letter Eq. (B.10).</dt><dd><p>Stubbed; DG-2 territory.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>hermitian_basis(d):         d² real-orthonormal Hermitian operators.</dt><dd><p>Not stubbed; if/when needed at DG-2.</p>
-</dd>
-</dl>
-</li>
+<p>Implementations:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">matrix_unit_basis(d)</span></code> — <code class="docutils literal notranslate"><span class="pre">{|j⟩⟨k|}</span></code> basis, used in Letter Eq. (7).
+Implemented at DG-1 Phase C C.1.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">su_d_generator_basis(d)</span></code> — <code class="docutils literal notranslate"><span class="pre">{1/√d,</span> <span class="pre">σ_i/√d}</span></code>, used in
+Letter Eq. (B.10). Stubbed; DG-2 territory.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hermitian_basis(d)</span></code> — d² real-orthonormal Hermitian operators.
+Not stubbed; if/when needed at DG-2.</p></li>
 </ul>
-</dd>
-</dl>
 <p>Each function returns a list of d×d numpy arrays satisfying the
 Hilbert–Schmidt orthonormality relation up to numerical tolerance,
 verifiable by verify_orthonormality.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="cbg.basis.matrix_unit_basis">
 <span class="sig-prename descclassname"><span class="pre">cbg.basis.</span></span><span class="sig-name descname"><span class="pre">matrix_unit_basis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/basis.html#matrix_unit_basis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.basis.matrix_unit_basis" title="Link to this definition">#</a></dt>
-<dd><p>Matrix-unit basis {<a href="#id9"><span class="problematic" id="id10">|j⟩⟨k|</span></a>}, j,k ∈ {0, …, d-1}.</p>
+<dd><p>Matrix-unit basis <code class="docutils literal notranslate"><span class="pre">{|j⟩⟨k|}</span></code>, j, k ∈ {0, …, d-1}.</p>
 <p>The basis used in Letter Eq. (7). Each element E_{j,k} is the d×d
 complex matrix with E_{j,k}[m, n] = δ_{j,m} δ_{k,n}; equivalently,
 a single 1.0 at position (j, k) and zeros elsewhere.</p>
@@ -683,28 +672,22 @@ to the caller.</p>
 <span class="sig-prename descclassname"><span class="pre">cbg.tcl_recursion.</span></span><span class="sig-name descname"><span class="pre">L_n_thermal_at_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_hamiltonian</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coupling_operator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D_bar_2_array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/tcl_recursion.html#L_n_thermal_at_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.tcl_recursion.L_n_thermal_at_time" title="Link to this definition">#</a></dt>
 <dd><p>Return a callable that computes L_n[X] at time t_grid[t_idx] for
 a thermal Gaussian bath.</p>
-<dl>
-<dt>Implements:</dt><dd><ul>
+<p>Implements:</p>
+<ul class="simple">
 <li><p>n = 0: L_0[X] = -i [H_S, X] (the bare Liouvillian; not really
 a perturbative term, but supplied here so K_total_thermal can
 uniformly assemble K = K_0 + K_1 + K_2 + … via Letter Eq. (6)).</p></li>
 <li><p>n = 1: L_1[X] = 0 (thermal Gaussian bath has ⟨B⟩ = 0).</p></li>
-<li><dl class="simple">
-<dt>n = 2: L_2[X](t) = -∫_0^t du {C(t-u) [A, A_I(u-t) X] +</dt><dd><p>C(t-u)* [X A_I(u-t), A]}</p>
-</dd>
-</dl>
-<p>via trapezoidal integration over s_grid = t_grid[: t_idx+1].
-The integrand is operator-valued; the trapezoidal rule is
-inlined for efficiency (avoids 4 separate scalar integrations
-per matrix entry).</p>
-</li>
+<li><p>n = 2: L_2[X](t) = -∫_0^t du {C(t-u) [A, A_I(u-t) X] +
+C(t-u)* [X A_I(u-t), A]} via trapezoidal integration over
+s_grid = t_grid[: t_idx+1]. The integrand is operator-valued; the
+trapezoidal rule is inlined for efficiency (avoids 4 separate
+scalar integrations per matrix entry).</p></li>
 <li><p>n = 3: L_3[X] = 0 (thermal Gaussian D̄_1 = D̄_3 = 0; see DG-4
 Phase B.2 derivation in the n = 3 branch below).</p></li>
 <li><p>n = 4: pending; raises NotImplementedError. Non-zero in
 general for [A, A_I(τ)] ≠ 0; zero for σ_z by Feynman-Vernon.</p></li>
 </ul>
-</dd>
-</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -938,48 +921,21 @@ on the time grid, ready for comparison against a card’s expected_outcome.</p>
 <li><p><strong>N_card</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Perturbative cap from the card’s frozen_parameters.truncation
 .perturbative_order; must be in {0, 1, 2} for the implemented
 low-order path.</p></li>
-<li><p><strong>t_grid</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
-<li><p><strong>system_hamiltonian</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
-<li><p><strong>coupling_operator</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
-<li><p><strong>bath_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
-<li><p><strong>spectral_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
-<li><p><strong>basis</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> | </em><em>None</em>)</p></li>
-<li><p><strong>upper_cutoff_factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>)</p></li>
-<li><p><strong>quad_limit</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>t_grid</strong> (<em>ndarray</em>) – See <code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid</span></code>.</p></li>
+<li><p><strong>system_hamiltonian</strong> (<em>ndarray</em>) – See <code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid</span></code>.</p></li>
+<li><p><strong>coupling_operator</strong> (<em>ndarray</em>) – See <code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid</span></code>.</p></li>
+<li><p><strong>bath_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – See <code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid</span></code>.</p></li>
+<li><p><strong>spectral_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – See <code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid</span></code>.</p></li>
+<li><p><strong>basis</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>, </em><em>optional</em>) – See <code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid</span></code>.</p></li>
+<li><p><strong>upper_cutoff_factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – See <code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid</span></code>.</p></li>
+<li><p><strong>quad_limit</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – See <code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid</span></code>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>K(t_grid).</p>
 </dd>
-</dl>
-<p>:param :
-:param spectral_density: K_n_thermal_on_grid.
-:type spectral_density: as in
-:param basis: K_n_thermal_on_grid.
-:type basis: as in
-:param upper_cutoff_factor: K_n_thermal_on_grid.
-:type upper_cutoff_factor: as in
-:param quad_limit: K_n_thermal_on_grid.
-:type quad_limit: as in</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>K(t_grid).</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>ndarray, shape (n_t, d, d), dtype complex</p>
-</dd>
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>N_card</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
-<li><p><strong>t_grid</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
-<li><p><strong>system_hamiltonian</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
-<li><p><strong>coupling_operator</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>)</p></li>
-<li><p><strong>bath_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
-<li><p><strong>spectral_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
-<li><p><strong>basis</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> | </em><em>None</em>)</p></li>
-<li><p><strong>upper_cutoff_factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>)</p></li>
-<li><p><strong>quad_limit</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
-</ul>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray, shape (n_t, d, d), dtype complex</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1434,23 +1390,17 @@ baths at total order n in {3, 4}. Thermal Gaussian baths have zero
 first cumulant, so odd raw correlations vanish. The n = 4 raw
 correlation is evaluated by Wick factorisation into the existing
 connected two-point correlator:</p>
-<blockquote>
-<div><dl>
-<dt>D(t1, t2, t3, t4) =</dt><dd><blockquote>
-<div><p>C(t1, t2) C(t3, t4)</p>
-</div></blockquote>
-<ul class="simple">
-<li><p>C(t1, t3) C(t2, t4)</p></li>
-<li><p>C(t1, t4) C(t2, t3)</p></li>
-</ul>
-</dd>
-</dl>
-</div></blockquote>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">D</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">t3</span><span class="p">,</span> <span class="n">t4</span><span class="p">)</span> <span class="o">=</span>
+    <span class="n">C</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">)</span> <span class="n">C</span><span class="p">(</span><span class="n">t3</span><span class="p">,</span> <span class="n">t4</span><span class="p">)</span>
+  <span class="o">+</span> <span class="n">C</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t3</span><span class="p">)</span> <span class="n">C</span><span class="p">(</span><span class="n">t2</span><span class="p">,</span> <span class="n">t4</span><span class="p">)</span>
+  <span class="o">+</span> <span class="n">C</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t4</span><span class="p">)</span> <span class="n">C</span><span class="p">(</span><span class="n">t2</span><span class="p">,</span> <span class="n">t3</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>The flattened operator order used here is the left-acting sequence
 followed by the reversed right-acting sequence:</p>
-<blockquote>
-<div><p>times = tuple(tau_args) + tuple(reversed(s_args))</p>
-</div></blockquote>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">times</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">tau_args</span><span class="p">)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">s_args</span><span class="p">))</span>
+</pre></div>
+</div>
 <p>This pins the mixed left/right convention for the B.1 cumulant
 recursion while preserving the existing all-left behaviour when
 <code class="docutils literal notranslate"><span class="pre">s_args</span> <span class="pre">==</span> <span class="pre">()</span></code>.</p>

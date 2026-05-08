@@ -6,10 +6,11 @@ the DG-1 thermal sub-case is covered by Card A4 v0.1.1, and the
 coherent-displaced Entry 4.B.2 structural sub-claim is covered by
 Card B5-conv-registry v0.2.0 under the Council-cleared displacement
 profile registry.
-    For H_S = (omega/2) sigma_z, A = sigma_x, thermal bosonic bath:
-    odd-order contributions to K vanish; even orders are diagonal in
-    sigma_z. Eigenbasis of H_S is NOT rotated by the interaction (the
-    parity-class theorem of Letter Eqs. (D.4)-(D.6)).
+
+For H_S = (omega/2) sigma_z, A = sigma_x, thermal bosonic bath:
+odd-order contributions to K vanish; even orders are diagonal in
+sigma_z. Eigenbasis of H_S is NOT rotated by the interaction (the
+parity-class theorem of Letter Eqs. (D.4)-(D.6)).
 
 Structural constraints declared for DG-2:
     - basis-independence of K (universal default);

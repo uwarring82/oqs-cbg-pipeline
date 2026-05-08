@@ -6,10 +6,11 @@ the DG-1 thermal sub-case is covered by Card A3 v0.1.1, and the
 coherent-displaced Entry 3.B.3 structural sub-claim is covered by
 Card B4-conv-registry v0.1.0 under the Council-cleared displacement
 profile registry.
-    For H_S = (omega/2) sigma_z and A = sigma_z, K(t) = (omega_r(t)/2) sigma_z;
-    even-order contributions vanish; odd-order contributions are proportional
-    to sigma_z. For thermal Fock-diagonal initial bath states, omega_r(t) = omega
-    at all orders (Łuczka 1990; Doll et al. 2008; Leggett et al. 1987).
+
+For H_S = (omega/2) sigma_z and A = sigma_z, K(t) = (omega_r(t)/2) sigma_z;
+even-order contributions vanish; odd-order contributions are proportional
+to sigma_z. For thermal Fock-diagonal initial bath states, omega_r(t) = omega
+at all orders (Łuczka 1990; Doll et al. 2008; Leggett et al. 1987).
 
 Structural constraints declared for DG-2:
     - basis-independence of K (universal default);

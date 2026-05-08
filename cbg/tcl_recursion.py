@@ -80,20 +80,20 @@ def L_n_thermal_at_time(
     a thermal Gaussian bath.
 
     Implements:
-        - n = 0: L_0[X] = -i [H_S, X] (the bare Liouvillian; not really
-          a perturbative term, but supplied here so K_total_thermal can
-          uniformly assemble K = K_0 + K_1 + K_2 + ... via Letter Eq. (6)).
-        - n = 1: L_1[X] = 0 (thermal Gaussian bath has ⟨B⟩ = 0).
-        - n = 2: L_2[X](t) = -∫_0^t du {C(t-u) [A, A_I(u-t) X] +
-                                         C(t-u)* [X A_I(u-t), A]}
-          via trapezoidal integration over s_grid = t_grid[: t_idx+1].
-          The integrand is operator-valued; the trapezoidal rule is
-          inlined for efficiency (avoids 4 separate scalar integrations
-          per matrix entry).
-        - n = 3: L_3[X] = 0 (thermal Gaussian D̄_1 = D̄_3 = 0; see DG-4
-          Phase B.2 derivation in the n = 3 branch below).
-        - n = 4: pending; raises NotImplementedError. Non-zero in
-          general for [A, A_I(τ)] ≠ 0; zero for σ_z by Feynman-Vernon.
+
+    - n = 0: L_0[X] = -i [H_S, X] (the bare Liouvillian; not really
+      a perturbative term, but supplied here so K_total_thermal can
+      uniformly assemble K = K_0 + K_1 + K_2 + ... via Letter Eq. (6)).
+    - n = 1: L_1[X] = 0 (thermal Gaussian bath has ⟨B⟩ = 0).
+    - n = 2: L_2[X](t) = -∫_0^t du {C(t-u) [A, A_I(u-t) X] +
+      C(t-u)* [X A_I(u-t), A]} via trapezoidal integration over
+      s_grid = t_grid[: t_idx+1]. The integrand is operator-valued; the
+      trapezoidal rule is inlined for efficiency (avoids 4 separate
+      scalar integrations per matrix entry).
+    - n = 3: L_3[X] = 0 (thermal Gaussian D̄_1 = D̄_3 = 0; see DG-4
+      Phase B.2 derivation in the n = 3 branch below).
+    - n = 4: pending; raises NotImplementedError. Non-zero in
+      general for [A, A_I(τ)] ≠ 0; zero for σ_z by Feynman-Vernon.
 
     Parameters
     ----------
@@ -762,9 +762,22 @@ def K_total_thermal_on_grid(
         Perturbative cap from the card's frozen_parameters.truncation
         .perturbative_order; must be in {0, 1, 2} for the implemented
         low-order path.
-    t_grid, system_hamiltonian, coupling_operator, bath_state,
-    spectral_density, basis, upper_cutoff_factor, quad_limit : as in
-        K_n_thermal_on_grid.
+    t_grid : ndarray
+        See ``K_n_thermal_on_grid``.
+    system_hamiltonian : ndarray
+        See ``K_n_thermal_on_grid``.
+    coupling_operator : ndarray
+        See ``K_n_thermal_on_grid``.
+    bath_state : dict
+        See ``K_n_thermal_on_grid``.
+    spectral_density : dict
+        See ``K_n_thermal_on_grid``.
+    basis : list, optional
+        See ``K_n_thermal_on_grid``.
+    upper_cutoff_factor : float
+        See ``K_n_thermal_on_grid``.
+    quad_limit : int
+        See ``K_n_thermal_on_grid``.
 
     Returns
     -------

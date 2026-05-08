@@ -11,12 +11,13 @@ Card A1) use the matrix-unit basis only; cross-basis verification is the
 DG-2 universal default check.
 
 Implementations:
-    - matrix_unit_basis(d):       {|j⟩⟨k|} basis, used in Letter Eq. (7).
-                                  Implemented at DG-1 Phase C C.1.
-    - su_d_generator_basis(d):    {1/√d, σ_i/√d}, used in Letter Eq. (B.10).
-                                  Stubbed; DG-2 territory.
-    - hermitian_basis(d):         d² real-orthonormal Hermitian operators.
-                                  Not stubbed; if/when needed at DG-2.
+
+- ``matrix_unit_basis(d)`` — ``{|j⟩⟨k|}`` basis, used in Letter Eq. (7).
+  Implemented at DG-1 Phase C C.1.
+- ``su_d_generator_basis(d)`` — ``{1/√d, σ_i/√d}``, used in
+  Letter Eq. (B.10). Stubbed; DG-2 territory.
+- ``hermitian_basis(d)`` — d² real-orthonormal Hermitian operators.
+  Not stubbed; if/when needed at DG-2.
 
 Each function returns a list of d×d numpy arrays satisfying the
 Hilbert–Schmidt orthonormality relation up to numerical tolerance,
@@ -27,7 +28,7 @@ import numpy as np
 
 
 def matrix_unit_basis(d: int) -> list[np.ndarray]:
-    """Matrix-unit basis {|j⟩⟨k|}, j,k ∈ {0, ..., d-1}.
+    """Matrix-unit basis ``{|j⟩⟨k|}``, j, k ∈ {0, …, d-1}.
 
     The basis used in Letter Eq. (7). Each element E_{j,k} is the d×d
     complex matrix with E_{j,k}[m, n] = δ_{j,m} δ_{k,n}; equivalently,

@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=e0f99f8f"></script>
+    <script src="../../_static/documentation_options.js?v=55c93ed0"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
@@ -303,7 +303,7 @@
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">numerical.time_grid — Time-grid construction and time-ordered integration.</span>
 
-<span class="sd">Provides the time-grid layer Cards A3 and A4 depend on:</span>
+<span class="sd">Provides the time-grid layer Cards A3 and A4 depend on::</span>
 
 <span class="sd">    build_time_grid(spec)              — Construct a TimeGrid from a card&#39;s</span>
 <span class="sd">                                          frozen_parameters.numerical.time_grid</span>
@@ -368,24 +368,17 @@
 <a class="viewcode-back" href="../../numerical.html#numerical.time_grid.TimeGrid">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">TimeGrid</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An immutable-by-convention time grid plus its construction metadata.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;An immutable-by-convention time grid plus its construction metadata.&quot;&quot;&quot;</span>
 
-<span class="sd">    Attributes</span>
-<span class="sd">    ----------</span>
-<span class="sd">    times : ndarray</span>
-<span class="sd">        The time-point array, shape (n_points,).</span>
-<span class="sd">    t_start, t_end : float</span>
-<span class="sd">        Endpoints of the grid (matched to the spec).</span>
-<span class="sd">    n_points : int</span>
-<span class="sd">        Number of points.</span>
-<span class="sd">    scheme : str</span>
-<span class="sd">        Construction scheme (e.g. &quot;uniform&quot;).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
+    <span class="c1">#: The time-point array, shape ``(n_points,)``.</span>
     <span class="n">times</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="c1">#: Start endpoint (matched to the spec).</span>
     <span class="n">t_start</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="c1">#: End endpoint (matched to the spec).</span>
     <span class="n">t_end</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="c1">#: Number of points.</span>
     <span class="n">n_points</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="c1">#: Construction scheme (e.g. ``&quot;uniform&quot;``).</span>
     <span class="n">scheme</span><span class="p">:</span> <span class="nb">str</span>
 
     <span class="nd">@property</span>

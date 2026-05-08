@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=e0f99f8f"></script>
+    <script src="../../_static/documentation_options.js?v=55c93ed0"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
@@ -304,11 +304,12 @@
 <span class="sd">cbg.effective_hamiltonian — Effective Hamiltonian K(t) under the</span>
 <span class="sd">Hayden–Sorce minimal-dissipation gauge.</span>
 
-<span class="sd">Implements:</span>
+<span class="sd">Implements::</span>
+
 <span class="sd">    K = (1 / 2id) Σ_α [F_α†, L[F_α]]                       (Letter Eq. (6))</span>
 <span class="sd">    K = (1 / 2id) Σ_{j,k} [|j⟩⟨k|, L[|k⟩⟨j|]]              (Letter Eq. (7))</span>
 
-<span class="sd">and records the pending recursive perturbative series surface</span>
+<span class="sd">and records the pending recursive perturbative series surface::</span>
 
 <span class="sd">    K(t) = Σ_n λ^n K_n(t)                                    (Letter Eq. (15))</span>
 
@@ -342,12 +343,12 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute K from a TCL generator L using Letter Eq. (6).</span>
 
-<span class="sd">    Implements the basis-independent operational form:</span>
+<span class="sd">    Implements the basis-independent operational form::</span>
 
 <span class="sd">        K = (1 / 2id) Σ_α [F_α†, L[F_α]]                       (Letter Eq. (6))</span>
 
-<span class="sd">    For the matrix-unit basis F_α = |j⟩⟨k|, this reduces to</span>
-<span class="sd">    Letter Eq. (7) under the relabelling (j, k) ↔ α.</span>
+<span class="sd">    For the matrix-unit basis ``F_α = |j⟩⟨k|``, this reduces to</span>
+<span class="sd">    Letter Eq. (7) under the relabelling ``(j, k) ↔ α``.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>

@@ -1,7 +1,7 @@
 """
 numerical.time_grid — Time-grid construction and time-ordered integration.
 
-Provides the time-grid layer Cards A3 and A4 depend on:
+Provides the time-grid layer Cards A3 and A4 depend on::
 
     build_time_grid(spec)              — Construct a TimeGrid from a card's
                                           frozen_parameters.numerical.time_grid
@@ -64,24 +64,17 @@ DEFERRED_ORDERINGS = {
 
 @dataclass
 class TimeGrid:
-    """An immutable-by-convention time grid plus its construction metadata.
+    """An immutable-by-convention time grid plus its construction metadata."""
 
-    Attributes
-    ----------
-    times : ndarray
-        The time-point array, shape (n_points,).
-    t_start, t_end : float
-        Endpoints of the grid (matched to the spec).
-    n_points : int
-        Number of points.
-    scheme : str
-        Construction scheme (e.g. "uniform").
-    """
-
+    #: The time-point array, shape ``(n_points,)``.
     times: np.ndarray
+    #: Start endpoint (matched to the spec).
     t_start: float
+    #: End endpoint (matched to the spec).
     t_end: float
+    #: Number of points.
     n_points: int
+    #: Construction scheme (e.g. ``"uniform"``).
     scheme: str
 
     @property

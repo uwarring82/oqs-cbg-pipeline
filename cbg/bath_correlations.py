@@ -409,7 +409,7 @@ def n_point_ordered(
     baths at total order n in {3, 4}. Thermal Gaussian baths have zero
     first cumulant, so odd raw correlations vanish. The n = 4 raw
     correlation is evaluated by Wick factorisation into the existing
-    connected two-point correlator:
+    connected two-point correlator::
 
         D(t1, t2, t3, t4) =
             C(t1, t2) C(t3, t4)
@@ -417,7 +417,7 @@ def n_point_ordered(
           + C(t1, t4) C(t2, t3)
 
     The flattened operator order used here is the left-acting sequence
-    followed by the reversed right-acting sequence:
+    followed by the reversed right-acting sequence::
 
         times = tuple(tau_args) + tuple(reversed(s_args))
 

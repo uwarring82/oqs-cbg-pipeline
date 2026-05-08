@@ -2,7 +2,7 @@
 numerical.tensor_ops — Linear-algebra primitives for the CBG construction.
 
 Provides model-agnostic operator-space primitives used across cbg/ and the
-runner:
+runner::
 
     commutator(A, B)            = A @ B - B @ A
     anticommutator(A, B)        = A @ B + B @ A

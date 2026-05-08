@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=e0f99f8f"></script>
+    <script src="../../_static/documentation_options.js?v=55c93ed0"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
@@ -313,12 +313,13 @@
 <span class="sd">DG-2 universal default check.</span>
 
 <span class="sd">Implementations:</span>
-<span class="sd">    - matrix_unit_basis(d):       {|j⟩⟨k|} basis, used in Letter Eq. (7).</span>
-<span class="sd">                                  Implemented at DG-1 Phase C C.1.</span>
-<span class="sd">    - su_d_generator_basis(d):    {1/√d, σ_i/√d}, used in Letter Eq. (B.10).</span>
-<span class="sd">                                  Stubbed; DG-2 territory.</span>
-<span class="sd">    - hermitian_basis(d):         d² real-orthonormal Hermitian operators.</span>
-<span class="sd">                                  Not stubbed; if/when needed at DG-2.</span>
+
+<span class="sd">- ``matrix_unit_basis(d)`` — ``{|j⟩⟨k|}`` basis, used in Letter Eq. (7).</span>
+<span class="sd">  Implemented at DG-1 Phase C C.1.</span>
+<span class="sd">- ``su_d_generator_basis(d)`` — ``{1/√d, σ_i/√d}``, used in</span>
+<span class="sd">  Letter Eq. (B.10). Stubbed; DG-2 territory.</span>
+<span class="sd">- ``hermitian_basis(d)`` — d² real-orthonormal Hermitian operators.</span>
+<span class="sd">  Not stubbed; if/when needed at DG-2.</span>
 
 <span class="sd">Each function returns a list of d×d numpy arrays satisfying the</span>
 <span class="sd">Hilbert–Schmidt orthonormality relation up to numerical tolerance,</span>
@@ -331,7 +332,7 @@
 <div class="viewcode-block" id="matrix_unit_basis">
 <a class="viewcode-back" href="../../cbg.html#cbg.basis.matrix_unit_basis">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">matrix_unit_basis</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Matrix-unit basis {|j⟩⟨k|}, j,k ∈ {0, ..., d-1}.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Matrix-unit basis ``{|j⟩⟨k|}``, j, k ∈ {0, …, d-1}.</span>
 
 <span class="sd">    The basis used in Letter Eq. (7). Each element E_{j,k} is the d×d</span>
 <span class="sd">    complex matrix with E_{j,k}[m, n] = δ_{j,m} δ_{k,n}; equivalently,</span>

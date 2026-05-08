@@ -356,13 +356,10 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-numerical.time_grid"><code class="docutils literal notranslate"><span class="pre">numerical.time_grid</span></code></a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical.time_grid.TimeGrid"><code class="docutils literal notranslate"><span class="pre">TimeGrid</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical.time_grid.TimeGrid.times"><code class="docutils literal notranslate"><span class="pre">TimeGrid.times</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical.time_grid.TimeGrid.n_points"><code class="docutils literal notranslate"><span class="pre">TimeGrid.n_points</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical.time_grid.TimeGrid.scheme"><code class="docutils literal notranslate"><span class="pre">TimeGrid.scheme</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id0"><code class="docutils literal notranslate"><span class="pre">TimeGrid.times</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical.time_grid.TimeGrid.t_start"><code class="docutils literal notranslate"><span class="pre">TimeGrid.t_start</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical.time_grid.TimeGrid.t_end"><code class="docutils literal notranslate"><span class="pre">TimeGrid.t_end</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id1"><code class="docutils literal notranslate"><span class="pre">TimeGrid.n_points</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id2"><code class="docutils literal notranslate"><span class="pre">TimeGrid.scheme</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical.time_grid.TimeGrid.n_points"><code class="docutils literal notranslate"><span class="pre">TimeGrid.n_points</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical.time_grid.TimeGrid.scheme"><code class="docutils literal notranslate"><span class="pre">TimeGrid.scheme</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical.time_grid.TimeGrid.dt"><code class="docutils literal notranslate"><span class="pre">TimeGrid.dt</span></code></a></li>
 </ul>
 </li>
@@ -391,15 +388,13 @@ across the dynamical-card runner and the recursive TCL generator.</p>
 <p>numerical.tensor_ops — Linear-algebra primitives for the CBG construction.</p>
 <p>Provides model-agnostic operator-space primitives used across cbg/ and the
 runner:</p>
-<blockquote>
-<div><p>commutator(A, B)            = A &#64; B - B &#64; A
-anticommutator(A, B)        = A &#64; B + B &#64; A
-hilbert_schmidt_inner(A, B) = Tr(A^dagger B)
-superop_apply(L, X)         = L(X)         (callable form only at DG-1;</p>
-<blockquote>
-<div><p>matrix-form is DG-2)</p>
-</div></blockquote>
-</div></blockquote>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">commutator</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>            <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">B</span> <span class="o">-</span> <span class="n">B</span> <span class="o">@</span> <span class="n">A</span>
+<span class="n">anticommutator</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>        <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">B</span> <span class="o">+</span> <span class="n">B</span> <span class="o">@</span> <span class="n">A</span>
+<span class="n">hilbert_schmidt_inner</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span> <span class="o">=</span> <span class="n">Tr</span><span class="p">(</span><span class="n">A</span><span class="o">^</span><span class="n">dagger</span> <span class="n">B</span><span class="p">)</span>
+<span class="n">superop_apply</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>         <span class="o">=</span> <span class="n">L</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>         <span class="p">(</span><span class="nb">callable</span> <span class="n">form</span> <span class="n">only</span> <span class="n">at</span> <span class="n">DG</span><span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+                                             <span class="n">matrix</span><span class="o">-</span><span class="n">form</span> <span class="ow">is</span> <span class="n">DG</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>These primitives encode no CBG-specific gauge or representation choice;
 the Hayden–Sorce minimal-dissipation gauge enters at the
 cbg.effective_hamiltonian level, not here.</p>
@@ -509,23 +504,19 @@ routing-pointer NotImplementedError.</p>
 <span id="numerical-time-grid"></span><h2><code class="docutils literal notranslate"><span class="pre">numerical.time_grid</span></code><a class="headerlink" href="#module-numerical.time_grid" title="Link to this heading">#</a></h2>
 <p>numerical.time_grid — Time-grid construction and time-ordered integration.</p>
 <p>Provides the time-grid layer Cards A3 and A4 depend on:</p>
-<blockquote>
-<div><dl>
-<dt>build_time_grid(spec)              — Construct a TimeGrid from a card’s</dt><dd><p>frozen_parameters.numerical.time_grid
-spec dict (YAML form).</p>
-</dd>
-<dt>TimeGrid                           — Dataclass wrapping the time array</dt><dd><p>plus the spec metadata.</p>
-</dd>
-<dt>integrate_with_ordering(integrand,</dt><dd><p>t_grid,
-ordering)  — Cumulative time-ordered integral.</p>
-<blockquote>
-<div><p>Used by cbg.tcl_recursion (C.8) for
-the K_1 single-integral term and
-the K_2 nested-integral term.</p>
-</div></blockquote>
-</dd>
-</dl>
-</div></blockquote>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>build_time_grid(spec)              — Construct a TimeGrid from a card&#39;s
+                                      frozen_parameters.numerical.time_grid
+                                      spec dict (YAML form).
+TimeGrid                           — Dataclass wrapping the time array
+                                      plus the spec metadata.
+integrate_with_ordering(integrand,
+                        t_grid,
+                        ordering)  — Cumulative time-ordered integral.
+                                      Used by cbg.tcl_recursion (C.8) for
+                                      the K_1 single-integral term and
+                                      the K_2 nested-integral term.
+</pre></div>
+</div>
 <dl class="simple">
 <dt>Schemes implemented at DG-1 Phase C.5:</dt><dd><ul class="simple">
 <li><p>uniform (linspace; matches Cards A3/A4 frozen_parameters.numerical.scheme)</p></li>
@@ -567,72 +558,33 @@ exercises this code path for Cards A3/A4.</p>
 </dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="numerical.time_grid.TimeGrid.times">
-<span class="sig-name descname"><span class="pre">times</span></span><a class="headerlink" href="#numerical.time_grid.TimeGrid.times" title="Link to this definition">#</a></dt>
-<dd><p>The time-point array, shape (n_points,).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ndarray</p>
-</dd>
-</dl>
+<span class="sig-name descname"><span class="pre">times</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span><a class="headerlink" href="#numerical.time_grid.TimeGrid.times" title="Link to this definition">#</a></dt>
+<dd><p>The time-point array, shape <code class="docutils literal notranslate"><span class="pre">(n_points,)</span></code>.</p>
 </dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">t_start,</span> <span class="pre">t_end</span></span></dt>
-<dd><p>Endpoints of the grid (matched to the spec).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="numerical.time_grid.TimeGrid.n_points">
-<span class="sig-name descname"><span class="pre">n_points</span></span><a class="headerlink" href="#numerical.time_grid.TimeGrid.n_points" title="Link to this definition">#</a></dt>
-<dd><p>Number of points.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="numerical.time_grid.TimeGrid.scheme">
-<span class="sig-name descname"><span class="pre">scheme</span></span><a class="headerlink" href="#numerical.time_grid.TimeGrid.scheme" title="Link to this definition">#</a></dt>
-<dd><p>Construction scheme (e.g. “uniform”).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="id0">
-<span class="sig-name descname"><span class="pre">times</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span><a class="headerlink" href="#id0" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="numerical.time_grid.TimeGrid.t_start">
 <span class="sig-name descname"><span class="pre">t_start</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#numerical.time_grid.TimeGrid.t_start" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Start endpoint (matched to the spec).</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="numerical.time_grid.TimeGrid.t_end">
 <span class="sig-name descname"><span class="pre">t_end</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#numerical.time_grid.TimeGrid.t_end" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>End endpoint (matched to the spec).</p>
+</dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="id1">
-<span class="sig-name descname"><span class="pre">n_points</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#id1" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="numerical.time_grid.TimeGrid.n_points">
+<span class="sig-name descname"><span class="pre">n_points</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#numerical.time_grid.TimeGrid.n_points" title="Link to this definition">#</a></dt>
+<dd><p>Number of points.</p>
+</dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="id2">
-<span class="sig-name descname"><span class="pre">scheme</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#id2" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="numerical.time_grid.TimeGrid.scheme">
+<span class="sig-name descname"><span class="pre">scheme</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#numerical.time_grid.TimeGrid.scheme" title="Link to this definition">#</a></dt>
+<dd><p>Construction scheme (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;uniform&quot;</span></code>).</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="numerical.time_grid.TimeGrid.dt">
@@ -785,13 +737,10 @@ F[0] = 0 (the integral over a zero-length interval).</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-numerical.time_grid"><code class="docutils literal notranslate"><span class="pre">numerical.time_grid</span></code></a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical.time_grid.TimeGrid"><code class="docutils literal notranslate"><span class="pre">TimeGrid</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical.time_grid.TimeGrid.times"><code class="docutils literal notranslate"><span class="pre">TimeGrid.times</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical.time_grid.TimeGrid.n_points"><code class="docutils literal notranslate"><span class="pre">TimeGrid.n_points</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical.time_grid.TimeGrid.scheme"><code class="docutils literal notranslate"><span class="pre">TimeGrid.scheme</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id0"><code class="docutils literal notranslate"><span class="pre">TimeGrid.times</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical.time_grid.TimeGrid.t_start"><code class="docutils literal notranslate"><span class="pre">TimeGrid.t_start</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical.time_grid.TimeGrid.t_end"><code class="docutils literal notranslate"><span class="pre">TimeGrid.t_end</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id1"><code class="docutils literal notranslate"><span class="pre">TimeGrid.n_points</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id2"><code class="docutils literal notranslate"><span class="pre">TimeGrid.scheme</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical.time_grid.TimeGrid.n_points"><code class="docutils literal notranslate"><span class="pre">TimeGrid.n_points</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical.time_grid.TimeGrid.scheme"><code class="docutils literal notranslate"><span class="pre">TimeGrid.scheme</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical.time_grid.TimeGrid.dt"><code class="docutils literal notranslate"><span class="pre">TimeGrid.dt</span></code></a></li>
 </ul>
 </li>

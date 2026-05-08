@@ -2,11 +2,12 @@
 cbg.effective_hamiltonian — Effective Hamiltonian K(t) under the
 Hayden–Sorce minimal-dissipation gauge.
 
-Implements:
+Implements::
+
     K = (1 / 2id) Σ_α [F_α†, L[F_α]]                       (Letter Eq. (6))
     K = (1 / 2id) Σ_{j,k} [|j⟩⟨k|, L[|k⟩⟨j|]]              (Letter Eq. (7))
 
-and records the pending recursive perturbative series surface
+and records the pending recursive perturbative series surface::
 
     K(t) = Σ_n λ^n K_n(t)                                    (Letter Eq. (15))
 
@@ -38,12 +39,12 @@ def K_from_generator(
 ) -> np.ndarray:
     """Compute K from a TCL generator L using Letter Eq. (6).
 
-    Implements the basis-independent operational form:
+    Implements the basis-independent operational form::
 
         K = (1 / 2id) Σ_α [F_α†, L[F_α]]                       (Letter Eq. (6))
 
-    For the matrix-unit basis F_α = |j⟩⟨k|, this reduces to
-    Letter Eq. (7) under the relabelling (j, k) ↔ α.
+    For the matrix-unit basis ``F_α = |j⟩⟨k|``, this reduces to
+    Letter Eq. (7) under the relabelling ``(j, k) ↔ α``.
 
     Parameters
     ----------

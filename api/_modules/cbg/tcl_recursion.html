@@ -387,20 +387,20 @@
 <span class="sd">    a thermal Gaussian bath.</span>
 
 <span class="sd">    Implements:</span>
-<span class="sd">        - n = 0: L_0[X] = -i [H_S, X] (the bare Liouvillian; not really</span>
-<span class="sd">          a perturbative term, but supplied here so K_total_thermal can</span>
-<span class="sd">          uniformly assemble K = K_0 + K_1 + K_2 + ... via Letter Eq. (6)).</span>
-<span class="sd">        - n = 1: L_1[X] = 0 (thermal Gaussian bath has ⟨B⟩ = 0).</span>
-<span class="sd">        - n = 2: L_2[X](t) = -∫_0^t du {C(t-u) [A, A_I(u-t) X] +</span>
-<span class="sd">                                         C(t-u)* [X A_I(u-t), A]}</span>
-<span class="sd">          via trapezoidal integration over s_grid = t_grid[: t_idx+1].</span>
-<span class="sd">          The integrand is operator-valued; the trapezoidal rule is</span>
-<span class="sd">          inlined for efficiency (avoids 4 separate scalar integrations</span>
-<span class="sd">          per matrix entry).</span>
-<span class="sd">        - n = 3: L_3[X] = 0 (thermal Gaussian D̄_1 = D̄_3 = 0; see DG-4</span>
-<span class="sd">          Phase B.2 derivation in the n = 3 branch below).</span>
-<span class="sd">        - n = 4: pending; raises NotImplementedError. Non-zero in</span>
-<span class="sd">          general for [A, A_I(τ)] ≠ 0; zero for σ_z by Feynman-Vernon.</span>
+
+<span class="sd">    - n = 0: L_0[X] = -i [H_S, X] (the bare Liouvillian; not really</span>
+<span class="sd">      a perturbative term, but supplied here so K_total_thermal can</span>
+<span class="sd">      uniformly assemble K = K_0 + K_1 + K_2 + ... via Letter Eq. (6)).</span>
+<span class="sd">    - n = 1: L_1[X] = 0 (thermal Gaussian bath has ⟨B⟩ = 0).</span>
+<span class="sd">    - n = 2: L_2[X](t) = -∫_0^t du {C(t-u) [A, A_I(u-t) X] +</span>
+<span class="sd">      C(t-u)* [X A_I(u-t), A]} via trapezoidal integration over</span>
+<span class="sd">      s_grid = t_grid[: t_idx+1]. The integrand is operator-valued; the</span>
+<span class="sd">      trapezoidal rule is inlined for efficiency (avoids 4 separate</span>
+<span class="sd">      scalar integrations per matrix entry).</span>
+<span class="sd">    - n = 3: L_3[X] = 0 (thermal Gaussian D̄_1 = D̄_3 = 0; see DG-4</span>
+<span class="sd">      Phase B.2 derivation in the n = 3 branch below).</span>
+<span class="sd">    - n = 4: pending; raises NotImplementedError. Non-zero in</span>
+<span class="sd">      general for [A, A_I(τ)] ≠ 0; zero for σ_z by Feynman-Vernon.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1087,9 +1087,22 @@
 <span class="sd">        Perturbative cap from the card&#39;s frozen_parameters.truncation</span>
 <span class="sd">        .perturbative_order; must be in {0, 1, 2} for the implemented</span>
 <span class="sd">        low-order path.</span>
-<span class="sd">    t_grid, system_hamiltonian, coupling_operator, bath_state,</span>
-<span class="sd">    spectral_density, basis, upper_cutoff_factor, quad_limit : as in</span>
-<span class="sd">        K_n_thermal_on_grid.</span>
+<span class="sd">    t_grid : ndarray</span>
+<span class="sd">        See ``K_n_thermal_on_grid``.</span>
+<span class="sd">    system_hamiltonian : ndarray</span>
+<span class="sd">        See ``K_n_thermal_on_grid``.</span>
+<span class="sd">    coupling_operator : ndarray</span>
+<span class="sd">        See ``K_n_thermal_on_grid``.</span>
+<span class="sd">    bath_state : dict</span>
+<span class="sd">        See ``K_n_thermal_on_grid``.</span>
+<span class="sd">    spectral_density : dict</span>
+<span class="sd">        See ``K_n_thermal_on_grid``.</span>
+<span class="sd">    basis : list, optional</span>
+<span class="sd">        See ``K_n_thermal_on_grid``.</span>
+<span class="sd">    upper_cutoff_factor : float</span>
+<span class="sd">        See ``K_n_thermal_on_grid``.</span>
+<span class="sd">    quad_limit : int</span>
+<span class="sd">        See ``K_n_thermal_on_grid``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
