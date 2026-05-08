@@ -7836,12 +7836,12 @@ a.anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<div class="highlight hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">cbg</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">cbg</span><span class="w"> </span><span class="kn">import</span> <span class="n">tcl_recursion</span> <span class="k">as</span> <span class="n">tr</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">cbg.basis</span><span class="w"> </span><span class="kn">import</span> <span class="n">matrix_unit_basis</span><span class="p">,</span> <span class="n">su_d_generator_basis</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">cbg.effective_hamiltonian</span><span class="w"> </span><span class="kn">import</span> <span class="n">K_from_generator</span>
+<span class="kn">import</span> <span class="nn">cbg</span>
+<span class="kn">from</span> <span class="nn">cbg</span> <span class="kn">import</span> <span class="n">tcl_recursion</span> <span class="k">as</span> <span class="n">tr</span>
+<span class="kn">from</span> <span class="nn">cbg.basis</span> <span class="kn">import</span> <span class="n">matrix_unit_basis</span><span class="p">,</span> <span class="n">su_d_generator_basis</span>
+<span class="kn">from</span> <span class="nn">cbg.effective_hamiltonian</span> <span class="kn">import</span> <span class="n">K_from_generator</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cbg.__version__       = </span><span class="si">{</span><span class="n">cbg</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cbg.__sail_version__  = </span><span class="si">{</span><span class="n">cbg</span><span class="o">.</span><span class="n">__sail_version__</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
@@ -7874,7 +7874,7 @@ a.anchor-link {
 <span class="n">omega</span> <span class="o">=</span> <span class="mf">1.0</span>
 <span class="n">H_S</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">omega</span> <span class="o">*</span> <span class="n">sigma_z</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">L_unitary</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">L_unitary</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
     <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="p">(</span><span class="n">H_S</span> <span class="o">@</span> <span class="n">X</span> <span class="o">-</span> <span class="n">X</span> <span class="o">@</span> <span class="n">H_S</span><span class="p">)</span>
 
 <span class="n">basis_mu</span> <span class="o">=</span> <span class="n">matrix_unit_basis</span><span class="p">(</span><span class="n">d</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
