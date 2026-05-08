@@ -80,14 +80,16 @@ Run the smoke tests:
 pytest tests/ -v
 ```
 
-Two runnable Jupyter notebooks demonstrate the passed Decision Gate verdicts end-to-end:
+Four runnable Jupyter notebooks demonstrate the passed (or partially passed) Decision Gate verdicts end-to-end:
 
-- [`examples/dg1_walkthrough.ipynb`](examples/dg1_walkthrough.ipynb) — DG-1 PASS (Cards A1, A3): closed-form K and pure-dephasing K(t).
-- [`examples/dg2_structural.ipynb`](examples/dg2_structural.ipynb) — DG-2 structural sub-claims PASS (Cards B3, B4): basis-independence on a dissipative generator, and the coherently-displaced bath under one Council-cleared registry profile.
+- [`examples/dg1_walkthrough.ipynb`](examples/dg1_walkthrough.ipynb) — DG-1 PASS (Cards A1, A3, A4): closed-form K, pure-dephasing K(t), and the σ_x thermal fixture.
+- [`examples/dg2_structural.ipynb`](examples/dg2_structural.ipynb) — DG-2 structural sub-claims PASS (Cards B3, B4-conv-registry): basis-independence on a dissipative generator, and the coherently-displaced bath under one Council-cleared registry profile.
+- [`examples/dg3_cross_method.ipynb`](examples/dg3_cross_method.ipynb) — DG-3 RUNNER-COMPLETE (Cards C1, C2): runner reachable on all four C1+C2 fixtures; both currently FAIL convergence in finite-bath truncation, demonstrating the failure-asymmetry-clearance gap.
+- [`examples/dg4_walkthrough.ipynb`](examples/dg4_walkthrough.ipynb) — DG-4 PASS at D1 v0.1.2 (Card D1 v0.1.2): picture-fixed Path B numerical L_4 extraction; reduced fixture for fast walkthrough, full frozen run reports `verdict = PASS` with max baseline `r_4 ≈ 47.42`.
 
 See [`examples/README.md`](examples/README.md) for the index.
 
-For a guided introduction aimed at PhD students, open [`cbg-tutorial-for-phd-students_v0.2.html`](cbg-tutorial-for-phd-students_v0.2.html). For the full validated surface and the structural-identity benchmark cards that anchor each Decision Gate, see [`benchmarks/benchmark_cards/`](benchmarks/benchmark_cards/) and [`docs/validity_envelope.md`](docs/validity_envelope.md).
+For a guided introduction aimed at PhD students, open [`cbg-tutorial-for-phd-students_v0.2.html`](cbg-tutorial-for-phd-students_v0.2.html). *Note: the tutorial dates from 2026-04-30, predates DG-2 / DG-4 PASS, and is for theoretical orientation only — refer to [`docs/validity_envelope.md`](docs/validity_envelope.md) for current verdict status.* For the full validated surface and the structural-identity benchmark cards that anchor each Decision Gate, see [`benchmarks/benchmark_cards/`](benchmarks/benchmark_cards/) and [`docs/validity_envelope.md`](docs/validity_envelope.md).
 
 ## Anchor chain
 
