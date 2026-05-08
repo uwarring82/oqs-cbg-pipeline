@@ -43,3 +43,7 @@ scratch/
 # GitHub Pages, but the build-cache sidecars are ignored).
 api/.buildinfo
 api/.doctrees/
+# macOS Finder iCloud-sync sometimes creates empty " 2" / " 3" duplicates
+# alongside Sphinx output dirs; ignore them so they don't leak into commits.
+api/_static\ */
+api/_static\ [0-9]*

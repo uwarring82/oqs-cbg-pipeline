@@ -10,7 +10,7 @@ source_doi: "https://doi.org/10.1088/1751-8121/ac65c2"
 source_arxiv: "https://arxiv.org/abs/2108.08316"
 source_version_used: "arXiv:2108.08316v4, 2022-05-11"
 repo_anchor: "CL-2026-005 v0.4 Entry 1.B.3; benchmarks/benchmark_cards/A1_closed-form-K_v0.1.1.yaml failure_mode_log[0]; benchmarks/benchmark_cards/B1_pseudo-kraus-diagonal_v0.1.0.yaml (frozen against this version)"
-status: initiated
+status: superseded
 license: CC-BY-4.0 (LICENSE-docs)
 superseded_by: hayden-sorce-2022_pseudokraus_v0.1.1.md
 ---
