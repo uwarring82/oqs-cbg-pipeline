@@ -38,3 +38,8 @@ output/
 scratch/
 *.npz.tmp
 *.h5.tmp
+
+# Sphinx build cache (api/ holds the rendered HTML which IS committed for
+# GitHub Pages, but the build-cache sidecars are ignored).
+api/.buildinfo
+api/.doctrees/

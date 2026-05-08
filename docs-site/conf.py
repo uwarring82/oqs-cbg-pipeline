@@ -26,7 +26,40 @@ sys.path.insert(0, str(REPO_ROOT))
 project = "oqs-cbg-pipeline"
 author = "Ulrich Warring"
 copyright = "2026, Ulrich Warring (code: MIT; docs: CC-BY-4.0)"
-release = "v0.2.0+dev"  # last tag is v0.2.0 (DG-1 PASS); commits past that carry the +dev suffix
+
+
+def _resolve_release() -> str:
+    """Track the live package version with a robust fallback chain.
+
+    Tries (in order): installed package metadata, in-tree ``cbg.__version__``,
+    and a ``pyproject.toml`` parse. Each fallback is hardened against
+    docs-only build environments where ``pip install -e .`` may not have
+    been run.
+    """
+    try:
+        from importlib.metadata import version as _v
+
+        return _v("oqs-cbg-pipeline")
+    except Exception:
+        pass
+    try:
+        from cbg import __version__ as _vv
+
+        return _vv
+    except Exception:
+        pass
+    try:
+        try:
+            import tomllib  # Python 3.11+
+        except ImportError:
+            import tomli as tomllib  # type: ignore[import-not-found]
+        return tomllib.loads((REPO_ROOT / "pyproject.toml").read_text())["project"]["version"]
+    except Exception:
+        return "0.0.0+unknown"
+
+
+release = _resolve_release()
+del _resolve_release
 
 # ─── Extensions ──────────────────────────────────────────────────────────────
 

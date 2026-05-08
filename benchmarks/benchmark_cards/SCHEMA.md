@@ -24,9 +24,11 @@ benchmarks/benchmark_cards/<card_id>_<short-tag>_v<version>.yaml
 ```
 
 - `<card_id>` is a short identifier of the form `A<n>` (DG-1), `B<n>` (DG-2), `C<n>` (DG-3), `D<n>` (DG-4), `E<n>` (DG-5), where `<n>` is an integer drawn from the corresponding Decision Gate's plan. DG-1 cards (per [DG-1 work plan v0.1.2](../../plans/dg-1-work-plan_v0.1.2.md) §4 Phase B) are `A1`, `A3`, `A4`.
-- `<short-tag>` is a kebab-case tag describing the model or scenario (e.g. `closed-form-K`, `pure-dephasing`, `sigma-x-thermal`).
+- `<short-tag>` is a kebab-case tag describing the model or scenario (e.g. `closed-form-K`, `pure-dephasing`, `sigma-x-thermal`). **Hyphens within the short-tag are required**; underscores within the short-tag are reserved as the field separator (between `<card_id>`, `<short-tag>`, and `v<version>`) and must not appear inside the slug.
 - `<version>` is the card's `version` field with the leading `v` retained (e.g. `v0.1.0`).
-- Examples: `A1_closed-form-K_v0.1.0.yaml`, `A3_pure-dephasing_v0.1.0.yaml`, `A4_sigma-x-thermal_v0.1.0.yaml`.
+- Canonical examples: `A1_closed-form-K_v0.1.0.yaml`, `A3_pure-dephasing_v0.1.0.yaml`, `A4_sigma-x-thermal_v0.1.0.yaml`, `B3_cross-basis-structural-identity_v0.1.0.yaml`, `D1_failure-envelope-convergence_v0.1.2.yaml`.
+
+**Legacy note.** Cards `B4-conv-registry` and `B5-conv-registry` predate the explicit underscore-separator rule and embed the `<card_id>` directly into the kebab slug (i.e., the filename starts with `B4-` rather than `B4_`). They are retained at their original filenames per the supersedure-record stability rule (renaming would touch ≥10 cross-references in the validity envelope, plans, logbook, README, index.html, benchmark protocol, and example notebooks, and would create supersedure-record ambiguity). New cards must follow the canonical `<card_id>_<short-tag>_v<version>` pattern above.
 
 The version is included in the filename so a superseding card (same `card_id`, same `<short-tag>`, higher `version`) can coexist with its predecessor in the same directory. One card per file. Cards are never silently edited or deleted post-verdict; supersedure is by *new file*, with the prior file's `superseded_by:` field appended ([`docs/benchmark_protocol.md`](../../docs/benchmark_protocol.md) §4.3). See §[Supersedure](#supersedure) below.
 
