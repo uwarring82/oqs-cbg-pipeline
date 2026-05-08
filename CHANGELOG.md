@@ -23,10 +23,10 @@ package release is made. The DG-anchoring tags are `v0.2.0` (DG-1 PASS) and
 - DG-4 PASS at D1 v0.1.2 (2026-05-06; verdict commit `6f88787`) via
   picture-fixed Path B numerical L_4 extraction. All 20 frozen
   `coupling_strength` sweep points classify as `convergence_failure` under
-  the parity-aware `r_4 = ⟨‖L_4^dis‖⟩_t / ⟨‖L_2^dis‖⟩_t` metric, with
-  stability across all four reproducibility perturbations
+  the parity-aware `r_4(α²) = α² · ⟨‖L_4^dis‖⟩_t / ⟨‖L_2^dis‖⟩_t` metric,
+  with stability across all four reproducibility perturbations
   (`upper_cutoff_factor ∈ {20, 40}`, `omega_c ∈ {9, 11}`); maximum baseline
-  `r_4 ≈ 47.42`; minimum perturbed coefficient ratio `≈ 41.47`. See
+  `r_4 ≈ 47.42` at α² = 1.0; minimum perturbed coefficient ratio `≈ 41.47`. See
   [`logbook/2026-05-06_dg-4-pass-path-b-v012.md`](logbook/2026-05-06_dg-4-pass-path-b-v012.md).
 - `benchmarks/benchmark_cards/D1_failure-envelope-convergence_v0.1.2.yaml`
   superseding v0.1.1; structurally identical (same model, metric, sweep,

@@ -95,7 +95,7 @@ One DG-4 failure-envelope card is frozen:
 
 | Card | Model | Sweep parameter | Target cause label | Status |
 |---|---|---|---|---|
-| D1 v0.1.2 | spin_boson_sigma_x | coupling_strength (0.05 → 1.0, log-uniform, 20 points) | convergence failure via parity-aware `r_4 = <||L_4^dis||>_t / <||L_2^dis||>_t` | **pass** (picture-fixed Path B numerical L_4; all 20 points `convergence_failure`; all four reproducibility perturbations operational; max baseline `r_4 ≈ 47.42`; min perturbed coefficient ratio `≈ 41.47`) |
+| D1 v0.1.2 | spin_boson_sigma_x | coupling_strength (0.05 → 1.0, log-uniform, 20 points) | convergence failure via parity-aware `r_4(α²) = α² · <||L_4^dis||>_t / <||L_2^dis||>_t` | **pass** (picture-fixed Path B numerical L_4; all 20 points `convergence_failure`; all four reproducibility perturbations operational; max baseline `r_4 ≈ 47.42` at α² = 1.0; min perturbed coefficient ratio `≈ 41.47`) |
 | D1 v0.1.1 | spin_boson_sigma_x | (same) | (same) | superseded by v0.1.2 (2026-05-06; original PASS verdict at tag `v0.5.0` downgraded on review for two HIGH-severity defects in Path B; see below) |
 
 The v0.1.0 predecessor targeted pure_dephasing and is superseded: thermal pure dephasing is TCL-2 exact, so no order-4 convergence signal can appear. D1 v0.1.1 adopted the σ_x thermal model and the parity-aware even-order dissipator ratio specified by DG-4 work plan v0.1.4.
