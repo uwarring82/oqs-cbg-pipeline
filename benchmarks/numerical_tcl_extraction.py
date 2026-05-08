@@ -381,7 +381,7 @@ class DissipatorNormCoefficients:
     The norms are *coefficients* in the alpha-power expansion
     ``L_t(alpha) = L_0 + alpha**2 L_2 + alpha**4 L_4 + O(alpha**6)``,
     so they are independent of any specific swept coupling strength.
-    The convergence-ratio metric for D1 v0.1.1 evaluates as
+    The convergence-ratio metric for D1 v0.1.2 evaluates as
 
         r_4(alpha**2) = alpha**2 * (l4_avg / l2_avg)
 

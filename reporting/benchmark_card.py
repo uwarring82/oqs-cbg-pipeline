@@ -148,14 +148,17 @@ class ScopeDefinitionNotRunnableError(NotImplementedError):
 
 
 class DG4SweepRunnerNotImplementedError(NotImplementedError):
-    """Raised when ``run_card`` is asked to run a DG-4 sweep card.
+    """Raised when ``run_card`` is asked to run a DG-4 sweep card it
+    cannot satisfy.
 
-    The DG-4 failure-envelope runner is not yet implemented. It would
-    require (i) a trusted order-4 L_4 source (analytic Path A preferred;
-    benchmark-side Path B numerical extraction only with an uncertainty
-    note) and (ii) wiring the ``frozen_parameters.sweep`` block
-    (SCHEMA.md v0.1.3 Rule 17) into the runner. Card D1 v0.1.1 will
-    become runnable when both pieces land.
+    The DG-4 failure-envelope runner reached PASS at D1 v0.1.2 (2026-05-06)
+    via picture-fixed Path B numerical Richardson extraction; see
+    ``_run_dg4_sweep`` and the v0.1.2 result JSON. This error class
+    remains for the refusal path when a sweep card is presented without a
+    ``frozen_parameters.sweep`` block (SCHEMA.md v0.1.3 Rule 17), or when
+    an L_4 source is requested for which the runner has no Path B / Path A
+    handler. Path A (Companion Sec. IV analytic L_4) remains pending and
+    would be the preferred upgrade.
     """
 
 
@@ -1454,7 +1457,7 @@ def _run_dg4_sweep(card: BenchmarkCard) -> CardResult:
     if not isinstance(sweep, dict):
         _refuse_dg4_sweep(card)  # raises with a structured message
 
-    # Path B currently supports only sigma_x + thermal (the D1 v0.1.1 fixture).
+    # Path B currently supports only sigma_x + thermal (the D1 v0.1.2 fixture).
     model = fp["model"]
     coupling_op = (model.get("coupling_operator") or "").strip()
     bath_state = model.get("bath_state") or {}

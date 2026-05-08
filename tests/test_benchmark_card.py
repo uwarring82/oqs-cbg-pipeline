@@ -370,14 +370,14 @@ def test_rule10_primary_without_data_source_raises(a1_data):
 # ─── SCHEMA.md v0.1.3 additions: Rules 17, 18, scope-definition status ──────
 
 
-D1_PATH = CARDS_DIR / "D1_failure-envelope-convergence_v0.1.1.yaml"
+D1_PATH = CARDS_DIR / "D1_failure-envelope-convergence_v0.1.2.yaml"
 D1_V010_PATH = CARDS_DIR / "D1_failure-envelope-convergence_v0.1.0.yaml"
 E1_PATH = CARDS_DIR / "E1_thermodynamic-discriminant-fano-anderson_v0.1.0.yaml"
 
 
 @pytest.fixture
 def d1_data() -> dict:
-    """Fresh copy of Card D1 v0.1.1's parsed dict (carries sweep block)."""
+    """Fresh copy of Card D1 v0.1.2's parsed dict (carries sweep block)."""
     return copy.deepcopy(_load_raw(D1_PATH))
 
 
@@ -398,7 +398,7 @@ def test_valid_status_includes_scope_definition():
 def test_load_card_d1_succeeds():
     card = bc.load_card(D1_PATH)
     assert card.card_id == "D1"
-    assert card.version == "v0.1.1"
+    assert card.version == "v0.1.2"
     assert card.schema_version == "v0.1.3"
     assert card.model == "spin_boson_sigma_x"
 
@@ -409,7 +409,7 @@ def test_load_card_d1_v010_superseded():
     assert card.superseded_by == "D1_failure-envelope-convergence_v0.1.1.yaml"
 
 
-def test_d1_v011_freezes_parity_aware_metric_and_operational_perturbations():
+def test_d1_v012_freezes_parity_aware_metric_and_operational_perturbations():
     card = bc.load_card(D1_PATH)
     fp = card.frozen_parameters
     assert fp["model"]["coupling_operator"] == "sigma_x"
@@ -417,7 +417,11 @@ def test_d1_v011_freezes_parity_aware_metric_and_operational_perturbations():
     assert fp["comparison"]["error_metric"] == "convergence_ratio_parity_aware"
     assert fp["numerical"]["quadrature"]["upper_cutoff_factor"] == 30.0
     perturbations = {p["name"]: p for p in fp["reproducibility"]["perturbations"]}
-    assert perturbations["upper_cutoff_factor"]["pathway"] == "quadrature_kwargs_allow_list"
+    # v0.1.2 supersedure repair: upper_cutoff_factor is now threaded into the
+    # finite-env builder's omega_max_factor (commit a908cd6) — was a no-op in
+    # v0.1.1, which is one of the two HIGH-severity defects that triggered the
+    # supersedure. The pathway label updates accordingly.
+    assert perturbations["upper_cutoff_factor"]["pathway"] == "model_spec_to_omega_max_factor"
     assert perturbations["omega_c"]["target_path"] == (
         "model.bath_spectral_density.cutoff_frequency"
     )
@@ -816,7 +820,7 @@ def test_cross_method_relative_frobenius_shape_mismatch_raises():
 # ─── Runner: refusal paths for D1 (DG-4) and E1 (scope-definition) ──────────
 
 
-D1_PATH_FOR_RUN = CARDS_DIR / "D1_failure-envelope-convergence_v0.1.1.yaml"
+D1_PATH_FOR_RUN = CARDS_DIR / "D1_failure-envelope-convergence_v0.1.2.yaml"
 E1_PATH_FOR_RUN = CARDS_DIR / "E1_thermodynamic-discriminant-fano-anderson_v0.1.0.yaml"
 
 
@@ -845,7 +849,7 @@ def test_run_card_e1_raises_scope_definition_error():
     assert "failure_mode_log" in msg or "result.notes" in msg
 
 
-def _reduced_d1_v011_card(
+def _reduced_d1_v012_card(
     *,
     n_points_sweep: int = 4,
     t_end: float = 1.0,
@@ -854,7 +858,7 @@ def _reduced_d1_v011_card(
     n_bath_modes: int = 2,
     n_levels_per_mode: int = 2,
 ) -> bc.BenchmarkCard:
-    """Load D1 v0.1.1 with a reduced fixture for fast Phase C smoke tests.
+    """Load D1 v0.1.2 with a reduced fixture for fast Phase C smoke tests.
 
     The frozen card targets n_bath_modes=4, n_levels=3, 20-point sweep.
     Production runs at full resolution take ~150s; tests override via the
@@ -874,11 +878,11 @@ def _reduced_d1_v011_card(
 
 
 def test_run_card_d1_runs_dg4_sweep_to_verdict():
-    """Phase C of the DG-4 work plan v0.1.4: run_card on D1 v0.1.1
+    """Phase C of the DG-4 work plan v0.1.4: run_card on D1 v0.1.2
     routes through _run_dg4_sweep (no longer raises) and returns a
     CardResult with a structured DG-4 verdict.
     """
-    card = _reduced_d1_v011_card()
+    card = _reduced_d1_v012_card()
     result = bc.run_card(card)
     assert result.card_id == "D1"
     assert result.verdict in {"PASS", "FAIL", "CONDITIONAL"}
@@ -891,10 +895,10 @@ def test_run_card_d1_runs_dg4_sweep_to_verdict():
 
 
 def test_run_card_d1_dispatches_to_dg4_runner_not_dynamical():
-    """D1 v0.1.1 has no test_cases (it carries a sweep block instead).
+    """D1 v0.1.2 has no test_cases (it carries a sweep block instead).
     If dispatch fell through to _run_dynamical, that would raise KeyError.
     The DG-4 branch must fire first."""
-    card = _reduced_d1_v011_card()
+    card = _reduced_d1_v012_card()
     # If this raises KeyError, the DG-4 dispatch is broken.
     bc.run_card(card)
 
@@ -903,7 +907,7 @@ def test_run_card_d1_notes_record_path_b_floor_caveat():
     """Path B is benchmark-side numerical extraction with a documented
     finite-env floor; the verdict notes must call this out so verdicts
     carry the uncertainty band per DG-4 work plan v0.1.4 §3 Phase C."""
-    card = _reduced_d1_v011_card()
+    card = _reduced_d1_v012_card()
     result = bc.run_card(card)
     assert "Path B" in result.notes
     assert "finite-env" in result.notes or "uncertainty" in result.notes
@@ -913,7 +917,7 @@ def test_run_card_d1_alpha_crit_interpolation_when_boundary_present():
     """When the sweep grid spans both passing (r_4 ≤ 1) and convergence-
     failure (r_4 > 1) regions, the runner reports an interpolated
     alpha_crit in result.notes."""
-    card = _reduced_d1_v011_card()
+    card = _reduced_d1_v012_card()
     result = bc.run_card(card)
     if result.verdict == "PASS":
         assert "alpha_crit" in result.notes
@@ -926,7 +930,7 @@ def test_dg4_sweep_runner_refuses_non_sigma_x_with_clear_error():
     card with a different coupling operator must raise the structured
     DG4SweepRunnerNotImplementedError, not silently produce a meaningless
     verdict."""
-    card = _reduced_d1_v011_card()
+    card = _reduced_d1_v012_card()
     # Mutate the card in-memory to trigger the refusal branch.
     card.frozen_parameters["model"]["coupling_operator"] = "sigma_z"
     with pytest.raises(bc.DG4SweepRunnerNotImplementedError) as exc_info:
@@ -938,7 +942,7 @@ def test_dg4_sweep_runner_refuses_non_sigma_x_with_clear_error():
 def test_dg4_sweep_runner_refuses_non_thermal_with_clear_error():
     """Path B Phase C wiring also requires thermal Gaussian; non-thermal
     bath states route to the structured deferral."""
-    card = _reduced_d1_v011_card()
+    card = _reduced_d1_v012_card()
     card.frozen_parameters["model"]["bath_state"] = {
         "family": "coherent_displaced",
         "displacement_profile": "delta-omega_c",
@@ -956,7 +960,7 @@ def test_dg4_sweep_data_contains_per_alpha_and_per_perturbation_payload(tmp_path
     r_4, per-perturbation Path B fit residuals + dissipator-norm
     coefficients — so the result JSON is reconstruction-complete.
     """
-    card = _reduced_d1_v011_card()
+    card = _reduced_d1_v012_card()
     result = bc.run_card(card)
     sweep = result.dg4_sweep_data
     assert sweep is not None, "dg4_sweep_data must be populated by the DG-4 runner"
@@ -1011,7 +1015,7 @@ def test_write_dg4_result_json_round_trip(tmp_path):
     with the in-memory sweep data."""
     import json
 
-    card = _reduced_d1_v011_card()
+    card = _reduced_d1_v012_card()
     result = bc.run_card(card)
     out = tmp_path / "D1_v0.1.2_test_result.json"
     written = bc.write_dg4_result_json(
@@ -1043,7 +1047,7 @@ def test_write_dg4_result_json_refuses_non_dg4_results(tmp_path):
         test_case_results=[],
         runner_version="0.0.0",
     )
-    card = _reduced_d1_v011_card()
+    card = _reduced_d1_v012_card()
     with pytest.raises(ValueError, match="dg4_sweep_data"):
         bc.write_dg4_result_json(card, fake, tmp_path / "out.json")
 
@@ -1056,7 +1060,7 @@ def test_dg4_path_b_upper_cutoff_factor_is_operational():
     making the runner's "stable under all four perturbations" PASS
     predicate trivially satisfied. This test pins that the predicate is
     now genuinely tested."""
-    card = _reduced_d1_v011_card()
+    card = _reduced_d1_v012_card()
     fp = card.frozen_parameters
     grid_times = bc.build_time_grid(fp["numerical"]["time_grid"]).times
     path_b_params = bc._resolve_path_b_params(fp)

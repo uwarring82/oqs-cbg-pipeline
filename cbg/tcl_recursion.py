@@ -148,7 +148,7 @@ def L_n_thermal_at_time(
         # for any system coupling A. (For coherent-displaced bath states
         # the displacement-driven L_1 would propagate into a non-zero L_3
         # via D̄_1 × D̄_2 cross terms; that path is out of scope at Phase
-        # B.2 — the thermal Gaussian D1 v0.1.1 fixture targets the
+        # B.2 — the thermal Gaussian D1 v0.1.2 fixture targets the
         # L_4-level convergence signal, not L_3.)
         d = np.asarray(coupling_operator).shape[0]
         return lambda X: np.zeros((d, d), dtype=complex)
@@ -164,7 +164,7 @@ def L_n_thermal_at_time(
         #     This is the strong falsification oracle: any candidate L_4
         #     formula must give exactly 0 here.
         #   * For [A, A_I(τ)] ≠ 0 (A = σ_x), L_4 ≠ 0 and is the leading-
-        #     order convergence-detection signal that D1 v0.1.1's
+        #     order convergence-detection signal that D1 v0.1.2's
         #     ‖L_n^dissipator‖ ratio is designed to measure.
         #
         # Falsification of the obvious-looking candidate: a single
@@ -294,7 +294,7 @@ def K_n_thermal_on_grid(
         n = 4 is the pending Phase B follow-up: the parity-class theorem
         (Letter App. D) plus the Feynman-Vernon Gaussian-bath result
         predicts K_4 = 0 for A = σ_z and K_4 ≠ 0 (∝ σ_z) for A = σ_x; the
-        latter is the leading-order convergence-detection signal D1 v0.1.1
+        latter is the leading-order convergence-detection signal D1 v0.1.2
         targets.
     t_grid : ndarray, shape (n_t,)
         Time points.
@@ -479,7 +479,7 @@ def L_n_dissipator_norm_thermal_on_grid(
     matrix-unit) HS-orthonormal basis: the standard Hilbert-Schmidt
     norm of a superoperator. This is the per-t signal that DG-4 work
     plan v0.1.3 §1.1 designates as the convergence-ratio numerator
-    (D1 v0.1.1's metric).
+    (D1 v0.1.2's metric).
 
     For thermal Gaussian baths under the runner-facing thermal path,
     n ∈ {0, 1, 3} return all zeros and n = 2 returns the dephasing /

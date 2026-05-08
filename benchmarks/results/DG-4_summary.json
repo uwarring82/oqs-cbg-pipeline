@@ -2,7 +2,7 @@
   "decision_gate": "DG-4",
   "description": "Failure envelope: at least one reproducible, cause-labelled failure regime",
   "verdict": "PASS",
-  "computed_at_utc": "2026-05-06T19:45:12+00:00",
+  "computed_at_utc": "2026-05-06T21:11:54.001857+00:00",
   "runner_version": "0.1.0",
   "sail_anchor": "Sail v0.5 §9 DG-4",
   "ledger_anchor": "CL-2026-005 v0.4 Entry 2 (recursive-series convergence; scope-limited)",
@@ -10,19 +10,27 @@
   "cards": [
     {
       "card_id": "D1",
-      "card_version": "v0.1.1",
-      "card_path": "benchmarks/benchmark_cards/D1_failure-envelope-convergence_v0.1.1.yaml",
+      "card_version": "v0.1.2",
+      "card_path": "benchmarks/benchmark_cards/D1_failure-envelope-convergence_v0.1.2.yaml",
       "verdict": "PASS",
-      "evidence": "benchmarks/results/D1_failure-envelope-convergence_v0.1.1_result.json",
+      "evidence": "benchmarks/results/D1_failure-envelope-convergence_v0.1.2_result.json",
       "cause_label": "convergence_failure",
-      "l4_source": "Path B numerical Richardson extraction"
+      "l4_source": "Path B numerical Richardson extraction (interaction-picture transformed)",
+      "supersedes": "D1_failure-envelope-convergence_v0.1.1.yaml"
     }
   ],
-  "summary": "D1 v0.1.1 identifies a convergence_failure regime in the sigma_x thermal fixture. All 20 frozen coupling_strength sweep points in 0.05 to 1.0 classified as convergence_failure under the parity-aware r_4 metric. The Path B route verifies stability under the operational omega_c perturbations and records the runner-threaded upper_cutoff_factor perturbations as a Path-B-specific limitation because exact_finite_env does not consume that knob.",
+  "summary": "D1 v0.1.2 identifies a convergence_failure regime in the sigma_x thermal fixture under the parity-aware r_4 = <||L_4^dis||>_t / <||L_2^dis||>_t metric. All 20 frozen coupling_strength sweep points (0.05 to 1.0, log-uniform) classified as convergence_failure with stability across all four reproducibility perturbations (upper_cutoff_factor in {20, 40} now operational via the runner threading omega_max_factor into the finite-env builder, and omega_c in {9, 11} via direct model-spec mutation). Maximum baseline r_4 ~ 47.42; minimum perturbed coefficient ratio ~ 41.47 at omega_c = 11.0. v0.1.2 supersedes v0.1.1 after reviewer-side analysis surfaced two HIGH-severity defects in the v0.1.1 Path B extraction (picture/Lambda_0^-1 similarity error; trivial PASS predicate for upper_cutoff_factor perturbations) and a MEDIUM audit-completeness gap (per-alpha r_4 not persisted). v0.1.2 consumes the three repair commits (d67b453: picture transform; a908cd6: omega_max_factor threaded; 5441467: audit-complete result JSON).",
   "limitations": [
-    "The verdict uses benchmark-side Path B numerical L_4 extraction and carries the documented finite-env floor; analytic Path A remains pending.",
-    "upper_cutoff_factor perturbations are not operational in the current exact_finite_env Path B extraction, although they are threaded by the runner; omega_c perturbations are operational model-spec mutations.",
-    "alpha_crit is not bracketed inside the frozen sweep range because the first swept point already fails; the boundary is below coupling_strength=0.05 under this run.",
-    "This PASS authorises a cause-labelled failure-envelope report, not convergence reliability in arbitrary strong-coupling regimes."
-  ]
+    "The verdict uses benchmark-side Path B numerical L_4 extraction and carries the documented finite-env extraction floor (~few * 1e-2 at the default truncation per the 2026-05-06 sigma_z thermal zero-oracle pilot); analytic Path A (Companion Sec. IV) remains preferred for machine-precision evaluation and pending.",
+    "alpha_crit is not bracketed inside the frozen sweep range because the first swept point (0.05) already fails; the boundary lies below coupling_strength = 0.05 under this Path B run.",
+    "This PASS authorises a cause-labelled failure-envelope report for the sigma_x thermal fixture under the registered metric, not convergence reliability in arbitrary strong-coupling regimes.",
+    "Not analytic n=4 completion: cbg.tcl_recursion.L_n_thermal_at_time(n=4) remains deferred behind the structured Path A/B/C wall."
+  ],
+  "v011_supersedure_record": {
+    "tag": "v0.5.0",
+    "verdict_logbook": "logbook/2026-05-06_dg-4-pass-path-b.md",
+    "supersedure_logbook": "logbook/2026-05-06_dg-4-pass-path-b-superseded.md",
+    "v012_verdict_logbook": "logbook/2026-05-06_dg-4-pass-path-b-v012.md",
+    "note": "The v0.5.0 git tag is left as immutable history of the v0.1.1 commit; the live DG-4 verdict is v0.1.2."
+  }
 }
