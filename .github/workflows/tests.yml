@@ -64,7 +64,7 @@ jobs:
           python -m black --check cbg/ models/ numerical/ benchmarks/ reporting/ tests/
       - name: Lint with ruff
         run: |
-          python -m ruff check cbg/ models/ numerical/ benchmarks/ reporting/ tests/
+          python -m ruff check cbg/ models/ numerical/ benchmarks/ reporting/ tests/ examples/
       - name: Type-check with mypy
         run: |
           python -m mypy cbg/ models/ numerical/ benchmarks/ reporting/

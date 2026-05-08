@@ -7838,12 +7838,12 @@ $$</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=code-dg4-setup">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=code-dg4-setup">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">copy</span>
@@ -7852,28 +7852,14 @@ $$</p>
 <span class="kn">import</span> <span class="nn">yaml</span>
 
 <span class="kn">import</span> <span class="nn">cbg</span>
+<span class="kn">from</span> <span class="nn">benchmarks</span> <span class="kn">import</span> <span class="n">exact_finite_env</span>
+<span class="kn">from</span> <span class="nn">benchmarks</span> <span class="kn">import</span> <span class="n">numerical_tcl_extraction</span> <span class="k">as</span> <span class="n">nte</span>
 <span class="kn">from</span> <span class="nn">reporting</span> <span class="kn">import</span> <span class="n">benchmark_card</span> <span class="k">as</span> <span class="n">bc</span>
-<span class="kn">from</span> <span class="nn">benchmarks</span> <span class="kn">import</span> <span class="n">exact_finite_env</span><span class="p">,</span> <span class="n">numerical_tcl_extraction</span> <span class="k">as</span> <span class="n">nte</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cbg.__version__       = </span><span class="si">{</span><span class="n">cbg</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cbg.__sail_version__  = </span><span class="si">{</span><span class="n">cbg</span><span class="o">.</span><span class="n">__sail_version__</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cbg.__ledger_anchor__ = </span><span class="si">{</span><span class="n">cbg</span><span class="o">.</span><span class="n">__ledger_anchor__</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>cbg.__version__       = 0.3.0.dev0
-cbg.__sail_version__  = 0.5
-cbg.__ledger_anchor__ = CL-2026-005_v0.4
-</pre>
 </div>
 </div>
 </div>
@@ -8011,12 +7997,12 @@ coefficient ratio l4/l2  = 5.797e+00
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=code-dg4-sweep">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=code-dg4-sweep">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">sweep_alphas_sq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="n">sweep_range</span><span class="p">[</span><span class="s2">"start"</span><span class="p">],</span> <span class="n">sweep_range</span><span class="p">[</span><span class="s2">"end"</span><span class="p">],</span> <span class="n">num</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
@@ -8025,28 +8011,10 @@ coefficient ratio l4/l2  = 5.797e+00
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">"alpha²       r_4_baseline     classification"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"-"</span> <span class="o">*</span> <span class="mi">50</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">a2</span><span class="p">,</span> <span class="n">r4</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sweep_alphas_sq</span><span class="p">,</span> <span class="n">r_4_baseline</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">a2</span><span class="p">,</span> <span class="n">r4</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sweep_alphas_sq</span><span class="p">,</span> <span class="n">r_4_baseline</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s2">"convergence_failure_candidate"</span> <span class="k">if</span> <span class="n">r4</span> <span class="o">&gt;</span> <span class="mf">1.0</span> <span class="k">else</span> <span class="s2">"passing"</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">a2</span><span class="si">:</span><span class="s2">8.4f</span><span class="si">}</span><span class="s2">    </span><span class="si">{</span><span class="n">r4</span><span class="si">:</span><span class="s2">10.3e</span><span class="si">}</span><span class="s2">     </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>alpha²       r_4_baseline     classification
---------------------------------------------------
-  0.0500     2.898e-01     passing
-  0.1357     7.868e-01     passing
-  0.3684     2.136e+00     convergence_failure_candidate
-  1.0000     5.797e+00     convergence_failure_candidate
-</pre>
 </div>
 </div>
 </div>
