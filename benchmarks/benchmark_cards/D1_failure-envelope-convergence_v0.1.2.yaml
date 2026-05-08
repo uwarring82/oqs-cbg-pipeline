@@ -107,7 +107,7 @@ frozen_parameters:
 
   comparison:
     reference: "internal-consistency: parity-aware even-order dissipator norm growth"
-    target_observable: "r_4 = <||L_4^dissipator||>_t / <||L_2^dissipator||>_t"
+    target_observable: "r_4(alpha**2) = alpha**2 * <||L_4^dissipator||>_t / <||L_2^dissipator||>_t"
     error_metric: "convergence_ratio_parity_aware"
     threshold: 1.0
     projection_scheme: null
@@ -152,7 +152,7 @@ frozen_parameters:
 
 acceptance_criterion:
   reference: "internal-consistency: parity-aware even-order dissipator norm growth"
-  observable: "r_4 = <||L_4^dissipator||>_t / <||L_2^dissipator||>_t"
+  observable: "r_4(alpha**2) = alpha**2 * <||L_4^dissipator||>_t / <||L_2^dissipator||>_t"
   error_metric: "convergence_ratio_parity_aware"
   threshold: 1.0
   projection_scheme: null
@@ -182,14 +182,18 @@ acceptance_criterion:
       6. Compute the time-averaged Liouville-Frobenius norm of each
          dissipator superoperator:
              <||L_n^dis||>_t = (1/t_end) integral_0^t_end ||L_n^dis(t)||_F dt.
-      7. Compute the parity-aware even-order ratio:
-             r_4 = <||L_4^dis||>_t / <||L_2^dis||>_t.
+      7. Compute the parity-aware even-order ratio at swept coupling
+         alpha_j (where coupling_strength = alpha_j**2):
+             r_4(alpha_j**2) = alpha_j**2 * <||L_4^dis||>_t / <||L_2^dis||>_t.
+         The alpha_j**2 prefactor reflects that L_n are alpha-power
+         coefficients, so the dimensionless norm-growth witness scales
+         with the swept coupling strength.
 
     Failure regime definition:
-      A swept value alpha_j is a failing candidate if r_4 > 1.0. Odd-order
-      ratios are deliberately not used: L_1^dis and L_3^dis vanish in the
-      thermal Gaussian sigma_x fixture by parity, so adjacent-order ratios
-      are undefined.
+      A swept value alpha_j is a failing candidate if r_4(alpha_j**2) > 1.0.
+      Odd-order ratios are deliberately not used: L_1^dis and L_3^dis vanish
+      in the thermal Gaussian sigma_x fixture by parity, so adjacent-order
+      ratios are undefined.
 
     Zero-denominator policy:
       If <||L_2^dis||>_t is below the runner's machine-scale denominator
