@@ -50,7 +50,23 @@ A pull request that claims to pass a Decision Gate must:
 - Python 3.10+ idioms.
 - Type hints on public functions.
 - Docstrings: NumPy style. Anchor every module to its Sail/Ledger reference in the module docstring.
-- Run `ruff` and `black` before committing.
+- Run `ruff`, `black`, and `mypy` before committing. CI enforces all three on `cbg/ models/ numerical/ benchmarks/ reporting/ tests/`.
+
+## Working from a fresh checkout
+
+```bash
+git clone https://github.com/uwarring82/oqs-cbg-pipeline.git
+cd oqs-cbg-pipeline
+pip install -e ".[dev]"
+```
+
+This is the supported developer workflow — every script and notebook
+assumes the package is editable-installed. A side effect is that
+`pip install -e .` creates an untracked `oqs_cbg_pipeline.egg-info/`
+directory in the working tree; this is expected and is correctly
+ignored by `.gitignore`. `scripts/run_dg1_verdict.py` carries a
+`sys.path` injection to remain runnable from a non-installed checkout
+("checkout-and-run" path), but the `pip install -e .` form is preferred.
 
 ## Conduct
 

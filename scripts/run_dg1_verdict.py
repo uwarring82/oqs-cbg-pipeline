@@ -20,6 +20,14 @@ Exit code:
     1 — DG-1 FAIL-WITH-CAUSE (any card verdict != PASS, or runner error)
 
 Anchor: DG-1 work plan v0.1.4 §4 Phase D; SCHEMA.md v0.1.2 §Card lifecycle.
+
+This script supports both the canonical install path
+(``pip install -e ".[dev]"`` per CONTRIBUTING.md, which is preferred)
+*and* a "checkout-and-run" fallback that injects ``REPO_ROOT`` into
+``sys.path`` if the package is not yet installed (lines 39–40 below).
+The latter is convenient for first-run audits but bypasses the install
+discipline; if you're hacking on the cbg / reporting modules, prefer
+the editable install.
 """
 
 from __future__ import annotations
