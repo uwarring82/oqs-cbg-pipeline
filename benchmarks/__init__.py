@@ -16,3 +16,8 @@ DG-4 Path B adds numerical_tcl_extraction.py as a benchmark-side extraction aid:
 it may reconstruct finite-environment maps and fit even TCL coefficients, but it
 is not an analytic recursion module and must not be imported by cbg/.
 """
+
+# Submodules (exact_finite_env, qutip_reference, numerical_tcl_extraction)
+# are accessed via explicit import; nothing is re-exported at the
+# package-init level.
+__all__: list[str] = []

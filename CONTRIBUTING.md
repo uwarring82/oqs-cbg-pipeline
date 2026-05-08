@@ -52,6 +52,13 @@ A pull request that claims to pass a Decision Gate must:
 - Docstrings: NumPy style. Anchor every module to its Sail/Ledger reference in the module docstring.
 - Run `ruff`, `black`, and `mypy` before committing. CI enforces all three on `cbg/ models/ numerical/ benchmarks/ reporting/ tests/`.
 
+  *Note on lint scope vs package boundary.* `pyproject.toml`'s
+  `packages = [...]` deliberately excludes `tests/` (it is not an
+  installable package), but CI lints `tests/` because the test suite
+  is part of the development discipline. The two sources of truth
+  agree on what is *installed* and disagree only on what is *linted*;
+  this is intentional.
+
 ## Working from a fresh checkout
 
 ```bash

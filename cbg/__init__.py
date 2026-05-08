@@ -54,6 +54,18 @@ __ledger_anchor__ = "CL-2026-005_v0.4"
 __council_clearance_date__ = "2026-04-29"
 __steward__ = "U. Warring (Physikalisches Institut, Albert-Ludwigs-Universität Freiburg)"
 
+# Public names exposed at the package level. Submodules (basis,
+# effective_hamiltonian, tcl_recursion, cumulants, bath_correlations,
+# displacement_profiles, diagnostics) are accessed by attribute or via
+# explicit imports — they are not re-exported here.
+__all__ = [
+    "__version__",
+    "__sail_version__",
+    "__ledger_anchor__",
+    "__council_clearance_date__",
+    "__steward__",
+]
+
 # Protective import-time check: when imported from a repository checkout
 # (i.e., a sibling docs/ directory exists), the five mandatory docs/ files
 # must be present. When imported from a pip-installed wheel without the

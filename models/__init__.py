@@ -19,3 +19,8 @@ numerically-stable-but-wrong implementations.
 Per Sail v0.5 §9 DG-2, models declare the model-appropriate constraints
 that stack on top of the universal basis-independence default.
 """
+
+# This package is a namespace for individual model submodules; nothing
+# is re-exported at the package-init level. Use explicit imports such as
+# ``from models import pure_dephasing`` rather than ``from models import *``.
+__all__: list[str] = []
