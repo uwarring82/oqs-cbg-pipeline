@@ -70,10 +70,13 @@ pip install -e ".[dev]"
 This is the supported developer workflow — every script and notebook
 assumes the package is editable-installed. A side effect is that
 `pip install -e .` creates an untracked `oqs_cbg_pipeline.egg-info/`
-directory in the working tree; this is expected and is correctly
-ignored by `.gitignore`. `scripts/run_dg1_verdict.py` carries a
-`sys.path` injection to remain runnable from a non-installed checkout
-("checkout-and-run" path), but the `pip install -e .` form is preferred.
+directory in the working tree. **This is expected, ignored by
+`.gitignore`, and safe to leave in place; you can also delete it any
+time with `rm -rf oqs_cbg_pipeline.egg-info` and it will be recreated
+on the next `pip install -e`.** Do not commit it. `scripts/run_dg1_verdict.py`
+carries a `sys.path` injection to remain runnable from a non-installed
+checkout ("checkout-and-run" path), but the `pip install -e .` form is
+preferred.
 
 ## Conduct
 

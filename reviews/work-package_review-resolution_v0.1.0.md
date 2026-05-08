@@ -3,7 +3,7 @@
 **Author:** Steward (drafted from Rounds 1–3 review evidence)
 **Drafted:** 2026-05-08
 **Revised:** 2026-05-08 (post-review revisions integrating steward + second-reviewer feedback on the v0.1.0 first draft)
-**Status:** draft, awaiting steward triage and sequencing
+**Status:** **partially executed** as of 2026-05-08 — WS-D, WS-A, WS-B, WS-C, WS-E, WS-F, WS-I (L1+M6, L5 deferred), WS-K, WS-La, WS-G, WS-H, WS-Lc, WS-J landed, plus follow-up patches WS-A2 (api/ rebuild), WS-E2 (frozen-card and summary r_4 clarification), WS-D2 (notebook ruff coverage), WS-H2 (build_docs.sh comment alignment). WS-Lb (S6 SPDX, S8 Py3.13, S10 stub model APIs, S13 GitHub templates) and WS-I L5 (summary-JSON mutability) remain open pending steward decisions per §6.
 **Inputs:**
 - [`round-1_2026-05-04/kimi_fair-review.md`](round-1_2026-05-04/kimi_fair-review.md)
 - [`round-2_2026-05-06/gemini_inconsistency-flags.md`](round-2_2026-05-06/gemini_inconsistency-flags.md)
@@ -617,38 +617,79 @@ across ~13 PRs.
 
 ## 6. Open decisions for the steward
 
-Before the listed workstreams can land, the following decisions are
-required:
+Status as of 2026-05-08 after WS-D / WS-A / WS-B / WS-C / WS-E / WS-F /
+WS-I (partial) / WS-K / WS-La / WS-G / WS-H / WS-Lc / WS-J + WS-A2 /
+WS-E2 / WS-D2 / WS-H2 follow-ups landed:
 
-1. **WS-B:** Bump `date-released` / `datePublished` to 2026-05-06?
-   *(Recommended yes.)*
-2. **WS-E:** Adopt the runner's `r_4(α²) = α² · ratio` definition in
-   prose? *(Recommended yes.)*
-3. **WS-F:** Propagate schema v0.1.3 across current surfaces, or revert
-   `SCHEMA.md`'s frontmatter/changelog to v0.1.2? *(Recommended: propagate.
-   The v0.1.3 changelog entry already exists at SCHEMA.md:387; the bump
-   is intentional and substantive.)*
-4. **WS-I L5:** Are summary JSONs (`benchmarks/results/DG-N_summary.json`)
-   mutable indexes or immutable verdict artefacts? *(Recommended: treat
-   as immutable; route the DG-1 repatriation note via a new
+1. ~~**WS-B:** Bump `date-released` / `datePublished` to 2026-05-06?~~
+   **CLOSED.** Implemented per recommendation in commit `7e3ef58`
+   (WS-B). Both `CITATION.cff` and `codemeta.json` now read 2026-05-06.
+2. ~~**WS-E:** Adopt the runner's `r_4(α²) = α² · ratio` definition in
+   prose?~~ **CLOSED.** Implemented in `e04345d` (WS-E) and clarified
+   on the remaining surfaces — including the frozen D1 v0.1.2 card
+   YAML, treated as a definitional clarification, not a parameter
+   mutation — in `c4d23b6` (WS-E2). The reviewer-verified residual
+   (Finding #4) is closed.
+3. ~~**WS-F:** Propagate schema v0.1.3 across current surfaces?~~
+   **CLOSED.** Propagated per recommendation in commit `0e1f0fc`
+   (WS-F). DG-1-historical surfaces (DG-1_summary.json,
+   run_dg1_verdict.py) intentionally retained at v0.1.2.
+4. **WS-I L5: STILL OPEN.** Are summary JSONs
+   (`benchmarks/results/DG-N_summary.json`) mutable indexes or
+   immutable verdict artefacts? *(Recommended: treat as immutable;
+   route the DG-1 repatriation note via a new
    `benchmarks/results/README.md` index file — Path L5-b.)*
-5. **WS-K (S1):** Rename `B[45]-conv-registry` cards for filename
-   consistency, or amend `SCHEMA.md` instead? *(Recommended: amend
-   `SCHEMA.md` — draft text supplied in WS-K. Renaming touches ≥10 files
-   and creates supersedure-record ambiguity.)*
-6. **WS-Lb (S6):** SPDX-header policy — add to all source files, or
-   document a decision not to? *(Recommended: add
+5. ~~**WS-K (S1):** Rename `B[45]-conv-registry` cards or amend
+   `SCHEMA.md`?~~ **CLOSED.** Amended `SCHEMA.md` per recommendation
+   in commit `5dbdd47` (WS-K). No file renames; legacy note added to
+   the file-naming section.
+6. **WS-Lb (S6): STILL OPEN.** SPDX-header policy — add to all
+   source files, or document a decision not to? *(Recommended: add
    `# SPDX-License-Identifier: MIT` headers; small one-time cost, large
    clarity payoff for downstream re-users.)*
-7. **WS-Lb (S8):** Python 3.13 support — claim or not? *(Recommended:
-   add a 3.13 row to the CI matrix first; promote to a `pyproject.toml`
-   classifier only after a green run.)*
-8. **WS-Lb (S10):** Stub model files — mark scope-definition via Path
-   S10-a (callable stubs that raise `ScopeDefinitionNotRunnableError`)
-   or Path S10-b (docstring-only)? *(Recommended: Path S10-a — explicit
-   stub APIs that raise when called. Do **not** raise on import; that
-   would break Sphinx autodoc, `from models import *`, and any CI step
-   that imports the `models` package as a whole.)*
+7. **WS-Lb (S8): STILL OPEN.** Python 3.13 support — claim or not?
+   *(Recommended: add a 3.13 row to the CI matrix first; promote to a
+   `pyproject.toml` classifier only after a green run.)*
+8. **WS-Lb (S10): STILL OPEN.** Stub model files — mark
+   scope-definition via Path S10-a (callable stubs that raise
+   `ScopeDefinitionNotRunnableError`) or Path S10-b (docstring-only)?
+   *(Recommended: Path S10-a — explicit stub APIs that raise when
+   called. Do **not** raise on import; that would break Sphinx
+   autodoc, `from models import *`, and any CI step that imports the
+   `models` package as a whole.)*
+
+Additional decision pending (not in the v0.1.0 draft, opened by the
+2026-05-08 steward review):
+
+9. **WS-Lb (S13): STILL OPEN.** Add minimal GitHub templates
+   (`.github/ISSUE_TEMPLATE/bug_report.md`,
+   `.github/ISSUE_TEMPLATE/dg-status-change.md`,
+   `.github/PULL_REQUEST_TEMPLATE.md`)? *(Recommended yes by default;
+   content needs steward design.)*
+
+### Execution log (commits c1f3806..HEAD)
+
+| Commit | Workstream | Notes |
+|---|---|---|
+| `3089b6d` | reviews reorg + work-package draft | round-N subdirs, README index, work package |
+| `5753ef7` | **WS-D** CI quality gates | ruff/black/mypy → 0; 471 pytest |
+| `2775f05` | **WS-A** DG-4 v0.1.1 → v0.1.2 rollforward | live surfaces; tests' D1 path swapped |
+| `7e3ef58` | **WS-B** FAIR metadata refresh | zenodo + codemeta + CITATION.cff |
+| `3261984` | **WS-C** README + examples surface alignment | four notebooks; A4; B4-conv-registry |
+| `e04345d` | **WS-E** r_4 formula reconciliation | runner-canonical α² form on live prose |
+| `0e1f0fc` | **WS-F** schema v0.1.3 propagation | SCHEMA.md, _template, docs-site, index.html |
+| `56dc65b` | **WS-I (L1+M6)** label + link nits | DG-2 PARTIAL label; MEMORY.md broken link |
+| `5dbdd47` | **WS-K** Sphinx release + SCHEMA naming | importlib fallback chain; legacy-naming note |
+| `a36575d` | **WS-La** trivial hygiene | S3, S4, S9, S12, S14 |
+| `028ce24` | **WS-G** Sphinx docstring warnings | 15 → 0; sphinx-build -W passes |
+| `2bb1726` | **WS-H** notebook execution path docs | named-kernel workflow |
+| `ebbba2f` | **WS-Lc** packaging alignment | __all__ + lint-scope note + DG-3 wording |
+| `d63ab33` | **WS-J** hygiene cleanup | transcription supersedure marker; api/_static 2 |
+| `b3ae5ac` | **WS-A2** rebuild served api/ | follow-up to Finding #1 + Observation B |
+| `c4d23b6` | **WS-E2** r_4 on remaining surfaces | follow-up to Finding #4 + Observation A |
+| `3c9bf69` | **WS-D2** notebook ruff coverage | follow-up to Finding #2 |
+| `e5903e4` | **WS-H2** build_docs.sh comment | follow-up to Finding #3 |
+| (this commit) | work-package status update | follow-up to Finding #5 + Observation F |
 
 ## 7. Rollback policy
 
