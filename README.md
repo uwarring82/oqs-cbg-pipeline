@@ -113,7 +113,7 @@ Every layer consumes the layer above unidirectionally. The repository never modi
 | DG | Description | Status |
 |---|---|---|
 | DG-1 | Formula implementation (CL-2026-005 Entries 1, 3, 4 reproduced) | **PASS** (2026-04-30) |
-| DG-2 | Structural identities and displaced-bath registry checks | **STRUCTURAL SUB-CLAIMS PASS** (2026-05-04); literal K_2-K_4 fourth-order recursion pending |
+| DG-2 | Structural identities and displaced-bath registry checks | **PARTIAL**: structural sub-claims PASS (2026-05-04); literal K_2-K_4 fourth-order recursion pending |
 | DG-3 | Cross-method validation (≥2 methods, non-overlapping failures) | RUNNER REACHABLE; failure-asymmetry clearance pending |
 | DG-4 | Failure envelope (cause-labelled, reproducible) | **PASS** at D1 v0.1.2 (2026-05-06; picture-fixed Path B numerical L_4; supersedes the v0.5.0-tagged v0.1.1 verdict that was downgraded on review the same day) |
 | DG-5 | Thermodynamic discriminant (distinguishable observable) | NOT YET ATTEMPTED |
