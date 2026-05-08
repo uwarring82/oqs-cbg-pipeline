@@ -31,7 +31,7 @@ import sys as _sys
 # SyntaxError. pip enforces the floor at install time, but a checkout
 # run with the wrong system interpreter (e.g. anaconda 3.9) bypasses pip;
 # this check covers that path.
-if _sys.version_info < (3, 10):
+if _sys.version_info < (3, 10):  # noqa: UP036 — defense-in-depth for non-pip checkouts
     raise RuntimeError(
         f"oqs-cbg-pipeline requires Python >= 3.10, but is running under "
         f"{_sys.version_info.major}.{_sys.version_info.minor}."
@@ -59,8 +59,8 @@ __steward__ = "U. Warring (Physikalisches Institut, Albert-Ludwigs-Universität 
 # must be present. When imported from a pip-installed wheel without the
 # repository tree, the check is skipped — Sail v0.5 §11 governs the source
 # repository state, not deployed copies. CI enforces the check strictly.
-import os as _os
-import warnings as _warnings
+import os as _os  # noqa: E402 — must follow the protective version-floor check above
+import warnings as _warnings  # noqa: E402 — must follow the protective version-floor check above
 
 _repo_root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
 _docs_dir = _os.path.join(_repo_root, "docs")

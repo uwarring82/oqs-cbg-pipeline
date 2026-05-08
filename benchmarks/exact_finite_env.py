@@ -49,7 +49,6 @@ from scipy.linalg import expm
 
 from cbg.bath_correlations import ohmic_spectral_density
 
-
 # ─── Generic propagation ────────────────────────────────────────────────────
 
 
@@ -138,9 +137,7 @@ def propagate(
     return rho_system_t
 
 
-def _partial_trace_bath(
-    rho_joint: np.ndarray, system_dim: int, bath_dim: int
-) -> np.ndarray:
+def _partial_trace_bath(rho_joint: np.ndarray, system_dim: int, bath_dim: int) -> np.ndarray:
     """Trace out the bath (second tensor factor) of a joint density matrix.
 
     Convention: ``rho_joint`` is indexed as ``rho[i_S * bath_dim + i_B, j_S * bath_dim + j_B]``,
@@ -253,9 +250,7 @@ def _build_spin_joint(
         assert snap_idx is not None  # narrowed by the displacement branch above
         g_c = float(g_modes[snap_idx])
         if g_c <= 0.0:
-            raise ValueError(
-                f"_build_spin_joint: resonant-mode coupling g_c={g_c} non-positive"
-            )
+            raise ValueError(f"_build_spin_joint: resonant-mode coupling g_c={g_c} non-positive")
         alpha_0 = float(displacement["alpha_0"])
         alpha_disp_continuous = alpha_0 * float(
             np.sqrt(ohmic_spectral_density(displacement["omega_disp"], alpha, omega_c))
@@ -281,9 +276,7 @@ def _build_spin_joint(
         initial_system_rho = plus @ plus.conj().T
     initial_system_rho = np.asarray(initial_system_rho, dtype=complex)
     if initial_system_rho.shape != (2, 2):
-        raise ValueError(
-            f"initial_system_rho must be (2, 2); got {initial_system_rho.shape}"
-        )
+        raise ValueError(f"initial_system_rho must be (2, 2); got {initial_system_rho.shape}")
 
     rho_initial = np.kron(initial_system_rho, rho_B)
     return H_total, rho_initial, 2, bath_dim
@@ -292,7 +285,9 @@ def _build_spin_joint(
 # ─── Wrapper validation helpers ─────────────────────────────────────────────
 
 
-def _read_thermal_spec(model_spec: dict[str, Any], func_name: str) -> tuple[float, float, float, float]:
+def _read_thermal_spec(
+    model_spec: dict[str, Any], func_name: str
+) -> tuple[float, float, float, float]:
     """Validate ohmic + thermal + T>0 and return (alpha, omega_c, omega, T).
 
     ``func_name`` is the public wrapper name; it appears in error messages
@@ -300,14 +295,10 @@ def _read_thermal_spec(model_spec: dict[str, Any], func_name: str) -> tuple[floa
     """
     sd = model_spec.get("bath_spectral_density", {})
     if sd.get("family") != "ohmic":
-        raise ValueError(
-            f"{func_name}: requires ohmic spectral density; got {sd.get('family')!r}"
-        )
+        raise ValueError(f"{func_name}: requires ohmic spectral density; got {sd.get('family')!r}")
     bs = model_spec.get("bath_state", {})
     if bs.get("family") != "thermal":
-        raise ValueError(
-            f"{func_name}: requires thermal bath_state; got {bs.get('family')!r}"
-        )
+        raise ValueError(f"{func_name}: requires thermal bath_state; got {bs.get('family')!r}")
     alpha = float(sd["coupling_strength"])
     omega_c = float(sd["cutoff_frequency"])
     temperature = float(bs["temperature"])
@@ -330,14 +321,11 @@ def _read_displaced_spec(
     """
     sd = model_spec.get("bath_spectral_density", {})
     if sd.get("family") != "ohmic":
-        raise ValueError(
-            f"{func_name}: requires ohmic spectral density; got {sd.get('family')!r}"
-        )
+        raise ValueError(f"{func_name}: requires ohmic spectral density; got {sd.get('family')!r}")
     bs = model_spec.get("bath_state", {})
     if bs.get("family") != "coherent_displaced":
         raise ValueError(
-            f"{func_name}: requires coherent_displaced bath_state; "
-            f"got {bs.get('family')!r}"
+            f"{func_name}: requires coherent_displaced bath_state; " f"got {bs.get('family')!r}"
         )
     profile_name = bs.get("displacement_profile")
     if profile_name != "delta-omega_c":

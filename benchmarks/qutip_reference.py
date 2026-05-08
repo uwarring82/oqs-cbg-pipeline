@@ -82,13 +82,15 @@ def reference_propagate(
     """
     import qutip  # local import: keeps the QuTiP surface contained.
 
-    h_str = (model_spec.get("system_hamiltonian") or "").strip()
-    a_str = (model_spec.get("coupling_operator") or "").strip()
+    h_str: str = (model_spec.get("system_hamiltonian") or "").strip()
+    a_str: str = (model_spec.get("coupling_operator") or "").strip()
     bs = model_spec.get("bath_state") or {}
-    bs_family = bs.get("family")
-    profile = bs.get("displacement_profile") if bs_family == "coherent_displaced" else None
+    bs_family: str = bs.get("family") or ""
+    profile: str | None = (
+        bs.get("displacement_profile") if bs_family == "coherent_displaced" else None
+    )
 
-    key = (h_str, a_str, bs_family, profile)
+    key: tuple[str, str, str, str | None] = (h_str, a_str, bs_family, profile)
     handler = _HANDLERS.get(key)
     if handler is None:
         raise NotImplementedError(
@@ -128,9 +130,7 @@ def _propagate_pure_dephasing_thermal(
     # ohmic correlator decays on a timescale ~ 1/omega_c; integrate out to
     # ~ 30 / omega_c to capture the bulk.
     t_int = np.linspace(0.0, 30.0 / omega_c, 2048)
-    re_C = np.array(
-        [bath_two_point_thermal(t, alpha, omega_c, temperature).real for t in t_int]
-    )
+    re_C = np.array([bath_two_point_thermal(t, alpha, omega_c, temperature).real for t in t_int])
     gamma_M = 2.0 * float(integrate.simpson(re_C, t_int))
 
     # QuTiP setup.
@@ -205,9 +205,7 @@ def _propagate_pure_dephasing_displaced_delta_omega_c(
 
     # Markov dephasing rate from cbg (connected stats — unchanged by displacement).
     t_int = np.linspace(0.0, 30.0 / omega_c, 2048)
-    re_C = np.array(
-        [bath_two_point_thermal(t, alpha, omega_c, temperature).real for t in t_int]
-    )
+    re_C = np.array([bath_two_point_thermal(t, alpha, omega_c, temperature).real for t in t_int])
     gamma_M = 2.0 * float(integrate.simpson(re_C, t_int))
 
     # Coherent Lamb-shift amplitude from cbg.cumulants delta-omega_c
@@ -235,9 +233,7 @@ def _propagate_pure_dephasing_displaced_delta_omega_c(
     options.setdefault("atol", 1e-12)
     options.setdefault("rtol", 1e-10)
 
-    result = qutip.mesolve(
-        H_t, rho0, list(t_grid), c_ops=c_ops, args=args, options=options
-    )
+    result = qutip.mesolve(H_t, rho0, list(t_grid), c_ops=c_ops, args=args, options=options)
 
     rho_system_t = np.empty((t_grid.size, 2, 2), dtype=complex)
     for k, state in enumerate(result.states):
@@ -285,9 +281,7 @@ def _propagate_spin_boson_sigma_x_thermal(
 
     # Numerical bath spectrum at ±ω: S(ω) = 2 Re[∫_0^∞ C(t) e^{iωt} dt].
     t_int = np.linspace(0.0, 30.0 / omega_c, 4096)
-    C_int = np.array(
-        [bath_two_point_thermal(t, alpha, omega_c, temperature) for t in t_int]
-    )
+    C_int = np.array([bath_two_point_thermal(t, alpha, omega_c, temperature) for t in t_int])
     re_C = C_int.real
     im_C = C_int.imag
     cos_w = np.cos(omega * t_int)
@@ -378,9 +372,7 @@ def _propagate_spin_boson_sigma_x_displaced_delta_omega_c(
     # Same numerical S(±ω_S) extraction as the σ_x thermal handler
     # (connected stats invariant under displacement).
     t_int = np.linspace(0.0, 30.0 / omega_c, 4096)
-    C_int = np.array(
-        [bath_two_point_thermal(t, alpha, omega_c, temperature) for t in t_int]
-    )
+    C_int = np.array([bath_two_point_thermal(t, alpha, omega_c, temperature) for t in t_int])
     cos_w = np.cos(omega * t_int)
     sin_w = np.sin(omega * t_int)
     gamma_relax = 2.0 * float(integrate.simpson(C_int.real * cos_w - C_int.imag * sin_w, t_int))
@@ -419,9 +411,7 @@ def _propagate_spin_boson_sigma_x_displaced_delta_omega_c(
     options.setdefault("atol", 1e-12)
     options.setdefault("rtol", 1e-10)
 
-    result = qutip.mesolve(
-        H_t, rho0, list(t_grid), c_ops=c_ops, args=args, options=options
-    )
+    result = qutip.mesolve(H_t, rho0, list(t_grid), c_ops=c_ops, args=args, options=options)
 
     rho_system_t = np.empty((t_grid.size, 2, 2), dtype=complex)
     for k, state in enumerate(result.states):

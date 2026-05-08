@@ -28,7 +28,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 from scipy.linalg import expm
@@ -206,7 +206,7 @@ def finite_difference_time_derivative(values: np.ndarray, t_grid: Sequence[float
     times = _as_time_grid(t_grid)
     if array.shape[0] != times.size:
         raise ValueError(f"values axis 0 has length {array.shape[0]}, but t_grid has {times.size}")
-    edge_order = 2 if times.size >= 3 else 1
+    edge_order: Literal[1, 2] = 2 if times.size >= 3 else 1
     return np.gradient(array, times, axis=0, edge_order=edge_order)
 
 
@@ -369,7 +369,9 @@ def fit_even_alpha_series_from_exact_env(
                 builder_kwargs=builder_kwargs,
             )
         )
-    return fit_even_alpha_series(alphas, np.asarray(maps), orders=orders, baseline=baseline)
+    return fit_even_alpha_series(
+        alphas.tolist(), np.asarray(maps), orders=orders, baseline=baseline
+    )
 
 
 @dataclass(frozen=True)
@@ -505,12 +507,8 @@ def path_b_dissipator_norm_coefficients(
     # the raw exact_finite_env builders; the order-4 extractor below
     # assumes Lambda_0 = id (i.e. the interaction picture), so we conjugate
     # by Ad U^dagger(t) at each grid time before extraction.
-    Lambda2_IP = transform_to_interaction_picture(
-        fit.coefficients[2], t_grid, system_hamiltonian
-    )
-    Lambda4_IP = transform_to_interaction_picture(
-        fit.coefficients[4], t_grid, system_hamiltonian
-    )
+    Lambda2_IP = transform_to_interaction_picture(fit.coefficients[2], t_grid, system_hamiltonian)
+    Lambda4_IP = transform_to_interaction_picture(fit.coefficients[4], t_grid, system_hamiltonian)
     extraction = extract_tcl_generators_order4(Lambda2_IP, Lambda4_IP, t_grid)
     l2_per_t = _liouville_dissipator_frobenius_norms(extraction.L2, system_dim)
     l4_per_t = _liouville_dissipator_frobenius_norms(extraction.L4, system_dim)
@@ -523,9 +521,7 @@ def path_b_dissipator_norm_coefficients(
     )
 
 
-def _liouville_dissipator_frobenius_norms(
-    L_array: np.ndarray, system_dim: int
-) -> np.ndarray:
+def _liouville_dissipator_frobenius_norms(L_array: np.ndarray, system_dim: int) -> np.ndarray:
     """For each t in L_array shape (n_t, d^2, d^2), compute ||L^dis||_F.
 
     L^dis := L + i [K, .] under the repository convention
@@ -536,14 +532,10 @@ def _liouville_dissipator_frobenius_norms(
     """
     L_array = np.asarray(L_array, dtype=complex)
     if L_array.ndim != 3:
-        raise ValueError(
-            f"L_array must have shape (n_t, d^2, d^2); got {L_array.shape}"
-        )
+        raise ValueError(f"L_array must have shape (n_t, d^2, d^2); got {L_array.shape}")
     n_t, d_sq_a, d_sq_b = L_array.shape
     if d_sq_a != d_sq_b or d_sq_a != system_dim * system_dim:
-        raise ValueError(
-            f"L_array shape {L_array.shape} inconsistent with system_dim={system_dim}"
-        )
+        raise ValueError(f"L_array shape {L_array.shape} inconsistent with system_dim={system_dim}")
 
     d = system_dim
     basis = matrix_unit_basis(d)

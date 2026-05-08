@@ -33,8 +33,8 @@ release = "v0.2.0+dev"  # last tag is v0.2.0 (DG-1 PASS); commits past that carr
 extensions = [
     "myst_parser",
     "sphinx.ext.autodoc",
-    "sphinx.ext.napoleon",     # Google / NumPy docstring style
-    "sphinx.ext.viewcode",     # cross-link API to highlighted source
+    "sphinx.ext.napoleon",  # Google / NumPy docstring style
+    "sphinx.ext.viewcode",  # cross-link API to highlighted source
     "sphinx.ext.intersphinx",
 ]
 

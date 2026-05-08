@@ -42,7 +42,7 @@ from collections.abc import Callable, Mapping
 from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, NoReturn
 
 import numpy as np
 import yaml
@@ -1357,7 +1357,7 @@ def _refuse_scope_definition(card: BenchmarkCard) -> None:
     )
 
 
-def _refuse_dg4_sweep(card: BenchmarkCard) -> None:
+def _refuse_dg4_sweep(card: BenchmarkCard) -> NoReturn:
     """Raise a clear DG4SweepRunnerNotImplementedError describing the gap.
 
     The DG-4 sweep runner is not yet implemented. The error message names
@@ -1405,8 +1405,18 @@ _DG4_PATH_B_DEFAULTS: dict[str, Any] = {
 # (Phase B.4 _quadrature_kwargs); omega_c is a model-spec mutation at
 # bath_spectral_density.cutoff_frequency (NOT routed through the allow-list).
 _DG4_REPRO_PERTURBATIONS: tuple[dict[str, Any], ...] = (
-    {"name": "upper_cutoff_factor=20", "kind": "quadrature", "key": "upper_cutoff_factor", "value": 20.0},
-    {"name": "upper_cutoff_factor=40", "kind": "quadrature", "key": "upper_cutoff_factor", "value": 40.0},
+    {
+        "name": "upper_cutoff_factor=20",
+        "kind": "quadrature",
+        "key": "upper_cutoff_factor",
+        "value": 20.0,
+    },
+    {
+        "name": "upper_cutoff_factor=40",
+        "kind": "quadrature",
+        "key": "upper_cutoff_factor",
+        "value": 40.0,
+    },
     {"name": "omega_c=9.0", "kind": "model_spec", "key": "cutoff_frequency", "value": 9.0},
     {"name": "omega_c=11.0", "kind": "model_spec", "key": "cutoff_frequency", "value": 11.0},
 )
@@ -1472,7 +1482,7 @@ def _run_dg4_sweep(card: BenchmarkCard) -> CardResult:
 
     # 2. Per-alpha baseline r_4.
     alpha_sq_grid = _build_dg4_sweep_grid(sweep)
-    per_alpha = []
+    per_alpha: list[dict[str, Any]] = []
     for alpha_sq in alpha_sq_grid:
         r_4 = _scaled_ratio(alpha_sq, baseline.l4_avg, baseline.l2_avg)
         per_alpha.append(
@@ -1486,8 +1496,7 @@ def _run_dg4_sweep(card: BenchmarkCard) -> CardResult:
 
     # 3. Reproducibility re-runs (only if at least one alpha is failing-candidate).
     failing_indices = [
-        i for i, entry in enumerate(per_alpha)
-        if _is_failing_candidate(entry["r_4_baseline"])
+        i for i, entry in enumerate(per_alpha) if _is_failing_candidate(entry["r_4_baseline"])
     ]
     perturbed_coeffs: dict[str, Any] = {}
     if failing_indices:
@@ -1549,7 +1558,12 @@ def _run_dg4_sweep(card: BenchmarkCard) -> CardResult:
         TestCaseResult(
             name="dg4_failure_envelope_sweep",
             passed=has_convergence_failure,
-            error=float(max((e["r_4_baseline"] for e in per_alpha if np.isfinite(e["r_4_baseline"])), default=0.0)),
+            error=float(
+                max(
+                    (e["r_4_baseline"] for e in per_alpha if np.isfinite(e["r_4_baseline"])),
+                    default=0.0,
+                )
+            ),
             threshold=card.threshold,
             notes=notes,
         )
@@ -1603,9 +1617,15 @@ def _build_dg4_sweep_data(
     so the verdict's evidence is reproducibility-complete from the
     artefact alone.
     """
-    counts = {c: 0 for c in (
-        "passing", "convergence_failure", "truncation_artefact", "metric-undefined",
-    )}
+    counts = {
+        c: 0
+        for c in (
+            "passing",
+            "convergence_failure",
+            "truncation_artefact",
+            "metric-undefined",
+        )
+    }
     for entry in per_alpha:
         cls = entry["classification"]
         counts[cls] = counts.get(cls, 0) + 1
@@ -1637,14 +1657,10 @@ def _build_dg4_sweep_data(
             {
                 "alpha_sq": float(entry["alpha_sq"]),
                 "r_4_baseline": (
-                    float(entry["r_4_baseline"])
-                    if np.isfinite(entry["r_4_baseline"])
-                    else None
+                    float(entry["r_4_baseline"]) if np.isfinite(entry["r_4_baseline"]) else None
                 ),
                 "classification": entry["classification"],
-                "perturbed_r_4": {
-                    name: float(value) for name, value in entry["perturbed"].items()
-                },
+                "perturbed_r_4": {name: float(value) for name, value in entry["perturbed"].items()},
             }
             for entry in per_alpha
         ],
@@ -1716,11 +1732,12 @@ def _path_b_evaluate(
     if "upper_cutoff_factor" in quadrature_kwargs:
         builder_kwargs["omega_max_factor"] = float(quadrature_kwargs["upper_cutoff_factor"])
 
+    alpha_values = list(path_b_params["alpha_values"])
     return numerical_tcl_extraction.path_b_dissipator_norm_coefficients(
         exact_finite_env.build_spin_boson_sigma_x_thermal_total,
         spec_with_quad,
-        t_grid,
-        path_b_params["alpha_values"],
+        t_grid.tolist(),
+        alpha_values,
         builder_kwargs=builder_kwargs,
         system_hamiltonian=H_S,
     )
@@ -1769,9 +1786,7 @@ def _apply_dg4_perturbation(
         kwargs = dict(base_quadrature_kwargs)
         kwargs[perturbation["key"]] = perturbation["value"]
         return deepcopy(base_model_spec), kwargs
-    raise ValueError(
-        f"_apply_dg4_perturbation: unknown perturbation kind {perturbation['kind']!r}"
-    )
+    raise ValueError(f"_apply_dg4_perturbation: unknown perturbation kind {perturbation['kind']!r}")
 
 
 def _interpolate_alpha_crit(per_alpha: list[dict[str, Any]]) -> float | None:
@@ -1812,7 +1827,7 @@ def _format_dg4_sweep_notes(
     """Format result.notes string for a DG-4 sweep run."""
     lines = [
         f"DG-4 sweep runner: card {card.card_id} {card.version}.",
-        f"L_4 source: Path B numerical Richardson extraction.",
+        "L_4 source: Path B numerical Richardson extraction.",
         f"Path B params: alpha_values={path_b_params['alpha_values']}, "
         f"n_bath_modes={path_b_params['n_bath_modes']}, "
         f"n_levels_per_mode={path_b_params['n_levels_per_mode']}.",
@@ -1823,11 +1838,19 @@ def _format_dg4_sweep_notes(
     ]
     if alpha_crit is not None:
         lines.append(f"alpha_crit (interpolated, log-linear): {alpha_crit:.4e}.")
-    classifications = {c: 0 for c in (
-        "passing", "convergence_failure", "truncation_artefact", "metric-undefined",
-    )}
+    classifications = {
+        c: 0
+        for c in (
+            "passing",
+            "convergence_failure",
+            "truncation_artefact",
+            "metric-undefined",
+        )
+    }
     for entry in per_alpha:
-        classifications[entry["classification"]] = classifications.get(entry["classification"], 0) + 1
+        classifications[entry["classification"]] = (
+            classifications.get(entry["classification"], 0) + 1
+        )
     lines.append(
         "Per-alpha classifications: "
         + ", ".join(f"{c}={n}" for c, n in classifications.items() if n > 0)
@@ -2707,9 +2730,7 @@ def write_dg4_result_json(
     payload: dict[str, Any] = {
         "card_id": card.card_id,
         "card_version": card.version,
-        "card_path": (
-            str(card.source_path) if getattr(card, "source_path", None) else None
-        ),
+        "card_path": (str(card.source_path) if getattr(card, "source_path", None) else None),
         "schema_version": card.schema_version,
         "ledger_entry": card.ledger_entry,
         "verdict": run_result.verdict,
@@ -2750,7 +2771,9 @@ def write_dg4_result_json(
 
 def _summarise_frozen_sweep(card: BenchmarkCard) -> dict[str, Any]:
     """Extract the frozen sweep block summary for the result JSON."""
-    sweep = card.frozen_parameters.get("sweep") if isinstance(card.frozen_parameters, dict) else None
+    sweep = (
+        card.frozen_parameters.get("sweep") if isinstance(card.frozen_parameters, dict) else None
+    )
     if not isinstance(sweep, dict):
         return {}
     sweep_range = sweep.get("sweep_range", {})

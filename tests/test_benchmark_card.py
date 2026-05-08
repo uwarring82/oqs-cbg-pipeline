@@ -1073,9 +1073,7 @@ def test_dg4_path_b_upper_cutoff_factor_is_operational():
         "key": "upper_cutoff_factor",
         "value": 20.0,
     }
-    perturbed_spec, perturbed_quad = bc._apply_dg4_perturbation(
-        base_model, base_quad, perturbation
-    )
+    perturbed_spec, perturbed_quad = bc._apply_dg4_perturbation(base_model, base_quad, perturbation)
     perturbed = bc._path_b_evaluate(perturbed_spec, grid_times, path_b_params, perturbed_quad)
 
     # The l_2 and l_4 coefficients must differ — a no-op perturbation would
@@ -1087,7 +1085,7 @@ def test_dg4_path_b_upper_cutoff_factor_is_operational():
     rel_l4 = abs(pert_l4 - base_l4) / max(abs(base_l4), 1e-300)
     assert max(rel_l2, rel_l4) > 1e-2, (
         "upper_cutoff_factor perturbation must produce a non-trivial change "
-        "in Path B coefficients; got rel_l2={:.3e}, rel_l4={:.3e}".format(rel_l2, rel_l4)
+        f"in Path B coefficients; got rel_l2={rel_l2:.3e}, rel_l4={rel_l4:.3e}"
     )
 
 

@@ -176,9 +176,7 @@ def test_fit_even_alpha_series_from_exact_env_squares_amplitude_for_coupling_str
 
 def _ad_unitary_per_t(H_S: np.ndarray, t_grid: np.ndarray) -> np.ndarray:
     """Return Ad U(t) at each t as a stack of Liouville matrices."""
-    return np.array(
-        [np.kron(expm(-1j * H_S * t), expm(-1j * H_S * t).conj()) for t in t_grid]
-    )
+    return np.array([np.kron(expm(-1j * H_S * t), expm(-1j * H_S * t).conj()) for t in t_grid])
 
 
 def test_adjoint_unitary_superoperator_acts_as_conjugation_in_row_major():
@@ -240,12 +238,8 @@ def test_picture_aware_extraction_recovers_truth_under_nontrivial_H_S():
     rng = np.random.default_rng(7)
 
     # Constant-in-t synthetic L_2, L_4 in the interaction picture.
-    L2_IP = (
-        rng.standard_normal((d * d, d * d)) + 1j * rng.standard_normal((d * d, d * d))
-    ) * 0.1
-    L4_IP = (
-        rng.standard_normal((d * d, d * d)) + 1j * rng.standard_normal((d * d, d * d))
-    ) * 0.05
+    L2_IP = (rng.standard_normal((d * d, d * d)) + 1j * rng.standard_normal((d * d, d * d))) * 0.1
+    L4_IP = (rng.standard_normal((d * d, d * d)) + 1j * rng.standard_normal((d * d, d * d))) * 0.05
 
     # IP map coefficients consistent with constant L_n per the order-4 expansion:
     # Lambda_t = exp(t L) ≈ id + t (L_2 alpha² + L_4 alpha⁴) + (1/2) t² (L_2 alpha²)² + ...
@@ -279,12 +273,8 @@ def test_buggy_direct_schrodinger_extraction_disagrees_with_truth():
     t_grid = np.linspace(0.0, 1.0, 21)
     rng = np.random.default_rng(11)
 
-    L2_IP = (
-        rng.standard_normal((d * d, d * d)) + 1j * rng.standard_normal((d * d, d * d))
-    ) * 0.1
-    L4_IP = (
-        rng.standard_normal((d * d, d * d)) + 1j * rng.standard_normal((d * d, d * d))
-    ) * 0.05
+    L2_IP = (rng.standard_normal((d * d, d * d)) + 1j * rng.standard_normal((d * d, d * d))) * 0.1
+    L4_IP = (rng.standard_normal((d * d, d * d)) + 1j * rng.standard_normal((d * d, d * d))) * 0.05
     Lambda2_IP = np.array([t * L2_IP for t in t_grid])
     Lambda4_IP = np.array([t * L4_IP + 0.5 * t * t * (L2_IP @ L2_IP) for t in t_grid])
 

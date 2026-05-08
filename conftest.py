@@ -18,7 +18,7 @@ import sys
 
 
 def pytest_configure(config):  # noqa: ARG001
-    if sys.version_info < (3, 10):
+    if sys.version_info < (3, 10):  # noqa: UP036 — defense-in-depth for non-pip checkouts
         v = sys.version_info
         raise RuntimeError(
             f"oqs-cbg-pipeline tests require Python >= 3.10, but pytest is "
