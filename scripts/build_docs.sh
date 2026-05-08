@@ -51,16 +51,23 @@ rm -rf "${OUTPUT_DIR}"
 # The intro page (docs-site/examples.md) links to these as siblings; their
 # outputs reflect the committed-on-disk notebook state (some notebooks are
 # checked in without outputs to keep diffs clean — re-execute locally with
-# `jupyter nbconvert --to notebook --execute --inplace examples/<nb>.ipynb`
-# before rebuilding the docs to populate them).
+# `python -m jupyter nbconvert --to notebook --execute --inplace
+# --ExecutePreprocessor.kernel_name=oqs-cbg examples/<nb>.ipynb` before
+# rebuilding the docs to populate them; see examples/README.md for the
+# kernel-registration step).
 EXAMPLES_SRC="${REPO_ROOT}/examples"
 EXAMPLES_OUT="${OUTPUT_DIR}/examples"
 if compgen -G "${EXAMPLES_SRC}/*.ipynb" > /dev/null; then
     echo ">>> Rendering example notebooks -> ${EXAMPLES_OUT}/ ..."
     mkdir -p "${EXAMPLES_OUT}"
     # Use `python -m jupyter` so the active venv interpreter is used for any
-    # in-process plumbing (avoids the kernelspec issue Codex flagged in
-    # round-3 audit M4 where bare `jupyter` inherited the wrong `python`).
+    # in-process plumbing. The render step does NOT execute the notebooks
+    # (no --execute flag): notebooks are committed with whatever outputs
+    # they have, and re-execution is a separate, explicit step (see
+    # examples/README.md and the kernel-registration step it documents).
+    # This avoids the kernelspec resolution issue where bare `jupyter`
+    # falls through to whatever kernelspec a contributor's local Jupyter
+    # has registered.
     "${VENV}/bin/python" -m jupyter nbconvert \
         --to html \
         --output-dir "${EXAMPLES_OUT}" \
