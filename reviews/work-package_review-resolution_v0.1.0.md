@@ -634,29 +634,37 @@ WS-E2 / WS-D2 / WS-H2 follow-ups landed:
    **CLOSED.** Propagated per recommendation in commit `0e1f0fc`
    (WS-F). DG-1-historical surfaces (DG-1_summary.json,
    run_dg1_verdict.py) intentionally retained at v0.1.2.
-4. **WS-I L5: STILL OPEN.** Are summary JSONs
-   (`benchmarks/results/DG-N_summary.json`) mutable indexes or
-   immutable verdict artefacts? *(Recommended: treat as immutable;
-   route the DG-1 repatriation note via a new
-   `benchmarks/results/README.md` index file — Path L5-b.)*
+4. ~~**WS-I L5:** Summary-JSON mutability?~~ **CLOSED.** Adopted
+   Path L5-b in commit `9f686ba`: new `benchmarks/results/README.md`
+   carries the mutable index + DG-1 repatriation note;
+   `DG-1_summary.json` retained byte-identical (immutable per-card
+   verdict artefacts; mutable DG-level aggregates).
 5. ~~**WS-K (S1):** Rename `B[45]-conv-registry` cards or amend
    `SCHEMA.md`?~~ **CLOSED.** Amended `SCHEMA.md` per recommendation
    in commit `5dbdd47` (WS-K). No file renames; legacy note added to
    the file-naming section.
-6. **WS-Lb (S6): STILL OPEN.** SPDX-header policy — add to all
-   source files, or document a decision not to? *(Recommended: add
-   `# SPDX-License-Identifier: MIT` headers; small one-time cost, large
-   clarity payoff for downstream re-users.)*
-7. **WS-Lb (S8): STILL OPEN.** Python 3.13 support — claim or not?
-   *(Recommended: add a 3.13 row to the CI matrix first; promote to a
-   `pyproject.toml` classifier only after a green run.)*
-8. **WS-Lb (S10): STILL OPEN.** Stub model files — mark
-   scope-definition via Path S10-a (callable stubs that raise
-   `ScopeDefinitionNotRunnableError`) or Path S10-b (docstring-only)?
-   *(Recommended: Path S10-a — explicit stub APIs that raise when
-   called. Do **not** raise on import; that would break Sphinx
-   autodoc, `from models import *`, and any CI step that imports the
-   `models` package as a whole.)*
+6. ~~**WS-Lb (S6):** SPDX-header policy?~~ **CLOSED.** Implemented
+   per recommendation in commit `509c3c1`:
+   `# SPDX-License-Identifier: MIT` added as first line of every
+   tracked Python file (41 files: `cbg/`, `models/`, `numerical/`,
+   `benchmarks/`, `reporting/`, `tests/`, `docs-site/conf.py`,
+   `scripts/`, `conftest.py`).
+7. ~~**WS-Lb (S8):** Python 3.13 support?~~ **CLOSED.** Two-step
+   implementation per recommendation: commit `a78b203` added the 3.13
+   row to the CI `python-tests` matrix; commit `cf7d66c` added the
+   `Programming Language :: Python :: 3.13` classifier to
+   `pyproject.toml` after local 473 pytest under Python 3.13.7
+   confirmed green. The `code-quality` job (ruff/black/mypy) stays
+   pinned to 3.12 by design.
+8. ~~**WS-Lb (S10):** Stub model files — Path S10-a or S10-b?~~
+   **CLOSED.** Adopted Path S10-a in commit `733e3ff`: six callable
+   stub functions in `models/fano_anderson.py` +
+   `models/jaynes_cummings.py` (`hamiltonian`, `coupling_operator`,
+   `system_arrays_from_spec` × 2) that raise
+   `ScopeDefinitionNotRunnableError` when called, not on import.
+   Lazy error-class import avoids the `models → reporting`
+   dependency cycle. Two new `tests/test_imports.py` tests pin the
+   contract (pytest 471 → 473).
 
 Additional decision opened by the 2026-05-08 steward review and now
 closed:
@@ -677,7 +685,7 @@ The five §6 items still-open as of 2026-05-08 — L5, S6, S8, S10, S13
 |---|---|---|---|
 | `9f686ba` | **L5** | L5-b (immutable summaries; new `benchmarks/results/README.md` index) | DG-1_summary.json untouched; new README documents the mutability discipline for the directory + records the DG-1 → DG-2 sub-claim repatriation. |
 | `a78b203` | **S8 step 1** | CI matrix expanded | `.github/workflows/tests.yml` `python-tests` job now also runs on 3.13; local 471 (now 473) pytest under 3.13.7 confirmed pre-commit. |
-| (this commit) | **S8 step 2** | `pyproject.toml` classifier added | `Programming Language :: Python :: 3.13` row added to the classifier list. Local 473 pytest under 3.13.7 still passes; ruff/black/mypy/sphinx -W still green. If CI flags 3.13 on next push, both this commit and `a78b203` revert in one rollback step. |
+| `cf7d66c` | **S8 step 2** | `pyproject.toml` classifier added | `Programming Language :: Python :: 3.13` row added to the classifier list. Local 473 pytest under 3.13.7 still passes; ruff/black/mypy/sphinx -W still green. If CI flags 3.13 on next push, both this commit and `a78b203` revert in one rollback step. |
 | `733e3ff` | **S10** | Path S10-a (callable stubs, lazy import of error class) | Six stub functions in `models/fano_anderson.py` + `models/jaynes_cummings.py`. Two new tests (`test_scope_definition_stub_modules_import_cleanly`, `test_scope_definition_stubs_raise_specific_error`) pin the contract: imports succeed, calls raise `ScopeDefinitionNotRunnableError`. pytest 471 → 473. |
 | `509c3c1` | **S6** | All `*.py` get `# SPDX-License-Identifier: MIT` | 41 files touched; ruff/black/mypy/sphinx -W all green. |
 | `80971e0` | **S13** | Three GitHub templates | issue templates encode the cards-first / validity-envelope / DG-cause-label discipline; PR template encodes the quality-gate evidence checklist (the five gates WS-D established). |
