@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-11
 **Type:** discussion-outcome (scoping; not a verdict)
-**Triggering commit:** (to be populated on commit)
+**Triggering commit:** e627e53
 **Triggering evidence:**
 - Companion entry: [`2026-05-11_review-resolution-execution.md`](2026-05-11_review-resolution-execution.md) (the just-completed 19-commit review-resolution sweep this scoping entry is the forward-looking complement to).
 - Work package's §6 still-open decisions: [`reviews/work-package_review-resolution_v0.1.0.md`](../reviews/work-package_review-resolution_v0.1.0.md#L618).
