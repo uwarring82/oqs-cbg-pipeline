@@ -52,7 +52,7 @@ This index is the canonical source of truth for *current* plan status. Updating 
 |---|---|---|---|---|
 | [DG-1 Work Plan](dg-1-work-plan_v0.1.4.md) | v0.1.4 | verdict-reached | **Verdict: PASS** (2026-04-30; tag `v0.2.0`) | Sail v0.5 §9 (DG-1); CL-2026-005 v0.4 Entries 1, 3, 4 (1.B.3, 3.B.3, 4.B.2 deferred to DG-2 per v0.1.4 §1.1 operationalisability carve-out). See [logbook/2026-04-30_dg-1-pass.md](../logbook/2026-04-30_dg-1-pass.md). |
 | [DG-3 Work Plan](dg-3-work-plan_v0.1.0.md) | v0.1.0 | draft | Phase A: cards frozen; Phase B–D pending | Sail v0.5 §9 (DG-3); baseline pair implementation + cross-method runner wiring. Cards C1, C2 frozen. |
-| [DG-4 Work Plan](dg-4-work-plan_v0.1.4.md) | v0.1.4 | verdict-reached | **Verdict: PASS** via D1 v0.1.2 picture-fixed Path B numerical L_4 run (2026-05-06); supersedes the v0.1.1 PASS verdict (tagged `v0.5.0`) downgraded on review the same day. Analytic B.2/B.3 (n=4) Path A still pending. | Sail v0.5 §9 (DG-4); CL-2026-005 v0.4 Entry 2. v0.1.4 supersedes v0.1.3 with two corrections surfaced by Phase B.3 review: (1) the metric becomes the **parity-aware even-order ratio** `r_4 = ‖L_4^dis‖ / ‖L_2^dis‖`, since Phase B.3 (commit `b699950`) confirmed `‖L_3^dis‖ = 0` for σ_x thermal; (2) the `omega_c` reproducibility perturbation is encoded by mutating `frozen_parameters.model.bath_spectral_density.cutoff_frequency` directly, NOT via the `numerical.quadrature` allow-list. D1 v0.1.2's full frozen run (audit-complete result JSON at [`benchmarks/results/D1_failure-envelope-convergence_v0.1.2_result.json`](../benchmarks/results/D1_failure-envelope-convergence_v0.1.2_result.json)) classified all 20 `coupling_strength` sweep points as `convergence_failure` with stability across all four reproducibility perturbations now operational (`upper_cutoff_factor ∈ {20, 40}` via the runner threading `omega_max_factor`, and `omega_c ∈ {9, 11}`). |
+| [DG-4 Work Plan](dg-4-work-plan_v0.1.5.md) | v0.1.5 | draft follow-up | **Verdict remains PASS** via D1 v0.1.2 picture-fixed Path B numerical L_4 run (2026-05-06). v0.1.5 scaffolds Tier-2.B (DG-4 Path A): Companion Sec. IV analytic Path A L_4 transcription, core implementation, and Path A / Path B cross-validation. | Sail v0.5 §9 (DG-4); CL-2026-005 v0.4 Entry 2. v0.1.5 supersedes v0.1.4 for post-verdict Path A follow-up planning only; it does not reopen D1, mutate frozen card parameters, or change the live DG-4 verdict. The D1 v0.1.2 audit-complete Path B result remains [`benchmarks/results/D1_failure-envelope-convergence_v0.1.2_result.json`](../benchmarks/results/D1_failure-envelope-convergence_v0.1.2_result.json). |
 
 ### Auxiliary route plans
 
@@ -72,7 +72,8 @@ This index is the canonical source of truth for *current* plan status. Updating 
 | [DG-4 Work Plan v0.1.1](dg-4-work-plan_v0.1.1.md) | v0.1.1 | [v0.1.2](dg-4-work-plan_v0.1.2.md) | 2026-05-05 |
 | [DG-4 Work Plan v0.1.2](dg-4-work-plan_v0.1.2.md) | v0.1.2 | [v0.1.3](dg-4-work-plan_v0.1.3.md) | 2026-05-06 |
 | [DG-4 Work Plan v0.1.3](dg-4-work-plan_v0.1.3.md) | v0.1.3 | [v0.1.4](dg-4-work-plan_v0.1.4.md) | 2026-05-06 |
+| [DG-4 Work Plan v0.1.4](dg-4-work-plan_v0.1.4.md) | v0.1.4 | [v0.1.5](dg-4-work-plan_v0.1.5.md) | 2026-05-11 |
 
 ---
 
-*Last updated: 2026-05-06 (DG-4 verdict reached: D1 v0.1.2 PASS via picture-fixed Path B numerical L_4, superseding the v0.1.1 PASS verdict downgraded on review the same day; active DG-4 work plan remains v0.1.4 for Path A follow-up). CC-BY-4.0 (see ../LICENSE-docs).*
+*Last updated: 2026-05-11 (DG-4 verdict remains D1 v0.1.2 PASS via picture-fixed Path B numerical L_4; active DG-4 follow-up plan is v0.1.5, a draft scaffold for Path A analytic L_4 cross-validation). CC-BY-4.0 (see ../LICENSE-docs).*

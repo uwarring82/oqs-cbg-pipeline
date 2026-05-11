@@ -8,6 +8,7 @@ anchor_ledger: ledger/CL-2026-005_v0.4.md Entry 2 (recursive-series convergence;
 anchor_envelope: docs/validity_envelope.md DG-4 row (SCOPED — Phase B partial → target PASS)
 status: draft
 supersedes: dg-4-work-plan_v0.1.3.md
+superseded_by: dg-4-work-plan_v0.1.5.md
 license: CC-BY-4.0 (LICENSE-docs)
 ---
 
