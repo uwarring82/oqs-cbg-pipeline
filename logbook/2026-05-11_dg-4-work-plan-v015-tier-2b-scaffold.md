@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-11
 **Type:** discussion-outcome (plan revision; not a verdict)
-**Triggering commit:** (to be populated on commit)
+**Triggering commit:** 33a97d7
 **Triggering evidence:**
 - New plan: [`plans/dg-4-work-plan_v0.1.5.md`](../plans/dg-4-work-plan_v0.1.5.md) (steward-authored Tier-2.B Path A scaffold).
 - Predecessor plan: [`plans/dg-4-work-plan_v0.1.4.md`](../plans/dg-4-work-plan_v0.1.4.md) gained the permitted `superseded_by:` front-matter annotation (no other content change).
