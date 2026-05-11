@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Behaviour tests for cbg.displacement_profiles (DG-2 Council Act 2 cleared).
 
 Verifies the four Council-cleared displacement-mode profile constructors and

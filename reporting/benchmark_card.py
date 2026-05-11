@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 reporting.benchmark_card — Loader, validator, runner, and result-block writer.
 

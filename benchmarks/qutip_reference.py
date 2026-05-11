@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 benchmarks.qutip_reference — QuTiP-based master-equation reference.
 

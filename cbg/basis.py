@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 cbg.basis — Hilbert–Schmidt orthonormal operator bases.
 

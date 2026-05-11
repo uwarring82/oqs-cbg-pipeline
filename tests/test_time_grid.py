@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Behaviour tests for numerical.time_grid (DG-1 Phase C.5).
 
 Covers:

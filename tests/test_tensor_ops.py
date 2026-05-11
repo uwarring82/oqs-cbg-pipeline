@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Behaviour tests for numerical.tensor_ops (DG-1 Phase C C.2).
 
 Verifies the operator-space linear-algebra primitives used by the K(t)

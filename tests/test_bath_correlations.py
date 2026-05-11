@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Behaviour tests for cbg.bath_correlations (DG-1 Phase C.6).
 
 Covers:

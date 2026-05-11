@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 cbg.displacement_profiles — Council-cleared displacement-mode profiles.
 

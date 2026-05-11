@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Behaviour tests for benchmarks.exact_finite_env.
 
 Phase B (DG-3 work plan v0.1.0): exercises the generic ``propagate``

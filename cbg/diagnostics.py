@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 cbg.diagnostics — Convergence and structural diagnostics.
 

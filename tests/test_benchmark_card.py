@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Behaviour tests for reporting.benchmark_card (DG-1 Phase C.4).
 
 Covers:

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 models — Microscopic open-system models served as benchmark targets.
 

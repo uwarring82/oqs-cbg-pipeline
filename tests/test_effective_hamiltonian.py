@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Behaviour tests for cbg.effective_hamiltonian (DG-1 Phase C C.3).
 
 Verifies the operational K-from-L computation per Letter Eq. (6),

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 test_imports — Smoke tests for repository structural compliance.
 

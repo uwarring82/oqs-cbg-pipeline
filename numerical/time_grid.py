@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 numerical.time_grid — Time-grid construction and time-ordered integration.
 

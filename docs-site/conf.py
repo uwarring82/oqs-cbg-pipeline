@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Sphinx configuration for the oqs-cbg-pipeline API documentation site.
 
 This config builds an HTML site under ``api/`` at the repo root, which is

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 cbg.cumulants — Generalised cumulants D̄(τ_1^k, s_1^{n-k}) for the TCL recursion.
 

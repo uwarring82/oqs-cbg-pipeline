@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Behaviour tests for cbg.cumulants (DG-1 Phase C.7; DG-4 Phase B.1).
 
 Covers the canonical all-left time-ordered cumulants D̄_1 and D̄_2 used

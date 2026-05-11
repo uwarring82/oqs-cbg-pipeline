@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 models.spin_boson_sigma_x — Unbiased spin-boson, A = sigma_x, thermal bath.
 

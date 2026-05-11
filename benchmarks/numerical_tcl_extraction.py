@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 benchmarks.numerical_tcl_extraction -- DG-4 Path B helpers.
 

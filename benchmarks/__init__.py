@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 benchmarks — Cross-method reference implementations.
 

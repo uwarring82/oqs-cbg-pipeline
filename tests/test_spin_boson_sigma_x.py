@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Behaviour tests for models.spin_boson_sigma_x (DG-1 Phase C.10)."""
 
 from __future__ import annotations

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 cbg — Numerical implementation of the Colla–Breuer–Gasbarri minimal-dissipation
 effective-Hamiltonian construction.

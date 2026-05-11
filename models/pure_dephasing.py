@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 models.pure_dephasing — Spin under pure dephasing, A = sigma_z.
 

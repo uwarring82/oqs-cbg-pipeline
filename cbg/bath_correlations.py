@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 cbg.bath_correlations — Bath spectral densities and connected n-point bath
 correlation functions for the CBG construction.

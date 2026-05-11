@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Tests for DG-4 Path B numerical TCL extraction helpers."""
 
 from __future__ import annotations

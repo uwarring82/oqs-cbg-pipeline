@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 cbg.tcl_recursion — Recursive construction of the TCL generator L_t.
 

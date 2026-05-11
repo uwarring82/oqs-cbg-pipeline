@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 benchmarks.exact_finite_env — Exact propagation of system+finite environment.
 

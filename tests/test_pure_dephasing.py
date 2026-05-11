@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Behaviour tests for models.pure_dephasing (DG-1 Phase C.9)."""
 
 from __future__ import annotations

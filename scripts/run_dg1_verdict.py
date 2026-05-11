@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Run all DG-1 benchmark cards and write evidence artefacts.
 
 Usage:

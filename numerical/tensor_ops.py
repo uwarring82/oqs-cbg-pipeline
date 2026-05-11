@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 numerical.tensor_ops — Linear-algebra primitives for the CBG construction.
 

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Behaviour tests for benchmarks.qutip_reference.
 
 Phase B (DG-3 work plan v0.1.0): exercises the dispatch table and the

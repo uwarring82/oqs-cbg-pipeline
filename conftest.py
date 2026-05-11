@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Project-root conftest.py.
 
 Currently does only one thing: enforce the Python-version floor declared

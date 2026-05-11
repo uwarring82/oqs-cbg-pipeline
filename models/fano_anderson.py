@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 models.fano_anderson — Fano–Anderson model.
 

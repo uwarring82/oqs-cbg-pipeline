@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 numerical — Time-grid integration and tensor operations.
 

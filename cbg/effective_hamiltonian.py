@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 cbg.effective_hamiltonian — Effective Hamiltonian K(t) under the
 Hayden–Sorce minimal-dissipation gauge.

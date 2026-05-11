@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 models.jaynes_cummings — Jaynes–Cummings model.
 

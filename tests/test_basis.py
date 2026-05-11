@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Behaviour tests for cbg.basis (DG-1 Phase C C.1).
 
 Verifies the matrix-unit basis and orthonormality-check utility used by

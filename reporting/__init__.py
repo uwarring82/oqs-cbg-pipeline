@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """
 reporting — Benchmark card writers and validity-envelope reporters.
 """
