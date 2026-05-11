@@ -358,8 +358,18 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.spin_boson_sigma_x.system_arrays_from_spec"><code class="docutils literal notranslate"><span class="pre">system_arrays_from_spec()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-models.fano_anderson"><code class="docutils literal notranslate"><span class="pre">models.fano_anderson</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-models.jaynes_cummings"><code class="docutils literal notranslate"><span class="pre">models.jaynes_cummings</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-models.fano_anderson"><code class="docutils literal notranslate"><span class="pre">models.fano_anderson</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.fano_anderson.hamiltonian"><code class="docutils literal notranslate"><span class="pre">hamiltonian()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.fano_anderson.coupling_operator"><code class="docutils literal notranslate"><span class="pre">coupling_operator()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.fano_anderson.system_arrays_from_spec"><code class="docutils literal notranslate"><span class="pre">system_arrays_from_spec()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-models.jaynes_cummings"><code class="docutils literal notranslate"><span class="pre">models.jaynes_cummings</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.jaynes_cummings.hamiltonian"><code class="docutils literal notranslate"><span class="pre">hamiltonian()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.jaynes_cummings.coupling_operator"><code class="docutils literal notranslate"><span class="pre">coupling_operator()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.jaynes_cummings.system_arrays_from_spec"><code class="docutils literal notranslate"><span class="pre">system_arrays_from_spec()</span></code></a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -596,7 +606,7 @@ a known K(t) under the minimal-dissipation gauge (Picatoste, Colla,
 Breuer, PRR 6, 013258 (2024)) AND comparison with a competing
 framework (e.g. Hamiltonian of mean force, polaron) to satisfy the
 “distinguishable thermodynamic prediction” criterion of DG-5.</p>
-<dl class="simple">
+<dl>
 <dt>Structural constraints declared for DG-2:</dt><dd><ul class="simple">
 <li><p>basis-independence of K (universal default);</p></li>
 <li><p>fermion-number conservation;</p></li>
@@ -610,16 +620,74 @@ NUMERICALLY DISTINGUISHABLE predictions in the same model
 parameter regime. Side-by-side computation in a regime where
 the two predictions agree is NOT a DG-5 pass.</p>
 </dd>
-<dt>Stub depth at v0.1.0:</dt><dd><p>This module is <em>not</em> a DG-1 venue (DG-1 covers CL-2026-005 v0.4
+<dt>Stub depth at v0.1.0 (Path S10-a):</dt><dd><p>This module is <em>not</em> a DG-1 venue (DG-1 covers CL-2026-005 v0.4
 Entries 1, 3, 4, which use pure_dephasing and spin_boson_sigma_x).
-Function stubs (hamiltonian, coupling_operator, environment, etc.)
-are deliberately not yet present: pre-emptive API surface here
-would invite Sail v0.5 §10 Risk #6 (codebase before benchmark
-cards). Stubs land when this model’s first benchmark card is
-drafted, which is no earlier than DG-5 (with possible DG-2
-intermediate use for fermion-number-conservation checks).</p>
+The model is referenced by Card E1 (DG-5 scope-definition) as the
+natural Fano–Anderson venue for the thermodynamic discriminant.
+A callable model API is not yet implemented: the four prerequisite
+pieces are (i) Fano–Anderson Hamiltonian + coupling factory,
+(ii) Hamiltonian-of-mean-force (HMF) reference for the competing-
+framework comparison, (iii) fermionic-bath cumulant support in
+cbg/, (iv) a DG-5 work plan.</p>
+<p>The functions below provide a <strong>callable stub API surface</strong> so
+that any future card or runner code can reference
+<code class="docutils literal notranslate"><span class="pre">models.fano_anderson.&lt;fn&gt;</span></code> without <code class="docutils literal notranslate"><span class="pre">AttributeError</span></code>;
+each stub raises <code class="docutils literal notranslate"><span class="pre">ScopeDefinitionNotRunnableError</span></code> <em>when called</em>
+(NOT on import), so <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">models</span> <span class="pre">import</span> <span class="pre">fano_anderson</span></code> and
+Sphinx autodoc still succeed. The error message names the
+prerequisite pieces so the path forward is auditable.</p>
 </dd>
 </dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="models.fano_anderson.hamiltonian">
+<span class="sig-prename descclassname"><span class="pre">models.fano_anderson.</span></span><span class="sig-name descname"><span class="pre">hamiltonian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/fano_anderson.html#hamiltonian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.fano_anderson.hamiltonian" title="Link to this definition">#</a></dt>
+<dd><p>Stub Fano–Anderson Hamiltonian factory. Raises when called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a>)</p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.fano_anderson.coupling_operator">
+<span class="sig-prename descclassname"><span class="pre">models.fano_anderson.</span></span><span class="sig-name descname"><span class="pre">coupling_operator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/fano_anderson.html#coupling_operator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.fano_anderson.coupling_operator" title="Link to this definition">#</a></dt>
+<dd><p>Stub Fano–Anderson coupling-operator factory. Raises when called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a>)</p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.fano_anderson.system_arrays_from_spec">
+<span class="sig-prename descclassname"><span class="pre">models.fano_anderson.</span></span><span class="sig-name descname"><span class="pre">system_arrays_from_spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_spec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/fano_anderson.html#system_arrays_from_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.fano_anderson.system_arrays_from_spec" title="Link to this definition">#</a></dt>
+<dd><p>Stub (H_S, A) builder from a card’s <code class="docutils literal notranslate"><span class="pre">frozen_parameters.model</span></code> block.</p>
+<p>Mirrors the spin_boson_sigma_x / pure_dephasing signature for forward
+compatibility. Raises <code class="docutils literal notranslate"><span class="pre">ScopeDefinitionNotRunnableError</span></code> when called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model_spec</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="module-models.jaynes_cummings">
 <span id="models-jaynes-cummings"></span><h2><code class="docutils literal notranslate"><span class="pre">models.jaynes_cummings</span></code><a class="headerlink" href="#module-models.jaynes_cummings" title="Link to this heading">#</a></h2>
@@ -636,16 +704,70 @@ competing gauges).</p>
 </dd>
 </dl>
 <p>Reference for exact TCL form: Smirne &amp; Vacchini, PRA 82, 022110 (2010).</p>
-<dl class="simple">
-<dt>Stub depth at v0.1.0:</dt><dd><p>This module is <em>not</em> a DG-1 venue (DG-1 covers CL-2026-005 v0.4
+<dl>
+<dt>Stub depth at v0.1.0 (Path S10-a):</dt><dd><p>This module is <em>not</em> a DG-1 venue (DG-1 covers CL-2026-005 v0.4
 Entries 1, 3, 4, which use pure_dephasing and spin_boson_sigma_x).
-Function stubs (hamiltonian, coupling_operator, environment, etc.)
-are deliberately not yet present: pre-emptive API surface here
-would invite Sail v0.5 §10 Risk #6 (codebase before benchmark
-cards). Stubs land when this model’s first benchmark card is
-drafted, which is no earlier than DG-2.</p>
+No benchmark card references this model yet; the next-earliest
+use is DG-2 (perturbative-convergence checks) or DG-5
+(competing-gauge thermodynamic discriminant).</p>
+<p>The functions below provide a <strong>callable stub API surface</strong> so
+that any future card or runner code can reference
+<code class="docutils literal notranslate"><span class="pre">models.jaynes_cummings.&lt;fn&gt;</span></code> without <code class="docutils literal notranslate"><span class="pre">AttributeError</span></code>;
+each stub raises <code class="docutils literal notranslate"><span class="pre">ScopeDefinitionNotRunnableError</span></code> <em>when called</em>
+(NOT on import), so <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">models</span> <span class="pre">import</span> <span class="pre">jaynes_cummings</span></code> and
+Sphinx autodoc still succeed.</p>
 </dd>
 </dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="models.jaynes_cummings.hamiltonian">
+<span class="sig-prename descclassname"><span class="pre">models.jaynes_cummings.</span></span><span class="sig-name descname"><span class="pre">hamiltonian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/jaynes_cummings.html#hamiltonian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.jaynes_cummings.hamiltonian" title="Link to this definition">#</a></dt>
+<dd><p>Stub Jaynes–Cummings Hamiltonian factory. Raises when called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a>)</p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.jaynes_cummings.coupling_operator">
+<span class="sig-prename descclassname"><span class="pre">models.jaynes_cummings.</span></span><span class="sig-name descname"><span class="pre">coupling_operator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/jaynes_cummings.html#coupling_operator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.jaynes_cummings.coupling_operator" title="Link to this definition">#</a></dt>
+<dd><p>Stub Jaynes–Cummings coupling-operator factory. Raises when called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a>)</p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.jaynes_cummings.system_arrays_from_spec">
+<span class="sig-prename descclassname"><span class="pre">models.jaynes_cummings.</span></span><span class="sig-name descname"><span class="pre">system_arrays_from_spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_spec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/jaynes_cummings.html#system_arrays_from_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.jaynes_cummings.system_arrays_from_spec" title="Link to this definition">#</a></dt>
+<dd><p>Stub (H_S, A) builder from a card’s <code class="docutils literal notranslate"><span class="pre">frozen_parameters.model</span></code> block.</p>
+<p>Mirrors the spin_boson_sigma_x / pure_dephasing signature for forward
+compatibility. Raises <code class="docutils literal notranslate"><span class="pre">ScopeDefinitionNotRunnableError</span></code> when called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model_spec</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 
@@ -708,8 +830,18 @@ drafted, which is no earlier than DG-2.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.spin_boson_sigma_x.system_arrays_from_spec"><code class="docutils literal notranslate"><span class="pre">system_arrays_from_spec()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-models.fano_anderson"><code class="docutils literal notranslate"><span class="pre">models.fano_anderson</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-models.jaynes_cummings"><code class="docutils literal notranslate"><span class="pre">models.jaynes_cummings</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-models.fano_anderson"><code class="docutils literal notranslate"><span class="pre">models.fano_anderson</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.fano_anderson.hamiltonian"><code class="docutils literal notranslate"><span class="pre">hamiltonian()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.fano_anderson.coupling_operator"><code class="docutils literal notranslate"><span class="pre">coupling_operator()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.fano_anderson.system_arrays_from_spec"><code class="docutils literal notranslate"><span class="pre">system_arrays_from_spec()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-models.jaynes_cummings"><code class="docutils literal notranslate"><span class="pre">models.jaynes_cummings</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.jaynes_cummings.hamiltonian"><code class="docutils literal notranslate"><span class="pre">hamiltonian()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.jaynes_cummings.coupling_operator"><code class="docutils literal notranslate"><span class="pre">coupling_operator()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#models.jaynes_cummings.system_arrays_from_spec"><code class="docutils literal notranslate"><span class="pre">system_arrays_from_spec()</span></code></a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 

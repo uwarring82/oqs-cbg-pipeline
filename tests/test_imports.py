@@ -72,12 +72,16 @@ def test_stubs_raise_notimplementederror():
     for behaviour assertions on the implemented functions. This test
     is for the still-stubbed surface.
 
-    Non-DG-1 model modules (jaynes_cummings, fano_anderson) carry only
-    ``structural_constraints`` tuples at v0.1.0 (no function stubs); see
-    those modules' docstrings for the rationale and the DG at which their
-    function stubs land.
+    Non-DG-1 model modules (jaynes_cummings, fano_anderson) carry
+    callable stub functions at v0.1.0 (Path S10-a from work-package §6
+    item 8): the API surface is present so future cards / runner code
+    can reference ``models.<stub>.<fn>`` without ``AttributeError``,
+    but each function raises ``ScopeDefinitionNotRunnableError`` (a
+    ``NotImplementedError`` subclass) when called. See those modules'
+    docstrings for the prerequisite-implementation list.
     """
     from cbg import basis, diagnostics, effective_hamiltonian
+    from models import fano_anderson, jaynes_cummings
 
     # (callable, args, kwargs) — args sized so each call would otherwise reach
     # the function body. The body must raise NotImplementedError.
@@ -100,6 +104,14 @@ def test_stubs_raise_notimplementederror():
         (diagnostics.perturbative_order_norms, ([],), {}),
         (diagnostics.tcl_invertibility_distance, (None,), {}),
         (diagnostics.basis_independence_check, (None, [], []), {}),
+        # WS-Lb S10 (2026-05-11): scope-definition stubs in non-DG-1 models.
+        # Each raises ScopeDefinitionNotRunnableError (NotImplementedError subclass).
+        (fano_anderson.hamiltonian, (), {}),
+        (fano_anderson.coupling_operator, (), {}),
+        (fano_anderson.system_arrays_from_spec, ({},), {}),
+        (jaynes_cummings.hamiltonian, (), {}),
+        (jaynes_cummings.coupling_operator, (), {}),
+        (jaynes_cummings.system_arrays_from_spec, ({},), {}),
     ]
 
     for case in cases:
@@ -114,6 +126,59 @@ def test_stubs_raise_notimplementederror():
             raise AssertionError(
                 f"{callable_obj.__module__}.{callable_obj.__name__} did not raise NotImplementedError"
             )
+
+
+def test_scope_definition_stub_modules_import_cleanly():
+    """WS-Lb S10 (Path S10-a) contract: scope-definition stub modules must
+    import without raising. Importing models.fano_anderson or
+    models.jaynes_cummings must succeed even though every callable in those
+    modules raises when invoked; otherwise Sphinx autodoc, ``from models
+    import *``, and any CI step that imports the ``models`` package as a
+    whole would break.
+    """
+    from models import fano_anderson, jaynes_cummings  # noqa: F401
+
+    # Module-level attributes (structural_constraints + the stub functions)
+    # must be present without invoking them.
+    assert isinstance(fano_anderson.structural_constraints, tuple)
+    assert isinstance(jaynes_cummings.structural_constraints, tuple)
+    assert callable(fano_anderson.hamiltonian)
+    assert callable(fano_anderson.coupling_operator)
+    assert callable(fano_anderson.system_arrays_from_spec)
+    assert callable(jaynes_cummings.hamiltonian)
+    assert callable(jaynes_cummings.coupling_operator)
+    assert callable(jaynes_cummings.system_arrays_from_spec)
+
+
+def test_scope_definition_stubs_raise_specific_error():
+    """WS-Lb S10 contract: stub functions raise ``ScopeDefinitionNotRunnableError``
+    (not just generic ``NotImplementedError``) so callers can pattern-match
+    on the precise refusal reason. The error class is defined in
+    ``reporting.benchmark_card`` and imported lazily from the stub function
+    bodies to avoid a ``models → reporting`` dependency cycle at import time.
+    """
+    import pytest
+
+    from models import fano_anderson, jaynes_cummings
+    from reporting.benchmark_card import ScopeDefinitionNotRunnableError
+
+    # Sanity: the error class is still a NotImplementedError subclass (this
+    # is part of the existing public contract via test_benchmark_card.py).
+    assert issubclass(ScopeDefinitionNotRunnableError, NotImplementedError)
+
+    for fn, args in (
+        (fano_anderson.hamiltonian, ()),
+        (fano_anderson.coupling_operator, ()),
+        (fano_anderson.system_arrays_from_spec, ({},)),
+        (jaynes_cummings.hamiltonian, ()),
+        (jaynes_cummings.coupling_operator, ()),
+        (jaynes_cummings.system_arrays_from_spec, ({},)),
+    ):
+        with pytest.raises(ScopeDefinitionNotRunnableError) as exc_info:
+            fn(*args)
+        # Each error message should name the prerequisite-implementation
+        # list so a caller catching the error gets actionable context.
+        assert "scope-definition" in str(exc_info.value).lower()
 
 
 def test_diagnostics_constants_present():

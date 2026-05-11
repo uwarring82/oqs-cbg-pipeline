@@ -1,0 +1,469 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>models.fano_anderson &#8212; oqs-cbg-pipeline</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=55c93ed0"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/models/fano_anderson';</script>
+    <link rel="canonical" href="/oqs-cbg-pipeline/api/_modules/models/fano_anderson.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">oqs-cbg-pipeline · API</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../index.html">
+                    oqs-cbg-pipeline — API documentation
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../cbg.html"><code class="docutils literal notranslate"><span class="pre">cbg</span></code> — Colla–Breuer–Gasbarri effective-Hamiltonian construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../models.html"><code class="docutils literal notranslate"><span class="pre">models</span></code> — System–environment model factories</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../numerical.html"><code class="docutils literal notranslate"><span class="pre">numerical</span></code> — Numerical primitives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reporting.html"><code class="docutils literal notranslate"><span class="pre">reporting</span></code> — Benchmark-card schema, loader, validator, runner</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Worked examples</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/uwarring82/oqs-cbg-pipeline" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/uwarring82/oqs-cbg-pipeline/issues/new?title=Issue%20on%20page%20%2F_modules/models/fano_anderson.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for models.fano_anderson</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">models.fano_anderson — Fano–Anderson model.</span>
+
+<span class="sd">Natural venue for DG-5 (thermodynamic discriminant). Solvable; admits</span>
+<span class="sd">a known K(t) under the minimal-dissipation gauge (Picatoste, Colla,</span>
+<span class="sd">Breuer, PRR 6, 013258 (2024)) AND comparison with a competing</span>
+<span class="sd">framework (e.g. Hamiltonian of mean force, polaron) to satisfy the</span>
+<span class="sd">&quot;distinguishable thermodynamic prediction&quot; criterion of DG-5.</span>
+
+<span class="sd">Structural constraints declared for DG-2:</span>
+<span class="sd">    - basis-independence of K (universal default);</span>
+<span class="sd">    - fermion-number conservation;</span>
+<span class="sd">    - particle-hole symmetry where applicable.</span>
+
+<span class="sd">DG-5 pass criterion (per Sail v0.5 §9):</span>
+<span class="sd">    Identify at least one thermodynamic observable (work extraction,</span>
+<span class="sd">    efficiency, heat current, work-heat partition) where the</span>
+<span class="sd">    minimal-dissipation K(t) and the competing framework yield</span>
+<span class="sd">    NUMERICALLY DISTINGUISHABLE predictions in the same model</span>
+<span class="sd">    parameter regime. Side-by-side computation in a regime where</span>
+<span class="sd">    the two predictions agree is NOT a DG-5 pass.</span>
+
+<span class="sd">Stub depth at v0.1.0 (Path S10-a):</span>
+<span class="sd">    This module is *not* a DG-1 venue (DG-1 covers CL-2026-005 v0.4</span>
+<span class="sd">    Entries 1, 3, 4, which use pure_dephasing and spin_boson_sigma_x).</span>
+<span class="sd">    The model is referenced by Card E1 (DG-5 scope-definition) as the</span>
+<span class="sd">    natural Fano–Anderson venue for the thermodynamic discriminant.</span>
+<span class="sd">    A callable model API is not yet implemented: the four prerequisite</span>
+<span class="sd">    pieces are (i) Fano–Anderson Hamiltonian + coupling factory,</span>
+<span class="sd">    (ii) Hamiltonian-of-mean-force (HMF) reference for the competing-</span>
+<span class="sd">    framework comparison, (iii) fermionic-bath cumulant support in</span>
+<span class="sd">    cbg/, (iv) a DG-5 work plan.</span>
+
+<span class="sd">    The functions below provide a **callable stub API surface** so</span>
+<span class="sd">    that any future card or runner code can reference</span>
+<span class="sd">    ``models.fano_anderson.&lt;fn&gt;`` without ``AttributeError``;</span>
+<span class="sd">    each stub raises ``ScopeDefinitionNotRunnableError`` *when called*</span>
+<span class="sd">    (NOT on import), so ``from models import fano_anderson`` and</span>
+<span class="sd">    Sphinx autodoc still succeed. The error message names the</span>
+<span class="sd">    prerequisite pieces so the path forward is auditable.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+
+<span class="n">structural_constraints</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">&quot;basis_independence&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;fermion_number_conservation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;particle_hole_symmetry&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="n">_SCOPE_DEFINITION_PRECONDITIONS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">&quot;models.fano_anderson is scope-definition only (Path S10-a, work-package &quot;</span>
+    <span class="s2">&quot;§6 item 8). Prerequisites before a callable API can land: &quot;</span>
+    <span class="s2">&quot;(i) Fano-Anderson Hamiltonian + coupling factory; &quot;</span>
+    <span class="s2">&quot;(ii) Hamiltonian-of-mean-force reference (competing-framework gauge); &quot;</span>
+    <span class="s2">&quot;(iii) fermionic-bath cumulant support in cbg/; &quot;</span>
+    <span class="s2">&quot;(iv) DG-5 work plan. See benchmarks/benchmark_cards/&quot;</span>
+    <span class="s2">&quot;E1_thermodynamic-discriminant-fano-anderson_v0.1.0.yaml failure_mode_log.&quot;</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="hamiltonian">
+<a class="viewcode-back" href="../../models.html#models.fano_anderson.hamiltonian">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">hamiltonian</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stub Fano–Anderson Hamiltonian factory. Raises when called.&quot;&quot;&quot;</span>
+    <span class="c1"># Late import to avoid a models → reporting dependency cycle at import time.</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">reporting.benchmark_card</span><span class="w"> </span><span class="kn">import</span> <span class="n">ScopeDefinitionNotRunnableError</span>
+
+    <span class="k">raise</span> <span class="n">ScopeDefinitionNotRunnableError</span><span class="p">(</span><span class="n">_SCOPE_DEFINITION_PRECONDITIONS</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="coupling_operator">
+<a class="viewcode-back" href="../../models.html#models.fano_anderson.coupling_operator">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">coupling_operator</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stub Fano–Anderson coupling-operator factory. Raises when called.&quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">reporting.benchmark_card</span><span class="w"> </span><span class="kn">import</span> <span class="n">ScopeDefinitionNotRunnableError</span>
+
+    <span class="k">raise</span> <span class="n">ScopeDefinitionNotRunnableError</span><span class="p">(</span><span class="n">_SCOPE_DEFINITION_PRECONDITIONS</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="system_arrays_from_spec">
+<a class="viewcode-back" href="../../models.html#models.fano_anderson.system_arrays_from_spec">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">system_arrays_from_spec</span><span class="p">(</span><span class="n">model_spec</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stub (H_S, A) builder from a card&#39;s ``frozen_parameters.model`` block.</span>
+
+<span class="sd">    Mirrors the spin_boson_sigma_x / pure_dephasing signature for forward</span>
+<span class="sd">    compatibility. Raises ``ScopeDefinitionNotRunnableError`` when called.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">reporting.benchmark_card</span><span class="w"> </span><span class="kn">import</span> <span class="n">ScopeDefinitionNotRunnableError</span>
+
+    <span class="k">raise</span> <span class="n">ScopeDefinitionNotRunnableError</span><span class="p">(</span><span class="n">_SCOPE_DEFINITION_PRECONDITIONS</span><span class="p">)</span></div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Ulrich Warring
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, Ulrich Warring (code: MIT; docs: CC-BY-4.0).
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <p>Code under MIT, documentation under CC-BY-4.0. API docs are auto-generated from in-source docstrings; for project status and citation policy see the <a href='../index.html'>landing page</a>.</p>
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

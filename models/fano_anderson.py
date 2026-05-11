@@ -20,19 +20,67 @@ DG-5 pass criterion (per Sail v0.5 §9):
     parameter regime. Side-by-side computation in a regime where
     the two predictions agree is NOT a DG-5 pass.
 
-Stub depth at v0.1.0:
+Stub depth at v0.1.0 (Path S10-a):
     This module is *not* a DG-1 venue (DG-1 covers CL-2026-005 v0.4
     Entries 1, 3, 4, which use pure_dephasing and spin_boson_sigma_x).
-    Function stubs (hamiltonian, coupling_operator, environment, etc.)
-    are deliberately not yet present: pre-emptive API surface here
-    would invite Sail v0.5 §10 Risk #6 (codebase before benchmark
-    cards). Stubs land when this model's first benchmark card is
-    drafted, which is no earlier than DG-5 (with possible DG-2
-    intermediate use for fermion-number-conservation checks).
+    The model is referenced by Card E1 (DG-5 scope-definition) as the
+    natural Fano–Anderson venue for the thermodynamic discriminant.
+    A callable model API is not yet implemented: the four prerequisite
+    pieces are (i) Fano–Anderson Hamiltonian + coupling factory,
+    (ii) Hamiltonian-of-mean-force (HMF) reference for the competing-
+    framework comparison, (iii) fermionic-bath cumulant support in
+    cbg/, (iv) a DG-5 work plan.
+
+    The functions below provide a **callable stub API surface** so
+    that any future card or runner code can reference
+    ``models.fano_anderson.<fn>`` without ``AttributeError``;
+    each stub raises ``ScopeDefinitionNotRunnableError`` *when called*
+    (NOT on import), so ``from models import fano_anderson`` and
+    Sphinx autodoc still succeed. The error message names the
+    prerequisite pieces so the path forward is auditable.
 """
+
+from typing import Any
 
 structural_constraints = (
     "basis_independence",
     "fermion_number_conservation",
     "particle_hole_symmetry",
 )
+
+
+_SCOPE_DEFINITION_PRECONDITIONS = (
+    "models.fano_anderson is scope-definition only (Path S10-a, work-package "
+    "§6 item 8). Prerequisites before a callable API can land: "
+    "(i) Fano-Anderson Hamiltonian + coupling factory; "
+    "(ii) Hamiltonian-of-mean-force reference (competing-framework gauge); "
+    "(iii) fermionic-bath cumulant support in cbg/; "
+    "(iv) DG-5 work plan. See benchmarks/benchmark_cards/"
+    "E1_thermodynamic-discriminant-fano-anderson_v0.1.0.yaml failure_mode_log."
+)
+
+
+def hamiltonian(*args: Any, **kwargs: Any) -> Any:
+    """Stub Fano–Anderson Hamiltonian factory. Raises when called."""
+    # Late import to avoid a models → reporting dependency cycle at import time.
+    from reporting.benchmark_card import ScopeDefinitionNotRunnableError
+
+    raise ScopeDefinitionNotRunnableError(_SCOPE_DEFINITION_PRECONDITIONS)
+
+
+def coupling_operator(*args: Any, **kwargs: Any) -> Any:
+    """Stub Fano–Anderson coupling-operator factory. Raises when called."""
+    from reporting.benchmark_card import ScopeDefinitionNotRunnableError
+
+    raise ScopeDefinitionNotRunnableError(_SCOPE_DEFINITION_PRECONDITIONS)
+
+
+def system_arrays_from_spec(model_spec: dict[str, Any]) -> Any:
+    """Stub (H_S, A) builder from a card's ``frozen_parameters.model`` block.
+
+    Mirrors the spin_boson_sigma_x / pure_dephasing signature for forward
+    compatibility. Raises ``ScopeDefinitionNotRunnableError`` when called.
+    """
+    from reporting.benchmark_card import ScopeDefinitionNotRunnableError
+
+    raise ScopeDefinitionNotRunnableError(_SCOPE_DEFINITION_PRECONDITIONS)
