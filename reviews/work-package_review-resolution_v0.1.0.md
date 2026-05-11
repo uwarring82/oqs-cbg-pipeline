@@ -676,7 +676,8 @@ The five §6 items still-open as of 2026-05-08 — L5, S6, S8, S10, S13
 | Commit | Item | Path | Notes |
 |---|---|---|---|
 | `9f686ba` | **L5** | L5-b (immutable summaries; new `benchmarks/results/README.md` index) | DG-1_summary.json untouched; new README documents the mutability discipline for the directory + records the DG-1 → DG-2 sub-claim repatriation. |
-| `a78b203` | **S8 step 1** | CI matrix expanded | `.github/workflows/tests.yml` `python-tests` job now also runs on 3.13; local 471 (now 473) pytest under 3.13.7 confirmed pre-commit. classifier bump deferred to a follow-up commit after CI confirms green on a clean push. |
+| `a78b203` | **S8 step 1** | CI matrix expanded | `.github/workflows/tests.yml` `python-tests` job now also runs on 3.13; local 471 (now 473) pytest under 3.13.7 confirmed pre-commit. |
+| (this commit) | **S8 step 2** | `pyproject.toml` classifier added | `Programming Language :: Python :: 3.13` row added to the classifier list. Local 473 pytest under 3.13.7 still passes; ruff/black/mypy/sphinx -W still green. If CI flags 3.13 on next push, both this commit and `a78b203` revert in one rollback step. |
 | `733e3ff` | **S10** | Path S10-a (callable stubs, lazy import of error class) | Six stub functions in `models/fano_anderson.py` + `models/jaynes_cummings.py`. Two new tests (`test_scope_definition_stub_modules_import_cleanly`, `test_scope_definition_stubs_raise_specific_error`) pin the contract: imports succeed, calls raise `ScopeDefinitionNotRunnableError`. pytest 471 → 473. |
 | `509c3c1` | **S6** | All `*.py` get `# SPDX-License-Identifier: MIT` | 41 files touched; ruff/black/mypy/sphinx -W all green. |
 | `80971e0` | **S13** | Three GitHub templates | issue templates encode the cards-first / validity-envelope / DG-cause-label discipline; PR template encodes the quality-gate evidence checklist (the five gates WS-D established). |
