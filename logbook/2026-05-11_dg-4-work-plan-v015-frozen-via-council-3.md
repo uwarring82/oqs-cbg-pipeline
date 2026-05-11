@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-11
 **Type:** discussion-outcome (plan revision + transcription artifact; not a verdict)
-**Triggering commit:** (to be populated on commit)
+**Triggering commit:** e3ac79c
 **Triggering evidence:**
 - Predecessor entry (same day): [`2026-05-11_dg-4-work-plan-v015-tier-2b-scaffold.md`](2026-05-11_dg-4-work-plan-v015-tier-2b-scaffold.md), which committed v0.1.5 as a `draft` scaffold in commit `33a97d7`.
 - v0.1.5 plan, now `frozen`: [`plans/dg-4-work-plan_v0.1.5.md`](../plans/dg-4-work-plan_v0.1.5.md) (Council-3 cleared with edits 2026-05-11; no vetoes; v0.1.5-rc1 → v0.1.5 final same day; six edits merged; see Appendix A in the plan).
