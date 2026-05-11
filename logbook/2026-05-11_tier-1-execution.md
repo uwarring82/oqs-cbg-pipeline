@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-11
 **Type:** structural
-**Triggering commit:** (to be populated on commit)
+**Triggering commit:** 01dd392
 **Triggering evidence:**
 - Scoping companion: [`2026-05-11_next-tasks-scoping.md`](2026-05-11_next-tasks-scoping.md) (Tier-1 enumeration + recommended paths).
 - Work package: [`reviews/work-package_review-resolution_v0.1.0.md`](../reviews/work-package_review-resolution_v0.1.0.md) §6 — every item there is now **closed**.
