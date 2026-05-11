@@ -3,7 +3,7 @@
 **Author:** Steward (drafted from Rounds 1–3 review evidence)
 **Drafted:** 2026-05-08
 **Revised:** 2026-05-08 (post-review revisions integrating steward + second-reviewer feedback on the v0.1.0 first draft)
-**Status:** **partially executed** as of 2026-05-08 — WS-D, WS-A, WS-B, WS-C, WS-E, WS-F, WS-I (L1+M6, L5 deferred), WS-K, WS-La, WS-G, WS-H, WS-Lc, WS-J landed, plus follow-up patches WS-A2 (api/ rebuild), WS-E2 (frozen-card and summary r_4 clarification), WS-D2 (notebook ruff coverage), WS-H2 (build_docs.sh comment alignment). WS-Lb (S6 SPDX, S8 Py3.13, S10 stub model APIs, S13 GitHub templates) and WS-I L5 (summary-JSON mutability) remain open pending steward decisions per §6.
+**Status:** **fully executed (Tier-1)** as of 2026-05-11 — every workstream in the v0.1.0 draft has landed. WS-D, WS-A, WS-B, WS-C, WS-E, WS-F, WS-I, WS-K, WS-La, WS-G, WS-H, WS-Lc, WS-J landed 2026-05-08; follow-up patches WS-A2 (api/ rebuild), WS-E2 (frozen-card + summary r_4 clarification), WS-D2 (notebook ruff coverage), WS-H2 (build_docs.sh comment alignment) landed 2026-05-08. WS-Lb (S6 SPDX headers, S8 Py3.13, S10 stub model APIs, S13 GitHub templates) plus WS-I L5 (summary-JSON mutability, Path L5-b chosen) landed 2026-05-11 after the steward sign-off. Tier-2 items from `logbook/2026-05-11_next-tasks-scoping.md` (DG-3 failure-asymmetry, DG-4 Path A, DG-5 scope realisation, K_2–K_4 recursion) are out-of-scope for this work package and are tracked in their own DG-N work plans.
 **Inputs:**
 - [`round-1_2026-05-04/kimi_fair-review.md`](round-1_2026-05-04/kimi_fair-review.md)
 - [`round-2_2026-05-06/gemini_inconsistency-flags.md`](round-2_2026-05-06/gemini_inconsistency-flags.md)
@@ -658,14 +658,30 @@ WS-E2 / WS-D2 / WS-H2 follow-ups landed:
    autodoc, `from models import *`, and any CI step that imports the
    `models` package as a whole.)*
 
-Additional decision pending (not in the v0.1.0 draft, opened by the
-2026-05-08 steward review):
+Additional decision opened by the 2026-05-08 steward review and now
+closed:
 
-9. **WS-Lb (S13): STILL OPEN.** Add minimal GitHub templates
-   (`.github/ISSUE_TEMPLATE/bug_report.md`,
-   `.github/ISSUE_TEMPLATE/dg-status-change.md`,
-   `.github/PULL_REQUEST_TEMPLATE.md`)? *(Recommended yes by default;
-   content needs steward design.)*
+9. ~~**WS-Lb (S13):** Add minimal GitHub templates?~~ **CLOSED.**
+   Implemented per recommendation in commit `80971e0`. Three templates
+   shipped: `.github/ISSUE_TEMPLATE/bug_report.md`,
+   `.github/ISSUE_TEMPLATE/dg-status-change.md`, and
+   `.github/PULL_REQUEST_TEMPLATE.md`. `CODEOWNERS` intentionally
+   deferred (single-maintainer phase).
+
+### Tier-1 execution log (2026-05-11)
+
+The five §6 items still-open as of 2026-05-08 — L5, S6, S8, S10, S13
+— landed today on the recommended paths:
+
+| Commit | Item | Path | Notes |
+|---|---|---|---|
+| `9f686ba` | **L5** | L5-b (immutable summaries; new `benchmarks/results/README.md` index) | DG-1_summary.json untouched; new README documents the mutability discipline for the directory + records the DG-1 → DG-2 sub-claim repatriation. |
+| `a78b203` | **S8 step 1** | CI matrix expanded | `.github/workflows/tests.yml` `python-tests` job now also runs on 3.13; local 471 (now 473) pytest under 3.13.7 confirmed pre-commit. classifier bump deferred to a follow-up commit after CI confirms green on a clean push. |
+| `733e3ff` | **S10** | Path S10-a (callable stubs, lazy import of error class) | Six stub functions in `models/fano_anderson.py` + `models/jaynes_cummings.py`. Two new tests (`test_scope_definition_stub_modules_import_cleanly`, `test_scope_definition_stubs_raise_specific_error`) pin the contract: imports succeed, calls raise `ScopeDefinitionNotRunnableError`. pytest 471 → 473. |
+| `509c3c1` | **S6** | All `*.py` get `# SPDX-License-Identifier: MIT` | 41 files touched; ruff/black/mypy/sphinx -W all green. |
+| `80971e0` | **S13** | Three GitHub templates | issue templates encode the cards-first / validity-envelope / DG-cause-label discipline; PR template encodes the quality-gate evidence checklist (the five gates WS-D established). |
+
+Tier-2 items from [`logbook/2026-05-11_next-tasks-scoping.md`](../logbook/2026-05-11_next-tasks-scoping.md) (DG-3 failure-asymmetry, DG-4 Path A, DG-5 scope realisation, K_2–K_4 recursion) are out-of-scope for this work package and tracked in their own DG-N work plans (`plans/dg-3-work-plan_v0.1.0.md`, `plans/dg-4-work-plan_v0.1.4.md`, future `plans/dg-5-work-plan_v0.1.0.md`).
 
 ### Execution log (commits c1f3806..HEAD)
 
