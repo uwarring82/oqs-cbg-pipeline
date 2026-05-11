@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-11
 **Type:** structural
-**Triggering commit:** (to be populated on commit)
+**Triggering commit:** 029b128
 **Triggering evidence:**
 - Five review files in [`reviews/`](../reviews/):
   - [`round-1_2026-05-04/kimi_fair-review.md`](../reviews/round-1_2026-05-04/kimi_fair-review.md) (Kimi Code CLI, initial review 2026-05-04, updates through 2026-05-05)
