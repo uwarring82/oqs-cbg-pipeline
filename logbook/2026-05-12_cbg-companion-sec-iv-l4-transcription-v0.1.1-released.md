@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-12
 **Type:** structural
-**Triggering commit:** (to be populated on commit)
+**Triggering commit:** `24c771e`
 **Triggering evidence:** `transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_v0.1.1.md` (new released successor); `transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_v0.1.0.md` (annotated with `superseded_by`); `transcriptions/README.md` (index updated); `plans/README.md` and `docs/validity_envelope.md` (operational pointers updated)
 
 ## Summary
