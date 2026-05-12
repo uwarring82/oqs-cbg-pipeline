@@ -66,7 +66,7 @@ At the current status (2026-05-06, DG-1 PASS + DG-2 structural sub-claims PASS u
 This envelope expands as further Decision Gates pass. The next natural milestones are:
 
 1. **DG-3 failure-asymmetry clearance**: add or integrate a third reference method from a non-overlapping failure-mode class, then re-run full Cards C1 and C2 to verdict.
-2. **DG-4 Path A cross-validation**: transcribe / implement the Companion Sec. IV analytic fourth-order TCL expression, then cross-check the D1 v0.1.2 Path B failure-envelope verdict against analytic L_4. This is the next natural DG-4 milestone now that the Path B v0.1.2 verdict is on the record with audit-complete evidence.
+2. **DG-4 Path A cross-validation**: the Phase A transcription is now released at [`transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_v0.1.1.md`](../transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_v0.1.1.md); the remaining milestone is to implement the Companion Sec. IV analytic fourth-order TCL expression and then cross-check the D1 v0.1.2 Path B failure-envelope verdict against analytic `L_4`. This remains the next natural DG-4 milestone now that the Path B v0.1.2 verdict is on the record with audit-complete evidence.
 3. **DG-5 scope realisation**: implement the Fano-Anderson model API, a competing-framework reference (HMF), and fermionic-bath cumulant support; then run Card E1 and route outputs to a fresh Council deliberation.
 4. **Literal K_2–K_4 numerical recursion**: unblocks the residual "scope-limited" qualifier on Entry 2, now that structural identities (Entry 1.A, 1.B.3, 1.D) are verified and DG-4 has exposed a convergence-failure regime numerically.
 

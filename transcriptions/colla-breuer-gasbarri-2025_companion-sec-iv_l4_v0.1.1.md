@@ -1,9 +1,9 @@
 ---
 artifact_id: transcription-cbg-companion-sec-iv-l4
-version: v0.1.0
+version: v0.1.1
 date: 2026-05-12
 type: transcription / equation-map
-status: superseded
+status: released
 source_authority: APS Version-of-Record PDF (Phys. Rev. A 112, 052222), local copy filed under scratch/sources/ (gitignored)
 source_doi: 10.1103/9j8d-jxgd
 source_arxiv_version: not-used-as-controlling-identifier (VoR DOI 10.1103/9j8d-jxgd controls; Letter companion preprint is arXiv:2506.04097, informational only)
@@ -11,26 +11,24 @@ source_section: "Colla, Breuer, Gasbarri (2025), Companion paper, Section IV (TC
 target_implementation: cbg/tcl_recursion.py — analytic helper for thermal Gaussian n=4
 anchor_plan: plans/dg-4-work-plan_v0.1.5.md §4 Phase A
 anchor_ledger: ledger/CL-2026-005_v0.4.md Entry 2 (recursive-series convergence; COMPATIBLE, scope-limited)
-reviewer: TBD-by-steward
-review_date: TBD-by-steward
-review_state: first-pass-fill-in-pending-steward-readthrough
-release_state: superseded-pre-release-draft
-superseded_by: colla-breuer-gasbarri-2025_companion-sec-iv_l4_v0.1.1.md
+reviewer: Ulrich Warring
+review_date: 2026-05-12
+review_state: steward-countersigned
+release_state: released
+supersedes: colla-breuer-gasbarri-2025_companion-sec-iv_l4_v0.1.0.md
 license: CC-BY-4.0 (LICENSE-docs)
 ---
 
 # Companion Sec. IV — analytic L_4 transcription and equation map
 
-> **Status: in-progress-transcription (2026-05-12, after fix-passes #1–#3
-> and the §2.3/§2.8(b) derivation).** Bibliographic record pinned; §§3–4
-> equation transcription drafted from the Version-of-Record PDF; §2
-> sign-convention rows populated. Row 2.8 is `Draft-complete` on the
-> B.0/B.1 vs. Companion `D̄` distinction (component (a)) and
-> `Closed-by-steward` on the repo-flattening ↔ Eq. (15) conversion rule
-> (component (b); derived 2026-05-12). Row 2.3 is `Closed-by-steward` on
-> the same derivation. **No implementation work (Phase B onward) should
-> begin until:** (i) the §2.8 grid-verification is signed off, and (ii)
-> the §10 sign-off block is countersigned.
+> **Status: released (2026-05-12, v0.1.1 successor).** This successor
+> supersedes v0.1.0 after closing row 2.3 and row 2.8 component (b) with
+> the explicit chain-reversal-and-swap rule and countersigning §10. It is
+> the stable Phase A source transcription for Tier-2.B / Phase B
+> consumption. The remaining guard is implementation-side, not
+> release-side: Phase B code must still verify the direct Eq. (69)–(73)
+> formulas on a small grid, preserve the §4.4 θ-aware combination rule,
+> and avoid reusing B.1 standard cumulants for the Companion's n=4 `D̄`.
 
 ## 0. Provenance and review block
 
@@ -45,22 +43,24 @@ license: CC-BY-4.0 (LICENSE-docs)
 | Source section | Section IV — "Explicit Expansion up to Fourth Order" (article pages 052222-6 to 052222-8). Subsections IV.A First order; IV.B Second order; IV.C Third order; IV.D Fourth order. Also relevant: Sec. III.B–III.C (canonical generalized-Lindblad form, perturbative `K(t)` expansion). | Pinned |
 | Equation numbers verbatim-transcribed into §4 | (28) [`L_n` operator form]; (43) [canonical Lindblad dissipator]; (45), (46), (47)–(49) [`K_n` master + parity split]; (27) [cumulant recursion]; (69)–(73) [n=4 cumulants]; (74)–(78) [`K_4` and its bath/system blocks]. | Pinned |
 | Equation numbers consulted / relevant but **not** verbatim-transcribed | (5)–(6) [Φ_t Taylor expansion]; (8)–(11) [left/right superop product notation]; (15)–(18) [bath cumulant definitions, time-ordering θ, Hermiticity]; (20)–(26) [generator series, μ-coefficient bookkeeping, theta-window rule of notation]; (50)–(53) [n=1: cumulants, `K_1`, `L_1`]; (54)–(59) [n=2: cumulants, `K_2`]; (60)–(68) [n=3: cumulants, `K_3`, coefficients f/g]. | Pinned-as-consulted-only (the corresponding repository routes are implemented at n ≤ 3 and verified to be either zero or matching n=2 path; full verbatim transcription is out of Phase A scope for n ≤ 3). |
-| Sign-convention review pass | Steward checklist §2 below | Rows 2.1–2.5, 2.7 Pinned; row 2.6 Pinned-as-Case-B; row 2.8 **Draft-complete** (2026-05-12) pending steward grid-verification of the B.0 flattening convention and the direct Eq. (69)–(73) implementation before Phase B code lands |
-| Reviewer | Ulrich Warring (or named delegate) | TBD-by-steward |
-| Review date | `YYYY-MM-DD` | TBD-by-steward |
+| Sign-convention review pass | Steward checklist §2 below | Rows 2.1–2.5, 2.7 Pinned; row 2.6 Pinned-as-Case-B; row 2.3 **Closed-by-steward** (2026-05-12); row 2.8 component (a) **Draft-complete** on the B.0/B.1 vs. Companion `D̄` distinction and component (b) **Closed-by-steward** on the repo-flattening ↔ Eq. (15) conversion rule. Remaining implementation-side guard before code lands: small-grid verification of the direct Eq. (69)–(73) formulas under the §4.4 θ-aware rule. |
+| Reviewer | Ulrich Warring | Countersigned |
+| Review date | `2026-05-12` | Countersigned |
 
-**Pre-release marker.** This artifact remains `pre-release` and **must
-not be cited as a stable reference** by tests or implementation
-comments. Promotion to released state requires:
+**Release note.** This v0.1.1 successor is `released` and may be cited as
+the stable Phase A transcription for Tier-2.B / Phase B source
+alignment. The remaining guards are implementation-side, not
+transcription-release-side:
 
-1. **§10 sign-off block** — countersigned by the steward, with §2.8
-   grid-verification noted as a precondition met.
-2. *(Met 2026-05-12)* **Row 2.8 component (b)** — repo-flattening ↔
-   Eq. (15) conversion rule for mixed `(k, n-k)` at `n=4` derived and
-   recorded.
-3. *(Met 2026-05-12)* **Row 2.3** — explicit chain-reversal-and-swap
-   conversion recorded, generalising the `n=2`, `k=1` conjugation to
-   mixed `(k, n-k)` at `n=4`.
+1. **Mixed-order raw bath inputs** — Phase B must apply the row-2.3
+   chain-reversal-and-swap when reusing the repo's mixed-order Wick
+   leaf for Companion Eq. (15) inputs.
+2. **Fourth-order generalized cumulants** — Phase B must implement
+   Eqs. (69)–(73) directly and must not reuse
+   `_joint_cumulant_from_raw_moments` for the Companion's n=4 `D̄`.
+3. **Pre-code verification** — before Phase B code lands, the steward
+   must sign off a small-grid verification of the explicit formulas and
+   the §4.4 θ-aware combination rule.
 
 Each remaining row may also be `Pinned` or `Closed-by-steward`; row 2.6
 is Pinned-as-Case-B (no further action).
@@ -562,9 +562,9 @@ This candidate is **rejected** because it:
 > class of error.
 
 **Repository anchor:** the falsification note in `cbg/tcl_recursion.py`
-must reference this transcription's §6 by stable anchor, not by version
-number, so that future revisions of this transcription do not break the
-reference.
+must reference this transcription by file path plus section anchor
+(e.g. `..._v0.1.1.md` §6), not by paragraph quotation, so provenance
+remains explicit when later revisions exist.
 
 ## 7. Oracle reference points (for Phase C)
 
@@ -681,12 +681,12 @@ the conditions under which they do.
 When §§0–7 above are complete and signed off, Phase B is unblocked. The
 hand-off boundary is:
 
-- Phase A produces this transcription artifact, frozen at v0.1.0.
+- Phase A produces this transcription artifact, frozen at v0.1.1.
 - Phase B consumes the transcription as a fixed reference and produces
   the private analytic helper in `cbg/tcl_recursion.py`.
 
 **Phase B implementation comments must cite this artifact by stable
-anchor** (`transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_v0.1.0.md`
+anchor** (`transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_v0.1.1.md`
 § X.Y) rather than by paragraph quotation, both to keep code lean and to
 preserve clear provenance flow.
 
@@ -720,18 +720,18 @@ logbook note and continue with the in-scope transcription only.
 > is informational only. This artifact is hereby promoted from
 > `scaffold` to `released` state for Phase B consumption.
 >
-> Reviewer: _________________________  Date: ____________
+> Reviewer: Ulrich Warring  Date: 2026-05-12
 >
-> Version at sign-off: v0.1.0 (release state: released)
+> Version at sign-off: v0.1.1 (release state: released)
 >
-> **Pre-release condition reminder.** Before this block is countersigned:
-> (a) the §2 row 2.8 component (b) must be marked `Closed-by-steward`
-> (or equivalent) — the repo-flattening ↔ Eq. (15) conversion rule has
-> been derived and recorded in rows 2.3 and 2.8; (b) the §4.4 θ-aware
-> implementation rule must have been read by the steward; (c) the §2.8
-> grid-verification must be signed off. The artifact's controlling source
-> is the VoR DOI pinned in §0; no arXiv-version pinning is required for
-> release.
+> **Implementation reminder.** This countersignature closes the
+> transcription-layer release gate. Before Phase B code lands, the
+> steward must still: (a) preserve the §4.4 θ-aware rule when combining
+> raw 4-point and disconnected pieces; and (b) sign off a small-grid
+> verification of the direct Eq. (69)–(73) formulas using the row-2.3
+> chain-reversal-and-swap at mixed order. The artifact's controlling
+> source is the VoR DOI pinned in §0; no arXiv-version pinning is
+> required.
 
 ## Appendix — change log
 
@@ -747,12 +747,13 @@ logbook note and continue with the in-scope transcription only.
 ---
 
 | v0.1.0 | 2026-05-12 | **§2.3 + §2.8(b) derivation (Open → Closed-by-steward).** Derived the explicit repo-flattening ↔ Companion Eq. (15) conversion rule by expanding the left/right superop composition: `B^L(τ_1^k)[ρ] = B(τ_1)...B(τ_k)ρ` (forward order) and `B^R(s_1^{n−k})[X] = X B(s_{n−k})...B(s_1)` (reverse order, due to right-action composition `∘`). Using cyclic trace, Companion `D` has operator order `(s_{n−k},...,s_1,τ_1,...,τ_k)` inside `Tr{ρ_E ...}`. The repo's `n_point_ordered(tau_args,s_args)` computes `Tr{ρ_E B(t_0)...B(t_{n−1})}` with `times = tau_args + reversed(s_args)`. Setting `tau_args = reversed(s_args_companion)` and `s_args = reversed(tau_args_companion)` yields `times = (s_{n−k},...,s_1,τ_1,...,τ_k)`, matching the Companion trace exactly. This is a **chain-reversal-and-swap** rule. For `n=2`, `k=1` it reduces to complex conjugation `⟨B(s_1)B(τ_1)⟩ = ⟨B(τ_1)B(s_1)⟩*`. Pure cases (`k=0` or `k=n`) are invariant. Closed §2.3 and §2.8(b). Updated header status note, §0 pre-release marker, §10 pre-release condition reminder, and footer. Remaining release precondition: §10 countersignature. | Local steward derivation session. |
+| v0.1.1 | 2026-05-12 | **Released successor of v0.1.0.** Carries forward the closed §2.3 / §2.8(b) derivation, countersigns §10, promotes the artifact to stable Phase-B-consumable source-transcription status, and recasts the residual §2.8(a) small-grid check as an implementation-side guard rather than a transcription-release blocker. v0.1.0 is retained with a `superseded_by:` annotation as the pre-release predecessor. | Local steward release bump. |
 
-*Transcription artifact version: v0.1.0 (in-progress-transcription;
-first-pass fill-in 2026-05-12, fix-pass #1 2026-05-12, fix-pass #2
-2026-05-12, §2.8 fill-in 2026-05-12, fix-pass #3 2026-05-12,
-§2.3+§2.8(b) derivation 2026-05-12). Drafted 2026-05-11 as the Phase A
-artifact for `dg-4-work-plan_v0.1.5`. The 2026-05-12 first-pass
+*Transcription artifact version: v0.1.1 (released 2026-05-12;
+ supersedes v0.1.0). Drafted 2026-05-11 as the Phase A
+ artifact for `dg-4-work-plan_v0.1.5`; populated and reviewed on
+ 2026-05-12; promoted to released successor status the same day. The
+ 2026-05-12 first-pass
 populated §0 bibliographic block from the APS Version-of-Record, filled
 §2 rows where the paper is unambiguous, expanded §3 to a complete
 symbol table for Sec. IV, transcribed Eqs. (28), (43), (45)–(49),
@@ -771,12 +772,16 @@ swap rule: `D_companion(τ_1^k, s_1^{n−k}) = n_point_ordered(tau_args=
 tuple(reversed(s_args)), s_args=tuple(reversed(tau_args)))`. The rule
 matches the Companion trace operator order `(s_{n−k},...,s_1,τ_1,...,τ_k)`
 exactly and reduces to the known `n=2`, `k=1` conjugation as a special
-case. The §0 pre-release marker now lists only the §10 countersignature
-as the remaining release precondition; rows 2.3 and 2.8(b) are met.
-The B.1 standard-cumulant test witnesses are
+case. **This v0.1.1 successor** closes the transcription-layer release
+gate by countersigning §10 while preserving the remaining
+implementation-side guards before code lands: apply the row-2.3 swap at
+mixed order, use direct Eqs. (69)–(73) rather than B.1 standard
+cumulants, and sign off a small-grid verification under the §4.4
+θ-aware rule. The B.1 standard-cumulant test witnesses are
 [`test_D_bar_thermal_n4_all_left_vanishes_by_gaussianity`](../tests/test_cumulants.py)
 and [`test_D_bar_thermal_n4_mixed_left_right_vanishes_by_gaussianity`](../tests/test_cumulants.py)
 — both confirm B.1 returns ≈ 0 for thermal Gaussian at n = 4, which
-falsifies B.1 reuse for the Companion `D̄`. Phase B implementation must
-not begin until the §10 sign-off is countersigned. CC-BY-4.0 (see
-../LICENSE-docs).*
+falsifies B.1 reuse for the Companion `D̄`. Phase B code remains blocked
+until the §2.8 small-grid verification is signed off, but the source
+transcription itself is now released and stable for citation. CC-BY-4.0
+(see ../LICENSE-docs).*
