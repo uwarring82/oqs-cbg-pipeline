@@ -309,30 +309,42 @@ def _D_bar_4_companion(
 #
 # Verification card (frozen 2026-05-13):
 #   transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_
-#   phase-c-physics-oracles-card_v0.1.1.md  (commit 6732924).
+#   phase-c-physics-oracles-card_v0.1.2.md  (current).
 #
 # This block implements `_L_4_thermal_at_time_apply` per the v0.1.1 §3a
-# discipline. Each (k ∈ {0..4}, term in Eq. (69)-(73), boundary-delta
-# branch ∈ {τ_1=t, s_1=t}) contribution is integrated on its OWN 3-D
-# domain (the intersection of each constituent D factor's Eq. (15)
-# θ-window with the outer Eq. (28) integration range). Wick's theorem
-# is applied INSIDE each raw D factor individually; pre-cancellation
-# of Wick pairings across terms is explicitly forbidden (v0.1.1 §3b)
-# because the terms do not share a common θ-window.
+# discipline AND the v0.1.2 §3.2 commuting-case guard.
 #
-# Domain shapes encountered:
+# Each (k ∈ {0..4}, term in Eq. (69)-(73), boundary-delta branch ∈
+# {τ_1=t, s_1=t}) contribution is integrated on its OWN 3-D domain.
+# Per the v0.1.2 review post-mortem, that domain is the **intersection
+# of**:
+#   1. the outer Eq. (28) τ-chain ordering t > τ_1 > … > τ_k > 0;
+#   2. the outer Eq. (28) s-chain ordering t > s_1 > … > s_{4-k} > 0;
+#   3. each constituent D factor's Eq. (15) θ-window.
+#
+# All terms at a fixed (k, branch) therefore share the same outer
+# simplex domain — they differ only in their integrand. Each
+# (k, branch) is implemented as ONE loop that sums the integrands of
+# all terms contributing to that (k, branch). Wick's theorem is
+# applied INSIDE each raw D factor individually; pre-cancellation
+# of Wick pairings across terms is explicitly forbidden (v0.1.1 §3b).
+#
+# Domain shapes encountered (4 distinct, one per (k, branch) pair):
 #   - 3-simplex on (a, b, c): t > a > b > c > 0
 #   - 1-D × 2-simplex on (a; b, c): a ∈ [0, t], t > b > c > 0
 #   - 2-simplex × 1-D on (a, b; c): t > a > b > 0, c ∈ [0, t]
-#   - 3-D cube on (a, b, c): a, b, c ∈ [0, t]
+# (The "3-D cube" shape was an early mis-implementation that ignored
+# the outer chain ordering for subtraction terms with shorter D
+# factors; the v0.1.2 review identified and corrected this. See the
+# v0.1.1 → v0.1.2 supersession entry in the parent card.)
 #
 # Quadrature: nested 1-D trapezoidal on each simplex factor; standard
 # 1-D trapezoidal on each free axis. Weight matrix c_wt[i, M] gives the
 # 1-D trapezoidal weight on [0, g[M]] at grid index i (h/2 at endpoints,
 # h interior, 0 if i > M).
 #
-# Operator chain per (k, branch) is fixed; only the integrand and
-# integration domain differ per term.
+# Operator chain per (k, branch) is fixed; only the integrand differs
+# per term, all integrated on the shared (k, branch) outer simplex.
 
 
 def _L_4_thermal_at_time_apply(
@@ -578,10 +590,15 @@ def _L_4_thermal_at_time_apply_no_guard(
     # Term 1.70 (+): D(τ_1, t, s_2, s_3) on 1-D × 2-simplex {τ_1, t > s_2 > s_3}.
     #   Operator order: ⟨B(s_3) B(s_2) B(t) B(τ_1)⟩
     # Term 2.70 (-): -C(t, τ_1) × C(s_3, s_2) on same 1-D × 2-simplex.
-    # Term 3.70 (-): -C(s_2, t) × C(s_3, τ_1) on 3-D cube.
-    # Terms 1.70 and 2.70 share the same domain shape.
+    # Term 3.70 (-): -C(s_2, t) × C(s_3, τ_1). Per v0.1.2 review: this term's
+    #   integration domain is the intersection of its inner θ-window
+    #   (C(s_1, s_2) has θ_{s_1^2}=s_1>s_2 → trivially satisfied after
+    #   s_1=t; D(τ_1, s_3) trivial inner θ) with the OUTER Eq. (28) s-chain
+    #   ordering t > s_1 > s_2 > s_3 > 0. After s_1=t collapse, the outer
+    #   gives t > s_2 > s_3 > 0 — the same 1-D × 2-simplex as Terms 1 and 2.
+    # All three terms therefore share the same 1-D × 2-simplex domain.
 
-    # k=1, s-branch, Terms 1.70 + 2.70 on 1-D × 2-simplex on (τ_1; s_2, s_3)
+    # k=1, s-branch, Terms 1.70 + 2.70 + 3.70 on 1-D × 2-simplex on (τ_1; s_2, s_3)
     for i_t_1 in range(n_g):
         w_t1 = c_wt[i_t_1, T]
         if w_t1 == 0.0:
@@ -596,25 +613,10 @@ def _L_4_thermal_at_time_apply_no_guard(
                 integrand_1 = W4(i_s_3, i_s_2, T, i_t_1)
                 # Term 2.70 (-): -C(t, τ_1) C(s_3, s_2)
                 integrand_2 = -C_tbl[T, i_t_1] * C_tbl[i_s_3, i_s_2]
+                # Term 3.70 (-): -C(s_2, t) C(s_3, τ_1)
+                integrand_3 = -C_tbl[i_s_2, T] * C_tbl[i_s_3, i_t_1]
                 right_op = A_I[i_s_3] @ A_I[i_s_2] @ A_at_t
-                coef = sign_outer_k1 * wt * (integrand_1 + integrand_2)
-                quadrature_terms.append((coef, left_op, right_op))
-
-    # k=1, s-branch, Term 3.70 (-): 3-D cube on (τ_1, s_2, s_3)
-    for i_t_1 in range(n_g):
-        w_t1 = c_wt[i_t_1, T]
-        if w_t1 == 0.0:
-            continue
-        left_op = A_I[i_t_1]
-        for i_s_2 in range(n_g):
-            for i_s_3 in range(n_g):
-                wt = w_t1 * c_wt[i_s_2, T] * c_wt[i_s_3, T]
-                if wt == 0.0:
-                    continue
-                # -C(s_2, t) × C(s_3, τ_1)
-                integrand = -C_tbl[i_s_2, T] * C_tbl[i_s_3, i_t_1]
-                right_op = A_I[i_s_3] @ A_I[i_s_2] @ A_at_t
-                coef = sign_outer_k1 * wt * integrand
+                coef = sign_outer_k1 * wt * (integrand_1 + integrand_2 + integrand_3)
                 quadrature_terms.append((coef, left_op, right_op))
 
     # ════════════════════════════════════════════════════════════════
@@ -624,13 +626,16 @@ def _L_4_thermal_at_time_apply_no_guard(
     #   left_op = A @ A_I[i_τ_2]; right_op = A_I[i_s_2] @ A_I[i_s_1]
     # Term 1.71 (+): D(t, τ_2, s_1, s_2) on 1-D × 2-simplex (τ_2; s_1, s_2).
     #   Operator order: ⟨B(s_2) B(s_1) B(t) B(τ_2)⟩
-    # Term 2.71 (-): -C(s_1, t) × C(s_2, τ_2) on 3-D cube.
+    # Term 2.71 (-): -C(s_1, t) × C(s_2, τ_2). Per v0.1.2 review: outer
+    #   Eq. (28) s-chain ordering s_1 > s_2 still applies after τ_1=t
+    #   collapse, so this term shares the same 1-D × 2-simplex domain as
+    #   Terms 1 and 4 (not a 3-D cube).
     # Term 3.71 is s-branch only.
     # Term 4.71 (-): -C(t, τ_2) × C(s_2, s_1) on 1-D × 2-simplex.
-    # Terms 1.71 and 4.71 share the same 1-D × 2-simplex domain.
+    # Terms 1.71, 2.71, 4.71 share the same 1-D × 2-simplex domain.
     sign_outer_k2 = 1.0
 
-    # k=2, τ-branch, Terms 1.71 + 4.71 on 1-D × 2-simplex on (τ_2; s_1, s_2)
+    # k=2, τ-branch, Terms 1.71 + 2.71 + 4.71 on 1-D × 2-simplex on (τ_2; s_1, s_2)
     for i_t_2 in range(n_g):
         w_t2 = c_wt[i_t_2, T]
         if w_t2 == 0.0:
@@ -642,25 +647,10 @@ def _L_4_thermal_at_time_apply_no_guard(
                 if wt == 0.0:
                     continue
                 integrand_1 = W4(i_s_2, i_s_1, T, i_t_2)
+                integrand_2 = -C_tbl[i_s_1, T] * C_tbl[i_s_2, i_t_2]
                 integrand_4 = -C_tbl[T, i_t_2] * C_tbl[i_s_2, i_s_1]
                 right_op = A_I[i_s_2] @ A_I[i_s_1]
-                coef = sign_outer_k2 * wt * (integrand_1 + integrand_4)
-                quadrature_terms.append((coef, left_op, right_op))
-
-    # k=2, τ-branch, Term 2.71 (-): 3-D cube on (τ_2, s_1, s_2)
-    for i_t_2 in range(n_g):
-        w_t2 = c_wt[i_t_2, T]
-        if w_t2 == 0.0:
-            continue
-        left_op = A_at_t @ A_I[i_t_2]
-        for i_s_1 in range(n_g):
-            for i_s_2 in range(n_g):
-                wt = w_t2 * c_wt[i_s_1, T] * c_wt[i_s_2, T]
-                if wt == 0.0:
-                    continue
-                integrand = -C_tbl[i_s_1, T] * C_tbl[i_s_2, i_t_2]
-                right_op = A_I[i_s_2] @ A_I[i_s_1]
-                coef = sign_outer_k2 * wt * integrand
+                coef = sign_outer_k2 * wt * (integrand_1 + integrand_2 + integrand_4)
                 quadrature_terms.append((coef, left_op, right_op))
 
     # ════════════════════════════════════════════════════════════════
@@ -670,12 +660,15 @@ def _L_4_thermal_at_time_apply_no_guard(
     #   left_op = A_I[i_τ_1] @ A_I[i_τ_2]; right_op = A_I[i_s_2] @ A
     # Term 1.71 (+): D(τ_1, τ_2, t, s_2) on 2-simplex × 1-D (τ_1>τ_2; s_2).
     #   Operator order: ⟨B(s_2) B(t) B(τ_1) B(τ_2)⟩
-    # Term 2.71 (-): -C(t, τ_1) × C(s_2, τ_2) on 3-D cube.
+    # Term 2.71 (-): -C(t, τ_1) × C(s_2, τ_2). Per v0.1.2 review: outer
+    #   Eq. (28) τ-chain ordering τ_1 > τ_2 still applies, so this term
+    #   shares the same 2-simplex × 1-D domain as Terms 1 and 3 (not a
+    #   3-D cube).
     # Term 3.71 (-): -C(s_2, t) × C(τ_1, τ_2) on 2-simplex × 1-D.
     # Term 4.71 is τ-branch only.
-    # Terms 1.71 and 3.71 share the same 2-simplex × 1-D domain.
+    # Terms 1.71, 2.71, 3.71 share the same 2-simplex × 1-D domain.
 
-    # k=2, s-branch, Terms 1.71 + 3.71 on 2-simplex × 1-D on (τ_1, τ_2; s_2)
+    # k=2, s-branch, Terms 1.71 + 2.71 + 3.71 on 2-simplex × 1-D on (τ_1, τ_2; s_2)
     for i_t_1 in range(n_g):
         for i_t_2 in range(i_t_1):
             w_tau = c_wt[i_t_1, T] * c_wt[i_t_2, i_t_1]
@@ -688,26 +681,10 @@ def _L_4_thermal_at_time_apply_no_guard(
                     continue
                 wt = w_tau * w_s
                 integrand_1 = W4(i_s_2, T, i_t_1, i_t_2)
+                integrand_2 = -C_tbl[T, i_t_1] * C_tbl[i_s_2, i_t_2]
                 integrand_3 = -C_tbl[i_s_2, T] * C_tbl[i_t_1, i_t_2]
                 right_op = A_I[i_s_2] @ A_at_t
-                coef = sign_outer_k2 * wt * (integrand_1 + integrand_3)
-                quadrature_terms.append((coef, left_op, right_op))
-
-    # k=2, s-branch, Term 2.71 (-): 3-D cube on (τ_1, τ_2, s_2)
-    for i_t_1 in range(n_g):
-        for i_t_2 in range(n_g):
-            w_tau = c_wt[i_t_1, T] * c_wt[i_t_2, T]
-            if w_tau == 0.0:
-                continue
-            left_op = A_I[i_t_1] @ A_I[i_t_2]
-            for i_s_2 in range(n_g):
-                w_s = c_wt[i_s_2, T]
-                if w_s == 0.0:
-                    continue
-                wt = w_tau * w_s
-                integrand = -C_tbl[T, i_t_1] * C_tbl[i_s_2, i_t_2]
-                right_op = A_I[i_s_2] @ A_at_t
-                coef = sign_outer_k2 * wt * integrand
+                coef = sign_outer_k2 * wt * (integrand_1 + integrand_2 + integrand_3)
                 quadrature_terms.append((coef, left_op, right_op))
 
     # ════════════════════════════════════════════════════════════════
@@ -718,11 +695,14 @@ def _L_4_thermal_at_time_apply_no_guard(
     # Term 1.72 (+): D(t, τ_2, τ_3, s_1) on 2-simplex × 1-D (τ_2>τ_3; s_1).
     #   Operator order: ⟨B(s_1) B(t) B(τ_2) B(τ_3)⟩
     # Term 2.72 (-): -C(s_1, t) × C(τ_2, τ_3) on 2-simplex × 1-D.
-    # Term 3.72 (-): -C(t, τ_2) × C(s_1, τ_3) on 3-D cube.
-    # Terms 1.72 and 2.72 share the 2-simplex × 1-D domain.
+    # Term 3.72 (-): -C(t, τ_2) × C(s_1, τ_3). Per v0.1.2 review: outer
+    #   Eq. (28) τ-chain ordering τ_2 > τ_3 (after τ_1=t collapse) still
+    #   applies, so this term shares the same 2-simplex × 1-D domain as
+    #   Terms 1 and 2 (not a 3-D cube).
+    # Terms 1.72, 2.72, 3.72 share the 2-simplex × 1-D domain.
     sign_outer_k3 = -1.0
 
-    # k=3, τ-branch, Terms 1.72 + 2.72 on 2-simplex × 1-D on (τ_2, τ_3; s_1)
+    # k=3, τ-branch, Terms 1.72 + 2.72 + 3.72 on 2-simplex × 1-D on (τ_2, τ_3; s_1)
     for i_t_2 in range(n_g):
         for i_t_3 in range(i_t_2):
             w_tau = c_wt[i_t_2, T] * c_wt[i_t_3, i_t_2]
@@ -736,26 +716,12 @@ def _L_4_thermal_at_time_apply_no_guard(
                 wt = w_tau * w_s
                 integrand_1 = W4(i_s_1, T, i_t_2, i_t_3)
                 integrand_2 = -C_tbl[i_s_1, T] * C_tbl[i_t_2, i_t_3]
+                integrand_3 = -C_tbl[T, i_t_2] * C_tbl[i_s_1, i_t_3]
                 right_op = A_I[i_s_1]
-                coef = sign_outer_k3 * wt * (integrand_1 + integrand_2)
+                coef = sign_outer_k3 * wt * (integrand_1 + integrand_2 + integrand_3)
                 quadrature_terms.append((coef, left_op, right_op))
 
-    # k=3, τ-branch, Term 3.72 (-): 3-D cube on (τ_2, τ_3, s_1)
-    for i_t_2 in range(n_g):
-        for i_t_3 in range(n_g):
-            w_tau = c_wt[i_t_2, T] * c_wt[i_t_3, T]
-            if w_tau == 0.0:
-                continue
-            left_op = A_at_t @ A_I[i_t_2] @ A_I[i_t_3]
-            for i_s_1 in range(n_g):
-                w_s = c_wt[i_s_1, T]
-                if w_s == 0.0:
-                    continue
-                wt = w_tau * w_s
-                integrand = -C_tbl[T, i_t_2] * C_tbl[i_s_1, i_t_3]
-                right_op = A_I[i_s_1]
-                coef = sign_outer_k3 * wt * integrand
-                quadrature_terms.append((coef, left_op, right_op))
+    # (Term 3.72 has been merged into the loop above per v0.1.2 review.)
 
     # ════════════════════════════════════════════════════════════════
     # k = 3, s-branch (Eq. 72). Outer sign: -1.

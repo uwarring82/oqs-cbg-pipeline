@@ -194,19 +194,26 @@ def test_D_bar_4_companion_matches_independent_oracle(grid, k):
 
 
 def test_k2_closed_form_identical_across_grids():
-    """Card §5.3 bullet 2: D̄ at k=2 is C(s_2,τ_1)·C(s_1,τ_2) on both grids.
+    """Card §5.3 bullet 2: D̄ at k=2 has the SAME algebraic SURVIVOR FORM
+    `C(s_2,τ_1)·C(s_1,τ_2)` on both grids — NOT the same numerical value.
 
-    A divergence here would signal an Eq. (71) sign-pattern error.
+    The card wording "Mismatch between the two grids at k=2 would signal
+    an Eq. (71) sign-pattern error" refers to **structural-form
+    mismatch** (a different polynomial in C×C), not numerical value
+    mismatch. The two grids have τ ↔ s relabeled time tuples
+    ((1.0, 0.7) ↔ (0.9, 0.6) on each side), so the closed form
+    C(s_2,τ_1)·C(s_1,τ_2) evaluates to different complex numbers on
+    the two grids (in fact, they are complex conjugates for thermal
+    Hermitian B: at Grid α, ≈ 0.0042 + 0.0029j; at Grid β,
+    ≈ 0.0042 - 0.0029j). This test verifies that each grid's primary
+    oracle hits its own grid's instance of the SHARED survivor form;
+    a sign error in Eq. (71) would produce a different polynomial in
+    C(·,·) for one or both grids and would fail one of the two
+    `assert_allclose` calls below.
     """
     val_alpha = primary(*slice_grid(GRID_ALPHA, 2))
     val_beta = primary(*slice_grid(GRID_BETA, 2))
-    # The τ_1, τ_2, s_1, s_2 numerical values at Grid α and Grid β are
-    # τ ↔ s relabeled (1.0, 0.7) ↔ (0.9, 0.6) — the closed form
-    # C(s_2,τ_1)·C(s_1,τ_2) evaluates to different numbers on the two
-    # grids. We assert that each grid hits its own §5 closed form (the
-    # parametrised test above already covers that); here we additionally
-    # verify the structural relation by recomputing the closed form
-    # directly.
+
     tau_a = GRID_ALPHA["tau"]
     s_a = GRID_ALPHA["s"]
     cf_alpha = C(s_a[1], tau_a[0]) * C(s_a[0], tau_a[1])
@@ -216,6 +223,10 @@ def test_k2_closed_form_identical_across_grids():
     s_b = GRID_BETA["s"]
     cf_beta = C(s_b[1], tau_b[0]) * C(s_b[0], tau_b[1])
     np.testing.assert_allclose(val_beta, cf_beta, atol=ATOL, rtol=RTOL)
+
+    # Structural-form sanity: the two evaluations should be complex
+    # conjugates of each other (thermal C on τ ↔ s mirrored grids).
+    np.testing.assert_allclose(val_alpha, np.conj(val_beta), atol=ATOL, rtol=RTOL)
 
 
 def test_trivially_zero_cases_traverse_full_code_path():

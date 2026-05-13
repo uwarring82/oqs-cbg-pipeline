@@ -140,14 +140,18 @@ def test_sigma_z_zero_oracle_part_a_exact_zero(L_4_apply_sigma_z, X_idx):
 
 # ─── §4.1 Part B: literal-quadrature convergence diagnostic (non-gating) ─────
 
-# Reference values measured against the §2-style fixture at varying n_pts via
-# `_L_4_thermal_at_time_apply_no_guard`. Pinned at v0.1.2 freeze; rtol=0.1
-# tolerance allows for bath-quadrature numerical noise.
+# Reference values measured AFTER the v0.1.2 review's domain-shape fix
+# (cube → outer-simplex-intersected domains for 4 subtraction terms; see the
+# v0.1.1 → v0.1.2 supersession in the parent card). Diagnostic uses a
+# t_end=1.0 grid (NOT the §2 t_end=2.0 fixture) for fast iteration across
+# n_pts ∈ {11, 21, 41, 81}; the diagnostic is non-gating, so the grid choice
+# is independent of the §2 fixture used by the gating oracles.
+# rtol=0.1 tolerance allows for bath-quadrature numerical noise.
 PART_B_REFERENCE = {
-    11: 1.12e-2,
-    21: 7.47e-3,
-    41: 3.84e-3,
-    81: 1.90e-3,
+    11: 1.28e-2,
+    21: 1.17e-2,
+    41: 7.48e-3,
+    81: 5.09e-3,
 }
 
 
@@ -155,18 +159,21 @@ def test_sigma_z_part_b_convergence_diagnostic(capsys):
     """Card §4.1 Part B: literal-quadrature convergence diagnostic.
 
     NOT an acceptance gate. Documents that the v0.1.1 §3a θ-aware
-    literal integration converges monotonically toward zero as the
-    grid is refined. The first-run measurements are pinned in
-    PART_B_REFERENCE; tolerance 10% (rtol=0.1) accommodates the bath
-    quadrature noise floor.
+    literal integration (with the v0.1.2 outer-simplex domain
+    intersection) converges monotonically toward zero as the grid is
+    refined. The first-run measurements are pinned in PART_B_REFERENCE;
+    tolerance 10% (rtol=0.1) accommodates the bath quadrature noise floor.
 
     The diagnostic uses `_L_4_thermal_at_time_apply_no_guard` to
     bypass the §3.2 commuting-case guard and exercise the literal
     θ-aware integration on σ_z. In production, the guard short-
     circuits this path to exact zero.
+
+    Diagnostic grid: t_end=1.0 (not §2's t_end=2.0). The diagnostic is
+    non-gating, so its grid choice is independent of the gating oracles.
+    The shorter t_end keeps the diagnostic runtime tractable across
+    n_pts ∈ {11, 21, 41, 81}.
     """
-    # Note: this fixture differs from §2 (t_end = 1.0 instead of 2.0) to
-    # match the v0.1.1 implementation experiment's reference table.
     values = {}
     for n_pts in PART_B_REFERENCE:
         t_grid = np.linspace(0.0, 1.0, n_pts)
