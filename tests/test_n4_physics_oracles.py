@@ -40,8 +40,11 @@ The card pins:
         4.3.b n=2 dissipator regression at atol = rtol = 1e-12.
         4.4 L_1 = L_3 = 0 at atol = 1e-12.
 
-Phase C scope: private-route only. The public L_n_thermal_at_time(n=4)
-remains a NotImplementedError until Phase D.
+Phase C scope: private-route oracles. The public
+L_n_thermal_at_time(n=4) was exposed in Phase D (commit `f599751`)
+and now routes through `_L_4_thermal_at_time_apply` for thermal
+Gaussian; the Phase C oracles in this file still call the private
+helpers directly for back-to-back regression coverage.
 """
 
 from __future__ import annotations

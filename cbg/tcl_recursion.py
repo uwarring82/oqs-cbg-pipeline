@@ -82,9 +82,12 @@ def interaction_picture(H_S: np.ndarray, A: np.ndarray, tau: float) -> np.ndarra
 # fourth-order generalized cumulant D̄(τ_1^k, s_1^{4−k}) per Eqs. (69)–(73)
 # of the parent transcription artifact, using the closed-by-steward
 # row-2.3 chain-reversal-and-swap rule for all raw D leaves and the
-# Eq. (22) boundary delta on Ḋ. The helper is private; the public
-# L_n_thermal_at_time(n=4) route remains a NotImplementedError until
-# Phase C/D oracles pass (work plan v0.1.5 §4 Phase B acceptance).
+# Eq. (22) boundary delta on Ḋ. The helper is private but is the
+# point-evaluator that the Phase C / Phase D L_4 assembly path
+# eventually consumes; the public L_n_thermal_at_time(n=4) route
+# (Phase D, commit `f599751`) routes through `_L_4_thermal_at_time_apply`
+# which itself uses this `_D_bar_4_companion` for its raw D̄ leaves
+# (see card phase-d-public-route-card_v0.1.0.md).
 
 
 def _D_companion_raw_n4(
@@ -188,9 +191,9 @@ def _D_bar_4_companion(
       (the B.1 standard-cumulant path silently returns ≈ 0 for thermal
       Gaussian at n ≥ 3; see parent transcription row 2.8).
 
-    The signature is private; the public L_n_thermal_at_time(n=4) route
-    remains a NotImplementedError pending Phase C oracles (work plan
-    v0.1.5 §4 Phase B acceptance).
+    The signature is private. The public L_n_thermal_at_time(n=4) route
+    (Phase D, commit `f599751`) routes through `_L_4_thermal_at_time_apply`,
+    which itself uses this `_D_bar_4_companion` for its raw D̄ leaves.
 
     Parameters
     ----------
@@ -1018,10 +1021,11 @@ def L_n_thermal_at_time(
         return L_2_apply
 
     raise NotImplementedError(
-        f"L_n_thermal_at_time: n={n} not implemented. DG-4 Phase B.2 "
-        f"covers n in {{0, 1, 2, 3}} on the thermal-Gaussian path "
-        f"(n=4 deferred; see the dedicated branch). Orders n >= 5 are "
-        f"out of scope for this plan revision."
+        f"L_n_thermal_at_time: n={n} not implemented. DG-4 v0.1.5 "
+        f"covers n in {{0, 1, 2, 3, 4}} on the thermal Gaussian path "
+        f"(n=3 returns zero by Gaussianity; n=4 routes through "
+        f"_L_4_thermal_at_time_apply per Phase D card v0.1.0). "
+        f"Orders n >= 5 are out of scope for this plan revision."
     )
 
 
@@ -1147,8 +1151,12 @@ def K_n_thermal_on_grid(
 # part), so L^dissipator = L + i [K, ·] = -i [H, ·] + i [H, ·] = 0 exactly.
 # Tests guarantee this for n=0 (where L_0 = -i [H_S, ·] is purely unitary).
 #
-# Phase B.3 partial: n in {0, 1, 2, 3}. n=4 is gated by L_n_thermal_at_time
-# at the L-level; the deferral propagates here.
+# Phase D (commit `f599751`): n=4 thermal Gaussian routes through
+# L_n_thermal_at_time → _L_4_thermal_at_time_apply; the dissipator
+# residual is L_4 + i [K_4, ·] with K_4 from Letter Eq. (6) extraction
+# on L_4. n=4 σ_z hits the §3.2 commuting-case guard inside
+# _L_4_thermal_at_time_apply and yields L_4 = 0 (and K_4 = 0) exactly.
+# n=4 σ_x produces a finite L_4^dis. Orders n >= 5 are out of scope.
 
 
 def L_n_dissipator_thermal_at_time(
@@ -1173,13 +1181,16 @@ def L_n_dissipator_thermal_at_time(
     For purely unitary L_n with K_n = H, the dissipator vanishes
     identically (the Risk R8 unitary-recovery oracle gating Phase B.3
     acceptance). For thermal Gaussian baths n ∈ {0, 1, 3} all give the
-    zero superoperator; n = 2 carries the leading dissipator.
+    zero superoperator; n = 2 carries the leading dissipator; n = 4
+    routes through `_L_4_thermal_at_time_apply` (Phase D) and gives a
+    non-zero dissipator for non-commuting A (e.g. σ_x), exact zero
+    via the §3.2 commuting-case guard for σ_z.
 
     Parameters
     ----------
     n : int
-        Perturbative order; one of {0, 1, 2, 3}. n=4 raises (gated by
-        L_n_thermal_at_time(n=4)); n>=5 is out of scope.
+        Perturbative order; one of {0, 1, 2, 3, 4} on the thermal
+        Gaussian path. n >= 5 raises (out of DG-4 v0.1.5 scope).
     t_idx : int
         Index into t_grid at which to evaluate.
     t_grid, system_hamiltonian, coupling_operator : as in K_n_thermal_on_grid.
@@ -1272,8 +1283,12 @@ def L_n_dissipator_norm_thermal_on_grid(
 
     For thermal Gaussian baths under the runner-facing thermal path,
     n ∈ {0, 1, 3} return all zeros and n = 2 returns the dephasing /
-    relaxation dissipator's norm at each grid time. n = 4 is deferred
-    along with L_n_thermal_at_time(n=4).
+    relaxation dissipator's norm at each grid time. n = 4 (Phase D
+    public route, commit `f599751`) propagates through
+    `L_n_thermal_at_time(n=4)` and returns a finite (n_t,) array; the
+    §3.2 commuting-case guard inside `_L_4_thermal_at_time_apply`
+    yields exact zero for [H_S, A] = 0 (e.g. σ_z dephasing) and a
+    finite non-zero norm for non-commuting A (e.g. σ_x).
 
     Parameters
     ----------
@@ -1549,8 +1564,8 @@ def K_total_thermal_on_grid(
     ----------
     N_card : int
         Perturbative cap from the card's frozen_parameters.truncation
-        .perturbative_order; must be in {0, 1, 2} for the implemented
-        low-order path.
+        .perturbative_order; must be in {0, 1, 2, 3, 4} on the thermal
+        Gaussian path. N_card ≥ 5 raises out-of-scope.
     t_grid : ndarray
         See ``K_n_thermal_on_grid``.
     system_hamiltonian : ndarray
@@ -1558,9 +1573,11 @@ def K_total_thermal_on_grid(
     coupling_operator : ndarray
         See ``K_n_thermal_on_grid``.
     bath_state : dict
-        See ``K_n_thermal_on_grid``.
+        See ``K_n_thermal_on_grid``. Also forwarded to
+        ``L_n_thermal_at_time`` at n = 4 (Phase D public route).
     spectral_density : dict
-        See ``K_n_thermal_on_grid``.
+        See ``K_n_thermal_on_grid``. Also forwarded to
+        ``L_n_thermal_at_time`` at n = 4 (Phase D public route).
     basis : list, optional
         See ``K_n_thermal_on_grid``.
     upper_cutoff_factor : float
