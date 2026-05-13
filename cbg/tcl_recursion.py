@@ -36,6 +36,7 @@ import numpy as np
 from scipy.linalg import expm
 
 from cbg.basis import matrix_unit_basis
+from cbg.bath_correlations import n_point_ordered, two_point
 from cbg.cumulants import D_bar_1, D_bar_2
 from cbg.effective_hamiltonian import K_from_generator
 
@@ -64,6 +65,244 @@ def interaction_picture(H_S: np.ndarray, A: np.ndarray, tau: float) -> np.ndarra
     """
     U = expm(1j * np.asarray(H_S, dtype=complex) * tau)
     return U @ np.asarray(A, dtype=complex) @ U.conj().T
+
+
+# ─── Companion D̄ at n=4 (DG-4 Phase B, thermal Gaussian) ───────────────────
+#
+# Verification card:
+#   transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_
+#   n4-small-grid-verification-card_v0.1.0.md
+#
+# Parent transcription:
+#   transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_v0.1.1.md
+#
+# This block implements the Phase B private helper for the Companion
+# fourth-order generalized cumulant D̄(τ_1^k, s_1^{4−k}) per Eqs. (69)–(73)
+# of the parent transcription artifact, using the closed-by-steward
+# row-2.3 chain-reversal-and-swap rule for all raw D leaves and the
+# Eq. (22) boundary delta on Ḋ. The helper is private; the public
+# L_n_thermal_at_time(n=4) route remains a NotImplementedError until
+# Phase C/D oracles pass (work plan v0.1.5 §4 Phase B acceptance).
+
+
+def _D_companion_raw_n4(
+    tau_args: tuple[float, ...],
+    s_args: tuple[float, ...],
+    *,
+    bath_state: dict[str, Any],
+    spectral_density: dict[str, Any],
+    upper_cutoff_factor: float = 30.0,
+    quad_limit: int = 200,
+) -> complex:
+    """Raw Companion D(τ_1^k, s_1^{4−k}) via the row-2.3 swap.
+
+    Calls n_point_ordered with tau_args and s_args swapped and each
+    side reversed, yielding the Companion operator-order trace
+    ⟨B(s_{n−k})...B(s_1) B(τ_1)...B(τ_k)⟩ at n = 4.
+    """
+    swapped_tau = tuple(reversed(s_args))
+    swapped_s = tuple(reversed(tau_args))
+    return n_point_ordered(
+        swapped_tau,
+        swapped_s,
+        bath_state=bath_state,
+        spectral_density=spectral_density,
+        upper_cutoff_factor=upper_cutoff_factor,
+        quad_limit=quad_limit,
+    )
+
+
+def _D_companion_raw_n2(
+    tau_args: tuple[float, ...],
+    s_args: tuple[float, ...],
+    *,
+    bath_state: dict[str, Any],
+    spectral_density: dict[str, Any],
+    upper_cutoff_factor: float = 30.0,
+    quad_limit: int = 200,
+) -> complex:
+    """Raw Companion D(τ_1^k, s_1^{2−k}) via the row-2.3 swap.
+
+    Returns the operator-ordered two-point ⟨B(u_1) B(u_2)⟩ where the
+    ordered times (u_1, u_2) follow row 2.3:
+
+        D(τ_a, τ_b)  ↦ C(τ_a, τ_b)         (pure-left,  k = 2)
+        D(s_a, s_b)  ↦ C(s_b, s_a)         (pure-right, k = 0)
+        D(τ_a, s_b)  ↦ C(s_b, τ_a)         (mixed,      k = 1)
+    """
+    if len(tau_args) + len(s_args) != 2:
+        raise ValueError(
+            "_D_companion_raw_n2: total order must be 2 "
+            f"(got len(tau_args)={len(tau_args)}, "
+            f"len(s_args)={len(s_args)})"
+        )
+    times = tuple(reversed(s_args)) + tuple(tau_args)
+    return two_point(
+        times[0],
+        times[1],
+        bath_state=bath_state,
+        spectral_density=spectral_density,
+        upper_cutoff_factor=upper_cutoff_factor,
+        quad_limit=quad_limit,
+    )
+
+
+def _D_bar_4_companion(
+    tau_args: tuple[float, ...],
+    s_args: tuple[float, ...],
+    *,
+    t: float,
+    bath_state: dict[str, Any],
+    spectral_density: dict[str, Any],
+    upper_cutoff_factor: float = 30.0,
+    quad_limit: int = 200,
+) -> complex:
+    """Companion D̄(τ_1^k, s_1^{4−k}) at total order n = 4.
+
+    Implements Eqs. (69)–(73) of the parent transcription artifact
+    directly:
+
+        Eq. (69)  k = 0 : D̄(s_1^4)        = Ḋ(s_1^4) − Ḋ(s_1^2)·D(s_3^4)
+        Eq. (70)  k = 1 : D̄(τ_1, s_1^3)   = Ḋ(τ_1, s_1^3)
+                                            − Ḋ(τ_1, s_1)·D(s_2^3)
+                                            − Ḋ(s_1^2)·D(τ_1, s_3)
+        Eq. (71)  k = 2 : D̄(τ_1^2, s_1^2) = Ḋ(τ_1^2, s_1^2)
+                                            − Ḋ(τ_1, s_1)·D(τ_2, s_2)
+                                            − Ḋ(s_1^2)·D(τ_1^2)
+                                            − Ḋ(τ_1^2)·D(s_1^2)
+        Eq. (72)  k = 3 : D̄(τ_1^3, s_1)   = Ḋ(τ_1^3, s_1)
+                                            − Ḋ(τ_1, s_1)·D(τ_2^3)
+                                            − Ḋ(τ_1^2)·D(τ_3, s_1)
+        Eq. (73)  k = 4 : D̄(τ_1^4)        = Ḋ(τ_1^4) − Ḋ(τ_1^2)·D(τ_3^4)
+
+    Substitution rules used internally:
+
+    - All raw D leaves (n = 4 and n = 2) are evaluated via the row-2.3
+      chain-reversal-and-swap rule, delegating to _D_companion_raw_n4
+      and _D_companion_raw_n2 respectively.
+    - Ḋ(τ_1^k, s_1^{n−k}) = D(...)·(δ_{τ_1,t} + δ_{s_1,t}), with the
+      empty-chain convention that the missing-side delta is 0 (Eq. 22).
+    - This helper MUST NOT call cbg.cumulants._joint_cumulant_from_raw_moments
+      (the B.1 standard-cumulant path silently returns ≈ 0 for thermal
+      Gaussian at n ≥ 3; see parent transcription row 2.8).
+
+    The signature is private; the public L_n_thermal_at_time(n=4) route
+    remains a NotImplementedError pending Phase C oracles (work plan
+    v0.1.5 §4 Phase B acceptance).
+
+    Parameters
+    ----------
+    tau_args : sequence of float
+        Companion τ-chain (left-acting times), length k.
+    s_args : sequence of float
+        Companion s-chain (right-acting times), length 4 − k.
+    t : float, keyword-only
+        Outer evaluation time at which the Eq. (22) boundary delta is
+        applied. Strict equality `tau_args[0] == t` or `s_args[0] == t`
+        determines whether the boundary delta fires (Kronecker semantics
+        at the verification-card grid; not a Dirac at integration time).
+    bath_state, spectral_density : dict, keyword-only
+        Forwarded to n_point_ordered and two_point.
+    upper_cutoff_factor, quad_limit : optional
+        Quadrature controls forwarded to n_point_ordered and two_point.
+
+    Returns
+    -------
+    complex
+        Companion D̄(τ_1^k, s_1^{4−k}) at total order 4.
+
+    Raises
+    ------
+    NotImplementedError
+        If total order ≠ 4, or k ∉ {0, 1, 2, 3, 4}. Phase B scope is
+        n = 4 only; n ≥ 5 is out of scope for DG-4 work plan v0.1.5.
+    """
+    tau_args = tuple(float(x) for x in tau_args)
+    s_args = tuple(float(x) for x in s_args)
+    k = len(tau_args)
+    n_total = k + len(s_args)
+    if n_total != 4:
+        raise NotImplementedError(
+            f"_D_bar_4_companion: total order n={n_total} not supported. "
+            f"Phase B scope is n=4 only."
+        )
+    if k not in {0, 1, 2, 3, 4}:
+        raise NotImplementedError(f"_D_bar_4_companion: k={k} not in {{0,1,2,3,4}}.")
+
+    # Eq. (22) boundary delta. Empty-chain convention: the missing-side
+    # indicator is 0.
+    delta_tau = 1 if (k >= 1 and tau_args[0] == t) else 0
+    delta_s = 1 if (4 - k >= 1 and s_args[0] == t) else 0
+
+    leaf_kw: dict[str, Any] = {
+        "bath_state": bath_state,
+        "spectral_density": spectral_density,
+        "upper_cutoff_factor": upper_cutoff_factor,
+        "quad_limit": quad_limit,
+    }
+
+    # Raw 4-point appears in every case (the first term of each Eq.).
+    D_n4 = _D_companion_raw_n4(tau_args, s_args, **leaf_kw)
+    D_dot_n4 = D_n4 * (delta_tau + delta_s)
+
+    if k == 4:
+        # Eq. (73): D̄(τ_1^4) = Ḋ(τ_1^4) − Ḋ(τ_1^2)·D(τ_3^4)
+        t1, t2, t3, t4 = tau_args
+        D_tau12 = _D_companion_raw_n2((t1, t2), (), **leaf_kw)
+        D_tau34 = _D_companion_raw_n2((t3, t4), (), **leaf_kw)
+        D_dot_tau12 = D_tau12 * delta_tau
+        return D_dot_n4 - D_dot_tau12 * D_tau34
+
+    if k == 3:
+        # Eq. (72): D̄(τ_1^3, s_1) = Ḋ(τ_1^3, s_1)
+        #                            − Ḋ(τ_1, s_1)·D(τ_2^3)
+        #                            − Ḋ(τ_1^2)·D(τ_3, s_1)
+        t1, t2, t3 = tau_args
+        (s1,) = s_args
+        D_tau1_s1 = _D_companion_raw_n2((t1,), (s1,), **leaf_kw)
+        D_dot_tau1_s1 = D_tau1_s1 * (delta_tau + delta_s)
+        D_tau23 = _D_companion_raw_n2((t2, t3), (), **leaf_kw)
+        D_tau12 = _D_companion_raw_n2((t1, t2), (), **leaf_kw)
+        D_dot_tau12 = D_tau12 * delta_tau
+        D_tau3_s1 = _D_companion_raw_n2((t3,), (s1,), **leaf_kw)
+        return D_dot_n4 - D_dot_tau1_s1 * D_tau23 - D_dot_tau12 * D_tau3_s1
+
+    if k == 2:
+        # Eq. (71): D̄(τ_1^2, s_1^2) = Ḋ(τ_1^2, s_1^2)
+        #                              − Ḋ(τ_1, s_1)·D(τ_2, s_2)
+        #                              − Ḋ(s_1^2)·D(τ_1^2)
+        #                              − Ḋ(τ_1^2)·D(s_1^2)
+        t1, t2 = tau_args
+        s1, s2 = s_args
+        D_tau1_s1 = _D_companion_raw_n2((t1,), (s1,), **leaf_kw)
+        D_dot_tau1_s1 = D_tau1_s1 * (delta_tau + delta_s)
+        D_tau2_s2 = _D_companion_raw_n2((t2,), (s2,), **leaf_kw)
+        D_s12 = _D_companion_raw_n2((), (s1, s2), **leaf_kw)
+        D_dot_s12 = D_s12 * delta_s
+        D_tau12 = _D_companion_raw_n2((t1, t2), (), **leaf_kw)
+        D_dot_tau12 = D_tau12 * delta_tau
+        return D_dot_n4 - D_dot_tau1_s1 * D_tau2_s2 - D_dot_s12 * D_tau12 - D_dot_tau12 * D_s12
+
+    if k == 1:
+        # Eq. (70): D̄(τ_1, s_1^3) = Ḋ(τ_1, s_1^3)
+        #                            − Ḋ(τ_1, s_1)·D(s_2^3)
+        #                            − Ḋ(s_1^2)·D(τ_1, s_3)
+        (t1,) = tau_args
+        s1, s2, s3 = s_args
+        D_tau1_s1 = _D_companion_raw_n2((t1,), (s1,), **leaf_kw)
+        D_dot_tau1_s1 = D_tau1_s1 * (delta_tau + delta_s)
+        D_s23 = _D_companion_raw_n2((), (s2, s3), **leaf_kw)
+        D_s12 = _D_companion_raw_n2((), (s1, s2), **leaf_kw)
+        D_dot_s12 = D_s12 * delta_s
+        D_tau1_s3 = _D_companion_raw_n2((t1,), (s3,), **leaf_kw)
+        return D_dot_n4 - D_dot_tau1_s1 * D_s23 - D_dot_s12 * D_tau1_s3
+
+    # k == 0: Eq. (69) — D̄(s_1^4) = Ḋ(s_1^4) − Ḋ(s_1^2)·D(s_3^4)
+    s1, s2, s3, s4 = s_args
+    D_s12 = _D_companion_raw_n2((), (s1, s2), **leaf_kw)
+    D_dot_s12 = D_s12 * delta_s
+    D_s34 = _D_companion_raw_n2((), (s3, s4), **leaf_kw)
+    return D_dot_n4 - D_dot_s12 * D_s34
 
 
 # ─── L_n at order n (thermal-only path) ──────────────────────────────────────
