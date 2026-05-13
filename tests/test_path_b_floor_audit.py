@@ -55,7 +55,8 @@ def test_iter_audit_grid_yields_one_axis_at_a_time_topology():
             assert cfg.n_levels_per_mode != pbfa.ANCHOR_N_LEVELS_PER_MODE
 
 
-def test_predict_wall_time_seconds_scales_cubically_with_d_joint():
+def test_predict_wall_time_seconds_scales_with_calibrated_d_joint_exponent():
+    """Predictor scales as ``d_joint**PREFLIGHT_D_JOINT_EXPONENT`` (currently 2.2)."""
     anchor = pbfa.TruncationConfig(
         n_bath_modes=pbfa.ANCHOR_N_BATH_MODES,
         n_levels_per_mode=pbfa.ANCHOR_N_LEVELS_PER_MODE,
@@ -68,9 +69,8 @@ def test_predict_wall_time_seconds_scales_cubically_with_d_joint():
         omega_max_factor=pbfa.ANCHOR_OMEGA_MAX_FACTOR,
         axis="n_levels_per_mode",
     )
-    # d_joint goes 162 -> 512 → ratio (512/162)**3 ≈ 31.5×.
     ratio = pbfa.predict_wall_time_seconds(bigger) / pbfa.predict_wall_time_seconds(anchor)
-    expected = (bigger.d_joint / anchor.d_joint) ** 3
+    expected = (bigger.d_joint / anchor.d_joint) ** pbfa.PREFLIGHT_D_JOINT_EXPONENT
     assert ratio == pytest.approx(expected, rel=1e-9)
 
 
@@ -215,3 +215,50 @@ def test_smoke_evaluate_point_at_card_section_5_1_corner():
     assert set(point.r_4_ladder.keys()) == {
         f"alpha_sq_{a2:g}" for a2 in pbfa.R_4_LADDER_ALPHA_SQUARED
     }
+
+
+def test_evaluate_point_with_timeout_kills_overrunning_child():
+    """A 0.5 s timeout kills the anchor evaluation (which needs ~7 s).
+
+    Exercises the multiprocessing.Process kill path in
+    ``evaluate_point_with_timeout``. The child process is spawned, runs
+    Path B for at least the timeout duration, then is terminated. The
+    returned point status is ``skipped-timeout`` with a populated
+    ``skip_reason``.
+    """
+    cfg = pbfa.TruncationConfig(
+        n_bath_modes=pbfa.ANCHOR_N_BATH_MODES,
+        n_levels_per_mode=pbfa.ANCHOR_N_LEVELS_PER_MODE,
+        omega_max_factor=pbfa.ANCHOR_OMEGA_MAX_FACTOR,
+        axis="anchor",
+    )
+    point = pbfa.evaluate_point_with_timeout(
+        cfg,
+        timeout_seconds=0.5,
+        grace_seconds=2.0,
+    )
+    assert point.status == "skipped-timeout"
+    assert point.skip_reason is not None
+    assert "timeout" in point.skip_reason
+    assert point.coefficient_ratio is None
+    assert point.wall_time_seconds >= 0.5
+
+
+def test_evaluate_point_with_timeout_returns_result_when_child_completes():
+    """A generous timeout lets the smoke-grid corner complete normally."""
+    cfg = pbfa.TruncationConfig(
+        n_bath_modes=4,
+        n_levels_per_mode=3,
+        omega_max_factor=10.0,
+        axis="omega_max_factor",
+    )
+    point = pbfa.evaluate_point_with_timeout(
+        cfg,
+        timeout_seconds=60.0,
+        t_grid=np.linspace(0.0, 5.0, 21),
+        alpha_values=(0.01, 0.02, 0.03),
+    )
+    assert point.status in ("evaluated", "fit-degraded"), (
+        f"timeout-wrapped smoke point failed: status={point.status}, " f"error={point.error}"
+    )
+    assert point.coefficient_ratio is not None and np.isfinite(point.coefficient_ratio)

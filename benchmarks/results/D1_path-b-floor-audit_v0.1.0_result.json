@@ -1,0 +1,301 @@
+{
+  "schema": "D1_path-b-floor-audit_v0.1.0",
+  "card_id": "cbg-companion-sec-iv-l4-phase-e-5c-path-b-floor-audit-card",
+  "card_version": "v0.1.0",
+  "fixture": {
+    "card_anchor": "D1 v0.1.2",
+    "model_spec": {
+      "model_kind": "dynamical",
+      "system_dimension": 2,
+      "system_hamiltonian": "(omega / 2) * sigma_z",
+      "coupling_operator": "sigma_x",
+      "bath_type": "bosonic_linear",
+      "bath_spectral_density": {
+        "family": "ohmic",
+        "cutoff_frequency": 10.0,
+        "coupling_strength": 0.0
+      },
+      "bath_state": {
+        "family": "thermal",
+        "temperature": 0.5
+      },
+      "omega": 1.0
+    },
+    "t_grid": {
+      "t_start": 0.0,
+      "t_end": 20.0,
+      "n_points": 200,
+      "scheme": "uniform"
+    },
+    "alpha_values": [
+      0.01,
+      0.015,
+      0.02,
+      0.025,
+      0.03
+    ],
+    "r_4_ladder_alpha_squared": [
+      0.05,
+      0.5,
+      1.0
+    ]
+  },
+  "anchor": {
+    "n_bath_modes": 4,
+    "n_levels_per_mode": 3,
+    "omega_max_factor": 30.0
+  },
+  "per_point_budget_seconds": 1800.0,
+  "preflight_factor": 2.0,
+  "fit_residual_degraded_threshold": 0.001,
+  "started_at_unix": 1778688535.6086998,
+  "ended_at_unix": 1778690527.141749,
+  "points": [
+    {
+      "config": {
+        "n_bath_modes": 4,
+        "n_levels_per_mode": 3,
+        "omega_max_factor": 30.0,
+        "axis": "anchor",
+        "d_joint": 162
+      },
+      "status": "evaluated",
+      "l2_avg": 27.423350328374323,
+      "l4_avg": 1300.4894009029395,
+      "coefficient_ratio": 47.42270310996072,
+      "fit_relative_residual": 3.217290797527754e-05,
+      "r_4_ladder": {
+        "alpha_sq_0.05": 2.371135155498036,
+        "alpha_sq_0.5": 23.71135155498036,
+        "alpha_sq_1": 47.42270310996072
+      },
+      "wall_time_seconds": 6.951635250006802,
+      "predicted_wall_time_seconds": 10.0,
+      "skip_reason": null,
+      "error": null
+    },
+    {
+      "config": {
+        "n_bath_modes": 4,
+        "n_levels_per_mode": 3,
+        "omega_max_factor": 10.0,
+        "axis": "omega_max_factor",
+        "d_joint": 162
+      },
+      "status": "evaluated",
+      "l2_avg": 21.933849617716376,
+      "l4_avg": 1101.7113601076333,
+      "coefficient_ratio": 50.22881889450726,
+      "fit_relative_residual": 3.382887943371808e-05,
+      "r_4_ladder": {
+        "alpha_sq_0.05": 2.511440944725363,
+        "alpha_sq_0.5": 25.11440944725363,
+        "alpha_sq_1": 50.22881889450726
+      },
+      "wall_time_seconds": 6.91418212489225,
+      "predicted_wall_time_seconds": 10.0,
+      "skip_reason": null,
+      "error": null
+    },
+    {
+      "config": {
+        "n_bath_modes": 4,
+        "n_levels_per_mode": 3,
+        "omega_max_factor": 20.0,
+        "axis": "omega_max_factor",
+        "d_joint": 162
+      },
+      "status": "evaluated",
+      "l2_avg": 24.080274961741814,
+      "l4_avg": 1196.320623254863,
+      "coefficient_ratio": 49.680521719770624,
+      "fit_relative_residual": 3.2842320561452486e-05,
+      "r_4_ladder": {
+        "alpha_sq_0.05": 2.4840260859885315,
+        "alpha_sq_0.5": 24.840260859885312,
+        "alpha_sq_1": 49.680521719770624
+      },
+      "wall_time_seconds": 6.935660833027214,
+      "predicted_wall_time_seconds": 10.0,
+      "skip_reason": null,
+      "error": null
+    },
+    {
+      "config": {
+        "n_bath_modes": 4,
+        "n_levels_per_mode": 3,
+        "omega_max_factor": 40.0,
+        "axis": "omega_max_factor",
+        "d_joint": 162
+      },
+      "status": "evaluated",
+      "l2_avg": 29.980456369122994,
+      "l4_avg": 1388.3171970220164,
+      "coefficient_ratio": 46.30740706308429,
+      "fit_relative_residual": 3.260966372090827e-05,
+      "r_4_ladder": {
+        "alpha_sq_0.05": 2.3153703531542145,
+        "alpha_sq_0.5": 23.153703531542146,
+        "alpha_sq_1": 46.30740706308429
+      },
+      "wall_time_seconds": 6.9066189168952405,
+      "predicted_wall_time_seconds": 10.0,
+      "skip_reason": null,
+      "error": null
+    },
+    {
+      "config": {
+        "n_bath_modes": 4,
+        "n_levels_per_mode": 3,
+        "omega_max_factor": 80.0,
+        "axis": "omega_max_factor",
+        "d_joint": 162
+      },
+      "status": "evaluated",
+      "l2_avg": 36.7152338699795,
+      "l4_avg": 1541.9033808952895,
+      "coefficient_ratio": 41.9962837866066,
+      "fit_relative_residual": 3.140465485962475e-05,
+      "r_4_ladder": {
+        "alpha_sq_0.05": 2.09981418933033,
+        "alpha_sq_0.5": 20.9981418933033,
+        "alpha_sq_1": 41.9962837866066
+      },
+      "wall_time_seconds": 6.945624790969305,
+      "predicted_wall_time_seconds": 10.0,
+      "skip_reason": null,
+      "error": null
+    },
+    {
+      "config": {
+        "n_bath_modes": 4,
+        "n_levels_per_mode": 3,
+        "omega_max_factor": 160.0,
+        "axis": "omega_max_factor",
+        "d_joint": 162
+      },
+      "status": "evaluated",
+      "l2_avg": 43.212736500589905,
+      "l4_avg": 1576.679630298945,
+      "coefficient_ratio": 36.48645649361784,
+      "fit_relative_residual": 2.9503237903721458e-05,
+      "r_4_ladder": {
+        "alpha_sq_0.05": 1.824322824680892,
+        "alpha_sq_0.5": 18.24322824680892,
+        "alpha_sq_1": 36.48645649361784
+      },
+      "wall_time_seconds": 6.8992598339682445,
+      "predicted_wall_time_seconds": 10.0,
+      "skip_reason": null,
+      "error": null
+    },
+    {
+      "config": {
+        "n_bath_modes": 6,
+        "n_levels_per_mode": 3,
+        "omega_max_factor": 30.0,
+        "axis": "n_bath_modes",
+        "d_joint": 1458
+      },
+      "status": "evaluated",
+      "l2_avg": 20.233256502674347,
+      "l4_avg": 1191.3406588383468,
+      "coefficient_ratio": 58.8803220421231,
+      "fit_relative_residual": 6.893473726741712e-05,
+      "r_4_ladder": {
+        "alpha_sq_0.05": 2.944016102106155,
+        "alpha_sq_0.5": 29.44016102106155,
+        "alpha_sq_1": 58.8803220421231
+      },
+      "wall_time_seconds": 1118.5310448749224,
+      "predicted_wall_time_seconds": 1256.9949148714418,
+      "skip_reason": null,
+      "error": null
+    },
+    {
+      "config": {
+        "n_bath_modes": 8,
+        "n_levels_per_mode": 3,
+        "omega_max_factor": 30.0,
+        "axis": "n_bath_modes",
+        "d_joint": 13122
+      },
+      "status": "skipped-preflight",
+      "l2_avg": null,
+      "l4_avg": null,
+      "coefficient_ratio": null,
+      "fit_relative_residual": null,
+      "r_4_ladder": null,
+      "wall_time_seconds": 0.0,
+      "predicted_wall_time_seconds": 158003.62160126632,
+      "skip_reason": "predicted 158003.6s > budget*2.0 = 3600.0s",
+      "error": null
+    },
+    {
+      "config": {
+        "n_bath_modes": 4,
+        "n_levels_per_mode": 4,
+        "omega_max_factor": 30.0,
+        "axis": "n_levels_per_mode",
+        "d_joint": 512
+      },
+      "status": "evaluated",
+      "l2_avg": 27.53909976810707,
+      "l4_avg": 1183.3481162336043,
+      "coefficient_ratio": 42.96974578682617,
+      "fit_relative_residual": 3.3452633417992486e-05,
+      "r_4_ladder": {
+        "alpha_sq_0.05": 2.1484872893413085,
+        "alpha_sq_0.5": 21.484872893413083,
+        "alpha_sq_1": 42.96974578682617
+      },
+      "wall_time_seconds": 74.32240212499164,
+      "predicted_wall_time_seconds": 125.73635957978499,
+      "skip_reason": null,
+      "error": null
+    },
+    {
+      "config": {
+        "n_bath_modes": 4,
+        "n_levels_per_mode": 5,
+        "omega_max_factor": 30.0,
+        "axis": "n_levels_per_mode",
+        "d_joint": 1250
+      },
+      "status": "evaluated",
+      "l2_avg": 27.611532070667486,
+      "l4_avg": 1131.2613311969667,
+      "coefficient_ratio": 40.970610696345155,
+      "fit_relative_residual": 4.384381033573647e-05,
+      "r_4_ladder": {
+        "alpha_sq_0.05": 2.048530534817258,
+        "alpha_sq_0.5": 20.485305348172577,
+        "alpha_sq_1": 40.970610696345155
+      },
+      "wall_time_seconds": 751.6092096250504,
+      "predicted_wall_time_seconds": 895.9195151822744,
+      "skip_reason": null,
+      "error": null
+    }
+  ],
+  "summary": {
+    "anchor_status": "evaluated",
+    "anchor_coefficient_ratio": 47.42270310996072,
+    "max_drift": 0.24160619662686,
+    "max_drift_config": {
+      "n_bath_modes": 6,
+      "n_levels_per_mode": 3,
+      "omega_max_factor": 30.0,
+      "axis": "n_bath_modes",
+      "d_joint": 1458
+    },
+    "evaluated_count": 9,
+    "fit_degraded_count": 0,
+    "skipped_preflight_count": 1,
+    "skipped_timeout_count": 0,
+    "errored_count": 0,
+    "hilbert_witness_count": 3,
+    "cause_label_eligible": true,
+    "notes": "Cause label per card \u00a74.3 is the steward's call from this table; the driver does not auto-classify. The Hilbert-tightening witness requirement (\u00a75.3) is satisfied iff hilbert_witness_count >= 1."
+  }
+}
