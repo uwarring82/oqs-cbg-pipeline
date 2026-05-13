@@ -156,15 +156,77 @@ def test_L_n_thermal_at_time_n_3_returns_zero_post_phase_b2():
     np.testing.assert_allclose(L_3(sigma_z), np.zeros((2, 2), dtype=complex), atol=1e-12)
 
 
-def test_L_n_thermal_at_time_n_4_raises_pending_recursion():
-    """n=4 is the deferred Phase B.2 follow-up; clearly named in error."""
+def test_L_n_thermal_at_time_n_4_thermal_returns_callable():
+    """Phase D: n=4 thermal Gaussian routes through `_L_4_thermal_at_time_apply`.
+
+    For A = sigma_x with H_S = (omega/2) sigma_z, the commuting-case
+    guard does NOT fire (the commutator is non-zero), so the literal
+    θ-aware integration runs and produces a finite (d, d) complex
+    output for any X.
+    """
     t = _coarse_t_grid()
-    with pytest.raises(NotImplementedError, match="n=4|deferred"):
+    L_4 = tr.L_n_thermal_at_time(
+        4,
+        5,
+        t,
+        _hs(),
+        sigma_x,
+        bath_state=_thermal_state(),
+        spectral_density=_ohmic_sd(),
+    )
+    out = L_4(sigma_x)
+    assert out.shape == (2, 2)
+    assert np.all(np.isfinite(out))
+
+
+def test_L_n_thermal_at_time_n_4_sigma_z_exact_zero_via_guard():
+    """Phase D + Phase C §3.2: n=4 σ_z with H_S = (omega/2) σ_z hits
+    the commuting-case guard and returns exact zero at machine
+    precision."""
+    t = _coarse_t_grid()
+    L_4 = tr.L_n_thermal_at_time(
+        4,
+        5,
+        t,
+        _hs(),
+        sigma_z,
+        bath_state=_thermal_state(),
+        spectral_density=_ohmic_sd(),
+    )
+    out = L_4(sigma_x)
+    np.testing.assert_allclose(out, np.zeros((2, 2), dtype=complex), atol=1e-12)
+
+
+def test_L_n_thermal_at_time_n_4_without_bath_kwargs_raises_value_error():
+    """Phase D contract: n=4 requires bath_state and spectral_density."""
+    t = _coarse_t_grid()
+    with pytest.raises(ValueError, match="bath_state|spectral_density"):
         tr.L_n_thermal_at_time(4, 5, t, _hs(), sigma_x, D_bar_2_array=None)
 
 
+def test_L_n_thermal_at_time_n_4_non_thermal_raises():
+    """Phase D contract: n=4 with non-thermal bath_state.family raises
+    NotImplementedError pointing at the displaced entry point."""
+    t = _coarse_t_grid()
+    displaced = {
+        "family": "coherent_displaced",
+        "temperature": 0.0,
+        "displacement_amplitude": 1.0,
+    }
+    with pytest.raises(NotImplementedError, match="K_total_displaced_on_grid"):
+        tr.L_n_thermal_at_time(
+            4,
+            5,
+            t,
+            _hs(),
+            sigma_x,
+            bath_state=displaced,
+            spectral_density=_ohmic_sd(),
+        )
+
+
 def test_L_n_thermal_at_time_n_5_raises_out_of_scope():
-    """Orders n >= 5 are out of DG-4 Phase B scope altogether."""
+    """Orders n >= 5 remain out of DG-4 v0.1.5 scope."""
     t = _coarse_t_grid()
     with pytest.raises(NotImplementedError, match="out of scope|not implemented"):
         tr.L_n_thermal_at_time(5, 5, t, _hs(), sigma_x, D_bar_2_array=None)
@@ -229,13 +291,29 @@ def test_L_3_dissipator_thermal_is_zero():
     assert np.max(np.abs(norms)) < 1e-12
 
 
-def test_L_n_dissipator_n_4_raises_pending():
-    """n=4 deferral propagates from L_n_thermal_at_time(n=4)."""
-    t = _coarse_t_grid()
-    with pytest.raises(NotImplementedError, match="n=4|deferred"):
-        tr.L_n_dissipator_norm_thermal_on_grid(
-            4, t, _hs(), sigma_x, bath_state=_thermal_state(), spectral_density=_ohmic_sd()
-        )
+def test_L_n_dissipator_norm_n_4_thermal_returns_finite_array():
+    """Phase D: n=4 thermal Gaussian dissipator norm propagates through
+    L_n_thermal_at_time(n=4) and returns a finite (n_t,) real array.
+    For σ_x (non-commuting), the literal θ-aware integration runs and
+    the dissipator norm is non-zero on at least the late-time portion
+    of the grid."""
+    t = _coarse_t_grid(t_end=2.0, n_points=11)
+    norms = tr.L_n_dissipator_norm_thermal_on_grid(
+        4, t, _hs(), sigma_x, bath_state=_thermal_state(), spectral_density=_ohmic_sd()
+    )
+    assert norms.shape == (len(t),)
+    assert np.all(np.isfinite(norms))
+
+
+def test_L_n_dissipator_norm_n_4_sigma_z_exact_zero_via_guard():
+    """Phase D: n=4 σ_z dissipator norm is exact zero via the §3.2
+    commuting-case guard inside `_L_4_thermal_at_time_apply` (with
+    K_4 = 0 too, by Letter Eq. (6) extraction on a zero generator)."""
+    t = _coarse_t_grid(t_end=2.0, n_points=5)
+    norms = tr.L_n_dissipator_norm_thermal_on_grid(
+        4, t, _hs(), sigma_z, bath_state=_thermal_state(), spectral_density=_ohmic_sd()
+    )
+    assert np.max(np.abs(norms)) < 1e-12
 
 
 def test_L_n_dissipator_threads_quadrature_kwargs(monkeypatch):
@@ -532,13 +610,28 @@ def test_K_total_displaced_threads_quadrature_knobs(monkeypatch):
     assert seen == {"upper_cutoff_factor": 40.0, "quad_limit": 400}
 
 
-def test_K_total_N_card_4_raises_pending_recursion():
-    """DG-4 Phase B.2 covers n in {0, 1, 2, 3}; n=4 is the deferred
-    follow-up."""
+def test_K_total_thermal_on_grid_N_card_4_thermal_returns_finite_array():
+    """Phase D: K_total_thermal_on_grid(N_card=4) now supported for
+    thermal Gaussian. Returns a finite (n_t, d, d) complex array."""
     t = _coarse_t_grid()
-    with pytest.raises(NotImplementedError, match="n=4|deferred"):
+    K = tr.K_total_thermal_on_grid(
+        4,
+        t,
+        _hs(),
+        sigma_x,
+        bath_state=_thermal_state(),
+        spectral_density=_ohmic_sd(),
+    )
+    assert K.shape == (len(t), 2, 2)
+    assert np.all(np.isfinite(K))
+
+
+def test_K_total_thermal_on_grid_N_card_5_raises_out_of_scope():
+    """N_card >= 5 remains out of DG-4 v0.1.5 scope."""
+    t = _coarse_t_grid()
+    with pytest.raises(NotImplementedError, match="out of scope|not implemented"):
         tr.K_total_thermal_on_grid(
-            4,
+            5,
             t,
             _hs(),
             sigma_x,
@@ -633,11 +726,40 @@ def test_L_n_shim_n_3_returns_zero_post_phase_b2():
     np.testing.assert_allclose(out, np.zeros_like(X), atol=1e-12)
 
 
-def test_L_n_shim_n_4_raises_pending_recursion():
-    """n=4 is the deferred Phase B.2 follow-up."""
-    with pytest.raises(NotImplementedError, match="n=4|deferred"):
+def test_L_n_shim_n_4_thermal_returns_callable():
+    """Phase D: L_n shim routes n=4 thermal Gaussian to
+    L_n_thermal_at_time(n=4); the output matches the direct call to
+    machine precision."""
+    t = _coarse_t_grid()
+    H_S = _hs()
+    A = sigma_x
+    via_shim = tr.L_n(
+        n=4,
+        t_idx=5,
+        t_grid=t,
+        system_hamiltonian=H_S,
+        coupling_operator=A,
+        bath_state=_thermal_state(),
+        spectral_density=_ohmic_sd(),
+    )
+    via_direct = tr.L_n_thermal_at_time(
+        4,
+        5,
+        t,
+        H_S,
+        A,
+        bath_state=_thermal_state(),
+        spectral_density=_ohmic_sd(),
+    )
+    X = sigma_x
+    np.testing.assert_allclose(via_shim(X), via_direct(X), atol=1e-12)
+
+
+def test_L_n_shim_n_5_raises_out_of_scope():
+    """L_n shim: n >= 5 raises out-of-scope (DG-4 v0.1.5 boundary)."""
+    with pytest.raises(NotImplementedError, match="out of scope|not implemented"):
         tr.L_n(
-            n=4,
+            n=5,
             t_idx=0,
             t_grid=_coarse_t_grid(),
             system_hamiltonian=_hs(),

@@ -830,6 +830,11 @@ def L_n_thermal_at_time(
     system_hamiltonian: np.ndarray,
     coupling_operator: np.ndarray,
     D_bar_2_array: np.ndarray | None = None,
+    *,
+    bath_state: dict[str, Any] | None = None,
+    spectral_density: dict[str, Any] | None = None,
+    upper_cutoff_factor: float = 30.0,
+    quad_limit: int = 200,
 ) -> Callable[[np.ndarray], np.ndarray]:
     """Return a callable that computes L_n[X] at time t_grid[t_idx] for
     a thermal Gaussian bath.
@@ -847,13 +852,20 @@ def L_n_thermal_at_time(
       scalar integrations per matrix entry).
     - n = 3: L_3[X] = 0 (thermal Gaussian D̄_1 = D̄_3 = 0; see DG-4
       Phase B.2 derivation in the n = 3 branch below).
-    - n = 4: pending; raises NotImplementedError. Non-zero in
-      general for [A, A_I(τ)] ≠ 0; zero for σ_z by Feynman-Vernon.
+    - n = 4: routes to ``_L_4_thermal_at_time_apply`` (DG-4 Phase C
+      private helper). REQUIRES ``bath_state`` and ``spectral_density``
+      kwargs. The §3.2 commuting-case guard inside the helper
+      short-circuits to exact-zero when ``[H_S, A] = 0`` (Feynman-
+      Vernon Gaussian-bath truncation for pure dephasing); otherwise
+      the literal θ-aware integration of Eqs. (69)-(73) runs in
+      full. Phase D public-route exposure: see card
+      ``phase-d-public-route-card_v0.1.0.md``.
 
     Parameters
     ----------
     n : int
-        Perturbative order; one of 0, 1, 2 in the implemented low-order path.
+        Perturbative order; one of {0, 1, 2, 3, 4} in the implemented
+        thermal Gaussian path. n ≥ 5 raises out-of-scope.
     t_idx : int
         Index into t_grid at which to evaluate L_n.
     t_grid : ndarray, shape (n_t,)
@@ -863,8 +875,16 @@ def L_n_thermal_at_time(
         H_S and A.
     D_bar_2_array : ndarray, shape (n_t, n_t), dtype complex
         Precomputed connected two-point on the time grid; required for
-        n = 2; ignored for n in {0, 1}. Use cbg.cumulants.D_bar_2 to
-        construct.
+        n = 2; ignored for n in {0, 1, 3, 4}. Use cbg.cumulants.D_bar_2
+        to construct.
+    bath_state, spectral_density : dict, keyword-only
+        Required at n = 4 (Phase D contract). Forwarded to
+        ``_L_4_thermal_at_time_apply``. Ignored at n ∈ {0, 1, 2, 3}.
+        Non-thermal ``bath_state.family`` at n = 4 raises
+        ``NotImplementedError`` pointing at ``K_total_displaced_on_grid``.
+    upper_cutoff_factor, quad_limit : float / int, keyword-only
+        Forwarded to ``_L_4_thermal_at_time_apply`` at n = 4; ignored
+        at n ∈ {0, 1, 2, 3}.
 
     Returns
     -------
@@ -874,10 +894,12 @@ def L_n_thermal_at_time(
     Raises
     ------
     NotImplementedError
-        For n = 4 (pending; see derivation note in the n = 4 branch).
-        For n >= 5 (out of DG-4 Phase B scope).
+        For n ≥ 5 (out of DG-4 v0.1.5 scope).
+        For n = 4 with ``bath_state.family != "thermal"`` (use
+        ``K_total_displaced_on_grid`` for displaced cases).
     ValueError
-        For invalid arguments.
+        For invalid arguments, including n = 4 without the required
+        ``bath_state`` / ``spectral_density`` kwargs.
     """
     if n == 0:
         H_S = np.asarray(system_hamiltonian, dtype=complex)
@@ -909,52 +931,36 @@ def L_n_thermal_at_time(
         return lambda X: np.zeros((d, d), dtype=complex)
 
     if n == 4:
-        # Pending: the thermal Gaussian L_4 has a non-trivial structure
-        # from (2,2) Wick contractions of D̄_2 mediated by the Λ_t-
-        # inversion subtraction L_4 = ∂_t Λ_4 − L_2 ∘ Λ_2. Two physical
-        # regimes:
-        #   * For [A, A_I(τ)] = 0 (A = σ_z; commutator-structure
-        #     degenerates), L_4 = 0 by Feynman-Vernon Gaussian-bath
-        #     exactness — the entire TCL series truncates at order 2.
-        #     This is the strong falsification oracle: any candidate L_4
-        #     formula must give exactly 0 here.
-        #   * For [A, A_I(τ)] ≠ 0 (A = σ_x), L_4 ≠ 0 and is the leading-
-        #     order convergence-detection signal that D1 v0.1.2's
-        #     ‖L_n^dissipator‖ ratio is designed to measure.
-        #
-        # Falsification of the obvious-looking candidate: a single
-        # nested-commutator [A(t),[A_I(s_1−t),[A_I(s_2−t),[A_I(s_3−t),X]]]]
-        # weighted by Wick(C(t−s_1)C(s_2−s_3) + perms) gives a complex-
-        # valued residual on σ_z ⇒ σ_x evaluation, while the Feynman-
-        # Vernon answer is real. The candidate is missing the C* / right-
-        # acting conjugate-pair structure that L_2 has, so it is rejected.
-        # See logbook routing note 2026-05-06_dg-4-phase-b2-tcl-order-3.md.
-        #
-        # Three concrete routes to a correct L_4 (DG-4 work plan v0.1.2):
-        #   Path A. Companion Sec. IV closed-form (Letter Eqs. 14-18 + Companion
-        #     Eqs. 19-28 truncated at n=4). Lowest-risk but requires the
-        #     paper text or an equivalent transcription accessible in the
-        #     repo (transcriptions/ currently has only the Letter App. D).
-        #   Path B. Numerical Λ_t reconstruction via Richardson extraction
-        #     from benchmarks/exact_finite_env at multiple coupling
-        #     strengths α; fit Λ_t = 1 + α² Λ_2 + α⁴ Λ_4 + … and recover
-        #     L_4 = ∂_t Λ_4 − L_2 ∘ Λ_2 numerically. Sidesteps the
-        #     analytic derivation but must live behind a clearly named
-        #     extraction module (e.g. benchmarks/numerical_tcl_extraction
-        #     or similar) — NOT promoted to cbg.tcl_recursion core API,
-        #     since cbg should not depend on benchmarks/.
-        #   Path C. Independent third-method extraction (HEOM, TEMPO,
-        #     pseudomode at order 4). Largest scope; properly its own work
-        #     plan rather than a DG-4 substep.
-        raise NotImplementedError(
-            "L_n_thermal_at_time: n=4 deferred. Three routes to a correct "
-            "L_4: (A) Companion Sec. IV closed form (paper-bearing); "
-            "(B) numerical Λ_t Richardson extraction via "
-            "benchmarks/exact_finite_env (kept behind a named extraction "
-            "module, not promoted to cbg.tcl_recursion core); (C) HEOM/"
-            "TEMPO/pseudomode third-method extraction (own work plan). "
-            "See the inline derivation/falsification notes above and "
-            "logbook/2026-05-06_dg-4-phase-b2-tcl-order-3.md for routing."
+        # DG-4 Phase D public route: thermal Gaussian n=4 routes through
+        # the Phase C `_L_4_thermal_at_time_apply` private helper
+        # (which itself applies the v0.1.3 §3.2 commuting-case guard
+        # before the literal θ-aware Eqs. (69)-(73) integration).
+        # Non-thermal scopes are not supported at n=4.
+        if bath_state is None or spectral_density is None:
+            raise ValueError(
+                "L_n_thermal_at_time: n=4 requires bath_state and "
+                "spectral_density kwargs (Phase D contract). Pass the "
+                "card per-case bath_state and bath_spectral_density "
+                "mappings; see phase-d-public-route-card_v0.1.0.md §2.1."
+            )
+        family = bath_state.get("family")
+        if family != "thermal":
+            raise NotImplementedError(
+                f"L_n_thermal_at_time: bath_state.family {family!r} at "
+                f"n=4 is not supported by this thermal-only path. Use "
+                f"K_total_displaced_on_grid for Council-cleared coherent-"
+                f"displaced benchmark-card cases. Out-of-scope for "
+                f"DG-4 work plan v0.1.5."
+            )
+        return _L_4_thermal_at_time_apply(
+            t_idx=t_idx,
+            t_grid=t_grid,
+            system_hamiltonian=system_hamiltonian,
+            coupling_operator=coupling_operator,
+            bath_state=bath_state,
+            spectral_density=spectral_density,
+            upper_cutoff_factor=upper_cutoff_factor,
+            quad_limit=quad_limit,
         )
 
     if n == 2:
@@ -1043,26 +1049,29 @@ def K_n_thermal_on_grid(
     Parameters
     ----------
     n : int
-        Perturbative order; one of 0, 1, 2, 3 in the currently implemented
-        thermal path. n = 3 returns zeros for any system coupling under a
-        thermal Gaussian bath (Phase B.2; see L_n_thermal_at_time docstring).
-        n = 4 is the pending Phase B follow-up: the parity-class theorem
-        (Letter App. D) plus the Feynman-Vernon Gaussian-bath result
-        predicts K_4 = 0 for A = σ_z and K_4 ≠ 0 (∝ σ_z) for A = σ_x; the
-        latter is the leading-order convergence-detection signal D1 v0.1.2
-        targets.
+        Perturbative order; one of {0, 1, 2, 3, 4} in the currently
+        implemented thermal Gaussian path. n = 3 returns zeros (Phase
+        B.2; see L_n_thermal_at_time docstring). n = 4 (Phase D public
+        route) routes through `_L_4_thermal_at_time_apply`: the §3.2
+        commuting-case guard short-circuits to K_4 = 0 for [H_S, A] = 0
+        (e.g. A = σ_z with H_S = (ω/2)σ_z, by the parity-class theorem
+        + Feynman-Vernon); for non-commuting A (e.g. σ_x) the literal
+        θ-aware Eqs. (69)-(73) integration produces a non-zero K_4.
+        n ≥ 5 raises out-of-scope.
     t_grid : ndarray, shape (n_t,)
         Time points.
     system_hamiltonian, coupling_operator : ndarray, shape (d, d)
         H_S and A.
     bath_state, spectral_density : dict
         Card per-case bath_state and bath_spectral_density mappings.
-        Used only for n = 2 (where D̄_2 is built); ignored for n in {0, 1}.
+        Used for n = 2 (D̄_2 construction) and n = 4 (Phase D route to
+        `_L_4_thermal_at_time_apply`); ignored for n in {0, 1, 3}.
     basis : list of (d, d) ndarrays, optional
         HS-orthonormal basis for Letter Eq. (6). Defaults to the
         matrix-unit basis at the system dimension d.
     upper_cutoff_factor, quad_limit : optional
-        Quadrature controls forwarded through D̄_2 construction for n = 2.
+        Quadrature controls forwarded through D̄_2 construction for
+        n = 2 and forwarded to `_L_4_thermal_at_time_apply` for n = 4.
 
     Returns
     -------
@@ -1105,9 +1114,23 @@ def K_n_thermal_on_grid(
             quad_limit=quad_limit,
         )
 
+    # Phase D: at n = 4, forward the bath kwargs so L_n_thermal_at_time
+    # can route to _L_4_thermal_at_time_apply. At n ∈ {0, 1, 2, 3} the
+    # bath kwargs are accepted but ignored by L_n_thermal_at_time.
     K = np.zeros((len(t_grid), d, d), dtype=complex)
     for t_idx in range(len(t_grid)):
-        L_n_apply = L_n_thermal_at_time(n, t_idx, t_grid, H_S, A, D_bar_2_array=D)
+        L_n_apply = L_n_thermal_at_time(
+            n,
+            t_idx,
+            t_grid,
+            H_S,
+            A,
+            D_bar_2_array=D,
+            bath_state=bath_state,
+            spectral_density=spectral_density,
+            upper_cutoff_factor=upper_cutoff_factor,
+            quad_limit=quad_limit,
+        )
         K[t_idx] = K_from_generator(L_n_apply, basis)
     return K
 
@@ -1205,7 +1228,18 @@ def L_n_dissipator_thermal_at_time(
             quad_limit=quad_limit,
         )
 
-    L_n_apply = L_n_thermal_at_time(n, t_idx, t_grid, H_S, A, D_bar_2_array=D_bar_2_array)
+    L_n_apply = L_n_thermal_at_time(
+        n,
+        t_idx,
+        t_grid,
+        H_S,
+        A,
+        D_bar_2_array=D_bar_2_array,
+        bath_state=bath_state,
+        spectral_density=spectral_density,
+        upper_cutoff_factor=upper_cutoff_factor,
+        quad_limit=quad_limit,
+    )
     K_t = np.asarray(K_n_array[t_idx], dtype=complex)
 
     def L_n_dis_apply(X: np.ndarray) -> np.ndarray:
@@ -1543,12 +1577,13 @@ def K_total_thermal_on_grid(
         raise ValueError(
             f"K_total_thermal_on_grid: N_card must be a non-negative integer; " f"got {N_card!r}"
         )
-    if N_card > 3:
+    if N_card > 4:
         raise NotImplementedError(
             f"K_total_thermal_on_grid: N_card={N_card} not implemented. "
-            f"DG-4 Phase B.2 covers n in {{0, 1, 2, 3}} (n=3 returns zeros "
-            f"by Gaussianity). n=4 is the pending follow-up; see "
-            f"L_n_thermal_at_time(n=4)."
+            f"DG-4 v0.1.5 covers n in {{0, 1, 2, 3, 4}} on the thermal "
+            f"Gaussian path (n=3 returns zeros by Gaussianity; n=4 routes "
+            f"through _L_4_thermal_at_time_apply per Phase D card v0.1.0). "
+            f"Orders n ≥ 5 are out of scope for this plan revision."
         )
 
     H_S = np.asarray(system_hamiltonian, dtype=complex)
@@ -1576,20 +1611,23 @@ def K_total_thermal_on_grid(
 def L_n(n: int, **kwargs):
     """Compute the n-th order TCL generator term per Companion Eq. (28).
 
-    Thin wrapper: routes to L_n_thermal_at_time when called with
-    the canonical (t_idx, t_grid, system_hamiltonian, coupling_operator,
-    D_bar_2_array) kwargs and a thermal bath state. Other configurations
-    raise NotImplementedError with explicit pending-recursion routing.
+    Thin wrapper: routes to L_n_thermal_at_time when called with the
+    canonical (t_idx, t_grid, system_hamiltonian, coupling_operator,
+    D_bar_2_array) kwargs and a thermal bath state. For n = 4 (Phase D
+    public route) the shim also forwards bath_state / spectral_density
+    / upper_cutoff_factor / quad_limit kwargs to L_n_thermal_at_time.
+    Other configurations raise NotImplementedError with explicit
+    routing pointers.
 
     Callers should generally prefer L_n_thermal_at_time (explicit
     parameters) or K_n_thermal_on_grid (higher-level batched form) over
     this generic-stub shim.
     """
-    if n >= 4:
+    if n >= 5:
         raise NotImplementedError(
-            f"L_n: n={n} not implemented; DG-4 Phase B.2 covers "
-            f"n in {{0, 1, 2, 3}} (n=3 returns zero by Gaussianity). "
-            f"n=4 is the next deferred piece; see L_n_thermal_at_time(n=4)."
+            f"L_n: n={n} not implemented. DG-4 v0.1.5 covers "
+            f"n in {{0, 1, 2, 3, 4}} on the thermal Gaussian path. "
+            f"Orders n ≥ 5 are out of scope for this plan revision."
         )
     bath_state = kwargs.get("bath_state")
     if bath_state is not None and bath_state.get("family") != "thermal":
@@ -1604,7 +1642,8 @@ def L_n(n: int, **kwargs):
         raise ValueError(
             f"L_n: missing required kwargs {missing}; pass "
             f"(t_idx, t_grid, system_hamiltonian, coupling_operator) "
-            f"and (D_bar_2_array for n=2)."
+            f"and (D_bar_2_array for n=2; bath_state + spectral_density "
+            f"for n=4)."
         )
     return L_n_thermal_at_time(
         n=n,
@@ -1613,6 +1652,10 @@ def L_n(n: int, **kwargs):
         system_hamiltonian=kwargs["system_hamiltonian"],
         coupling_operator=kwargs["coupling_operator"],
         D_bar_2_array=kwargs.get("D_bar_2_array"),
+        bath_state=bath_state,
+        spectral_density=kwargs.get("spectral_density"),
+        upper_cutoff_factor=kwargs.get("upper_cutoff_factor", 30.0),
+        quad_limit=kwargs.get("quad_limit", 200),
     )
 
 
