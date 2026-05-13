@@ -34,21 +34,15 @@ reviews/
 | 2 | 2026-05-06 | Gemini Code Assist | Documentation drift, state contradictions, file inconsistencies | Authored on the day of the DG-4 v0.1.1 supersedure; flags the same stale `DG-4_summary.json` later re-flagged in Round 3. |
 | 3 | 2026-05-08 | Claude Code (Opus 4.7) | Cross-document consistency sweep (metadata, DG status, formula, links) | 12 issues; high overlap with Codex audit. |
 | 3 | 2026-05-08 | Codex | Repository-wide audit (CI quality gates, FAIR metadata, examples, schema, doc warnings) | Includes verification snapshot: pytest 471 passed; ruff/black/mypy currently fail on CI scope. |
-| 3 | 2026-05-08 | unattributed | Structural / code-level sweep (build artefacts, naming conventions, packaging hygiene, Sphinx release string, stub modules, license headers) | 18 issues, mostly LOW. Self-describes as a complement to the Claude consistency review. Reviewer attribution missing in the source file. |
+| 3 | 2026-05-08 | anonymous (by reviewer request; steward-confirmed 2026-05-13) | Structural / code-level sweep (build artefacts, naming conventions, packaging hygiene, Sphinx release string, stub modules, license headers) | 18 issues, mostly LOW. Self-describes as a complement to the Claude consistency review. |
 
 ## Attribution note
 
 The four named reviews (Kimi, Gemini, Claude, Codex) carry self-identifying
 attribution in their headers. The Round-3 file `anonymous_structural-review.md`
-**does not declare its reviewer** — only its date (2026-05-08), its scope
-(structural / code-level), and a "complements `consistency_review_2026-05-08.md`"
-relation. For a project with strong governance discipline, consistent
-attribution matters: if the reviewer was an automated agent, please replace
-the `anonymous_` filename prefix with the agent name; if the reviewer was a
-human who requested anonymity, please add a one-line note to the file
-header explaining that intent. Until the file is amended, its findings are
-treated as evidence-of-equal-weight to the named reviews, but the audit
-trail is weaker than the others.
+is **anonymous by reviewer request** (steward-confirmed 2026-05-13); a
+one-line `Attribution:` header in the file records this intent. Its findings
+are treated as evidence-of-equal-weight to the named reviews.
 
 ## Resolution tracking
 

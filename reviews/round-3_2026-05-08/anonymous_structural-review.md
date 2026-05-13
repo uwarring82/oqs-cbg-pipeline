@@ -1,6 +1,7 @@
 # Repository Structural & Code-Level Inconsistency Review
 
 **Date:** 2026-05-08
+**Attribution:** Anonymous by reviewer request (steward-confirmed 2026-05-13). Findings carry evidence-of-equal-weight to the named round-3 reviews.
 **Scope:** Repository layout, build artefacts, code conventions, packaging hygiene,
 CI/workflow parity, and structural stubs. **No actions taken** — flags only.
 **Relation to prior review:** This complements `consistency_review_2026-05-08.md`
