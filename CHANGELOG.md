@@ -52,12 +52,93 @@ package release is made. The DG-anchoring tags are `v0.2.0` (DG-1 PASS) and
     the audit shape, round-trip through the writer, and refusal on non-DG-4
     results.
 
+- Review-resolution sweep (2026-05-08 → 2026-05-11) per
+  [`reviews/work-package_review-resolution_v0.1.0.md`](reviews/work-package_review-resolution_v0.1.0.md),
+  consolidating 35+ issues from three review rounds (Kimi, Gemini,
+  Claude, Codex, anonymous structural). All HIGH (H1–H4), MEDIUM
+  (M0–M7), and structural/LOW (S1–S14 / L1–L7) issues closed across
+  workstreams WS-A through WS-Lc plus follow-up patches WS-A2 / WS-D2 /
+  WS-E2 / WS-H2. Notable Tier-1 landings:
+  - WS-I L5 (`9f686ba`): immutable summary JSONs; `benchmarks/results/README.md`
+    index file added (Path L5-b chosen).
+  - WS-Lb S6 (`509c3c1`): `# SPDX-License-Identifier: MIT` headers on all
+    `*.py` files (41 touched).
+  - WS-Lb S8 (`a78b203` + `cf7d66c`): Python 3.13 in CI matrix and
+    `pyproject.toml` classifiers (two-step: CI row first, classifier after
+    green).
+  - WS-Lb S10 (`733e3ff`): callable refusal stubs in `models.fano_anderson`
+    and `models.jaynes_cummings` (Path S10-a); `ScopeDefinitionNotRunnableError`
+    raised on call, not import.
+  - WS-Lb S13 (`80971e0`): `.github/ISSUE_TEMPLATE/bug_report.md`,
+    `.github/ISSUE_TEMPLATE/dg-status-change.md`,
+    `.github/PULL_REQUEST_TEMPLATE.md` added with cards-first /
+    validity-envelope / DG-cause-label discipline encoded.
+- DG-4 work plan v0.1.5 (Path A analytic L_4 cross-validation, post-
+  verdict Tier-2.B) frozen via Council-3 ADM-EC deliberation 2026-05-11
+  (`e3ac79c`); six edits merged, no vetoes, no rc-read issues. See
+  [`plans/dg-4-work-plan_v0.1.5.md`](plans/dg-4-work-plan_v0.1.5.md) and
+  [`logbook/2026-05-11_dg-4-work-plan-v015-frozen-via-council-3.md`](logbook/2026-05-11_dg-4-work-plan-v015-frozen-via-council-3.md).
+- DG-4 v0.1.5 **Phase A** (`24c771e`): Companion Sec. IV L_4 transcription
+  v0.1.1 released at
+  [`transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_v0.1.1.md`](transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_v0.1.1.md);
+  two post-release docs-cleanup passes (`17c7ace`, `3c43eac`) addressed
+  eight findings.
+- DG-4 v0.1.5 **Phase B** (`ae20806`, `becccf9`, errata `0d900ec`):
+  small-grid Companion-identity verification card v0.1.1 and
+  `cbg.tcl_recursion._D_bar_4_companion` + `_D_companion_raw_n{2,4}`
+  helpers; 22 small-grid tests passing
+  ([`tests/test_n4_small_grid_verification.py`](tests/test_n4_small_grid_verification.py)).
+  Companion D̄ at n=4 differs from standard set-partition cumulants —
+  the B.1 cumulant path would silently zero L_4 and is rejected as a
+  falsification record.
+- DG-4 v0.1.5 **Phase C** (`49b92d5`, `6732924`, `e414448`, `3e50e94`,
+  `0d900ec`): physics-oracles card v0.1.3 (errata) and
+  `cbg.tcl_recursion._L_4_thermal_at_time_apply` (+ `_no_guard`
+  diagnostic); 19 physics-oracle tests passing
+  ([`tests/test_n4_physics_oracles.py`](tests/test_n4_physics_oracles.py)).
+  σ_z zero oracle is gated via the `[H_S, A] = 0` Feynman–Vernon guard
+  (Part A) with a non-gating O(h¹) convergence diagnostic (Part B);
+  cube → outer-simplex domain fix re-pinned the Part B reference table.
+- DG-4 v0.1.5 **Phase D** (`2959925`, `f599751`, `6cb0ea6`): public-route
+  card v0.1.0 and `cbg.tcl_recursion.L_n_thermal_at_time(n=4)` exposed
+  for the supported thermal Gaussian scope, propagating through
+  `L_n_superoperator_thermal_at_time`, `L_n_dissipator_thermal_at_time`,
+  `L_n_dissipator_norm_thermal_on_grid`, and `K_total_thermal_on_grid`
+  for `N_card > 4`. Four deferral tests flipped to callable; six new
+  unsupported-scope + guard-exact-zero gates added; 47/47 regression
+  tests passing ([`tests/test_tcl_recursion.py`](tests/test_tcl_recursion.py)).
+  Stale-deferral references swept across docs/.
+- DG-4 v0.1.5 **Phase E** (`749bd85`): Path A vs Path B cross-validation
+  pilot frozen as `frozen-unclassified-pilot` — a fourth state outside
+  the work plan's three-state acceptance set. An analytical convention
+  audit confirmed no normalization/definition mismatch between paths;
+  the remaining magnitude disagreement at N≤41 (Path A: 1.07 → 1.24 →
+  14.15; Path B: 47.42) is dual-side numerical resolution (Path A
+  quadrature not converged at O(h¹) on N≤41; Path B finite-env
+  extraction floor from the 2026-05-06 σ_z pilot). No classification
+  verdict issued; D1 v0.1.2 PASS unchanged; Phase F blocked. Deferred
+  tracks 5.A (finer-grid Path A: N=81 ≈ 50 min, N=161 ≈ 25–30 h due to
+  O(N⁵) L_4 assembly), 5.B (higher-order quadrature), and 5.C (Path B
+  floor audit) recorded for future steward selection. See
+  [`transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_phase-e-pilot-card_v0.1.0.md`](transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_phase-e-pilot-card_v0.1.0.md)
+  and
+  [`logbook/2026-05-13_dg-4-v015-phases-a-e-completion-plus-phase-e-pilot.md`](logbook/2026-05-13_dg-4-v015-phases-a-e-completion-plus-phase-e-pilot.md).
+
 ### Changed
 - DG-4 row in `docs/validity_envelope.md`, `docs/benchmark_protocol.md` §4,
   `README.md`, `index.html`, `docs-site/`, `examples/README.md`,
   `docs/endorsement_marker.md`, `project_dg2_blockers.md`, and
   `examples/dg4_walkthrough.ipynb` rolled forward from "v0.1.1 verdict
   superseded; v0.1.2 supersedure pending" to "DG-4 PASS at D1 v0.1.2".
+- DG-2 row in `docs/validity_envelope.md` carries a 2026-05-13
+  implementation-stage note that the reviewed thermal-Gaussian n=4 public
+  route (Phase D) reduces the old "n=4 not implemented" gap but does
+  **not** by itself authorise DG-2 Entry 2 closure: the scope is thermal
+  Gaussian only, non-thermal/displaced n=4 remains out of scope, and no
+  DG-2 card has yet converted this public route into an Entry-2-wide
+  K_2-K_4 recursion verdict.
+- Landing page and status surfaces refreshed (`2bf830d`) to reflect the
+  post-verdict DG-4 Path A artefact chain.
 
 ## [v0.5.0 git tag] — 2026-05-06
 
