@@ -305,6 +305,546 @@ def _D_bar_4_companion(
     return D_dot_n4 - D_dot_s12 * D_s34
 
 
+# ─── L_4 assembly via literal θ-aware Eqs. (69)-(73) integration ────────────
+#
+# Verification card (frozen 2026-05-13):
+#   transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_
+#   phase-c-physics-oracles-card_v0.1.1.md  (commit 6732924).
+#
+# This block implements `_L_4_thermal_at_time_apply` per the v0.1.1 §3a
+# discipline. Each (k ∈ {0..4}, term in Eq. (69)-(73), boundary-delta
+# branch ∈ {τ_1=t, s_1=t}) contribution is integrated on its OWN 3-D
+# domain (the intersection of each constituent D factor's Eq. (15)
+# θ-window with the outer Eq. (28) integration range). Wick's theorem
+# is applied INSIDE each raw D factor individually; pre-cancellation
+# of Wick pairings across terms is explicitly forbidden (v0.1.1 §3b)
+# because the terms do not share a common θ-window.
+#
+# Domain shapes encountered:
+#   - 3-simplex on (a, b, c): t > a > b > c > 0
+#   - 1-D × 2-simplex on (a; b, c): a ∈ [0, t], t > b > c > 0
+#   - 2-simplex × 1-D on (a, b; c): t > a > b > 0, c ∈ [0, t]
+#   - 3-D cube on (a, b, c): a, b, c ∈ [0, t]
+#
+# Quadrature: nested 1-D trapezoidal on each simplex factor; standard
+# 1-D trapezoidal on each free axis. Weight matrix c_wt[i, M] gives the
+# 1-D trapezoidal weight on [0, g[M]] at grid index i (h/2 at endpoints,
+# h interior, 0 if i > M).
+#
+# Operator chain per (k, branch) is fixed; only the integrand and
+# integration domain differ per term.
+
+
+def _L_4_thermal_at_time_apply(
+    t_idx: int,
+    t_grid: np.ndarray,
+    system_hamiltonian: np.ndarray,
+    coupling_operator: np.ndarray,
+    *,
+    bath_state: dict[str, Any],
+    spectral_density: dict[str, Any],
+    upper_cutoff_factor: float = 30.0,
+    quad_limit: int = 200,
+) -> Callable[[np.ndarray], np.ndarray]:
+    """Return a callable that computes L_4[X] at t = t_grid[t_idx] for
+    a thermal Gaussian bath, assembled from Companion Eq. (28) at n = 4
+    via literal θ-aware integration of Eqs. (69)-(73), with a
+    commuting-case Feynman-Vernon exact-zero short-circuit.
+
+    Verification card:
+        transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_
+        phase-c-physics-oracles-card_v0.1.2.md  (frozen 2026-05-13).
+
+    Behaviour:
+
+    - Commuting-case guard (§3.2 of the card): if [H_S, A] = 0
+      (machine-tolerance check at atol = rtol = 1e-12), short-circuit
+      to a callable that returns the (d, d) zero matrix. This captures
+      the Feynman-Vernon Gaussian-bath truncation result for pure
+      dephasing: L_4 = 0 as an operator. The guard fires for A = σ_z
+      with H_S = (ω/2) σ_z and similar commuting configurations.
+    - Non-commuting case ([H_S, A] ≠ 0): run the literal θ-aware
+      integration of Eqs. (69)-(73) per v0.1.1 §3a. Each
+      (k, term, branch) contribution is integrated on its own 3-D
+      domain (intersection of each constituent D factor's Eq. (15)
+      θ-window with the outer Eq. (28) range). Wick is applied inside
+      each raw D factor individually; pre-cancellation across terms is
+      forbidden.
+
+    Parameters
+    ----------
+    t_idx : int
+        Index into t_grid at which to evaluate L_4.
+    t_grid : ndarray
+        Time points; uniform spacing, t_grid[0] = 0.
+    system_hamiltonian, coupling_operator : ndarray
+        H_S and A, each shape (d, d).
+    bath_state, spectral_density : dict, keyword-only
+        Forwarded to cbg.bath_correlations.two_point.
+    upper_cutoff_factor, quad_limit : optional
+        Quadrature controls forwarded to two_point.
+
+    Returns
+    -------
+    callable
+        L_4_apply : (X: (d, d) ndarray) -> (d, d) ndarray.
+    """
+    H_S = np.asarray(system_hamiltonian, dtype=complex)
+    A = np.asarray(coupling_operator, dtype=complex)
+    d = A.shape[0]
+
+    # Commuting-case Feynman-Vernon exact-zero guard (v0.1.2 §3.2).
+    # When [H_S, A] = 0, thermal Gaussian L_t truncates at order 2
+    # exactly (the dephasing dynamical map factorises in α), so
+    # L_4 = 0 as an operator. Short-circuit to avoid the O(n_g^4)
+    # quadrature path that would only converge to zero as O(h^1) at
+    # the v0.1.2 §4.1 Part B diagnostic rate.
+    commutator = H_S @ A - A @ H_S
+    if np.allclose(commutator, np.zeros_like(commutator), atol=1e-12, rtol=1e-12):
+        return lambda X: np.zeros((d, d), dtype=complex)
+
+    return _L_4_thermal_at_time_apply_no_guard(
+        t_idx,
+        t_grid,
+        system_hamiltonian,
+        coupling_operator,
+        bath_state=bath_state,
+        spectral_density=spectral_density,
+        upper_cutoff_factor=upper_cutoff_factor,
+        quad_limit=quad_limit,
+    )
+
+
+def _L_4_thermal_at_time_apply_no_guard(
+    t_idx: int,
+    t_grid: np.ndarray,
+    system_hamiltonian: np.ndarray,
+    coupling_operator: np.ndarray,
+    *,
+    bath_state: dict[str, Any],
+    spectral_density: dict[str, Any],
+    upper_cutoff_factor: float = 30.0,
+    quad_limit: int = 200,
+) -> Callable[[np.ndarray], np.ndarray]:
+    """Literal θ-aware L_4 assembly without the commuting-case guard.
+
+    For the card §4.1 Part B convergence diagnostic ONLY. Use
+    `_L_4_thermal_at_time_apply` in production: it short-circuits to
+    exact zero when [H_S, A] = 0 (Feynman-Vernon), avoiding the
+    O(n_g^4) quadrature path. This `_no_guard` entry point bypasses
+    the short-circuit so the diagnostic can measure the literal
+    θ-aware quadrature's convergence on a refinement table.
+
+    Verification card:
+        transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_
+        phase-c-physics-oracles-card_v0.1.2.md §5 step 2.
+
+    Signature and integration logic match `_L_4_thermal_at_time_apply`
+    minus the §3.2 commuting-case guard.
+    """
+    H_S = np.asarray(system_hamiltonian, dtype=complex)
+    A = np.asarray(coupling_operator, dtype=complex)
+    t_grid_np = np.asarray(t_grid, dtype=float)
+    d = A.shape[0]
+
+    if t_idx < 1:
+        return lambda X: np.zeros((d, d), dtype=complex)
+
+    t_at = float(t_grid_np[t_idx])
+    sub_grid = t_grid_np[: t_idx + 1]
+    n_g = len(sub_grid)
+    T = n_g - 1  # grid index of the boundary time t
+
+    # Pre-compute A_I(τ - t) on the sub-grid (per n=2 repo convention).
+    A_I = np.zeros((n_g, d, d), dtype=complex)
+    for i in range(n_g):
+        A_I[i] = interaction_picture(H_S, A, sub_grid[i] - t_at)
+    A_at_t = A  # A_I(0) = A (interaction-picture operator at boundary time)
+
+    # Pre-compute C_tbl[i, j] = ⟨B(g[i]) B(g[j])⟩.
+    C_tbl = np.zeros((n_g, n_g), dtype=complex)
+    for i in range(n_g):
+        for j in range(n_g):
+            C_tbl[i, j] = two_point(
+                sub_grid[i],
+                sub_grid[j],
+                bath_state=bath_state,
+                spectral_density=spectral_density,
+                upper_cutoff_factor=upper_cutoff_factor,
+                quad_limit=quad_limit,
+            )
+
+    # Pre-compute c_wt[i, M] = nested 1-D trapezoidal weight on [0, g[M]].
+    h = float(sub_grid[1] - sub_grid[0])
+    c_wt = np.zeros((n_g, n_g))
+    for M in range(1, n_g):
+        for i in range(M + 1):
+            c_wt[i, M] = h / 2 if (i == 0 or i == M) else h
+
+    # Build the (coef, left_op, right_op) quadrature terms.
+    quadrature_terms: list[tuple[complex, np.ndarray, np.ndarray]] = []
+    eye_d = np.eye(d, dtype=complex)
+
+    # ─ Helper: Wick split of ⟨B(t1)B(t2)B(t3)B(t4)⟩ at given grid indices.
+    def W4(i1, i2, i3, i4):
+        return (
+            C_tbl[i1, i2] * C_tbl[i3, i4]
+            + C_tbl[i1, i3] * C_tbl[i2, i4]
+            + C_tbl[i1, i4] * C_tbl[i2, i3]
+        )
+
+    # Note: each (k, branch, term) block below applies the outer (-1)^k
+    # via the explicit `sign_outer_*` constant; the per-term sign from
+    # Eqs. (69)-(73) is folded into the `term_sign_*` constants.
+
+    # ════════════════════════════════════════════════════════════════
+    # k = 0, s-branch (Eq. 69). Outer sign: (-1)^0 = +1. Both terms.
+    # ════════════════════════════════════════════════════════════════
+    # Free vars: (s_2, s_3, s_4). Operator chain:
+    #   left_op = I; right_op = A_I[i_s_4] @ A_I[i_s_3] @ A_I[i_s_2] @ A
+    # Term 1.69 (+): D(t, s_2, s_3, s_4) on 3-simplex {t>s_2>s_3>s_4}.
+    #   D operator order via row-2.3: ⟨B(s_4) B(s_3) B(s_2) B(t)⟩
+    # Term 2.69 (-): C(s_2, t) C(s_4, s_3) on {s_2 ∈ [0,t], s_3 > s_4}.
+
+    # k=0, s-branch, Term 1.69 (+): 3-simplex on (s_2, s_3, s_4)
+    for i_s_2 in range(n_g):
+        for i_s_3 in range(i_s_2):
+            for i_s_4 in range(i_s_3):
+                wt = c_wt[i_s_2, T] * c_wt[i_s_3, i_s_2] * c_wt[i_s_4, i_s_3]
+                if wt == 0.0:
+                    continue
+                integrand = W4(i_s_4, i_s_3, i_s_2, T)  # ⟨B(s_4)B(s_3)B(s_2)B(t)⟩
+                right_op = A_I[i_s_4] @ A_I[i_s_3] @ A_I[i_s_2] @ A_at_t
+                quadrature_terms.append((wt * integrand, eye_d, right_op))
+
+    # k=0, s-branch, Term 2.69 (-): 1-D × 2-simplex on (s_2; s_3, s_4)
+    for i_s_2 in range(n_g):
+        w_a = c_wt[i_s_2, T]
+        if w_a == 0.0:
+            continue
+        for i_s_3 in range(n_g):
+            for i_s_4 in range(i_s_3):
+                wt = w_a * c_wt[i_s_3, T] * c_wt[i_s_4, i_s_3]
+                if wt == 0.0:
+                    continue
+                # -C(s_2, t) × C(s_4, s_3)
+                integrand = -C_tbl[i_s_2, T] * C_tbl[i_s_4, i_s_3]
+                right_op = A_I[i_s_4] @ A_I[i_s_3] @ A_I[i_s_2] @ A_at_t
+                quadrature_terms.append((wt * integrand, eye_d, right_op))
+
+    # ════════════════════════════════════════════════════════════════
+    # k = 1, τ-branch (Eq. 70). Outer sign: (-1)^1 = -1.
+    # ════════════════════════════════════════════════════════════════
+    # Free vars: (s_1, s_2, s_3). Operator chain:
+    #   left_op = A; right_op = A_I[i_s_3] @ A_I[i_s_2] @ A_I[i_s_1]
+    # Term 1.70 (+): D(t, s_1, s_2, s_3) on 3-simplex.
+    #   Operator order: ⟨B(s_3) B(s_2) B(s_1) B(t)⟩
+    # Term 2.70 (-): -C(s_1, t) × C(s_3, s_2) on 1-D × 2-simplex.
+    # Term 3.70 is s-branch only.
+    sign_outer_k1 = -1.0
+
+    # k=1, τ-branch, Term 1.70 (+): 3-simplex on (s_1, s_2, s_3)
+    for i_s_1 in range(n_g):
+        for i_s_2 in range(i_s_1):
+            for i_s_3 in range(i_s_2):
+                wt = c_wt[i_s_1, T] * c_wt[i_s_2, i_s_1] * c_wt[i_s_3, i_s_2]
+                if wt == 0.0:
+                    continue
+                integrand = W4(i_s_3, i_s_2, i_s_1, T)
+                right_op = A_I[i_s_3] @ A_I[i_s_2] @ A_I[i_s_1]
+                coef = sign_outer_k1 * wt * integrand
+                quadrature_terms.append((coef, A_at_t, right_op))
+
+    # k=1, τ-branch, Term 2.70 (-): 1-D × 2-simplex on (s_1; s_2, s_3)
+    for i_s_1 in range(n_g):
+        w_a = c_wt[i_s_1, T]
+        if w_a == 0.0:
+            continue
+        for i_s_2 in range(n_g):
+            for i_s_3 in range(i_s_2):
+                wt = w_a * c_wt[i_s_2, T] * c_wt[i_s_3, i_s_2]
+                if wt == 0.0:
+                    continue
+                integrand = -C_tbl[i_s_1, T] * C_tbl[i_s_3, i_s_2]
+                right_op = A_I[i_s_3] @ A_I[i_s_2] @ A_I[i_s_1]
+                coef = sign_outer_k1 * wt * integrand
+                quadrature_terms.append((coef, A_at_t, right_op))
+
+    # ════════════════════════════════════════════════════════════════
+    # k = 1, s-branch (Eq. 70). Outer sign: -1.
+    # ════════════════════════════════════════════════════════════════
+    # Free vars: (τ_1, s_2, s_3). Operator chain:
+    #   left_op = A_I[i_τ_1]; right_op = A_I[i_s_3] @ A_I[i_s_2] @ A
+    # Term 1.70 (+): D(τ_1, t, s_2, s_3) on 1-D × 2-simplex {τ_1, t > s_2 > s_3}.
+    #   Operator order: ⟨B(s_3) B(s_2) B(t) B(τ_1)⟩
+    # Term 2.70 (-): -C(t, τ_1) × C(s_3, s_2) on same 1-D × 2-simplex.
+    # Term 3.70 (-): -C(s_2, t) × C(s_3, τ_1) on 3-D cube.
+    # Terms 1.70 and 2.70 share the same domain shape.
+
+    # k=1, s-branch, Terms 1.70 + 2.70 on 1-D × 2-simplex on (τ_1; s_2, s_3)
+    for i_t_1 in range(n_g):
+        w_t1 = c_wt[i_t_1, T]
+        if w_t1 == 0.0:
+            continue
+        left_op = A_I[i_t_1]
+        for i_s_2 in range(n_g):
+            for i_s_3 in range(i_s_2):
+                wt = w_t1 * c_wt[i_s_2, T] * c_wt[i_s_3, i_s_2]
+                if wt == 0.0:
+                    continue
+                # Term 1.70 (+): ⟨B(s_3) B(s_2) B(t) B(τ_1)⟩
+                integrand_1 = W4(i_s_3, i_s_2, T, i_t_1)
+                # Term 2.70 (-): -C(t, τ_1) C(s_3, s_2)
+                integrand_2 = -C_tbl[T, i_t_1] * C_tbl[i_s_3, i_s_2]
+                right_op = A_I[i_s_3] @ A_I[i_s_2] @ A_at_t
+                coef = sign_outer_k1 * wt * (integrand_1 + integrand_2)
+                quadrature_terms.append((coef, left_op, right_op))
+
+    # k=1, s-branch, Term 3.70 (-): 3-D cube on (τ_1, s_2, s_3)
+    for i_t_1 in range(n_g):
+        w_t1 = c_wt[i_t_1, T]
+        if w_t1 == 0.0:
+            continue
+        left_op = A_I[i_t_1]
+        for i_s_2 in range(n_g):
+            for i_s_3 in range(n_g):
+                wt = w_t1 * c_wt[i_s_2, T] * c_wt[i_s_3, T]
+                if wt == 0.0:
+                    continue
+                # -C(s_2, t) × C(s_3, τ_1)
+                integrand = -C_tbl[i_s_2, T] * C_tbl[i_s_3, i_t_1]
+                right_op = A_I[i_s_3] @ A_I[i_s_2] @ A_at_t
+                coef = sign_outer_k1 * wt * integrand
+                quadrature_terms.append((coef, left_op, right_op))
+
+    # ════════════════════════════════════════════════════════════════
+    # k = 2, τ-branch (Eq. 71). Outer sign: (-1)^2 = +1.
+    # ════════════════════════════════════════════════════════════════
+    # Free vars: (τ_2, s_1, s_2). Operator chain:
+    #   left_op = A @ A_I[i_τ_2]; right_op = A_I[i_s_2] @ A_I[i_s_1]
+    # Term 1.71 (+): D(t, τ_2, s_1, s_2) on 1-D × 2-simplex (τ_2; s_1, s_2).
+    #   Operator order: ⟨B(s_2) B(s_1) B(t) B(τ_2)⟩
+    # Term 2.71 (-): -C(s_1, t) × C(s_2, τ_2) on 3-D cube.
+    # Term 3.71 is s-branch only.
+    # Term 4.71 (-): -C(t, τ_2) × C(s_2, s_1) on 1-D × 2-simplex.
+    # Terms 1.71 and 4.71 share the same 1-D × 2-simplex domain.
+    sign_outer_k2 = 1.0
+
+    # k=2, τ-branch, Terms 1.71 + 4.71 on 1-D × 2-simplex on (τ_2; s_1, s_2)
+    for i_t_2 in range(n_g):
+        w_t2 = c_wt[i_t_2, T]
+        if w_t2 == 0.0:
+            continue
+        left_op = A_at_t @ A_I[i_t_2]
+        for i_s_1 in range(n_g):
+            for i_s_2 in range(i_s_1):
+                wt = w_t2 * c_wt[i_s_1, T] * c_wt[i_s_2, i_s_1]
+                if wt == 0.0:
+                    continue
+                integrand_1 = W4(i_s_2, i_s_1, T, i_t_2)
+                integrand_4 = -C_tbl[T, i_t_2] * C_tbl[i_s_2, i_s_1]
+                right_op = A_I[i_s_2] @ A_I[i_s_1]
+                coef = sign_outer_k2 * wt * (integrand_1 + integrand_4)
+                quadrature_terms.append((coef, left_op, right_op))
+
+    # k=2, τ-branch, Term 2.71 (-): 3-D cube on (τ_2, s_1, s_2)
+    for i_t_2 in range(n_g):
+        w_t2 = c_wt[i_t_2, T]
+        if w_t2 == 0.0:
+            continue
+        left_op = A_at_t @ A_I[i_t_2]
+        for i_s_1 in range(n_g):
+            for i_s_2 in range(n_g):
+                wt = w_t2 * c_wt[i_s_1, T] * c_wt[i_s_2, T]
+                if wt == 0.0:
+                    continue
+                integrand = -C_tbl[i_s_1, T] * C_tbl[i_s_2, i_t_2]
+                right_op = A_I[i_s_2] @ A_I[i_s_1]
+                coef = sign_outer_k2 * wt * integrand
+                quadrature_terms.append((coef, left_op, right_op))
+
+    # ════════════════════════════════════════════════════════════════
+    # k = 2, s-branch (Eq. 71). Outer sign: +1.
+    # ════════════════════════════════════════════════════════════════
+    # Free vars: (τ_1, τ_2, s_2). Operator chain:
+    #   left_op = A_I[i_τ_1] @ A_I[i_τ_2]; right_op = A_I[i_s_2] @ A
+    # Term 1.71 (+): D(τ_1, τ_2, t, s_2) on 2-simplex × 1-D (τ_1>τ_2; s_2).
+    #   Operator order: ⟨B(s_2) B(t) B(τ_1) B(τ_2)⟩
+    # Term 2.71 (-): -C(t, τ_1) × C(s_2, τ_2) on 3-D cube.
+    # Term 3.71 (-): -C(s_2, t) × C(τ_1, τ_2) on 2-simplex × 1-D.
+    # Term 4.71 is τ-branch only.
+    # Terms 1.71 and 3.71 share the same 2-simplex × 1-D domain.
+
+    # k=2, s-branch, Terms 1.71 + 3.71 on 2-simplex × 1-D on (τ_1, τ_2; s_2)
+    for i_t_1 in range(n_g):
+        for i_t_2 in range(i_t_1):
+            w_tau = c_wt[i_t_1, T] * c_wt[i_t_2, i_t_1]
+            if w_tau == 0.0:
+                continue
+            left_op = A_I[i_t_1] @ A_I[i_t_2]
+            for i_s_2 in range(n_g):
+                w_s = c_wt[i_s_2, T]
+                if w_s == 0.0:
+                    continue
+                wt = w_tau * w_s
+                integrand_1 = W4(i_s_2, T, i_t_1, i_t_2)
+                integrand_3 = -C_tbl[i_s_2, T] * C_tbl[i_t_1, i_t_2]
+                right_op = A_I[i_s_2] @ A_at_t
+                coef = sign_outer_k2 * wt * (integrand_1 + integrand_3)
+                quadrature_terms.append((coef, left_op, right_op))
+
+    # k=2, s-branch, Term 2.71 (-): 3-D cube on (τ_1, τ_2, s_2)
+    for i_t_1 in range(n_g):
+        for i_t_2 in range(n_g):
+            w_tau = c_wt[i_t_1, T] * c_wt[i_t_2, T]
+            if w_tau == 0.0:
+                continue
+            left_op = A_I[i_t_1] @ A_I[i_t_2]
+            for i_s_2 in range(n_g):
+                w_s = c_wt[i_s_2, T]
+                if w_s == 0.0:
+                    continue
+                wt = w_tau * w_s
+                integrand = -C_tbl[T, i_t_1] * C_tbl[i_s_2, i_t_2]
+                right_op = A_I[i_s_2] @ A_at_t
+                coef = sign_outer_k2 * wt * integrand
+                quadrature_terms.append((coef, left_op, right_op))
+
+    # ════════════════════════════════════════════════════════════════
+    # k = 3, τ-branch (Eq. 72). Outer sign: (-1)^3 = -1.
+    # ════════════════════════════════════════════════════════════════
+    # Free vars: (τ_2, τ_3, s_1). Operator chain:
+    #   left_op = A @ A_I[i_τ_2] @ A_I[i_τ_3]; right_op = A_I[i_s_1]
+    # Term 1.72 (+): D(t, τ_2, τ_3, s_1) on 2-simplex × 1-D (τ_2>τ_3; s_1).
+    #   Operator order: ⟨B(s_1) B(t) B(τ_2) B(τ_3)⟩
+    # Term 2.72 (-): -C(s_1, t) × C(τ_2, τ_3) on 2-simplex × 1-D.
+    # Term 3.72 (-): -C(t, τ_2) × C(s_1, τ_3) on 3-D cube.
+    # Terms 1.72 and 2.72 share the 2-simplex × 1-D domain.
+    sign_outer_k3 = -1.0
+
+    # k=3, τ-branch, Terms 1.72 + 2.72 on 2-simplex × 1-D on (τ_2, τ_3; s_1)
+    for i_t_2 in range(n_g):
+        for i_t_3 in range(i_t_2):
+            w_tau = c_wt[i_t_2, T] * c_wt[i_t_3, i_t_2]
+            if w_tau == 0.0:
+                continue
+            left_op = A_at_t @ A_I[i_t_2] @ A_I[i_t_3]
+            for i_s_1 in range(n_g):
+                w_s = c_wt[i_s_1, T]
+                if w_s == 0.0:
+                    continue
+                wt = w_tau * w_s
+                integrand_1 = W4(i_s_1, T, i_t_2, i_t_3)
+                integrand_2 = -C_tbl[i_s_1, T] * C_tbl[i_t_2, i_t_3]
+                right_op = A_I[i_s_1]
+                coef = sign_outer_k3 * wt * (integrand_1 + integrand_2)
+                quadrature_terms.append((coef, left_op, right_op))
+
+    # k=3, τ-branch, Term 3.72 (-): 3-D cube on (τ_2, τ_3, s_1)
+    for i_t_2 in range(n_g):
+        for i_t_3 in range(n_g):
+            w_tau = c_wt[i_t_2, T] * c_wt[i_t_3, T]
+            if w_tau == 0.0:
+                continue
+            left_op = A_at_t @ A_I[i_t_2] @ A_I[i_t_3]
+            for i_s_1 in range(n_g):
+                w_s = c_wt[i_s_1, T]
+                if w_s == 0.0:
+                    continue
+                wt = w_tau * w_s
+                integrand = -C_tbl[T, i_t_2] * C_tbl[i_s_1, i_t_3]
+                right_op = A_I[i_s_1]
+                coef = sign_outer_k3 * wt * integrand
+                quadrature_terms.append((coef, left_op, right_op))
+
+    # ════════════════════════════════════════════════════════════════
+    # k = 3, s-branch (Eq. 72). Outer sign: -1.
+    # ════════════════════════════════════════════════════════════════
+    # Free vars: (τ_1, τ_2, τ_3). Operator chain:
+    #   left_op = A_I[i_τ_1] @ A_I[i_τ_2] @ A_I[i_τ_3]; right_op = A
+    # Term 1.72 (+): D(τ_1, τ_2, τ_3, t) on 3-simplex {τ_1>τ_2>τ_3}.
+    #   Operator order: ⟨B(t) B(τ_1) B(τ_2) B(τ_3)⟩
+    # Term 2.72 (-): -C(t, τ_1) × C(τ_2, τ_3) on 1-D × 2-simplex (τ_1; τ_2, τ_3).
+    # Term 3.72 is τ-branch only.
+
+    # k=3, s-branch, Term 1.72 (+): 3-simplex on (τ_1, τ_2, τ_3)
+    for i_t_1 in range(n_g):
+        for i_t_2 in range(i_t_1):
+            for i_t_3 in range(i_t_2):
+                wt = c_wt[i_t_1, T] * c_wt[i_t_2, i_t_1] * c_wt[i_t_3, i_t_2]
+                if wt == 0.0:
+                    continue
+                integrand = W4(T, i_t_1, i_t_2, i_t_3)
+                left_op = A_I[i_t_1] @ A_I[i_t_2] @ A_I[i_t_3]
+                right_op = A_at_t
+                coef = sign_outer_k3 * wt * integrand
+                quadrature_terms.append((coef, left_op, right_op))
+
+    # k=3, s-branch, Term 2.72 (-): 1-D × 2-simplex on (τ_1; τ_2, τ_3)
+    for i_t_1 in range(n_g):
+        w_t1 = c_wt[i_t_1, T]
+        if w_t1 == 0.0:
+            continue
+        for i_t_2 in range(n_g):
+            for i_t_3 in range(i_t_2):
+                wt = w_t1 * c_wt[i_t_2, T] * c_wt[i_t_3, i_t_2]
+                if wt == 0.0:
+                    continue
+                integrand = -C_tbl[T, i_t_1] * C_tbl[i_t_2, i_t_3]
+                left_op = A_I[i_t_1] @ A_I[i_t_2] @ A_I[i_t_3]
+                right_op = A_at_t
+                coef = sign_outer_k3 * wt * integrand
+                quadrature_terms.append((coef, left_op, right_op))
+
+    # ════════════════════════════════════════════════════════════════
+    # k = 4, τ-branch (Eq. 73). Outer sign: (-1)^4 = +1.
+    # ════════════════════════════════════════════════════════════════
+    # Free vars: (τ_2, τ_3, τ_4). Operator chain:
+    #   left_op = A @ A_I[i_τ_2] @ A_I[i_τ_3] @ A_I[i_τ_4]; right_op = I
+    # Term 1.73 (+): D(t, τ_2, τ_3, τ_4) on 3-simplex {t>τ_2>τ_3>τ_4}.
+    #   Operator order: ⟨B(t) B(τ_2) B(τ_3) B(τ_4)⟩
+    # Term 2.73 (-): -C(t, τ_2) × C(τ_3, τ_4) on 1-D × 2-simplex (τ_2; τ_3, τ_4).
+    sign_outer_k4 = 1.0
+
+    # k=4, τ-branch, Term 1.73 (+): 3-simplex on (τ_2, τ_3, τ_4)
+    for i_t_2 in range(n_g):
+        for i_t_3 in range(i_t_2):
+            for i_t_4 in range(i_t_3):
+                wt = c_wt[i_t_2, T] * c_wt[i_t_3, i_t_2] * c_wt[i_t_4, i_t_3]
+                if wt == 0.0:
+                    continue
+                integrand = W4(T, i_t_2, i_t_3, i_t_4)
+                left_op = A_at_t @ A_I[i_t_2] @ A_I[i_t_3] @ A_I[i_t_4]
+                right_op = eye_d
+                coef = sign_outer_k4 * wt * integrand
+                quadrature_terms.append((coef, left_op, right_op))
+
+    # k=4, τ-branch, Term 2.73 (-): 1-D × 2-simplex on (τ_2; τ_3, τ_4)
+    for i_t_2 in range(n_g):
+        w_t2 = c_wt[i_t_2, T]
+        if w_t2 == 0.0:
+            continue
+        for i_t_3 in range(n_g):
+            for i_t_4 in range(i_t_3):
+                wt = w_t2 * c_wt[i_t_3, T] * c_wt[i_t_4, i_t_3]
+                if wt == 0.0:
+                    continue
+                integrand = -C_tbl[T, i_t_2] * C_tbl[i_t_3, i_t_4]
+                left_op = A_at_t @ A_I[i_t_2] @ A_I[i_t_3] @ A_I[i_t_4]
+                right_op = eye_d
+                coef = sign_outer_k4 * wt * integrand
+                quadrature_terms.append((coef, left_op, right_op))
+
+    def L_4_apply(X: np.ndarray) -> np.ndarray:
+        X_arr = np.asarray(X, dtype=complex)
+        result = np.zeros((d, d), dtype=complex)
+        for coef, left_op, right_op in quadrature_terms:
+            result = result + coef * (left_op @ X_arr @ right_op)
+        return result
+
+    return L_4_apply
+
+
 # ─── L_n at order n (thermal-only path) ──────────────────────────────────────
 
 
