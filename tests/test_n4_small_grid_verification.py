@@ -1,9 +1,13 @@
 # SPDX-License-Identifier: MIT
 """DG-4 Phase B small-grid verification of `_D_bar_4_companion`.
 
-Verification card:
+Verification card (current):
     transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_
-    n4-small-grid-verification-card_v0.1.0.md  (frozen 2026-05-13).
+    n4-small-grid-verification-card_v0.1.1.md  (frozen 2026-05-13,
+    errata). Errata-supersedes v0.1.0 to clarify §5.3 bullet 2's k=2
+    cross-grid wording (structural-form identity, not numerical-value
+    identity). All other v0.1.0 content unchanged; helper unchanged
+    from commit `becccf9`.
 
 Parent transcription:
     transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_v0.1.1.md

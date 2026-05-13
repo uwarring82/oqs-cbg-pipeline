@@ -1,10 +1,17 @@
 # SPDX-License-Identifier: MIT
 """DG-4 Phase C physics oracles for assembled L_4.
 
-Verification card:
+Verification card (current):
     transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_
-    phase-c-physics-oracles-card_v0.1.2.md  (frozen 2026-05-13).
-    Supersedes v0.1.1 by splitting the σ_z gate into:
+    phase-c-physics-oracles-card_v0.1.3.md  (frozen 2026-05-13,
+    errata). Errata-supersedes v0.1.2 to re-pin the Part B reference
+    table after the post-review cube-domain fix at commit `3e50e94`
+    and to correct the Part B grid annotation ("t_end=1.0 independent
+    of §2 fixture", not "at the §2 fixture" as v0.1.2 stated).
+    All gating oracles, fixtures, and integration discipline unchanged
+    from v0.1.2.
+
+The two-part σ_z gate (carried forward from v0.1.2):
     - Part A: commuting-case Feynman-Vernon exact-zero via §3.2 API
       guard at atol=1e-12. This is the acceptance gate.
     - Part B: literal-quadrature convergence diagnostic on a

@@ -69,9 +69,11 @@ def interaction_picture(H_S: np.ndarray, A: np.ndarray, tau: float) -> np.ndarra
 
 # ─── Companion D̄ at n=4 (DG-4 Phase B, thermal Gaussian) ───────────────────
 #
-# Verification card:
+# Verification card (current):
 #   transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_
-#   n4-small-grid-verification-card_v0.1.0.md
+#   n4-small-grid-verification-card_v0.1.1.md
+#   (errata-supersedes v0.1.0 for §5.3 bullet 2 wording; helper
+#   unchanged from commit `becccf9`.)
 #
 # Parent transcription:
 #   transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_v0.1.1.md
@@ -307,9 +309,11 @@ def _D_bar_4_companion(
 
 # ─── L_4 assembly via literal θ-aware Eqs. (69)-(73) integration ────────────
 #
-# Verification card (frozen 2026-05-13):
+# Verification card (frozen 2026-05-13, current):
 #   transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_
-#   phase-c-physics-oracles-card_v0.1.2.md  (current).
+#   phase-c-physics-oracles-card_v0.1.3.md
+#   (errata-supersedes v0.1.2 for the Part B reference table after the
+#   post-review cube-domain fix at commit `3e50e94`.)
 #
 # This block implements `_L_4_thermal_at_time_apply` per the v0.1.1 §3a
 # discipline AND the v0.1.2 §3.2 commuting-case guard.
@@ -329,14 +333,16 @@ def _D_bar_4_companion(
 # applied INSIDE each raw D factor individually; pre-cancellation
 # of Wick pairings across terms is explicitly forbidden (v0.1.1 §3b).
 #
-# Domain shapes encountered (4 distinct, one per (k, branch) pair):
+# Three distinct domain shapes encountered (mapped one-to-one to
+# (k, branch) pairs):
 #   - 3-simplex on (a, b, c): t > a > b > c > 0
 #   - 1-D × 2-simplex on (a; b, c): a ∈ [0, t], t > b > c > 0
 #   - 2-simplex × 1-D on (a, b; c): t > a > b > 0, c ∈ [0, t]
 # (The "3-D cube" shape was an early mis-implementation that ignored
 # the outer chain ordering for subtraction terms with shorter D
-# factors; the v0.1.2 review identified and corrected this. See the
-# v0.1.1 → v0.1.2 supersession entry in the parent card.)
+# factors; the v0.1.2 implementation review identified and corrected
+# this. See the v0.1.2 → v0.1.3 errata supersession entry in the
+# parent card.)
 #
 # Quadrature: nested 1-D trapezoidal on each simplex factor; standard
 # 1-D trapezoidal on each free axis. Weight matrix c_wt[i, M] gives the
@@ -363,9 +369,11 @@ def _L_4_thermal_at_time_apply(
     via literal θ-aware integration of Eqs. (69)-(73), with a
     commuting-case Feynman-Vernon exact-zero short-circuit.
 
-    Verification card:
+    Verification card (current):
         transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_
-        phase-c-physics-oracles-card_v0.1.2.md  (frozen 2026-05-13).
+        phase-c-physics-oracles-card_v0.1.3.md  (frozen 2026-05-13;
+        errata-supersedes v0.1.2 for the Part B reference table after
+        the post-review cube-domain fix at commit `3e50e94`).
 
     Behaviour:
 
@@ -447,9 +455,10 @@ def _L_4_thermal_at_time_apply_no_guard(
     the short-circuit so the diagnostic can measure the literal
     θ-aware quadrature's convergence on a refinement table.
 
-    Verification card:
+    Verification card (current):
         transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_
-        phase-c-physics-oracles-card_v0.1.2.md §5 step 2.
+        phase-c-physics-oracles-card_v0.1.3.md §5 step 2
+        (errata-supersedes v0.1.2; same diagnostic contract).
 
     Signature and integration logic match `_L_4_thermal_at_time_apply`
     minus the §3.2 commuting-case guard.
