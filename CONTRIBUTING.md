@@ -50,7 +50,17 @@ A pull request that claims to pass a Decision Gate must:
 - Python 3.10+ idioms.
 - Type hints on public functions.
 - Docstrings: NumPy style. Anchor every module to its Sail/Ledger reference in the module docstring.
-- Run `ruff`, `black`, and `mypy` before committing. CI enforces all three on `cbg/ models/ numerical/ benchmarks/ reporting/ tests/`.
+- Run `ruff`, `black`, and `mypy` before committing. CI's per-tool scopes
+  (see [`.github/workflows/tests.yml`](.github/workflows/tests.yml)) are:
+  - `ruff check` on `cbg/ models/ numerical/ benchmarks/ reporting/ tests/ examples/`
+  - `black --check` on `cbg/ models/ numerical/ benchmarks/ reporting/ tests/`
+  - `mypy` on `cbg/ models/ numerical/ benchmarks/ reporting/` (the
+    installable package source dirs only; **`tests/` is intentionally
+    not type-checked** — the test suite uses `pytest`-fixture patterns
+    that don't carry through full static typing without significant
+    annotation churn, and the cost-benefit of typing test code didn't
+    clear the project's bar). `examples/` notebooks are reachable via
+    `nbclient` execution gates rather than `mypy`.
 
   *Note on lint scope vs package boundary.* `pyproject.toml`'s
   `packages = [...]` deliberately excludes `tests/` (it is not an
