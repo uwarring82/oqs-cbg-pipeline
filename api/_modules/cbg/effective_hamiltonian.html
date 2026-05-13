@@ -310,13 +310,15 @@
 <span class="sd">    K = (1 / 2id) Σ_α [F_α†, L[F_α]]                       (Letter Eq. (6))</span>
 <span class="sd">    K = (1 / 2id) Σ_{j,k} [|j⟩⟨k|, L[|k⟩⟨j|]]              (Letter Eq. (7))</span>
 
-<span class="sd">and records the pending recursive perturbative series surface::</span>
+<span class="sd">and records the pending generic recursive perturbative series surface::</span>
 
 <span class="sd">    K(t) = Σ_n λ^n K_n(t)                                    (Letter Eq. (15))</span>
 
-<span class="sd">with K_n given by Letter Eq. (16) (companion paper Eq. (45)). The full</span>
-<span class="sd">K_2-K_4 recursive computation at perturbative_order &gt;= 4 is not yet</span>
-<span class="sd">implemented.</span>
+<span class="sd">with K_n given by Letter Eq. (16) (companion paper Eq. (45)). The generic</span>
+<span class="sd">``K_perturbative`` API remains pending. The reviewed thermal-Gaussian</span>
+<span class="sd">n &lt;= 4 route lives in ``cbg.tcl_recursion`` (`K_n_thermal_on_grid`,</span>
+<span class="sd">`K_total_thermal_on_grid`) and does not by itself close the Entry-2-wide</span>
+<span class="sd">DG-2 recursion claim.</span>
 
 <span class="sd">Output discipline (per Sail v0.5 §4):</span>
 <span class="sd">    All outputs of this module are COORDINATE-DEPENDENT under the chosen</span>
@@ -327,7 +329,7 @@
 <span class="sd">Validation status (per docs/validity_envelope.md):</span>
 <span class="sd">    DG-1 formula implementation                             PASS</span>
 <span class="sd">    DG-2 structural sub-claims                              PASS</span>
-<span class="sd">    DG-2 fourth-order K_2-K_4 recursion proper              PENDING</span>
+<span class="sd">    DG-2 Entry-2-wide K_2-K_4 recursion closure             PENDING</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
@@ -427,10 +429,11 @@
 <span class="sd">    card, including basis-independence where applicable.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-        <span class="s2">&quot;K_perturbative: full recursive K_n computation is not implemented &quot;</span>
+        <span class="s2">&quot;K_perturbative: the generic recursive K_n API is not implemented &quot;</span>
         <span class="s2">&quot;in this metadata version. DG-2 structural sub-claims are verified &quot;</span>
-        <span class="s2">&quot;via benchmark cards, but K_2-K_4 recursion at perturbative_order &quot;</span>
-        <span class="s2">&quot;&gt;= 4 remains pending.&quot;</span>
+        <span class="s2">&quot;via benchmark cards, and the thermal-Gaussian n&lt;=4 route lives in &quot;</span>
+        <span class="s2">&quot;cbg.tcl_recursion, but Entry-2-wide K_2-K_4 recursion closure &quot;</span>
+        <span class="s2">&quot;remains unauthorised.&quot;</span>
     <span class="p">)</span></div>
 
 </pre></div>

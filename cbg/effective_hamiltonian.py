@@ -8,13 +8,15 @@ Implements::
     K = (1 / 2id) Σ_α [F_α†, L[F_α]]                       (Letter Eq. (6))
     K = (1 / 2id) Σ_{j,k} [|j⟩⟨k|, L[|k⟩⟨j|]]              (Letter Eq. (7))
 
-and records the pending recursive perturbative series surface::
+and records the pending generic recursive perturbative series surface::
 
     K(t) = Σ_n λ^n K_n(t)                                    (Letter Eq. (15))
 
-with K_n given by Letter Eq. (16) (companion paper Eq. (45)). The full
-K_2-K_4 recursive computation at perturbative_order >= 4 is not yet
-implemented.
+with K_n given by Letter Eq. (16) (companion paper Eq. (45)). The generic
+``K_perturbative`` API remains pending. The reviewed thermal-Gaussian
+n <= 4 route lives in ``cbg.tcl_recursion`` (`K_n_thermal_on_grid`,
+`K_total_thermal_on_grid`) and does not by itself close the Entry-2-wide
+DG-2 recursion claim.
 
 Output discipline (per Sail v0.5 §4):
     All outputs of this module are COORDINATE-DEPENDENT under the chosen
@@ -25,7 +27,7 @@ Output discipline (per Sail v0.5 §4):
 Validation status (per docs/validity_envelope.md):
     DG-1 formula implementation                             PASS
     DG-2 structural sub-claims                              PASS
-    DG-2 fourth-order K_2-K_4 recursion proper              PENDING
+    DG-2 Entry-2-wide K_2-K_4 recursion closure             PENDING
 """
 
 from collections.abc import Callable
@@ -120,8 +122,9 @@ def K_perturbative(order: int, **kwargs):
     card, including basis-independence where applicable.
     """
     raise NotImplementedError(
-        "K_perturbative: full recursive K_n computation is not implemented "
+        "K_perturbative: the generic recursive K_n API is not implemented "
         "in this metadata version. DG-2 structural sub-claims are verified "
-        "via benchmark cards, but K_2-K_4 recursion at perturbative_order "
-        ">= 4 remains pending."
+        "via benchmark cards, and the thermal-Gaussian n<=4 route lives in "
+        "cbg.tcl_recursion, but Entry-2-wide K_2-K_4 recursion closure "
+        "remains unauthorised."
     )

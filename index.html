@@ -3,135 +3,221 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>oqs-cbg-pipeline — Open numerical companion to Colla–Breuer–Gasbarri (2025)</title>
-<meta name="description" content="Open-source numerical pipeline for the minimal-dissipation effective-Hamiltonian construction in non-Markovian open quantum systems. Companion to Colla, Breuer, Gasbarri, Phys. Rev. A 112 (2025). DG-1 PASS (2026-04-30); DG-2 structural sub-claims PASS under Council-cleared registry (2026-05-04); DG-4 PASS at D1 v0.1.2 (2026-05-06) via picture-fixed Path B numerical L_4, after the v0.5.0-tagged v0.1.1 verdict was superseded on review the same day.">
+<title>oqs-cbg-pipeline - Open numerical companion to Colla-Breuer-Gasbarri (2025)</title>
+<meta name="description" content="Open-source numerical pipeline for the Colla-Breuer-Gasbarri minimal-dissipation effective-Hamiltonian construction in non-Markovian open quantum systems.">
 <meta name="author" content="Ulrich Warring">
 <meta name="robots" content="index, follow">
 <style>
   :root {
-    --ink: #1a1a1a;
-    --sea: #2c5f7c;
-    --signal: #c0392b;
-    --stone: #6b6b6b;
-    --parchment: #f5f0e8;
-    --rule: #d8d2c4;
+    --ink: #17211f;
+    --muted: #5f6d68;
+    --paper: #fbfcfa;
+    --wash: #eef4f0;
+    --line: #d7e1dc;
+    --link: #27616f;
+    --accent: #8b3f2f;
+    --ok: #2f6b4f;
+    --wait: #6b6258;
   }
+
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
-    font-family: "Crimson Pro", Georgia, "Times New Roman", serif;
+    font-family: Georgia, "Times New Roman", serif;
     font-size: 18px;
-    line-height: 1.55;
+    line-height: 1.6;
     color: var(--ink);
-    background: var(--parchment);
+    background: var(--paper);
     -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width: 720px; margin: 0 auto; padding: 3.5rem 1.5rem 4rem; }
-  header { margin-bottom: 2.5rem; }
+
+  .wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 3.2rem 1.4rem 4rem;
+  }
+
+  header {
+    padding: 0 0 2rem;
+    border-bottom: 1px solid var(--line);
+  }
+
   .eyebrow {
-    font-family: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
     font-size: 0.78rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--sea);
-    margin-bottom: 0.75rem;
+    color: var(--link);
+    margin-bottom: 0.7rem;
   }
+
   h1 {
-    font-size: 2.05rem;
-    line-height: 1.2;
-    margin: 0 0 0.6rem;
+    font-size: clamp(2.1rem, 5vw, 3.4rem);
+    line-height: 1.05;
+    margin: 0 0 0.75rem;
     font-weight: 600;
-    letter-spacing: -0.005em;
+    letter-spacing: 0;
   }
+
   .subtitle {
-    color: var(--stone);
-    font-size: 1.1rem;
-    font-style: italic;
-    margin: 0 0 1.5rem;
+    max-width: 780px;
+    color: var(--muted);
+    font-size: 1.18rem;
+    margin: 0 0 1.4rem;
   }
-  .repo-line {
-    font-family: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
-    font-size: 0.92rem;
-    padding: 0.6rem 0.9rem;
+
+  .quick-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-top: 1.35rem;
+  }
+
+  .quick-links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.45rem;
+    padding: 0.45rem 0.8rem;
+    border: 1px solid var(--line);
+    border-radius: 6px;
     background: #fff;
-    border: 1px solid var(--rule);
-    border-radius: 3px;
-    display: inline-block;
+    color: var(--link);
+    text-decoration: none;
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 0.86rem;
   }
-  .repo-line a { color: var(--sea); text-decoration: none; }
-  .repo-line a:hover { text-decoration: underline; }
+
+  .quick-links a:hover {
+    border-color: var(--link);
+    color: var(--accent);
+  }
+
+  main { padding-top: 0.6rem; }
+
+  section {
+    margin-top: 2.45rem;
+  }
+
   h2 {
-    font-size: 1.3rem;
-    margin: 2.6rem 0 0.6rem;
+    font-size: 1.32rem;
+    line-height: 1.25;
+    margin: 0 0 0.75rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--line);
     font-weight: 600;
-    color: var(--ink);
-    border-bottom: 1px solid var(--rule);
-    padding-bottom: 0.3rem;
   }
+
   h3 {
-    font-size: 1rem;
-    margin: 1.4rem 0 0.4rem;
-    font-weight: 600;
-    color: var(--sea);
-    font-family: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
-    letter-spacing: 0.01em;
+    margin: 1.3rem 0 0.35rem;
+    color: var(--link);
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 0.94rem;
+    letter-spacing: 0;
   }
+
   p { margin: 0 0 1rem; }
-  a { color: var(--sea); }
-  a:hover { color: var(--signal); }
+  a { color: var(--link); }
+  a:hover { color: var(--accent); }
+  code {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 0.88em;
+  }
+
+  .intro {
+    font-size: 1.05rem;
+  }
+
+  .note {
+    border-left: 3px solid var(--link);
+    background: var(--wash);
+    padding: 1rem 1.1rem;
+    margin: 1.2rem 0;
+  }
+
+  .note strong { color: var(--link); }
+
+  .path-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.8rem;
+    margin: 1rem 0;
+  }
+
+  .path {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #fff;
+    padding: 0.95rem;
+  }
+
+  .path h3 {
+    margin-top: 0;
+  }
+
   ul.refs {
     list-style: none;
     padding: 0;
-    margin: 0.5rem 0 0.5rem;
+    margin: 0.7rem 0 0;
   }
+
   ul.refs li {
-    margin-bottom: 0.7rem;
-    padding-left: 1.1rem;
-    text-indent: -1.1rem;
-    font-size: 0.97rem;
+    margin: 0 0 0.72rem;
+    padding-left: 1.05rem;
+    text-indent: -1.05rem;
   }
+
   ul.refs li::before {
-    content: "—";
-    color: var(--stone);
-    margin-right: 0.4rem;
+    content: "-";
+    color: var(--muted);
+    margin-right: 0.45rem;
   }
-  .doi {
-    font-family: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
-    font-size: 0.85rem;
-    color: var(--stone);
-  }
-  .disclosure {
+
+  .status-table {
+    width: 100%;
+    border-collapse: collapse;
     background: #fff;
-    border-left: 3px solid var(--signal);
-    padding: 1rem 1.2rem;
-    margin: 1.5rem 0;
-    font-size: 0.97rem;
+    border: 1px solid var(--line);
+    font-size: 0.95rem;
   }
-  .disclosure strong { color: var(--signal); }
+
+  .status-table th,
+  .status-table td {
+    border-bottom: 1px solid var(--line);
+    padding: 0.72rem 0.8rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .status-table tr:last-child td { border-bottom: 0; }
+  .status-table th {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    background: var(--wash);
+  }
+
+  .state-ok { color: var(--ok); font-weight: 700; }
+  .state-wait { color: var(--wait); font-weight: 700; }
+
   footer {
-    margin-top: 4rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--rule);
-    font-size: 0.85rem;
-    color: var(--stone);
-    line-height: 1.5;
+    margin-top: 3rem;
+    padding-top: 1.3rem;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.86rem;
   }
-  footer p { margin-bottom: 0.5rem; }
-  footer a { color: var(--stone); }
-  footer a:hover { color: var(--sea); }
-  .center-dot {
-    display: inline-block;
-    width: 4px;
-    height: 4px;
-    background: var(--sea);
-    border-radius: 50%;
-    margin: 0 0.4rem;
-    vertical-align: middle;
-  }
-  @media (max-width: 540px) {
+
+  footer p { margin-bottom: 0.45rem; }
+
+  @media (max-width: 760px) {
     body { font-size: 17px; }
-    h1 { font-size: 1.7rem; }
-    .wrap { padding: 2rem 1.2rem 3rem; }
+    .wrap { padding: 2rem 1rem 3rem; }
+    .path-list { grid-template-columns: 1fr; }
+    .status-table { font-size: 0.9rem; }
+    .status-table th,
+    .status-table td { padding: 0.58rem 0.55rem; }
   }
 </style>
 </head>
@@ -139,166 +225,151 @@
 <div class="wrap">
 
 <header>
-  <div class="eyebrow">Open numerical companion — DG-1 PASS · DG-2 structural sub-claims PASS · DG-4 PASS</div>
+  <div class="eyebrow">Open numerical companion</div>
   <h1>oqs-cbg-pipeline</h1>
-  <p class="subtitle">An open-source numerical implementation of the minimal-dissipation effective-Hamiltonian construction for non-Markovian open quantum systems. <strong>DG-1 PASS at tag <code>v0.2.0</code> (2026-04-30); DG-2 structural sub-claims PASS under the Council-cleared displacement-profile registry (2026-05-04); DG-4 PASS at D1 v0.1.2 (2026-05-06) via picture-fixed Path B numerical L_4 with all four reproducibility perturbations operational and audit-complete result JSON. (The v0.1.1 PASS verdict at tag <code>v0.5.0</code> earlier the same day was superseded on review for two HIGH-severity defects in the Path B extraction; v0.1.2 consumes those repairs.) The literal analytic K_2-K_4 recursion and Path A L_4 cross-validation remain pending.</strong></p>
-  <div class="repo-line">
-    Code: <a href="https://github.com/uwarring82/oqs-cbg-pipeline">github.com/uwarring82/oqs-cbg-pipeline</a> · API docs: <a href="api/index.html">api/</a> · Live status: <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/docs/validity_envelope.md">validity envelope</a>
+  <p class="subtitle">A public, auditable numerical companion for the Colla-Breuer-Gasbarri minimal-dissipation effective-Hamiltonian construction in non-Markovian open quantum systems.</p>
+  <div class="quick-links" aria-label="Primary links">
+    <a href="https://github.com/uwarring82/oqs-cbg-pipeline">GitHub repository</a>
+    <a href="api/index.html">API documentation</a>
+    <a href="api/examples.html">Examples</a>
+    <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/docs/validity_envelope.md">Validity envelope</a>
+    <a href="https://github.com/uwarring82/oqs-cbg-pipeline/tree/main/benchmarks/benchmark_cards">Benchmark cards</a>
   </div>
 </header>
 
-<section>
-<p>This site introduces an open-source numerical pipeline for the construction developed by <strong>Alessandra Colla, Heinz-Peter Breuer, and Giulio Gasbarri</strong> in two recent papers in <em>Physical Review A</em>. It is offered as an open companion to that work — not a competing claim, not an endorsement, but a benchmarked numerical implementation made available under FAIR principles. We welcome correspondence from the original authors and from the wider open-quantum-systems community, both theory and experiment.</p>
-<p><strong>Current status.</strong> Repository tag <code>v0.2.0</code> records the first scientific milestone: <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/logbook/2026-04-30_dg-1-pass.md">DG-1 PASS</a> (2026-04-30). Three frozen DG-1 benchmark cards (A1, A3, A4) reproduce CL-2026-005 v0.4 Entries 1, 3, 4 (unambiguous sub-cases) at machine precision under the Hayden–Sorce gauge; the displacement-dependent sub-cases initially deferred from DG-1 were honestly carved out rather than fudged. <strong>DG-2 structural sub-claims passed on 2026-05-04</strong> under the Council-cleared registry (see <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/logbook/2026-05-04_dg-2-pass-envelope.md">DG-2 envelope log</a>): <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B1_pseudo-kraus-diagonal_v0.1.0.yaml">B1</a> verifies the diagonal pseudo-Kraus reduction (Entry 1.B.3 diagonal); <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B2_pseudo-kraus-offdiagonal_v0.1.0.yaml">B2</a> verifies the off-diagonal half + Entry 1.D; <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B3_cross-basis-structural-identity_v0.1.0.yaml">B3</a> verifies Entry 1.A basis-independence; <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B4-conv-registry_v0.1.0.yaml">B4-conv-registry</a> + <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B5-conv-registry_v0.2.0.yaml">B5-conv-registry v0.2.0</a> jointly verify Entries 3.B.3 + 4.B.2 (coherent-displaced bath, σ_z and σ_x couplings) under each of four Council-cleared displacement profiles. All five cards return <code>error = 0.0</code> exactly or at machine precision. The displacement-mode convention question that originally blocked Entries 3.B.3 / 4.B.2 was resolved through <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/ledger/CL-2026-005_v0.4_council-briefing_displacement-convention.md">two Council-3 ADM-EC deliberations</a> (Acts 1 + 2, both 2026-05-04) under handling (c): the Steward does not pick a convention; the Council clears a registry of admissible profiles, with extensions gated. <strong>DG-4 passed at D1 v0.1.2 on 2026-05-06</strong> via picture-fixed Path B numerical L_4 extraction (<a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/logbook/2026-05-06_dg-4-pass-path-b-v012.md">verdict log</a>; <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/D1_failure-envelope-convergence_v0.1.2.yaml">card D1 v0.1.2</a>). All 20 frozen <code>coupling_strength</code> sweep points classify as <code>convergence_failure</code> under the parity-aware ratio <code>r_4(α²) = α² · ⟨‖L_4^dis‖⟩_t / ⟨‖L_2^dis‖⟩_t</code>, with stability across all four reproducibility perturbations (<code>upper_cutoff_factor ∈ {20, 40}</code>, <code>omega_c ∈ {9, 11}</code>); maximum baseline <code>r_4 ≈ 47.42</code> at <code>α² = 1.0</code>; minimum perturbed coefficient ratio <code>≈ 41.47</code> at <code>omega_c = 11.0</code>, comfortably above threshold <code>1.0</code>. The audit-complete <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/results/D1_failure-envelope-convergence_v0.1.2_result.json">result JSON</a> persists per-α + per-α-per-perturbation <code>r_4</code> plus per-perturbation Path B fit residuals.
+<main>
 
-<strong>About the v0.1.1 supersedure.</strong> An earlier v0.1.1 PASS verdict at tag <code>v0.5.0</code> the same day (<a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/logbook/2026-05-06_dg-4-pass-path-b.md">original log</a>) was <strong>superseded on review</strong> (<a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/logbook/2026-05-06_dg-4-pass-path-b-superseded.md">supersedure log</a>) for two HIGH-severity defects: (i) the Path B order-4 extraction applied the interaction-picture formula <code>L_2 = Λ̇_2</code>, <code>L_4 = Λ̇_4 - L_2 Λ_2</code> to raw Schrödinger-picture maps without the <code>Λ_0⁻¹</code> similarity and the <code>L_0 Λ_n Λ_0⁻¹</code> correction, wrong whenever <code>H_S ≠ 0</code>; (ii) the runner's "stable under all four perturbations" PASS predicate was trivially satisfied for <code>upper_cutoff_factor ∈ {20, 40}</code> because Path B did not consume that knob. Plus a MEDIUM audit-completeness gap. v0.1.2 consumes the three repair commits that fix all three: picture transform via <code>Ad U†(t)</code>, <code>upper_cutoff_factor</code> threaded into the finite-env builder's <code>omega_max_factor</code>, and per-α + per-perturbation <code>r_4</code> persisted in the result JSON. The <code>v0.5.0</code> git tag is left as immutable history of the v0.1.1 commit; the live DG-4 verdict is v0.1.2's. The literal analytic <em>K_2-K_4 numerical recursion</em> at perturbative order >= 4 and <em>Path A</em> (Companion Sec. IV closed form for L_4) remain separate future plans for cross-validation against Path B. The current authoritative state of the repository is the <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/docs/validity_envelope.md">validity envelope</a>; the <a href="api/index.html">auto-generated API documentation</a> describes the implementation surface.</p>
+<section class="intro">
+  <h2>Welcome</h2>
+  <p>This repository is for readers who want to inspect, run, and challenge a concrete implementation of the minimal-dissipation effective Hamiltonian <em>K(t)</em>. It is meant as a companion to the theory, not as a shortcut around it: every claim is bounded by frozen benchmark cards, a validity envelope, and an explicit gauge annotation.</p>
+  <p>We welcome correspondence from the originating authors and from the wider open-quantum-systems community. The most useful contributions at this stage are independent model checks, cross-method comparisons, and carefully scoped tests of where the perturbative hierarchy stops being reliable.</p>
 </section>
 
 <section>
-<h2>Decision Gate progress</h2>
-<table style="border-collapse:collapse;font-size:0.95rem;width:100%;">
-  <thead>
-    <tr style="border-bottom:1px solid var(--rule);">
-      <th style="text-align:left;padding:0.4rem 0.6rem;">Gate</th>
-      <th style="text-align:left;padding:0.4rem 0.6rem;">Status</th>
-      <th style="text-align:left;padding:0.4rem 0.6rem;">Anchor</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="padding:0.4rem 0.6rem;"><strong>DG-1</strong></td>
-      <td style="padding:0.4rem 0.6rem;color:var(--sea);"><strong>PASS</strong> (2026-04-30; tag <code>v0.2.0</code>)</td>
-      <td style="padding:0.4rem 0.6rem;">Cards A1 / A3 / A4 reproduce CL-2026-005 v0.4 Entries 1, 3, 4 at machine precision. (Entries 1.B.3, 3.B.3, 4.B.2 originally deferred from DG-1 were repatriated to DG-2 and PASSed there — see DG-2 row.)</td>
-    </tr>
-    <tr>
-      <td style="padding:0.4rem 0.6rem;"><strong>DG-2</strong></td>
-      <td style="padding:0.4rem 0.6rem;color:var(--sea);"><strong>PASS</strong> — 4 of 4 sub-claims under Council-cleared registry (2026-05-04)</td>
-      <td style="padding:0.4rem 0.6rem;">PARTIAL: structural sub-claims PASS; K_2-K_4 recursion pending. B1 v0.1.0 (Entry 1.B.3 diagonal). B2 v0.1.0 (Entry 1.B.3 off-diagonal + Entry 1.D). B3 v0.1.0 (Entry 1.A basis-independence at d = 2). B4-conv-registry v0.1.0 (Entry 3.B.3) + B5-conv-registry v0.2.0 (Entry 4.B.2), each verifying its sub-claim under all four Council-cleared displacement profiles (<code>delta-omega_c</code>, <code>delta-omega_S</code>, <code>sqrt-J</code>, <code>gaussian</code>). Citations of Entries 3.B.3 / 4.B.2 must name the registered profile. K_2-K_4 numerical recursion at order >= 4 (the literal "fourth-order" portion of the Sail's DG-2 description) remains a separate future plan.</td>
-    </tr>
-    <tr>
-      <td style="padding:0.4rem 0.6rem;"><strong>DG-3</strong></td>
-      <td style="padding:0.4rem 0.6rem;color:var(--stone);">runner-complete; failure-asymmetry clearance pending</td>
-      <td style="padding:0.4rem 0.6rem;">Cards C1 + C2 (cross-method validation, <code>exact_finite_env</code> vs <code>qutip_reference</code>) are reachable for all four pure-dephasing + spin-boson σ_x fixtures via the runner's cross-method branch; both fixtures currently FAIL convergence in finite-bath truncation. A DG-3 PASS at the failure-asymmetry-cleared level requires either bath-convergence under the Council-cleared registry or a third reference method from a non-overlapping failure-mode class (HEOM, TEMPO, MCTDH, pseudomode/chain-mapping).</td>
-    </tr>
-    <tr>
-      <td style="padding:0.4rem 0.6rem;"><strong>DG-4</strong></td>
-      <td style="padding:0.4rem 0.6rem;color:var(--sea);"><strong>PASS</strong> at D1 v0.1.2 (2026-05-06)</td>
-      <td style="padding:0.4rem 0.6rem;">Card <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/D1_failure-envelope-convergence_v0.1.2.yaml">D1 v0.1.2</a> (spin-boson σ_x, thermal bath) under the parity-aware <code>r_4(α²) = α² · ⟨‖L_4^dis‖⟩_t / ⟨‖L_2^dis‖⟩_t</code> metric. All 20 frozen <code>coupling_strength</code> sweep points (0.05 → 1.0, log-uniform) classify as <code>convergence_failure</code>, stable across all four reproducibility perturbations: <code>upper_cutoff_factor ∈ {20, 40}</code> (now operational via the runner threading the value into the finite-env builder's <code>omega_max_factor</code>) and <code>omega_c ∈ {9, 11}</code> (direct model-spec mutation). Maximum baseline <code>r_4 ≈ 47.42</code>; minimum perturbed coefficient ratio <code>≈ 41.47</code>. <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/results/D1_failure-envelope-convergence_v0.1.2_result.json">Audit-complete result JSON</a> persists per-α + per-α-per-perturbation <code>r_4</code> and per-perturbation Path B fit residuals. v0.1.2 supersedes the v0.5.0-tagged v0.1.1 verdict that was downgraded on review the same day (Path B picture defect + non-operational perturbations); v0.1.2 consumes three repair commits in the d67b453..5441467 range. Path A (Companion Sec. IV analytic L_4) remains preferred for machine-precision cross-validation and pending. See <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/logbook/2026-05-06_dg-4-pass-path-b-v012.md">v0.1.2 verdict log</a>.</td>
-    </tr>
-    <tr>
-      <td style="padding:0.4rem 0.6rem;"><strong>DG-5</strong></td>
-      <td style="padding:0.4rem 0.6rem;color:var(--stone);">scope-definition (preconditions unmet)</td>
-      <td style="padding:0.4rem 0.6rem;">Card E1 (Fano–Anderson, minimal-dissipation K(t) vs Hamiltonian of mean force) is frozen as a scope-definition entry. Preconditions not yet met: <code>models/fano_anderson.py</code> has no callable API; no HMF reference implementation; <code>cbg.bath_correlations</code> does not yet support fermionic baths. <code>run_card(E1)</code> raises <code>ScopeDefinitionNotRunnableError</code> surfacing these preconditions.</td>
-    </tr>
-  </tbody>
-</table>
-<p style="margin-top:0.8rem;font-size:0.9rem;color:var(--stone);">Cards-first discipline: each card is committed at <code>status: frozen-awaiting-run</code> with all parameters fixed before any verifying code is written. Verdict commits are atomic and one-way; supersedure of a verdict requires a new card file (e.g. B5-conv-registry v0.1.0 → v0.2.0 same-day correction of an interaction-picture vs Schrödinger-picture prediction error in the σ_x channel; v0.1.0 is retained at HEAD with <code>status: superseded</code>). The displacement-profile registry is governed by a Council-clearance gate: additions or removals require fresh deliberation. See the <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/SCHEMA.md">card schema (SCHEMA.md v0.1.3)</a>, the <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/ledger/CL-2026-005_v0.4_council-briefing_displacement-convention.md">subsidiary Council briefing v0.3.0</a>, and the <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/logbook/">logbook</a> for the audit trail.</p>
+  <h2>Start Here</h2>
+  <div class="path-list">
+    <div class="path">
+      <h3>Run something</h3>
+      <p>Open the <a href="api/examples.html">worked examples</a> for gate-by-gate demonstrations of the validated surface.</p>
+    </div>
+    <div class="path">
+      <h3>Read the code</h3>
+      <p>Use the <a href="api/index.html">API docs</a> for module docstrings, signatures, and source links.</p>
+    </div>
+    <div class="path">
+      <h3>Check authority</h3>
+      <p>Use the <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/docs/validity_envelope.md">validity envelope</a> before citing any output.</p>
+    </div>
+  </div>
 </section>
 
 <section>
-<h2>Pedagogical tutorial</h2>
-<p>A rendered tutorial for entry-level PhD students is available as a companion orientation document: <a href="cbg-tutorial-for-phd-students_v0.2.html">A tutorial walk through the Colla–Breuer–Gasbarri framework</a>. It is pedagogical material, not a validation claim; the repository's scientific scope remains governed by the validity envelope.</p>
+  <h2>Current Stage</h2>
+  <p>The live Decision Gate verdicts remain: DG-1 PASS, DG-2 structural sub-claims PASS with Entry-2-wide recursion closure still unauthorised, and DG-4 PASS at D1 v0.1.2 via picture-fixed Path B numerical <em>L</em><sub>4</sub>. DG-3 is runner-complete but not failure-asymmetry cleared. DG-5 is scoped but not realised.</p>
+  <div class="note">
+    <p><strong>What changed after the DG-4 verdict:</strong> the Companion Sec. IV <em>L</em><sub>4</sub> transcription is released, the n=4 small-grid and physics-oracle cards are current, and the public thermal-Gaussian n=4 route now flows through <code>cbg.tcl_recursion</code>. This is code-facing progress, not a new verdict: D1 v0.1.2 remains a Path B numerical failure-envelope result until a separate Path A / Path B cross-validation card or verdict is run.</p>
+  </div>
 </section>
 
 <section>
-<h2>Worked examples</h2>
-<p>Four runnable notebooks demonstrate the validated surface gate by gate, each exercising the cards that anchor a passed (or partially passed) Decision Gate verdict. They are demonstrations of verdicts, not tutorials on the underlying theory. Browse the rendered notebooks via the <a href="api/examples.html">worked-examples index</a>:</p>
-<ul class="refs">
-  <li><a href="api/examples/dg1_walkthrough.html"><code>dg1_walkthrough</code></a> — DG-1 PASS (cards A1, A3): algebraic <em>K</em> = <em>H<sub>S</sub></em> exactly; pure-dephasing <em>K</em>(<em>t</em>) ∝ σ<sub>z</sub> at machine precision.</li>
-  <li><a href="api/examples/dg2_structural.html"><code>dg2_structural</code></a> — DG-2 structural sub-claims PASS (cards B3, B4): basis-independence at machine precision on a dissipative <em>L</em>; displaced-bath <em>K</em>(<em>t</em>) recovers the thermal <em>K</em> as α₀ → 0.</li>
-  <li><a href="api/examples/dg3_cross_method.html"><code>dg3_cross_method</code></a> — DG-3 RUNNER-COMPLETE (cards C1, C2): runner reachable on all four C1+C2 fixtures; both cards return clean FAIL at the frozen <code>1.0e-6</code> threshold under finite-bath truncation, demonstrating the failure-asymmetry-clearance gap.</li>
-  <li><a href="api/examples/dg4_walkthrough.html"><code>dg4_walkthrough</code></a> — DG-4 PASS at D1 v0.1.2 (σ<sub>x</sub> thermal, parity-aware <em>r</em><sub>4</sub>) via picture-fixed Path B numerical <em>L</em><sub>4</sub>; <code>run_card</code> returns <code>verdict = PASS</code> with all four reproducibility perturbations operational.</li>
-</ul>
-<p style="font-size:0.92rem;color:var(--stone);">Notebook source lives at <a href="https://github.com/uwarring82/oqs-cbg-pipeline/tree/main/examples"><code>examples/</code></a>. All numerical outputs are coordinate-dependent under the Hayden–Sorce gauge; citation discipline applies as for any other pipeline output.</p>
+  <h2>What the Pipeline Does</h2>
+  <p>Given a TCL generator, the package computes the Hayden-Sorce minimal-dissipation effective Hamiltonian using the basis-independent expression from the Colla-Breuer-Gasbarri Letter. The implementation also carries the benchmark-card runner, model factories, cumulant helpers, thermal and coherent-displaced paths, and the post-verdict thermal-Gaussian n=4 route used for analytic follow-up work.</p>
+  <p>The project is deliberately conservative about claims. <em>K(t)</em> is coordinate-dependent under the chosen gauge, and the repository never treats it as a unique physical Hamiltonian of an open system. Comparisons to Hamiltonian-of-mean-force, polaron, Mori-projector, HEOM, TEMPO, MCTDH, pseudomode, or chain-mapping approaches need their own alignment and failure-mode analysis.</p>
 </section>
 
 <section>
-<h2>What the pipeline does</h2>
-<p>Starting from a microscopic open-system model, the pipeline computes the effective Hamiltonian <em>K</em>(<em>t</em>) of the time-convolutionless master equation under the Hayden–Sorce minimal-dissipation gauge, together with its perturbative expansion order by order, and the canonical generalised-Lindblad form of the corresponding generator. It is built around the basis-independent operational expression (Letter Eq. (6)) and the recursive perturbative construction introduced in the seed papers below.</p>
-<p>The pipeline aims to expose the <em>scope of applicability</em> of the construction rather than to confirm it. Concretely, this means: side-by-side comparison against numerically exact and standard approximate methods, explicit identification of regimes where the perturbative hierarchy fails, structural-identity checks at every computed order, and tracking of the gauge dependence wherever competing effective-Hamiltonian descriptions are available.</p>
-<p>At metadata version <code>0.3.0.dev0</code>, after tag <code>v0.2.0</code>, the implementation that produces verdicts spans four packages — <code>cbg</code> (effective-Hamiltonian recipe, TCL recursion including the displaced-bath path, generalised cumulants <code>D̄_1</code> / <code>D̄_2</code> with profile-aware dispatch, and the Council-cleared <code>displacement_profiles</code> registry), <code>models</code> (system–environment factories), <code>numerical</code> (tensor primitives and time grids), and <code>reporting</code> (benchmark-card schema, loader, validator, dynamical and algebraic-map runners with thermal- and coherent-displaced dispatch). The auto-generated <a href="api/index.html">API documentation</a> covers all four; the <a href="cbg-tutorial-for-phd-students_v0.2.html">pedagogical tutorial</a> remains available as the entry-level orientation document. What is presently <em>verifiable</em> is bounded by the <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/docs/validity_envelope.md">validity envelope</a>; the API documentation describes capabilities, not validation status.</p>
+  <h2>Worked Examples</h2>
+  <ul class="refs">
+    <li><a href="api/examples/dg1_walkthrough.html"><code>dg1_walkthrough</code></a> - DG-1 PASS cards A1, A3, A4.</li>
+    <li><a href="api/examples/dg2_structural.html"><code>dg2_structural</code></a> - DG-2 structural identities and Council-cleared displaced-bath registry checks.</li>
+    <li><a href="api/examples/dg3_cross_method.html"><code>dg3_cross_method</code></a> - DG-3 runner reachability and the current failure-asymmetry-clearance gap.</li>
+    <li><a href="api/examples/dg4_walkthrough.html"><code>dg4_walkthrough</code></a> - DG-4 D1 v0.1.2 Path B failure-envelope verdict.</li>
+  </ul>
+  <p>The entry-level <a href="cbg-tutorial-for-phd-students_v0.2.html">PhD-student tutorial</a> remains useful for theoretical orientation, but it predates the DG-2 and DG-4 verdicts. Use the validity envelope for current status.</p>
 </section>
 
 <section>
-<h2>Why this companion exists</h2>
-<p>The Colla–Breuer–Gasbarri construction turns a long-standing ambiguity in non-Markovian open-system dynamics — the non-uniqueness of the coherent/dissipative split — into a concrete, calculable object once the minimal-dissipation gauge is chosen. We think the construction deserves an open, benchmarked numerical companion that lets practitioners test it transparently, including in regimes where it might fail, and that makes the gauge dependence visible at every step.</p>
-<p>We are explicit that <em>K</em>(<em>t</em>) is a coordinate-dependent object under the chosen gauge. Comparisons with alternative frameworks — Hamiltonian of mean force, polaron-transformed pictures, Mori-projector approaches — require explicit gauge alignment and are not adjudicated by this pipeline alone. Reports and plots from the pipeline carry the gauge annotation by default.</p>
+  <h2>Seed Papers</h2>
+  <ul class="refs">
+    <li>A. Colla, H.-P. Breuer, G. Gasbarri, <em>Unveiling coherent dynamics in non-Markovian open quantum systems: Exact expression and recursive perturbation expansion</em>, Phys. Rev. A <strong>112</strong>, L050203 (2025). <a href="https://doi.org/10.1103/n5nl-gn1y">doi:10.1103/n5nl-gn1y</a></li>
+    <li>A. Colla, H.-P. Breuer, G. Gasbarri, <em>Recursive perturbation approach to time-convolutionless master equations: Explicit construction of generalized Lindblad generators for arbitrary open systems</em>, Phys. Rev. A <strong>112</strong>, 052222 (2025). <a href="https://doi.org/10.1103/9j8d-jxgd">doi:10.1103/9j8d-jxgd</a></li>
+  </ul>
 </section>
 
 <section>
-<h2>For the originating authors and the OQS community</h2>
-<p>If you are one of the originating authors, or if you work on related theory or experiment, this companion is an open invitation. We are interested in correspondence on at least three fronts: solvable-model test cases where the perturbative hierarchy can be cross-checked analytically; non-trapped-ion experimental platforms where the time-dependent <em>K</em>(<em>t</em>) signature could be tested independently of existing observations; and method comparisons against HEOM, TEMPO, MCTDH, pseudomode, and chain-mapping approaches that are likely to fail in regimes complementary to ours.</p>
+  <h2>Selected References</h2>
+  <h3>Gauge Fix And Minimal Dissipation</h3>
+  <ul class="refs">
+    <li>P. Hayden and J. Sorce, <em>A canonical Hamiltonian for open quantum systems</em>, J. Phys. A: Math. Theor. <strong>55</strong>, 225302 (2022).</li>
+    <li>A. Colla and H.-P. Breuer, <em>Open-system approach to nonequilibrium quantum thermodynamics at arbitrary coupling</em>, Phys. Rev. A <strong>105</strong>, 052216 (2022).</li>
+  </ul>
+  <h3>Cross-Method Benchmarking</h3>
+  <ul class="refs">
+    <li>Y. Tanimura, <em>Numerically exact approach to open quantum dynamics: The hierarchical equations of motion</em>, J. Chem. Phys. <strong>153</strong>, 020901 (2020).</li>
+    <li>A. Strathearn et al., <em>Efficient non-Markovian quantum dynamics using time-evolving matrix product operators</em>, Nat. Commun. <strong>9</strong>, 3322 (2018).</li>
+    <li>D. Tamascelli, A. Smirne, S. F. Huelga, M. B. Plenio, <em>Nonperturbative treatment of non-Markovian dynamics of open quantum systems</em>, Phys. Rev. Lett. <strong>120</strong>, 030402 (2018).</li>
+    <li>J. R. Johansson, P. D. Nation, F. Nori, <em>QuTiP 2: A Python framework for the dynamics of open quantum systems</em>, Comput. Phys. Commun. <strong>184</strong>, 1234 (2013).</li>
+  </ul>
 </section>
 
 <section>
-<h2>Seed papers</h2>
-<ul class="refs">
-  <li>A. Colla, H.-P. Breuer, G. Gasbarri, <em>Unveiling coherent dynamics in non-Markovian open quantum systems: Exact expression and recursive perturbation expansion</em>, Phys. Rev. A <strong>112</strong>, L050203 (2025). <a class="doi" href="https://doi.org/10.1103/n5nl-gn1y">doi:10.1103/n5nl-gn1y</a></li>
-  <li>A. Colla, H.-P. Breuer, G. Gasbarri, <em>Recursive perturbation approach to time-convolutionless master equations: Explicit construction of generalized Lindblad generators for arbitrary open systems</em>, Phys. Rev. A <strong>112</strong>, 052222 (2025). <a class="doi" href="https://doi.org/10.1103/9j8d-jxgd">doi:10.1103/9j8d-jxgd</a></li>
-</ul>
+  <h2>How To Engage</h2>
+  <p>Clone the repository, open an issue, or use the GitHub templates for a bug report, DG-status-change proposal, or pull request. Contributions to scientific surfaces should keep the cards-first discipline intact: freeze parameters before writing verifying code, label failure modes, and state the validity-envelope impact.</p>
 </section>
 
 <section>
-<h2>Background and anchoring references</h2>
-
-<h3>Textbooks</h3>
-<ul class="refs">
-  <li>H.-P. Breuer and F. Petruccione, <em>The Theory of Open Quantum Systems</em> (Oxford University Press, 2007).</li>
-  <li>B. Vacchini, <em>Open Quantum Systems</em> (Springer, 2024).</li>
-</ul>
-
-<h3>Gauge fix and minimal dissipation</h3>
-<ul class="refs">
-  <li>P. Hayden and J. Sorce, <em>A canonical Hamiltonian for open quantum systems</em>, J. Phys. A: Math. Theor. <strong>55</strong>, 225302 (2022).</li>
-  <li>A. Colla and H.-P. Breuer, <em>Open-system approach to nonequilibrium quantum thermodynamics at arbitrary coupling</em>, Phys. Rev. A <strong>105</strong>, 052216 (2022). <span class="doi">— first exploration of the minimal-dissipation effective Hamiltonian in non-Markovian regimes.</span></li>
-</ul>
-
-<h3>Non-Markovianity: definitions and measures</h3>
-<ul class="refs">
-  <li>A. Rivas, S. F. Huelga, and M. B. Plenio, <em>Quantum non-Markovianity: characterization, quantification and detection</em>, Rep. Prog. Phys. <strong>77</strong>, 094001 (2014).</li>
-  <li>H.-P. Breuer, E.-M. Laine, J. Piilo, and B. Vacchini, <em>Colloquium: Non-Markovian dynamics in open quantum systems</em>, Rev. Mod. Phys. <strong>88</strong>, 021002 (2016).</li>
-  <li>D. Chruściński, <em>Dynamical maps beyond Markovian regime</em>, Phys. Rep. <strong>992</strong>, 1 (2022).</li>
-</ul>
-
-<h3>Strong-coupling thermodynamics (alternative gauges and frameworks)</h3>
-<ul class="refs">
-  <li>I. A. Picatoste, A. Colla, and H.-P. Breuer, <em>Dynamically emergent quantum thermodynamics: Non-Markovian Otto cycle</em>, Phys. Rev. Res. <strong>6</strong>, 013258 (2024). <span class="doi">— Fano–Anderson model under minimal dissipation; natural comparison venue.</span></li>
-  <li>A. Colla and H.-P. Breuer, <em>Thermodynamic roles of quantum environments: from heat baths to work reservoirs</em>, Quantum Sci. Technol. <strong>10</strong>, 015047 (2025).</li>
-</ul>
-
-<h3>Experimental fingerprints</h3>
-<ul class="refs">
-  <li>A. Colla, F. Hasse, D. Palani, T. Schaetz, H.-P. Breuer, U. Warring, <em>Observing time-dependent energy level renormalisation in an ultrastrongly coupled open system</em>, Nat. Commun. <strong>16</strong>, 2502 (2025). <span class="doi">— see disclosure below.</span></li>
-</ul>
-
-<h3>Cross-method references for benchmarking</h3>
-<ul class="refs">
-  <li>Y. Tanimura, <em>Numerically &lsquo;exact&rsquo; approach to open quantum dynamics: The hierarchical equations of motion (HEOM)</em>, J. Chem. Phys. <strong>153</strong>, 020901 (2020).</li>
-  <li>A. Strathearn et al., <em>Efficient non-Markovian quantum dynamics using time-evolving matrix product operators</em>, Nat. Commun. <strong>9</strong>, 3322 (2018).</li>
-  <li>D. Tamascelli, A. Smirne, S. F. Huelga, M. B. Plenio, <em>Nonperturbative treatment of non-Markovian dynamics of open quantum systems</em>, Phys. Rev. Lett. <strong>120</strong>, 030402 (2018).</li>
-  <li>J. R. Johansson, P. D. Nation, F. Nori, <em>QuTiP 2: A Python framework for the dynamics of open quantum systems</em>, Comp. Phys. Commun. <strong>184</strong>, 1234 (2013).</li>
-</ul>
+  <h2>Disclosures</h2>
+  <p><strong>Conflict of interest.</strong> The maintainer, U. Warring, is a co-author of the trapped-ion experimental paper cited by the seed papers as an experimental fingerprint of the minimal-dissipation Ansatz. The repository treats that experiment as a secondary cross-check only; primary experimental benchmarks should come from independent groups.</p>
+  <p><strong>Citation scope.</strong> Do not cite this pipeline as evidence that <em>K(t)</em> is the unique physical Hamiltonian of a strongly coupled open system. Cite only the sub-claims authorised by the validity envelope, and include the Hayden-Sorce gauge and Ledger anchor where required.</p>
 </section>
 
-<section>
-<h2>Disclosures</h2>
-<div class="disclosure">
-<p><strong>Conflict of interest.</strong> The maintainer of this repository (U. Warring) is a co-author of the trapped-ion experimental paper Colla, Hasse, Palani, Schaetz, Breuer, Warring, Nat. Commun. <strong>16</strong>, 2502 (2025), which is cited by the seed papers as providing experimental fingerprints supporting the minimal-dissipation Ansatz. To contain this conflict, the pipeline treats data from that experiment as a secondary cross-check only, never as primary evidence; primary experimental benchmarks must come from independent groups. Where no independent data exist, the corresponding model carries an explicit "awaiting independent replication" annotation. We actively welcome independent fingerprinting on other platforms.</p>
-</div>
-<p><strong>Scope of citation.</strong> This pipeline must not be cited as evidence that <em>K</em>(<em>t</em>) is the unique physical Hamiltonian of a strongly-coupled open quantum system. <em>K</em>(<em>t</em>) is coordinate-dependent under the Hayden–Sorce gauge; alternative gauges yield different effective Hamiltonians and different thermodynamic readings. Citation rules and the current scope of applicability are documented in the repository.</p>
-<p><strong>Status.</strong> Metadata version <code>0.3.0.dev0</code>, after repository tag <code>v0.5.0</code>, with DG-1 PASS (2026-04-30, tag <code>v0.2.0</code>), DG-2 structural sub-claims PASS under the Council-cleared registry (2026-05-04), and DG-4 PASS at D1 v0.1.2 (2026-05-06) via picture-fixed Path B numerical L_4 with all four reproducibility perturbations operational and the result JSON audit-complete. (The earlier v0.1.1 PASS verdict at tag <code>v0.5.0</code> was superseded on review the same day; v0.1.2 consumes the three repair commits.) DG-3 is runner-complete on all four C1+C2 fixtures but the failure-asymmetry-cleared PASS remains pending; DG-5 is at scope-definition. The literal K_2-K_4 numerical recursion at perturbative order >= 4 (Entry 2 residual within DG-2) and the analytic Path A L_4 (Companion Sec. IV) remain separate future plans. Outputs verifiable at this version are bounded by the validity envelope; auto-generated <a href="api/index.html">API documentation</a> describes the implementation surface, not validation status.</p>
-<p><strong>Citation rules for DG-2 sub-claims.</strong> Citations of Entries 3.B.3 / 4.B.2 must name the registered displacement profile (one of <code>delta-omega_c</code>, <code>delta-omega_S</code>, <code>sqrt-J</code>, <code>gaussian</code>) under which the sub-claim is verified. Citations under non-cleared profiles are not authorised; registry extensions require fresh Council deliberation per the <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/ledger/CL-2026-005_v0.4_council-briefing_displacement-convention.md">subsidiary briefing v0.3.0</a> §6.1 registry-clearance-gate.</p>
+<section id="status">
+  <h2>Status Table</h2>
+  <p>This is the compact visitor summary. The authoritative details, caveats, and citation permissions live in <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/docs/validity_envelope.md">docs/validity_envelope.md</a>.</p>
+  <table class="status-table">
+    <thead>
+      <tr>
+        <th>Gate</th>
+        <th>State</th>
+        <th>Plain meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>DG-1</strong></td>
+        <td class="state-ok">PASS</td>
+        <td>Formula implementation cards A1, A3, and A4 reproduce the authorised sub-claims at machine precision.</td>
+      </tr>
+      <tr>
+        <td><strong>DG-2</strong></td>
+        <td class="state-wait">PARTIAL</td>
+        <td>Structural sub-claims pass under the Council-cleared displacement-profile registry. The thermal-Gaussian n=4 public route exists, but Entry-2-wide K<sub>2</sub>-K<sub>4</sub> recursion closure is not yet authorised.</td>
+      </tr>
+      <tr>
+        <td><strong>DG-3</strong></td>
+        <td class="state-wait">RUNNER-COMPLETE</td>
+        <td>C1/C2 fixtures run cleanly and currently fail at the frozen threshold. A PASS needs convergence or a third non-overlapping reference method.</td>
+      </tr>
+      <tr>
+        <td><strong>DG-4</strong></td>
+        <td class="state-ok">PASS</td>
+        <td>D1 v0.1.2 records a reproducible sigma_x thermal convergence-failure envelope via picture-fixed Path B numerical L<sub>4</sub>. The post-verdict analytic n=4 route is not yet a replacement verdict.</td>
+      </tr>
+      <tr>
+        <td><strong>DG-5</strong></td>
+        <td class="state-wait">SCOPED</td>
+        <td>E1 records the Fano-Anderson / Hamiltonian-of-mean-force discriminant scope. Callable refusal stubs exist; realised dynamics, HMF reference, and fermionic-bath support remain future work.</td>
+      </tr>
+    </tbody>
+  </table>
 </section>
 
-<section>
-<h2>How to engage</h2>
-<p>Clone the repository, open an issue, or get in touch by email. Three forms of engagement are particularly valuable to us at this stage: independent replication of the trapped-ion observation on a different experimental platform; analytic cross-checks on solvable models where the perturbative hierarchy can be evaluated to high order; and method comparisons against techniques whose failure modes do not overlap with finite-environment exact diagonalisation or QuTiP master-equation solvers.</p>
-</section>
+</main>
 
 <footer>
-<p>Maintainer: Ulrich Warring, Physikalisches Institut, Albert-Ludwigs-Universität Freiburg <span class="center-dot"></span> ulrich.warring at physik.uni-freiburg.de</p>
-<p>Repository: code under MIT, documentation under CC-BY-4.0 <span class="center-dot"></span> citation file: <a href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/CITATION.cff">CITATION.cff</a></p>
-<p>Metadata version 0.3.0.dev0 (post-v0.5.0) · DG-4 PASS at D1 v0.1.2 (2026-05-06) after the v0.1.1 PASS verdict at <code>v0.5.0</code> was superseded on review the same day <span class="center-dot"></span> last updated 2026-05-06 <span class="center-dot"></span> Zenodo DOI mint remains pending</p>
+  <p>Maintainer: Ulrich Warring, Physikalisches Institut, Albert-Ludwigs-Universität Freiburg - ulrich.warring at physik.uni-freiburg.de</p>
+  <p>Repository metadata version 0.3.0.dev0. Code: MIT. Documentation, Ledger artifacts, Sail, logbook, benchmark cards: CC-BY-4.0.</p>
+  <p>Last updated 2026-05-13. Live DG-4 verdict: D1 v0.1.2 PASS from 2026-05-06; post-verdict thermal-Gaussian n=4 public route landed 2026-05-13.</p>
 </footer>
 
 </div>

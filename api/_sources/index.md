@@ -6,8 +6,8 @@ framework for non-Markovian open quantum systems
 ([Phys. Rev. A **112**, L050203 (2025)](https://doi.org/10.1103/n5nl-gn1y);
 [Phys. Rev. A **112**, 052222 (2025)](https://doi.org/10.1103/9j8d-jxgd)).
 
-For project background, citation policy, conflict-of-interest disclosures,
-and the authoritative status, see the <a href="../index.html">main landing page</a>.
+For a warmer project overview, citation policy, conflict-of-interest disclosures,
+and the concise status table, see the <a href="../index.html">main landing page</a>.
 (The link uses raw HTML to bypass Sphinx's download-internal handling for
 sibling-directory files; on GitHub Pages it resolves to the hand-curated
 landing page at the repo root.)
@@ -24,15 +24,27 @@ A function being documented here does **not** imply its outputs have
 passed any Decision Gate.
 :::
 
-## Decision-Gate status snapshot
+## Where to start
 
-| Gate | Status | Anchor |
-|---|---|---|
-| DG-1 | **PASS** (2026-04-30; tag `v0.2.0`) | Cards [A1](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/A1_closed-form-K_v0.1.1.yaml), [A3](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/A3_pure-dephasing_v0.1.1.yaml), [A4](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/A4_sigma-x-thermal_v0.1.1.yaml) |
-| DG-2 | **PARTIAL** — structural sub-claims PASS under Council-cleared registry; K_2-K_4 recursion pending (2026-05-04) | [B1](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B1_pseudo-kraus-diagonal_v0.1.0.yaml) (Entry 1.B.3 diagonal); [B2](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B2_pseudo-kraus-offdiagonal_v0.1.0.yaml) (Entry 1.B.3 off-diagonal + Entry 1.D); [B3](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B3_cross-basis-structural-identity_v0.1.0.yaml) (Entry 1.A basis-independence); [B4-conv-registry](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B4-conv-registry_v0.1.0.yaml) (Entry 3.B.3) + [B5-conv-registry v0.2.0](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B5-conv-registry_v0.2.0.yaml) (Entry 4.B.2), each under all four Council-cleared displacement profiles. Literal K_2-K_4 numerical recursion at order >= 4 = future plan. |
-| DG-3 | RUNNER-COMPLETE; failure-asymmetry clearance pending | Cards [C1](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/C1_cross-method-pure-dephasing_v0.1.0.yaml) (pure-dephasing) + [C2](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/C2_cross-method-spin-boson_v0.1.0.yaml) (spin-boson σ_x) reachable on all four thermal + displaced fixtures via `_run_cross_method`; both currently FAIL convergence in finite-bath truncation. Failure-asymmetry-cleared PASS requires either bath-convergence under the cleared registry or a third reference method from a non-overlapping failure-mode class. |
-| DG-4 | **PASS** at D1 v0.1.2 (2026-05-06) | Card [D1 v0.1.2](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/D1_failure-envelope-convergence_v0.1.2.yaml) — spin-boson σ_x thermal, parity-aware ratio `r_4(α²) = α² · ⟨‖L_4^dis‖⟩_t / ⟨‖L_2^dis‖⟩_t`. All 20 swept `coupling_strength` points classify `convergence_failure` with stability across all four perturbations (`upper_cutoff_factor ∈ {20, 40}`, `omega_c ∈ {9, 11}`); max baseline `r_4 ≈ 47.42`. v0.1.2 supersedes the v0.5.0-tagged v0.1.1 verdict that was superseded on review the same day; consumes Path B picture fix + operational `omega_max_factor` + audit-complete result JSON. Path A analytic L_4 cross-validation remains pending. See [v0.1.2 verdict log](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/logbook/2026-05-06_dg-4-pass-path-b-v012.md). |
-| DG-5 | SCOPE-DEFINITION (preconditions unmet) | Card [E1](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/E1_thermodynamic-discriminant-fano-anderson_v0.1.0.yaml) — Fano–Anderson + Hamiltonian of mean force discriminant. `run_card(E1)` raises `ScopeDefinitionNotRunnableError` listing missing preconditions (model factory, HMF reference, fermionic-bath support). |
+If you are new to the repository, start with the hand-curated
+<a href="../index.html">landing page</a>, then use these API pages to
+inspect the implementation details behind the benchmark cards. The
+worked examples are the best executable entry point; the module reference
+is for checking signatures, docstrings, and supported scopes.
+
+## Current implementation stage
+
+The live DG verdicts remain DG-1 PASS, DG-2 structural-sub-claims PASS
+with Entry-2-wide recursion closure still unauthorised, and DG-4 PASS at
+D1 v0.1.2 via picture-fixed Path B numerical L_4. Since that verdict,
+the post-verdict analytic thermal-Gaussian n=4 route has landed:
+`L_n_thermal_at_time(n=4)`, `K_n_thermal_on_grid(n=4)`,
+`K_total_thermal_on_grid(N_card=4)`, the n=4 dissipator helpers, and
+the `L_n` shim route through the reviewed Phase B/C helpers.
+
+That implementation advance is code-facing, not a new verdict. D1 v0.1.2
+remains the live DG-4 failure-envelope artifact until a separate Path A /
+Path B cross-validation card or verdict is run.
 
 ## Packages
 
@@ -60,11 +72,22 @@ examples
 - [Source on GitHub](https://github.com/uwarring82/oqs-cbg-pipeline)
 - [Benchmark cards](https://github.com/uwarring82/oqs-cbg-pipeline/tree/main/benchmarks/benchmark_cards) — frozen verification artifacts
 - [Validity envelope](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/docs/validity_envelope.md) — authoritative DG status
+- [Transcriptions](https://github.com/uwarring82/oqs-cbg-pipeline/tree/main/transcriptions) — source-derived operational transcriptions and n=4 derived cards
 - [Subsidiary Council briefing v0.3.0](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/ledger/CL-2026-005_v0.4_council-briefing_displacement-convention.md) — Council-cleared displacement-profile registry (handling (c))
 - [Hayden–Sorce transcription v0.1.1](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/transcriptions/hayden-sorce-2022_pseudokraus_v0.1.1.md)
 - [Colla–Breuer–Gasbarri Appendix-D-routed transcription v0.0.1](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/transcriptions/colla-breuer-gasbarri-2025_appendix-d_v0.0.1.md)
 - [Logbook](https://github.com/uwarring82/oqs-cbg-pipeline/tree/main/logbook) — append-only repository event log
 - [DG-1 work plan v0.1.4](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/plans/dg-1-work-plan_v0.1.4.md)
+
+## Decision-Gate Status Snapshot
+
+| Gate | Status | Anchor |
+|---|---|---|
+| DG-1 | **PASS** (2026-04-30; tag `v0.2.0`) | Cards [A1](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/A1_closed-form-K_v0.1.1.yaml), [A3](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/A3_pure-dephasing_v0.1.1.yaml), [A4](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/A4_sigma-x-thermal_v0.1.1.yaml). |
+| DG-2 | **PARTIAL** — structural sub-claims PASS; Entry-2-wide recursion closure not yet authorised | Cards [B1](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B1_pseudo-kraus-diagonal_v0.1.0.yaml), [B2](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B2_pseudo-kraus-offdiagonal_v0.1.0.yaml), [B3](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B3_cross-basis-structural-identity_v0.1.0.yaml), [B4-conv-registry](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B4-conv-registry_v0.1.0.yaml), and [B5-conv-registry v0.2.0](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B5-conv-registry_v0.2.0.yaml). The thermal-Gaussian n=4 public route exists, but no DG-2 K_2-K_4 recursion card has closed Entry 2. |
+| DG-3 | RUNNER-COMPLETE; failure-asymmetry clearance pending | Cards [C1](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/C1_cross-method-pure-dephasing_v0.1.0.yaml) + [C2](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/C2_cross-method-spin-boson_v0.1.0.yaml) are reachable on all four thermal + displaced fixtures and currently clean-FAIL under finite-bath truncation. A PASS needs convergence or a third non-overlapping method. |
+| DG-4 | **PASS** at D1 v0.1.2 (2026-05-06) | [D1 v0.1.2](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/D1_failure-envelope-convergence_v0.1.2.yaml) identifies the σ_x thermal convergence-failure envelope with max baseline `r_4 ≈ 47.42`. The verdict source remains picture-fixed Path B numerical L_4; the post-verdict analytic thermal-Gaussian route is not yet a replacement or cross-validation verdict. |
+| DG-5 | SCOPE-DEFINITION | [E1](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/E1_thermodynamic-discriminant-fano-anderson_v0.1.0.yaml) records the Fano-Anderson / HMF discriminant scope. Callable refusal stubs exist; realised dynamics, HMF reference, and fermionic-bath support remain unimplemented. |
 
 ## Building these pages
 

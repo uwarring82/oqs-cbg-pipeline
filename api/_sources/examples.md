@@ -52,7 +52,10 @@ and their
   `r_4 = α² ⋅ ⟨‖L_4^dis‖⟩_t / ⟨‖L_2^dis‖⟩_t` exceeds threshold 1.0 in
   the upper sweep range, and `run_card` returns `verdict = PASS` with
   all four reproducibility perturbations operational. Path B carries a
-  documented finite-env extraction floor; analytic Path A pending.
+  documented finite-env extraction floor. The post-verdict analytic
+  thermal-Gaussian n=4 route now exists in `cbg.tcl_recursion`, but this
+  notebook still demonstrates the live Path B D1 verdict rather than a
+  Path A / Path B cross-validation verdict.
   v0.1.2 supersedes the v0.5.0-tagged v0.1.1 verdict that was downgraded
   on review the same day.
   ([source on GitHub](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/examples/dg4_walkthrough.ipynb))

@@ -304,29 +304,34 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">cbg.tcl_recursion — Recursive construction of the TCL generator L_t.</span>
 
-<span class="sd">Implements the runner-facing low-order TCL terms used by the frozen</span>
-<span class="sd">benchmark cards. The full Companion Eqs. (19)-(28) recursion yielding</span>
-<span class="sd">L_t = Σ_n λ^n L_n in canonical generalised-Lindblad form at arbitrary</span>
-<span class="sd">order remains pending.</span>
+<span class="sd">Implements the runner-facing TCL terms used by the frozen benchmark cards</span>
+<span class="sd">and the post-verdict DG-4 analytic n=4 thermal-Gaussian route. The full</span>
+<span class="sd">Companion Eqs. (19)-(28) recursion yielding L_t = Σ_n λ^n L_n in canonical</span>
+<span class="sd">generalised-Lindblad form at arbitrary order remains pending.</span>
 
 <span class="sd">The recursion uses the generalised cumulants D̄(τ_1^k, s_1^{n-k})</span>
 <span class="sd">which are evaluated in cbg.cumulants (NOT a Nakajima-Zwanzig</span>
 <span class="sd">memory kernel — TCL is time-local; see bath_correlations.py docstring).</span>
 
-<span class="sd">Implemented runner-facing scope covers L_n at orders n in {0, 1, 2}</span>
+<span class="sd">Implemented runner-facing scope covers L_n at orders n in {0, 1, 2, 3, 4}</span>
 <span class="sd">for thermal Gaussian baths, K_n_thermal_on_grid / K_total_thermal_on_grid,</span>
-<span class="sd">and K_total_displaced_on_grid for the Council-cleared coherent-displaced</span>
-<span class="sd">DG-2 structural cards B4/B5 at perturbative_order &lt;= 2.</span>
+<span class="sd">the n=4 thermal-Gaussian dissipator helpers, and K_total_displaced_on_grid</span>
+<span class="sd">for the Council-cleared coherent-displaced DG-2 structural cards B4/B5 at</span>
+<span class="sd">perturbative_order &lt;= 2. At n=4 the public route is thermal-Gaussian only</span>
+<span class="sd">and flows through the reviewed Phase B/C helpers; non-thermal and displaced</span>
+<span class="sd">n=4 scopes remain out of scope.</span>
 
 <span class="sd">DG-4 Phase B.4 threads the two operational quadrature controls</span>
 <span class="sd">(``quad_limit`` and ``upper_cutoff_factor``) through the runner-facing</span>
 <span class="sd">thermal/displaced K-grid entry points.</span>
 
-<span class="sd">Pending scope covers L_n at orders n &gt;= 3 (full Companion Eq. (28)</span>
-<span class="sd">recursion) and canonical_lindblad_form, the full K + dissipator</span>
-<span class="sd">decomposition with traceless jump operators (Companion Eq. (43)).</span>
+<span class="sd">Pending scope covers L_n at orders n &gt;= 5, non-thermal/displaced n=4,</span>
+<span class="sd">the generic K_perturbative surface, canonical_lindblad_form, and the full</span>
+<span class="sd">K + dissipator decomposition with traceless jump operators (Companion</span>
+<span class="sd">Eq. (43)).</span>
 
-<span class="sd">Anchor: SCHEMA.md v0.1.2; benchmark cards A3/A4/B4/B5.</span>
+<span class="sd">Anchor: SCHEMA.md v0.1.3; benchmark cards A3/A4/B4/B5/D1 and the</span>
+<span class="sd">Companion Sec. IV n=4 derived cards under transcriptions/.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -338,6 +343,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">expm</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">cbg.basis</span><span class="w"> </span><span class="kn">import</span> <span class="n">matrix_unit_basis</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cbg.bath_correlations</span><span class="w"> </span><span class="kn">import</span> <span class="n">n_point_ordered</span><span class="p">,</span> <span class="n">two_point</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">cbg.cumulants</span><span class="w"> </span><span class="kn">import</span> <span class="n">D_bar_1</span><span class="p">,</span> <span class="n">D_bar_2</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">cbg.effective_hamiltonian</span><span class="w"> </span><span class="kn">import</span> <span class="n">K_from_generator</span>
 
@@ -371,6 +377,762 @@
 
 
 
+<span class="c1"># ─── Companion D̄ at n=4 (DG-4 Phase B, thermal Gaussian) ───────────────────</span>
+<span class="c1">#</span>
+<span class="c1"># Verification card (current):</span>
+<span class="c1">#   transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_</span>
+<span class="c1">#   n4-small-grid-verification-card_v0.1.1.md</span>
+<span class="c1">#   (errata-supersedes v0.1.0 for §5.3 bullet 2 wording; helper</span>
+<span class="c1">#   unchanged from commit `becccf9`.)</span>
+<span class="c1">#</span>
+<span class="c1"># Parent transcription:</span>
+<span class="c1">#   transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_v0.1.1.md</span>
+<span class="c1">#</span>
+<span class="c1"># This block implements the Phase B private helper for the Companion</span>
+<span class="c1"># fourth-order generalized cumulant D̄(τ_1^k, s_1^{4−k}) per Eqs. (69)–(73)</span>
+<span class="c1"># of the parent transcription artifact, using the closed-by-steward</span>
+<span class="c1"># row-2.3 chain-reversal-and-swap rule for all raw D leaves and the</span>
+<span class="c1"># Eq. (22) boundary delta on Ḋ. The helper is private but is the</span>
+<span class="c1"># point-evaluator that the Phase C / Phase D L_4 assembly path</span>
+<span class="c1"># eventually consumes; the public L_n_thermal_at_time(n=4) route</span>
+<span class="c1"># (Phase D, commit `f599751`) routes through `_L_4_thermal_at_time_apply`</span>
+<span class="c1"># which itself uses this `_D_bar_4_companion` for its raw D̄ leaves</span>
+<span class="c1"># (see card phase-d-public-route-card_v0.1.0.md).</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_D_companion_raw_n4</span><span class="p">(</span>
+    <span class="n">tau_args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">s_args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">bath_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">spectral_density</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">upper_cutoff_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">,</span>
+    <span class="n">quad_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raw Companion D(τ_1^k, s_1^{4−k}) via the row-2.3 swap.</span>
+
+<span class="sd">    Calls n_point_ordered with tau_args and s_args swapped and each</span>
+<span class="sd">    side reversed, yielding the Companion operator-order trace</span>
+<span class="sd">    ⟨B(s_{n−k})...B(s_1) B(τ_1)...B(τ_k)⟩ at n = 4.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">swapped_tau</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">s_args</span><span class="p">))</span>
+    <span class="n">swapped_s</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">tau_args</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">n_point_ordered</span><span class="p">(</span>
+        <span class="n">swapped_tau</span><span class="p">,</span>
+        <span class="n">swapped_s</span><span class="p">,</span>
+        <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span>
+        <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+        <span class="n">upper_cutoff_factor</span><span class="o">=</span><span class="n">upper_cutoff_factor</span><span class="p">,</span>
+        <span class="n">quad_limit</span><span class="o">=</span><span class="n">quad_limit</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_D_companion_raw_n2</span><span class="p">(</span>
+    <span class="n">tau_args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">s_args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">bath_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">spectral_density</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">upper_cutoff_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">,</span>
+    <span class="n">quad_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raw Companion D(τ_1^k, s_1^{2−k}) via the row-2.3 swap.</span>
+
+<span class="sd">    Returns the operator-ordered two-point ⟨B(u_1) B(u_2)⟩ where the</span>
+<span class="sd">    ordered times (u_1, u_2) follow row 2.3:</span>
+
+<span class="sd">        D(τ_a, τ_b)  ↦ C(τ_a, τ_b)         (pure-left,  k = 2)</span>
+<span class="sd">        D(s_a, s_b)  ↦ C(s_b, s_a)         (pure-right, k = 0)</span>
+<span class="sd">        D(τ_a, s_b)  ↦ C(s_b, τ_a)         (mixed,      k = 1)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tau_args</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">s_args</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;_D_companion_raw_n2: total order must be 2 &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;(got len(tau_args)=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">tau_args</span><span class="p">)</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;len(s_args)=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">s_args</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span>
+    <span class="n">times</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">s_args</span><span class="p">))</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">tau_args</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">two_point</span><span class="p">(</span>
+        <span class="n">times</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="n">times</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+        <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span>
+        <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+        <span class="n">upper_cutoff_factor</span><span class="o">=</span><span class="n">upper_cutoff_factor</span><span class="p">,</span>
+        <span class="n">quad_limit</span><span class="o">=</span><span class="n">quad_limit</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_D_bar_4_companion</span><span class="p">(</span>
+    <span class="n">tau_args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">s_args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">bath_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">spectral_density</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">upper_cutoff_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">,</span>
+    <span class="n">quad_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Companion D̄(τ_1^k, s_1^{4−k}) at total order n = 4.</span>
+
+<span class="sd">    Implements Eqs. (69)–(73) of the parent transcription artifact</span>
+<span class="sd">    directly:</span>
+
+<span class="sd">        Eq. (69)  k = 0 : D̄(s_1^4)        = Ḋ(s_1^4) − Ḋ(s_1^2)·D(s_3^4)</span>
+<span class="sd">        Eq. (70)  k = 1 : D̄(τ_1, s_1^3)   = Ḋ(τ_1, s_1^3)</span>
+<span class="sd">                                            − Ḋ(τ_1, s_1)·D(s_2^3)</span>
+<span class="sd">                                            − Ḋ(s_1^2)·D(τ_1, s_3)</span>
+<span class="sd">        Eq. (71)  k = 2 : D̄(τ_1^2, s_1^2) = Ḋ(τ_1^2, s_1^2)</span>
+<span class="sd">                                            − Ḋ(τ_1, s_1)·D(τ_2, s_2)</span>
+<span class="sd">                                            − Ḋ(s_1^2)·D(τ_1^2)</span>
+<span class="sd">                                            − Ḋ(τ_1^2)·D(s_1^2)</span>
+<span class="sd">        Eq. (72)  k = 3 : D̄(τ_1^3, s_1)   = Ḋ(τ_1^3, s_1)</span>
+<span class="sd">                                            − Ḋ(τ_1, s_1)·D(τ_2^3)</span>
+<span class="sd">                                            − Ḋ(τ_1^2)·D(τ_3, s_1)</span>
+<span class="sd">        Eq. (73)  k = 4 : D̄(τ_1^4)        = Ḋ(τ_1^4) − Ḋ(τ_1^2)·D(τ_3^4)</span>
+
+<span class="sd">    Substitution rules used internally:</span>
+
+<span class="sd">    - All raw D leaves (n = 4 and n = 2) are evaluated via the row-2.3</span>
+<span class="sd">      chain-reversal-and-swap rule, delegating to _D_companion_raw_n4</span>
+<span class="sd">      and _D_companion_raw_n2 respectively.</span>
+<span class="sd">    - Ḋ(τ_1^k, s_1^{n−k}) = D(...)·(δ_{τ_1,t} + δ_{s_1,t}), with the</span>
+<span class="sd">      empty-chain convention that the missing-side delta is 0 (Eq. 22).</span>
+<span class="sd">    - This helper MUST NOT call cbg.cumulants._joint_cumulant_from_raw_moments</span>
+<span class="sd">      (the B.1 standard-cumulant path silently returns ≈ 0 for thermal</span>
+<span class="sd">      Gaussian at n ≥ 3; see parent transcription row 2.8).</span>
+
+<span class="sd">    The signature is private. The public L_n_thermal_at_time(n=4) route</span>
+<span class="sd">    (Phase D, commit `f599751`) routes through `_L_4_thermal_at_time_apply`,</span>
+<span class="sd">    which itself uses this `_D_bar_4_companion` for its raw D̄ leaves.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tau_args : sequence of float</span>
+<span class="sd">        Companion τ-chain (left-acting times), length k.</span>
+<span class="sd">    s_args : sequence of float</span>
+<span class="sd">        Companion s-chain (right-acting times), length 4 − k.</span>
+<span class="sd">    t : float, keyword-only</span>
+<span class="sd">        Outer evaluation time at which the Eq. (22) boundary delta is</span>
+<span class="sd">        applied. Strict equality `tau_args[0] == t` or `s_args[0] == t`</span>
+<span class="sd">        determines whether the boundary delta fires (Kronecker semantics</span>
+<span class="sd">        at the verification-card grid; not a Dirac at integration time).</span>
+<span class="sd">    bath_state, spectral_density : dict, keyword-only</span>
+<span class="sd">        Forwarded to n_point_ordered and two_point.</span>
+<span class="sd">    upper_cutoff_factor, quad_limit : optional</span>
+<span class="sd">        Quadrature controls forwarded to n_point_ordered and two_point.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    complex</span>
+<span class="sd">        Companion D̄(τ_1^k, s_1^{4−k}) at total order 4.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    NotImplementedError</span>
+<span class="sd">        If total order ≠ 4, or k ∉ {0, 1, 2, 3, 4}. Phase B scope is</span>
+<span class="sd">        n = 4 only; n ≥ 5 is out of scope for DG-4 work plan v0.1.5.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tau_args</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">tau_args</span><span class="p">)</span>
+    <span class="n">s_args</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">s_args</span><span class="p">)</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tau_args</span><span class="p">)</span>
+    <span class="n">n_total</span> <span class="o">=</span> <span class="n">k</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">s_args</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n_total</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;_D_bar_4_companion: total order n=</span><span class="si">{</span><span class="n">n_total</span><span class="si">}</span><span class="s2"> not supported. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Phase B scope is n=4 only.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">}:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;_D_bar_4_companion: k=</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> not in </span><span class="se">{{</span><span class="s2">0,1,2,3,4</span><span class="se">}}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Eq. (22) boundary delta. Empty-chain convention: the missing-side</span>
+    <span class="c1"># indicator is 0.</span>
+    <span class="n">delta_tau</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="p">(</span><span class="n">k</span> <span class="o">&gt;=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">tau_args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">t</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="n">delta_s</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="p">(</span><span class="mi">4</span> <span class="o">-</span> <span class="n">k</span> <span class="o">&gt;=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">s_args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">t</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+
+    <span class="n">leaf_kw</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;bath_state&quot;</span><span class="p">:</span> <span class="n">bath_state</span><span class="p">,</span>
+        <span class="s2">&quot;spectral_density&quot;</span><span class="p">:</span> <span class="n">spectral_density</span><span class="p">,</span>
+        <span class="s2">&quot;upper_cutoff_factor&quot;</span><span class="p">:</span> <span class="n">upper_cutoff_factor</span><span class="p">,</span>
+        <span class="s2">&quot;quad_limit&quot;</span><span class="p">:</span> <span class="n">quad_limit</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Raw 4-point appears in every case (the first term of each Eq.).</span>
+    <span class="n">D_n4</span> <span class="o">=</span> <span class="n">_D_companion_raw_n4</span><span class="p">(</span><span class="n">tau_args</span><span class="p">,</span> <span class="n">s_args</span><span class="p">,</span> <span class="o">**</span><span class="n">leaf_kw</span><span class="p">)</span>
+    <span class="n">D_dot_n4</span> <span class="o">=</span> <span class="n">D_n4</span> <span class="o">*</span> <span class="p">(</span><span class="n">delta_tau</span> <span class="o">+</span> <span class="n">delta_s</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="c1"># Eq. (73): D̄(τ_1^4) = Ḋ(τ_1^4) − Ḋ(τ_1^2)·D(τ_3^4)</span>
+        <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">t3</span><span class="p">,</span> <span class="n">t4</span> <span class="o">=</span> <span class="n">tau_args</span>
+        <span class="n">D_tau12</span> <span class="o">=</span> <span class="n">_D_companion_raw_n2</span><span class="p">((</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">),</span> <span class="p">(),</span> <span class="o">**</span><span class="n">leaf_kw</span><span class="p">)</span>
+        <span class="n">D_tau34</span> <span class="o">=</span> <span class="n">_D_companion_raw_n2</span><span class="p">((</span><span class="n">t3</span><span class="p">,</span> <span class="n">t4</span><span class="p">),</span> <span class="p">(),</span> <span class="o">**</span><span class="n">leaf_kw</span><span class="p">)</span>
+        <span class="n">D_dot_tau12</span> <span class="o">=</span> <span class="n">D_tau12</span> <span class="o">*</span> <span class="n">delta_tau</span>
+        <span class="k">return</span> <span class="n">D_dot_n4</span> <span class="o">-</span> <span class="n">D_dot_tau12</span> <span class="o">*</span> <span class="n">D_tau34</span>
+
+    <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="c1"># Eq. (72): D̄(τ_1^3, s_1) = Ḋ(τ_1^3, s_1)</span>
+        <span class="c1">#                            − Ḋ(τ_1, s_1)·D(τ_2^3)</span>
+        <span class="c1">#                            − Ḋ(τ_1^2)·D(τ_3, s_1)</span>
+        <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">t3</span> <span class="o">=</span> <span class="n">tau_args</span>
+        <span class="p">(</span><span class="n">s1</span><span class="p">,)</span> <span class="o">=</span> <span class="n">s_args</span>
+        <span class="n">D_tau1_s1</span> <span class="o">=</span> <span class="n">_D_companion_raw_n2</span><span class="p">((</span><span class="n">t1</span><span class="p">,),</span> <span class="p">(</span><span class="n">s1</span><span class="p">,),</span> <span class="o">**</span><span class="n">leaf_kw</span><span class="p">)</span>
+        <span class="n">D_dot_tau1_s1</span> <span class="o">=</span> <span class="n">D_tau1_s1</span> <span class="o">*</span> <span class="p">(</span><span class="n">delta_tau</span> <span class="o">+</span> <span class="n">delta_s</span><span class="p">)</span>
+        <span class="n">D_tau23</span> <span class="o">=</span> <span class="n">_D_companion_raw_n2</span><span class="p">((</span><span class="n">t2</span><span class="p">,</span> <span class="n">t3</span><span class="p">),</span> <span class="p">(),</span> <span class="o">**</span><span class="n">leaf_kw</span><span class="p">)</span>
+        <span class="n">D_tau12</span> <span class="o">=</span> <span class="n">_D_companion_raw_n2</span><span class="p">((</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">),</span> <span class="p">(),</span> <span class="o">**</span><span class="n">leaf_kw</span><span class="p">)</span>
+        <span class="n">D_dot_tau12</span> <span class="o">=</span> <span class="n">D_tau12</span> <span class="o">*</span> <span class="n">delta_tau</span>
+        <span class="n">D_tau3_s1</span> <span class="o">=</span> <span class="n">_D_companion_raw_n2</span><span class="p">((</span><span class="n">t3</span><span class="p">,),</span> <span class="p">(</span><span class="n">s1</span><span class="p">,),</span> <span class="o">**</span><span class="n">leaf_kw</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">D_dot_n4</span> <span class="o">-</span> <span class="n">D_dot_tau1_s1</span> <span class="o">*</span> <span class="n">D_tau23</span> <span class="o">-</span> <span class="n">D_dot_tau12</span> <span class="o">*</span> <span class="n">D_tau3_s1</span>
+
+    <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="c1"># Eq. (71): D̄(τ_1^2, s_1^2) = Ḋ(τ_1^2, s_1^2)</span>
+        <span class="c1">#                              − Ḋ(τ_1, s_1)·D(τ_2, s_2)</span>
+        <span class="c1">#                              − Ḋ(s_1^2)·D(τ_1^2)</span>
+        <span class="c1">#                              − Ḋ(τ_1^2)·D(s_1^2)</span>
+        <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span> <span class="o">=</span> <span class="n">tau_args</span>
+        <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span> <span class="o">=</span> <span class="n">s_args</span>
+        <span class="n">D_tau1_s1</span> <span class="o">=</span> <span class="n">_D_companion_raw_n2</span><span class="p">((</span><span class="n">t1</span><span class="p">,),</span> <span class="p">(</span><span class="n">s1</span><span class="p">,),</span> <span class="o">**</span><span class="n">leaf_kw</span><span class="p">)</span>
+        <span class="n">D_dot_tau1_s1</span> <span class="o">=</span> <span class="n">D_tau1_s1</span> <span class="o">*</span> <span class="p">(</span><span class="n">delta_tau</span> <span class="o">+</span> <span class="n">delta_s</span><span class="p">)</span>
+        <span class="n">D_tau2_s2</span> <span class="o">=</span> <span class="n">_D_companion_raw_n2</span><span class="p">((</span><span class="n">t2</span><span class="p">,),</span> <span class="p">(</span><span class="n">s2</span><span class="p">,),</span> <span class="o">**</span><span class="n">leaf_kw</span><span class="p">)</span>
+        <span class="n">D_s12</span> <span class="o">=</span> <span class="n">_D_companion_raw_n2</span><span class="p">((),</span> <span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">),</span> <span class="o">**</span><span class="n">leaf_kw</span><span class="p">)</span>
+        <span class="n">D_dot_s12</span> <span class="o">=</span> <span class="n">D_s12</span> <span class="o">*</span> <span class="n">delta_s</span>
+        <span class="n">D_tau12</span> <span class="o">=</span> <span class="n">_D_companion_raw_n2</span><span class="p">((</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">),</span> <span class="p">(),</span> <span class="o">**</span><span class="n">leaf_kw</span><span class="p">)</span>
+        <span class="n">D_dot_tau12</span> <span class="o">=</span> <span class="n">D_tau12</span> <span class="o">*</span> <span class="n">delta_tau</span>
+        <span class="k">return</span> <span class="n">D_dot_n4</span> <span class="o">-</span> <span class="n">D_dot_tau1_s1</span> <span class="o">*</span> <span class="n">D_tau2_s2</span> <span class="o">-</span> <span class="n">D_dot_s12</span> <span class="o">*</span> <span class="n">D_tau12</span> <span class="o">-</span> <span class="n">D_dot_tau12</span> <span class="o">*</span> <span class="n">D_s12</span>
+
+    <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># Eq. (70): D̄(τ_1, s_1^3) = Ḋ(τ_1, s_1^3)</span>
+        <span class="c1">#                            − Ḋ(τ_1, s_1)·D(s_2^3)</span>
+        <span class="c1">#                            − Ḋ(s_1^2)·D(τ_1, s_3)</span>
+        <span class="p">(</span><span class="n">t1</span><span class="p">,)</span> <span class="o">=</span> <span class="n">tau_args</span>
+        <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s3</span> <span class="o">=</span> <span class="n">s_args</span>
+        <span class="n">D_tau1_s1</span> <span class="o">=</span> <span class="n">_D_companion_raw_n2</span><span class="p">((</span><span class="n">t1</span><span class="p">,),</span> <span class="p">(</span><span class="n">s1</span><span class="p">,),</span> <span class="o">**</span><span class="n">leaf_kw</span><span class="p">)</span>
+        <span class="n">D_dot_tau1_s1</span> <span class="o">=</span> <span class="n">D_tau1_s1</span> <span class="o">*</span> <span class="p">(</span><span class="n">delta_tau</span> <span class="o">+</span> <span class="n">delta_s</span><span class="p">)</span>
+        <span class="n">D_s23</span> <span class="o">=</span> <span class="n">_D_companion_raw_n2</span><span class="p">((),</span> <span class="p">(</span><span class="n">s2</span><span class="p">,</span> <span class="n">s3</span><span class="p">),</span> <span class="o">**</span><span class="n">leaf_kw</span><span class="p">)</span>
+        <span class="n">D_s12</span> <span class="o">=</span> <span class="n">_D_companion_raw_n2</span><span class="p">((),</span> <span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">),</span> <span class="o">**</span><span class="n">leaf_kw</span><span class="p">)</span>
+        <span class="n">D_dot_s12</span> <span class="o">=</span> <span class="n">D_s12</span> <span class="o">*</span> <span class="n">delta_s</span>
+        <span class="n">D_tau1_s3</span> <span class="o">=</span> <span class="n">_D_companion_raw_n2</span><span class="p">((</span><span class="n">t1</span><span class="p">,),</span> <span class="p">(</span><span class="n">s3</span><span class="p">,),</span> <span class="o">**</span><span class="n">leaf_kw</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">D_dot_n4</span> <span class="o">-</span> <span class="n">D_dot_tau1_s1</span> <span class="o">*</span> <span class="n">D_s23</span> <span class="o">-</span> <span class="n">D_dot_s12</span> <span class="o">*</span> <span class="n">D_tau1_s3</span>
+
+    <span class="c1"># k == 0: Eq. (69) — D̄(s_1^4) = Ḋ(s_1^4) − Ḋ(s_1^2)·D(s_3^4)</span>
+    <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s3</span><span class="p">,</span> <span class="n">s4</span> <span class="o">=</span> <span class="n">s_args</span>
+    <span class="n">D_s12</span> <span class="o">=</span> <span class="n">_D_companion_raw_n2</span><span class="p">((),</span> <span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">),</span> <span class="o">**</span><span class="n">leaf_kw</span><span class="p">)</span>
+    <span class="n">D_dot_s12</span> <span class="o">=</span> <span class="n">D_s12</span> <span class="o">*</span> <span class="n">delta_s</span>
+    <span class="n">D_s34</span> <span class="o">=</span> <span class="n">_D_companion_raw_n2</span><span class="p">((),</span> <span class="p">(</span><span class="n">s3</span><span class="p">,</span> <span class="n">s4</span><span class="p">),</span> <span class="o">**</span><span class="n">leaf_kw</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">D_dot_n4</span> <span class="o">-</span> <span class="n">D_dot_s12</span> <span class="o">*</span> <span class="n">D_s34</span>
+
+
+<span class="c1"># ─── L_4 assembly via literal θ-aware Eqs. (69)-(73) integration ────────────</span>
+<span class="c1">#</span>
+<span class="c1"># Verification card (frozen 2026-05-13, current):</span>
+<span class="c1">#   transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_</span>
+<span class="c1">#   phase-c-physics-oracles-card_v0.1.3.md</span>
+<span class="c1">#   (errata-supersedes v0.1.2 for the Part B reference table after the</span>
+<span class="c1">#   post-review cube-domain fix at commit `3e50e94`.)</span>
+<span class="c1">#</span>
+<span class="c1"># This block implements `_L_4_thermal_at_time_apply` per the v0.1.1 §3a</span>
+<span class="c1"># discipline AND the v0.1.2 §3.2 commuting-case guard.</span>
+<span class="c1">#</span>
+<span class="c1"># Each (k ∈ {0..4}, term in Eq. (69)-(73), boundary-delta branch ∈</span>
+<span class="c1"># {τ_1=t, s_1=t}) contribution is integrated on its OWN 3-D domain.</span>
+<span class="c1"># Per the v0.1.2 review post-mortem, that domain is the **intersection</span>
+<span class="c1"># of**:</span>
+<span class="c1">#   1. the outer Eq. (28) τ-chain ordering t &gt; τ_1 &gt; … &gt; τ_k &gt; 0;</span>
+<span class="c1">#   2. the outer Eq. (28) s-chain ordering t &gt; s_1 &gt; … &gt; s_{4-k} &gt; 0;</span>
+<span class="c1">#   3. each constituent D factor&#39;s Eq. (15) θ-window.</span>
+<span class="c1">#</span>
+<span class="c1"># All terms at a fixed (k, branch) therefore share the same outer</span>
+<span class="c1"># simplex domain — they differ only in their integrand. Each</span>
+<span class="c1"># (k, branch) is implemented as ONE loop that sums the integrands of</span>
+<span class="c1"># all terms contributing to that (k, branch). Wick&#39;s theorem is</span>
+<span class="c1"># applied INSIDE each raw D factor individually; pre-cancellation</span>
+<span class="c1"># of Wick pairings across terms is explicitly forbidden (v0.1.1 §3b).</span>
+<span class="c1">#</span>
+<span class="c1"># Three distinct domain shapes encountered (mapped one-to-one to</span>
+<span class="c1"># (k, branch) pairs):</span>
+<span class="c1">#   - 3-simplex on (a, b, c): t &gt; a &gt; b &gt; c &gt; 0</span>
+<span class="c1">#   - 1-D × 2-simplex on (a; b, c): a ∈ [0, t], t &gt; b &gt; c &gt; 0</span>
+<span class="c1">#   - 2-simplex × 1-D on (a, b; c): t &gt; a &gt; b &gt; 0, c ∈ [0, t]</span>
+<span class="c1"># (The &quot;3-D cube&quot; shape was an early mis-implementation that ignored</span>
+<span class="c1"># the outer chain ordering for subtraction terms with shorter D</span>
+<span class="c1"># factors; the v0.1.2 implementation review identified and corrected</span>
+<span class="c1"># this. See the v0.1.2 → v0.1.3 errata supersession entry in the</span>
+<span class="c1"># parent card.)</span>
+<span class="c1">#</span>
+<span class="c1"># Quadrature: nested 1-D trapezoidal on each simplex factor; standard</span>
+<span class="c1"># 1-D trapezoidal on each free axis. Weight matrix c_wt[i, M] gives the</span>
+<span class="c1"># 1-D trapezoidal weight on [0, g[M]] at grid index i (h/2 at endpoints,</span>
+<span class="c1"># h interior, 0 if i &gt; M).</span>
+<span class="c1">#</span>
+<span class="c1"># Operator chain per (k, branch) is fixed; only the integrand differs</span>
+<span class="c1"># per term, all integrated on the shared (k, branch) outer simplex.</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_L_4_thermal_at_time_apply</span><span class="p">(</span>
+    <span class="n">t_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">t_grid</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">system_hamiltonian</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">coupling_operator</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">bath_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">spectral_density</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">upper_cutoff_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">,</span>
+    <span class="n">quad_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a callable that computes L_4[X] at t = t_grid[t_idx] for</span>
+<span class="sd">    a thermal Gaussian bath, assembled from Companion Eq. (28) at n = 4</span>
+<span class="sd">    via literal θ-aware integration of Eqs. (69)-(73), with a</span>
+<span class="sd">    commuting-case Feynman-Vernon exact-zero short-circuit.</span>
+
+<span class="sd">    Verification card (current):</span>
+<span class="sd">        transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_</span>
+<span class="sd">        phase-c-physics-oracles-card_v0.1.3.md  (frozen 2026-05-13;</span>
+<span class="sd">        errata-supersedes v0.1.2 for the Part B reference table after</span>
+<span class="sd">        the post-review cube-domain fix at commit `3e50e94`).</span>
+
+<span class="sd">    Behaviour:</span>
+
+<span class="sd">    - Commuting-case guard (§3.2 of the card): if [H_S, A] = 0</span>
+<span class="sd">      (machine-tolerance check at atol = rtol = 1e-12), short-circuit</span>
+<span class="sd">      to a callable that returns the (d, d) zero matrix. This captures</span>
+<span class="sd">      the Feynman-Vernon Gaussian-bath truncation result for pure</span>
+<span class="sd">      dephasing: L_4 = 0 as an operator. The guard fires for A = σ_z</span>
+<span class="sd">      with H_S = (ω/2) σ_z and similar commuting configurations.</span>
+<span class="sd">    - Non-commuting case ([H_S, A] ≠ 0): run the literal θ-aware</span>
+<span class="sd">      integration of Eqs. (69)-(73) per v0.1.1 §3a. Each</span>
+<span class="sd">      (k, term, branch) contribution is integrated on its own 3-D</span>
+<span class="sd">      domain (intersection of each constituent D factor&#39;s Eq. (15)</span>
+<span class="sd">      θ-window with the outer Eq. (28) range). Wick is applied inside</span>
+<span class="sd">      each raw D factor individually; pre-cancellation across terms is</span>
+<span class="sd">      forbidden.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    t_idx : int</span>
+<span class="sd">        Index into t_grid at which to evaluate L_4.</span>
+<span class="sd">    t_grid : ndarray</span>
+<span class="sd">        Time points; uniform spacing, t_grid[0] = 0.</span>
+<span class="sd">    system_hamiltonian, coupling_operator : ndarray</span>
+<span class="sd">        H_S and A, each shape (d, d).</span>
+<span class="sd">    bath_state, spectral_density : dict, keyword-only</span>
+<span class="sd">        Forwarded to cbg.bath_correlations.two_point.</span>
+<span class="sd">    upper_cutoff_factor, quad_limit : optional</span>
+<span class="sd">        Quadrature controls forwarded to two_point.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    callable</span>
+<span class="sd">        L_4_apply : (X: (d, d) ndarray) -&gt; (d, d) ndarray.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">H_S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">system_hamiltonian</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coupling_operator</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Commuting-case Feynman-Vernon exact-zero guard (v0.1.2 §3.2).</span>
+    <span class="c1"># When [H_S, A] = 0, thermal Gaussian L_t truncates at order 2</span>
+    <span class="c1"># exactly (the dephasing dynamical map factorises in α), so</span>
+    <span class="c1"># L_4 = 0 as an operator. Short-circuit to avoid the O(n_g^4)</span>
+    <span class="c1"># quadrature path that would only converge to zero as O(h^1) at</span>
+    <span class="c1"># the v0.1.2 §4.1 Part B diagnostic rate.</span>
+    <span class="n">commutator</span> <span class="o">=</span> <span class="n">H_S</span> <span class="o">@</span> <span class="n">A</span> <span class="o">-</span> <span class="n">A</span> <span class="o">@</span> <span class="n">H_S</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">commutator</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">commutator</span><span class="p">),</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">):</span>
+        <span class="k">return</span> <span class="k">lambda</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_L_4_thermal_at_time_apply_no_guard</span><span class="p">(</span>
+        <span class="n">t_idx</span><span class="p">,</span>
+        <span class="n">t_grid</span><span class="p">,</span>
+        <span class="n">system_hamiltonian</span><span class="p">,</span>
+        <span class="n">coupling_operator</span><span class="p">,</span>
+        <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span>
+        <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+        <span class="n">upper_cutoff_factor</span><span class="o">=</span><span class="n">upper_cutoff_factor</span><span class="p">,</span>
+        <span class="n">quad_limit</span><span class="o">=</span><span class="n">quad_limit</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_L_4_thermal_at_time_apply_no_guard</span><span class="p">(</span>
+    <span class="n">t_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">t_grid</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">system_hamiltonian</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">coupling_operator</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">bath_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">spectral_density</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">upper_cutoff_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">,</span>
+    <span class="n">quad_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Literal θ-aware L_4 assembly without the commuting-case guard.</span>
+
+<span class="sd">    For the card §4.1 Part B convergence diagnostic ONLY. Use</span>
+<span class="sd">    `_L_4_thermal_at_time_apply` in production: it short-circuits to</span>
+<span class="sd">    exact zero when [H_S, A] = 0 (Feynman-Vernon), avoiding the</span>
+<span class="sd">    O(n_g^4) quadrature path. This `_no_guard` entry point bypasses</span>
+<span class="sd">    the short-circuit so the diagnostic can measure the literal</span>
+<span class="sd">    θ-aware quadrature&#39;s convergence on a refinement table.</span>
+
+<span class="sd">    Verification card (current):</span>
+<span class="sd">        transcriptions/colla-breuer-gasbarri-2025_companion-sec-iv_l4_</span>
+<span class="sd">        phase-c-physics-oracles-card_v0.1.3.md §5 step 2</span>
+<span class="sd">        (errata-supersedes v0.1.2; same diagnostic contract).</span>
+
+<span class="sd">    Signature and integration logic match `_L_4_thermal_at_time_apply`</span>
+<span class="sd">    minus the §3.2 commuting-case guard.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">H_S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">system_hamiltonian</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coupling_operator</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+    <span class="n">t_grid_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t_grid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">t_idx</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="k">lambda</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+
+    <span class="n">t_at</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">t_grid_np</span><span class="p">[</span><span class="n">t_idx</span><span class="p">])</span>
+    <span class="n">sub_grid</span> <span class="o">=</span> <span class="n">t_grid_np</span><span class="p">[:</span> <span class="n">t_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">n_g</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub_grid</span><span class="p">)</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="n">n_g</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># grid index of the boundary time t</span>
+
+    <span class="c1"># Pre-compute A_I(τ - t) on the sub-grid (per n=2 repo convention).</span>
+    <span class="n">A_I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_g</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+        <span class="n">A_I</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">interaction_picture</span><span class="p">(</span><span class="n">H_S</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">sub_grid</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">t_at</span><span class="p">)</span>
+    <span class="n">A_at_t</span> <span class="o">=</span> <span class="n">A</span>  <span class="c1"># A_I(0) = A (interaction-picture operator at boundary time)</span>
+
+    <span class="c1"># Pre-compute C_tbl[i, j] = ⟨B(g[i]) B(g[j])⟩.</span>
+    <span class="n">C_tbl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_g</span><span class="p">,</span> <span class="n">n_g</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+            <span class="n">C_tbl</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">two_point</span><span class="p">(</span>
+                <span class="n">sub_grid</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">sub_grid</span><span class="p">[</span><span class="n">j</span><span class="p">],</span>
+                <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span>
+                <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+                <span class="n">upper_cutoff_factor</span><span class="o">=</span><span class="n">upper_cutoff_factor</span><span class="p">,</span>
+                <span class="n">quad_limit</span><span class="o">=</span><span class="n">quad_limit</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="c1"># Pre-compute c_wt[i, M] = nested 1-D trapezoidal weight on [0, g[M]].</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">sub_grid</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">sub_grid</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">c_wt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_g</span><span class="p">,</span> <span class="n">n_g</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">M</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_g</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">M</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">c_wt</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">M</span><span class="p">]</span> <span class="o">=</span> <span class="n">h</span> <span class="o">/</span> <span class="mi">2</span> <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="n">M</span><span class="p">)</span> <span class="k">else</span> <span class="n">h</span>
+
+    <span class="c1"># Build the (coef, left_op, right_op) quadrature terms.</span>
+    <span class="n">quadrature_terms</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">complex</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">eye_d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+
+    <span class="c1"># ─ Helper: Wick split of ⟨B(t1)B(t2)B(t3)B(t4)⟩ at given grid indices.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">W4</span><span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="n">i3</span><span class="p">,</span> <span class="n">i4</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">C_tbl</span><span class="p">[</span><span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">]</span> <span class="o">*</span> <span class="n">C_tbl</span><span class="p">[</span><span class="n">i3</span><span class="p">,</span> <span class="n">i4</span><span class="p">]</span>
+            <span class="o">+</span> <span class="n">C_tbl</span><span class="p">[</span><span class="n">i1</span><span class="p">,</span> <span class="n">i3</span><span class="p">]</span> <span class="o">*</span> <span class="n">C_tbl</span><span class="p">[</span><span class="n">i2</span><span class="p">,</span> <span class="n">i4</span><span class="p">]</span>
+            <span class="o">+</span> <span class="n">C_tbl</span><span class="p">[</span><span class="n">i1</span><span class="p">,</span> <span class="n">i4</span><span class="p">]</span> <span class="o">*</span> <span class="n">C_tbl</span><span class="p">[</span><span class="n">i2</span><span class="p">,</span> <span class="n">i3</span><span class="p">]</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Note: each (k, branch, term) block below applies the outer (-1)^k</span>
+    <span class="c1"># via the explicit `sign_outer_*` constant; the per-term sign from</span>
+    <span class="c1"># Eqs. (69)-(73) is folded into the `term_sign_*` constants.</span>
+
+    <span class="c1"># ════════════════════════════════════════════════════════════════</span>
+    <span class="c1"># k = 0, s-branch (Eq. 69). Outer sign: (-1)^0 = +1. Both terms.</span>
+    <span class="c1"># ════════════════════════════════════════════════════════════════</span>
+    <span class="c1"># Free vars: (s_2, s_3, s_4). Operator chain:</span>
+    <span class="c1">#   left_op = I; right_op = A_I[i_s_4] @ A_I[i_s_3] @ A_I[i_s_2] @ A</span>
+    <span class="c1"># Term 1.69 (+): D(t, s_2, s_3, s_4) on 3-simplex {t&gt;s_2&gt;s_3&gt;s_4}.</span>
+    <span class="c1">#   D operator order via row-2.3: ⟨B(s_4) B(s_3) B(s_2) B(t)⟩</span>
+    <span class="c1"># Term 2.69 (-): C(s_2, t) C(s_4, s_3) on {s_2 ∈ [0,t], s_3 &gt; s_4}.</span>
+
+    <span class="c1"># k=0, s-branch, Term 1.69 (+): 3-simplex on (s_2, s_3, s_4)</span>
+    <span class="k">for</span> <span class="n">i_s_2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i_s_3</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i_s_2</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i_s_4</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i_s_3</span><span class="p">):</span>
+                <span class="n">wt</span> <span class="o">=</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_s_2</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">*</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_s_3</span><span class="p">,</span> <span class="n">i_s_2</span><span class="p">]</span> <span class="o">*</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_s_4</span><span class="p">,</span> <span class="n">i_s_3</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">wt</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">integrand</span> <span class="o">=</span> <span class="n">W4</span><span class="p">(</span><span class="n">i_s_4</span><span class="p">,</span> <span class="n">i_s_3</span><span class="p">,</span> <span class="n">i_s_2</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>  <span class="c1"># ⟨B(s_4)B(s_3)B(s_2)B(t)⟩</span>
+                <span class="n">right_op</span> <span class="o">=</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_s_4</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_s_3</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_s_2</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_at_t</span>
+                <span class="n">quadrature_terms</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">wt</span> <span class="o">*</span> <span class="n">integrand</span><span class="p">,</span> <span class="n">eye_d</span><span class="p">,</span> <span class="n">right_op</span><span class="p">))</span>
+
+    <span class="c1"># k=0, s-branch, Term 2.69 (-): 1-D × 2-simplex on (s_2; s_3, s_4)</span>
+    <span class="k">for</span> <span class="n">i_s_2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+        <span class="n">w_a</span> <span class="o">=</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_s_2</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">w_a</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">for</span> <span class="n">i_s_3</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i_s_4</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i_s_3</span><span class="p">):</span>
+                <span class="n">wt</span> <span class="o">=</span> <span class="n">w_a</span> <span class="o">*</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_s_3</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">*</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_s_4</span><span class="p">,</span> <span class="n">i_s_3</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">wt</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="c1"># -C(s_2, t) × C(s_4, s_3)</span>
+                <span class="n">integrand</span> <span class="o">=</span> <span class="o">-</span><span class="n">C_tbl</span><span class="p">[</span><span class="n">i_s_2</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">*</span> <span class="n">C_tbl</span><span class="p">[</span><span class="n">i_s_4</span><span class="p">,</span> <span class="n">i_s_3</span><span class="p">]</span>
+                <span class="n">right_op</span> <span class="o">=</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_s_4</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_s_3</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_s_2</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_at_t</span>
+                <span class="n">quadrature_terms</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">wt</span> <span class="o">*</span> <span class="n">integrand</span><span class="p">,</span> <span class="n">eye_d</span><span class="p">,</span> <span class="n">right_op</span><span class="p">))</span>
+
+    <span class="c1"># ════════════════════════════════════════════════════════════════</span>
+    <span class="c1"># k = 1, τ-branch (Eq. 70). Outer sign: (-1)^1 = -1.</span>
+    <span class="c1"># ════════════════════════════════════════════════════════════════</span>
+    <span class="c1"># Free vars: (s_1, s_2, s_3). Operator chain:</span>
+    <span class="c1">#   left_op = A; right_op = A_I[i_s_3] @ A_I[i_s_2] @ A_I[i_s_1]</span>
+    <span class="c1"># Term 1.70 (+): D(t, s_1, s_2, s_3) on 3-simplex.</span>
+    <span class="c1">#   Operator order: ⟨B(s_3) B(s_2) B(s_1) B(t)⟩</span>
+    <span class="c1"># Term 2.70 (-): -C(s_1, t) × C(s_3, s_2) on 1-D × 2-simplex.</span>
+    <span class="c1"># Term 3.70 is s-branch only.</span>
+    <span class="n">sign_outer_k1</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+
+    <span class="c1"># k=1, τ-branch, Term 1.70 (+): 3-simplex on (s_1, s_2, s_3)</span>
+    <span class="k">for</span> <span class="n">i_s_1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i_s_2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i_s_1</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i_s_3</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i_s_2</span><span class="p">):</span>
+                <span class="n">wt</span> <span class="o">=</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_s_1</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">*</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_s_2</span><span class="p">,</span> <span class="n">i_s_1</span><span class="p">]</span> <span class="o">*</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_s_3</span><span class="p">,</span> <span class="n">i_s_2</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">wt</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">integrand</span> <span class="o">=</span> <span class="n">W4</span><span class="p">(</span><span class="n">i_s_3</span><span class="p">,</span> <span class="n">i_s_2</span><span class="p">,</span> <span class="n">i_s_1</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+                <span class="n">right_op</span> <span class="o">=</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_s_3</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_s_2</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_s_1</span><span class="p">]</span>
+                <span class="n">coef</span> <span class="o">=</span> <span class="n">sign_outer_k1</span> <span class="o">*</span> <span class="n">wt</span> <span class="o">*</span> <span class="n">integrand</span>
+                <span class="n">quadrature_terms</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">coef</span><span class="p">,</span> <span class="n">A_at_t</span><span class="p">,</span> <span class="n">right_op</span><span class="p">))</span>
+
+    <span class="c1"># k=1, τ-branch, Term 2.70 (-): 1-D × 2-simplex on (s_1; s_2, s_3)</span>
+    <span class="k">for</span> <span class="n">i_s_1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+        <span class="n">w_a</span> <span class="o">=</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_s_1</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">w_a</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">for</span> <span class="n">i_s_2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i_s_3</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i_s_2</span><span class="p">):</span>
+                <span class="n">wt</span> <span class="o">=</span> <span class="n">w_a</span> <span class="o">*</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_s_2</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">*</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_s_3</span><span class="p">,</span> <span class="n">i_s_2</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">wt</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">integrand</span> <span class="o">=</span> <span class="o">-</span><span class="n">C_tbl</span><span class="p">[</span><span class="n">i_s_1</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">*</span> <span class="n">C_tbl</span><span class="p">[</span><span class="n">i_s_3</span><span class="p">,</span> <span class="n">i_s_2</span><span class="p">]</span>
+                <span class="n">right_op</span> <span class="o">=</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_s_3</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_s_2</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_s_1</span><span class="p">]</span>
+                <span class="n">coef</span> <span class="o">=</span> <span class="n">sign_outer_k1</span> <span class="o">*</span> <span class="n">wt</span> <span class="o">*</span> <span class="n">integrand</span>
+                <span class="n">quadrature_terms</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">coef</span><span class="p">,</span> <span class="n">A_at_t</span><span class="p">,</span> <span class="n">right_op</span><span class="p">))</span>
+
+    <span class="c1"># ════════════════════════════════════════════════════════════════</span>
+    <span class="c1"># k = 1, s-branch (Eq. 70). Outer sign: -1.</span>
+    <span class="c1"># ════════════════════════════════════════════════════════════════</span>
+    <span class="c1"># Free vars: (τ_1, s_2, s_3). Operator chain:</span>
+    <span class="c1">#   left_op = A_I[i_τ_1]; right_op = A_I[i_s_3] @ A_I[i_s_2] @ A</span>
+    <span class="c1"># Term 1.70 (+): D(τ_1, t, s_2, s_3) on 1-D × 2-simplex {τ_1, t &gt; s_2 &gt; s_3}.</span>
+    <span class="c1">#   Operator order: ⟨B(s_3) B(s_2) B(t) B(τ_1)⟩</span>
+    <span class="c1"># Term 2.70 (-): -C(t, τ_1) × C(s_3, s_2) on same 1-D × 2-simplex.</span>
+    <span class="c1"># Term 3.70 (-): -C(s_2, t) × C(s_3, τ_1). Per v0.1.2 review: this term&#39;s</span>
+    <span class="c1">#   integration domain is the intersection of its inner θ-window</span>
+    <span class="c1">#   (C(s_1, s_2) has θ_{s_1^2}=s_1&gt;s_2 → trivially satisfied after</span>
+    <span class="c1">#   s_1=t; D(τ_1, s_3) trivial inner θ) with the OUTER Eq. (28) s-chain</span>
+    <span class="c1">#   ordering t &gt; s_1 &gt; s_2 &gt; s_3 &gt; 0. After s_1=t collapse, the outer</span>
+    <span class="c1">#   gives t &gt; s_2 &gt; s_3 &gt; 0 — the same 1-D × 2-simplex as Terms 1 and 2.</span>
+    <span class="c1"># All three terms therefore share the same 1-D × 2-simplex domain.</span>
+
+    <span class="c1"># k=1, s-branch, Terms 1.70 + 2.70 + 3.70 on 1-D × 2-simplex on (τ_1; s_2, s_3)</span>
+    <span class="k">for</span> <span class="n">i_t_1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+        <span class="n">w_t1</span> <span class="o">=</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_t_1</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">w_t1</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">left_op</span> <span class="o">=</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_t_1</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i_s_2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i_s_3</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i_s_2</span><span class="p">):</span>
+                <span class="n">wt</span> <span class="o">=</span> <span class="n">w_t1</span> <span class="o">*</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_s_2</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">*</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_s_3</span><span class="p">,</span> <span class="n">i_s_2</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">wt</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="c1"># Term 1.70 (+): ⟨B(s_3) B(s_2) B(t) B(τ_1)⟩</span>
+                <span class="n">integrand_1</span> <span class="o">=</span> <span class="n">W4</span><span class="p">(</span><span class="n">i_s_3</span><span class="p">,</span> <span class="n">i_s_2</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">i_t_1</span><span class="p">)</span>
+                <span class="c1"># Term 2.70 (-): -C(t, τ_1) C(s_3, s_2)</span>
+                <span class="n">integrand_2</span> <span class="o">=</span> <span class="o">-</span><span class="n">C_tbl</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">i_t_1</span><span class="p">]</span> <span class="o">*</span> <span class="n">C_tbl</span><span class="p">[</span><span class="n">i_s_3</span><span class="p">,</span> <span class="n">i_s_2</span><span class="p">]</span>
+                <span class="c1"># Term 3.70 (-): -C(s_2, t) C(s_3, τ_1)</span>
+                <span class="n">integrand_3</span> <span class="o">=</span> <span class="o">-</span><span class="n">C_tbl</span><span class="p">[</span><span class="n">i_s_2</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">*</span> <span class="n">C_tbl</span><span class="p">[</span><span class="n">i_s_3</span><span class="p">,</span> <span class="n">i_t_1</span><span class="p">]</span>
+                <span class="n">right_op</span> <span class="o">=</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_s_3</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_s_2</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_at_t</span>
+                <span class="n">coef</span> <span class="o">=</span> <span class="n">sign_outer_k1</span> <span class="o">*</span> <span class="n">wt</span> <span class="o">*</span> <span class="p">(</span><span class="n">integrand_1</span> <span class="o">+</span> <span class="n">integrand_2</span> <span class="o">+</span> <span class="n">integrand_3</span><span class="p">)</span>
+                <span class="n">quadrature_terms</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">coef</span><span class="p">,</span> <span class="n">left_op</span><span class="p">,</span> <span class="n">right_op</span><span class="p">))</span>
+
+    <span class="c1"># ════════════════════════════════════════════════════════════════</span>
+    <span class="c1"># k = 2, τ-branch (Eq. 71). Outer sign: (-1)^2 = +1.</span>
+    <span class="c1"># ════════════════════════════════════════════════════════════════</span>
+    <span class="c1"># Free vars: (τ_2, s_1, s_2). Operator chain:</span>
+    <span class="c1">#   left_op = A @ A_I[i_τ_2]; right_op = A_I[i_s_2] @ A_I[i_s_1]</span>
+    <span class="c1"># Term 1.71 (+): D(t, τ_2, s_1, s_2) on 1-D × 2-simplex (τ_2; s_1, s_2).</span>
+    <span class="c1">#   Operator order: ⟨B(s_2) B(s_1) B(t) B(τ_2)⟩</span>
+    <span class="c1"># Term 2.71 (-): -C(s_1, t) × C(s_2, τ_2). Per v0.1.2 review: outer</span>
+    <span class="c1">#   Eq. (28) s-chain ordering s_1 &gt; s_2 still applies after τ_1=t</span>
+    <span class="c1">#   collapse, so this term shares the same 1-D × 2-simplex domain as</span>
+    <span class="c1">#   Terms 1 and 4 (not a 3-D cube).</span>
+    <span class="c1"># Term 3.71 is s-branch only.</span>
+    <span class="c1"># Term 4.71 (-): -C(t, τ_2) × C(s_2, s_1) on 1-D × 2-simplex.</span>
+    <span class="c1"># Terms 1.71, 2.71, 4.71 share the same 1-D × 2-simplex domain.</span>
+    <span class="n">sign_outer_k2</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+    <span class="c1"># k=2, τ-branch, Terms 1.71 + 2.71 + 4.71 on 1-D × 2-simplex on (τ_2; s_1, s_2)</span>
+    <span class="k">for</span> <span class="n">i_t_2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+        <span class="n">w_t2</span> <span class="o">=</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_t_2</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">w_t2</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">left_op</span> <span class="o">=</span> <span class="n">A_at_t</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_t_2</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i_s_1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i_s_2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i_s_1</span><span class="p">):</span>
+                <span class="n">wt</span> <span class="o">=</span> <span class="n">w_t2</span> <span class="o">*</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_s_1</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">*</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_s_2</span><span class="p">,</span> <span class="n">i_s_1</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">wt</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">integrand_1</span> <span class="o">=</span> <span class="n">W4</span><span class="p">(</span><span class="n">i_s_2</span><span class="p">,</span> <span class="n">i_s_1</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">i_t_2</span><span class="p">)</span>
+                <span class="n">integrand_2</span> <span class="o">=</span> <span class="o">-</span><span class="n">C_tbl</span><span class="p">[</span><span class="n">i_s_1</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">*</span> <span class="n">C_tbl</span><span class="p">[</span><span class="n">i_s_2</span><span class="p">,</span> <span class="n">i_t_2</span><span class="p">]</span>
+                <span class="n">integrand_4</span> <span class="o">=</span> <span class="o">-</span><span class="n">C_tbl</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">i_t_2</span><span class="p">]</span> <span class="o">*</span> <span class="n">C_tbl</span><span class="p">[</span><span class="n">i_s_2</span><span class="p">,</span> <span class="n">i_s_1</span><span class="p">]</span>
+                <span class="n">right_op</span> <span class="o">=</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_s_2</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_s_1</span><span class="p">]</span>
+                <span class="n">coef</span> <span class="o">=</span> <span class="n">sign_outer_k2</span> <span class="o">*</span> <span class="n">wt</span> <span class="o">*</span> <span class="p">(</span><span class="n">integrand_1</span> <span class="o">+</span> <span class="n">integrand_2</span> <span class="o">+</span> <span class="n">integrand_4</span><span class="p">)</span>
+                <span class="n">quadrature_terms</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">coef</span><span class="p">,</span> <span class="n">left_op</span><span class="p">,</span> <span class="n">right_op</span><span class="p">))</span>
+
+    <span class="c1"># ════════════════════════════════════════════════════════════════</span>
+    <span class="c1"># k = 2, s-branch (Eq. 71). Outer sign: +1.</span>
+    <span class="c1"># ════════════════════════════════════════════════════════════════</span>
+    <span class="c1"># Free vars: (τ_1, τ_2, s_2). Operator chain:</span>
+    <span class="c1">#   left_op = A_I[i_τ_1] @ A_I[i_τ_2]; right_op = A_I[i_s_2] @ A</span>
+    <span class="c1"># Term 1.71 (+): D(τ_1, τ_2, t, s_2) on 2-simplex × 1-D (τ_1&gt;τ_2; s_2).</span>
+    <span class="c1">#   Operator order: ⟨B(s_2) B(t) B(τ_1) B(τ_2)⟩</span>
+    <span class="c1"># Term 2.71 (-): -C(t, τ_1) × C(s_2, τ_2). Per v0.1.2 review: outer</span>
+    <span class="c1">#   Eq. (28) τ-chain ordering τ_1 &gt; τ_2 still applies, so this term</span>
+    <span class="c1">#   shares the same 2-simplex × 1-D domain as Terms 1 and 3 (not a</span>
+    <span class="c1">#   3-D cube).</span>
+    <span class="c1"># Term 3.71 (-): -C(s_2, t) × C(τ_1, τ_2) on 2-simplex × 1-D.</span>
+    <span class="c1"># Term 4.71 is τ-branch only.</span>
+    <span class="c1"># Terms 1.71, 2.71, 3.71 share the same 2-simplex × 1-D domain.</span>
+
+    <span class="c1"># k=2, s-branch, Terms 1.71 + 2.71 + 3.71 on 2-simplex × 1-D on (τ_1, τ_2; s_2)</span>
+    <span class="k">for</span> <span class="n">i_t_1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i_t_2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i_t_1</span><span class="p">):</span>
+            <span class="n">w_tau</span> <span class="o">=</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_t_1</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">*</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_t_2</span><span class="p">,</span> <span class="n">i_t_1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">w_tau</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">left_op</span> <span class="o">=</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_t_1</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_t_2</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i_s_2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+                <span class="n">w_s</span> <span class="o">=</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_s_2</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">w_s</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">wt</span> <span class="o">=</span> <span class="n">w_tau</span> <span class="o">*</span> <span class="n">w_s</span>
+                <span class="n">integrand_1</span> <span class="o">=</span> <span class="n">W4</span><span class="p">(</span><span class="n">i_s_2</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">i_t_1</span><span class="p">,</span> <span class="n">i_t_2</span><span class="p">)</span>
+                <span class="n">integrand_2</span> <span class="o">=</span> <span class="o">-</span><span class="n">C_tbl</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">i_t_1</span><span class="p">]</span> <span class="o">*</span> <span class="n">C_tbl</span><span class="p">[</span><span class="n">i_s_2</span><span class="p">,</span> <span class="n">i_t_2</span><span class="p">]</span>
+                <span class="n">integrand_3</span> <span class="o">=</span> <span class="o">-</span><span class="n">C_tbl</span><span class="p">[</span><span class="n">i_s_2</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">*</span> <span class="n">C_tbl</span><span class="p">[</span><span class="n">i_t_1</span><span class="p">,</span> <span class="n">i_t_2</span><span class="p">]</span>
+                <span class="n">right_op</span> <span class="o">=</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_s_2</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_at_t</span>
+                <span class="n">coef</span> <span class="o">=</span> <span class="n">sign_outer_k2</span> <span class="o">*</span> <span class="n">wt</span> <span class="o">*</span> <span class="p">(</span><span class="n">integrand_1</span> <span class="o">+</span> <span class="n">integrand_2</span> <span class="o">+</span> <span class="n">integrand_3</span><span class="p">)</span>
+                <span class="n">quadrature_terms</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">coef</span><span class="p">,</span> <span class="n">left_op</span><span class="p">,</span> <span class="n">right_op</span><span class="p">))</span>
+
+    <span class="c1"># ════════════════════════════════════════════════════════════════</span>
+    <span class="c1"># k = 3, τ-branch (Eq. 72). Outer sign: (-1)^3 = -1.</span>
+    <span class="c1"># ════════════════════════════════════════════════════════════════</span>
+    <span class="c1"># Free vars: (τ_2, τ_3, s_1). Operator chain:</span>
+    <span class="c1">#   left_op = A @ A_I[i_τ_2] @ A_I[i_τ_3]; right_op = A_I[i_s_1]</span>
+    <span class="c1"># Term 1.72 (+): D(t, τ_2, τ_3, s_1) on 2-simplex × 1-D (τ_2&gt;τ_3; s_1).</span>
+    <span class="c1">#   Operator order: ⟨B(s_1) B(t) B(τ_2) B(τ_3)⟩</span>
+    <span class="c1"># Term 2.72 (-): -C(s_1, t) × C(τ_2, τ_3) on 2-simplex × 1-D.</span>
+    <span class="c1"># Term 3.72 (-): -C(t, τ_2) × C(s_1, τ_3). Per v0.1.2 review: outer</span>
+    <span class="c1">#   Eq. (28) τ-chain ordering τ_2 &gt; τ_3 (after τ_1=t collapse) still</span>
+    <span class="c1">#   applies, so this term shares the same 2-simplex × 1-D domain as</span>
+    <span class="c1">#   Terms 1 and 2 (not a 3-D cube).</span>
+    <span class="c1"># Terms 1.72, 2.72, 3.72 share the 2-simplex × 1-D domain.</span>
+    <span class="n">sign_outer_k3</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+
+    <span class="c1"># k=3, τ-branch, Terms 1.72 + 2.72 + 3.72 on 2-simplex × 1-D on (τ_2, τ_3; s_1)</span>
+    <span class="k">for</span> <span class="n">i_t_2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i_t_3</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i_t_2</span><span class="p">):</span>
+            <span class="n">w_tau</span> <span class="o">=</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_t_2</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">*</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_t_3</span><span class="p">,</span> <span class="n">i_t_2</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">w_tau</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">left_op</span> <span class="o">=</span> <span class="n">A_at_t</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_t_2</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_t_3</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i_s_1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+                <span class="n">w_s</span> <span class="o">=</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_s_1</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">w_s</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">wt</span> <span class="o">=</span> <span class="n">w_tau</span> <span class="o">*</span> <span class="n">w_s</span>
+                <span class="n">integrand_1</span> <span class="o">=</span> <span class="n">W4</span><span class="p">(</span><span class="n">i_s_1</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">i_t_2</span><span class="p">,</span> <span class="n">i_t_3</span><span class="p">)</span>
+                <span class="n">integrand_2</span> <span class="o">=</span> <span class="o">-</span><span class="n">C_tbl</span><span class="p">[</span><span class="n">i_s_1</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">*</span> <span class="n">C_tbl</span><span class="p">[</span><span class="n">i_t_2</span><span class="p">,</span> <span class="n">i_t_3</span><span class="p">]</span>
+                <span class="n">integrand_3</span> <span class="o">=</span> <span class="o">-</span><span class="n">C_tbl</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">i_t_2</span><span class="p">]</span> <span class="o">*</span> <span class="n">C_tbl</span><span class="p">[</span><span class="n">i_s_1</span><span class="p">,</span> <span class="n">i_t_3</span><span class="p">]</span>
+                <span class="n">right_op</span> <span class="o">=</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_s_1</span><span class="p">]</span>
+                <span class="n">coef</span> <span class="o">=</span> <span class="n">sign_outer_k3</span> <span class="o">*</span> <span class="n">wt</span> <span class="o">*</span> <span class="p">(</span><span class="n">integrand_1</span> <span class="o">+</span> <span class="n">integrand_2</span> <span class="o">+</span> <span class="n">integrand_3</span><span class="p">)</span>
+                <span class="n">quadrature_terms</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">coef</span><span class="p">,</span> <span class="n">left_op</span><span class="p">,</span> <span class="n">right_op</span><span class="p">))</span>
+
+    <span class="c1"># (Term 3.72 has been merged into the loop above per v0.1.2 review.)</span>
+
+    <span class="c1"># ════════════════════════════════════════════════════════════════</span>
+    <span class="c1"># k = 3, s-branch (Eq. 72). Outer sign: -1.</span>
+    <span class="c1"># ════════════════════════════════════════════════════════════════</span>
+    <span class="c1"># Free vars: (τ_1, τ_2, τ_3). Operator chain:</span>
+    <span class="c1">#   left_op = A_I[i_τ_1] @ A_I[i_τ_2] @ A_I[i_τ_3]; right_op = A</span>
+    <span class="c1"># Term 1.72 (+): D(τ_1, τ_2, τ_3, t) on 3-simplex {τ_1&gt;τ_2&gt;τ_3}.</span>
+    <span class="c1">#   Operator order: ⟨B(t) B(τ_1) B(τ_2) B(τ_3)⟩</span>
+    <span class="c1"># Term 2.72 (-): -C(t, τ_1) × C(τ_2, τ_3) on 1-D × 2-simplex (τ_1; τ_2, τ_3).</span>
+    <span class="c1"># Term 3.72 is τ-branch only.</span>
+
+    <span class="c1"># k=3, s-branch, Term 1.72 (+): 3-simplex on (τ_1, τ_2, τ_3)</span>
+    <span class="k">for</span> <span class="n">i_t_1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i_t_2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i_t_1</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i_t_3</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i_t_2</span><span class="p">):</span>
+                <span class="n">wt</span> <span class="o">=</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_t_1</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">*</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_t_2</span><span class="p">,</span> <span class="n">i_t_1</span><span class="p">]</span> <span class="o">*</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_t_3</span><span class="p">,</span> <span class="n">i_t_2</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">wt</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">integrand</span> <span class="o">=</span> <span class="n">W4</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">i_t_1</span><span class="p">,</span> <span class="n">i_t_2</span><span class="p">,</span> <span class="n">i_t_3</span><span class="p">)</span>
+                <span class="n">left_op</span> <span class="o">=</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_t_1</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_t_2</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_t_3</span><span class="p">]</span>
+                <span class="n">right_op</span> <span class="o">=</span> <span class="n">A_at_t</span>
+                <span class="n">coef</span> <span class="o">=</span> <span class="n">sign_outer_k3</span> <span class="o">*</span> <span class="n">wt</span> <span class="o">*</span> <span class="n">integrand</span>
+                <span class="n">quadrature_terms</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">coef</span><span class="p">,</span> <span class="n">left_op</span><span class="p">,</span> <span class="n">right_op</span><span class="p">))</span>
+
+    <span class="c1"># k=3, s-branch, Term 2.72 (-): 1-D × 2-simplex on (τ_1; τ_2, τ_3)</span>
+    <span class="k">for</span> <span class="n">i_t_1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+        <span class="n">w_t1</span> <span class="o">=</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_t_1</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">w_t1</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">for</span> <span class="n">i_t_2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i_t_3</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i_t_2</span><span class="p">):</span>
+                <span class="n">wt</span> <span class="o">=</span> <span class="n">w_t1</span> <span class="o">*</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_t_2</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">*</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_t_3</span><span class="p">,</span> <span class="n">i_t_2</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">wt</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">integrand</span> <span class="o">=</span> <span class="o">-</span><span class="n">C_tbl</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">i_t_1</span><span class="p">]</span> <span class="o">*</span> <span class="n">C_tbl</span><span class="p">[</span><span class="n">i_t_2</span><span class="p">,</span> <span class="n">i_t_3</span><span class="p">]</span>
+                <span class="n">left_op</span> <span class="o">=</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_t_1</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_t_2</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_t_3</span><span class="p">]</span>
+                <span class="n">right_op</span> <span class="o">=</span> <span class="n">A_at_t</span>
+                <span class="n">coef</span> <span class="o">=</span> <span class="n">sign_outer_k3</span> <span class="o">*</span> <span class="n">wt</span> <span class="o">*</span> <span class="n">integrand</span>
+                <span class="n">quadrature_terms</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">coef</span><span class="p">,</span> <span class="n">left_op</span><span class="p">,</span> <span class="n">right_op</span><span class="p">))</span>
+
+    <span class="c1"># ════════════════════════════════════════════════════════════════</span>
+    <span class="c1"># k = 4, τ-branch (Eq. 73). Outer sign: (-1)^4 = +1.</span>
+    <span class="c1"># ════════════════════════════════════════════════════════════════</span>
+    <span class="c1"># Free vars: (τ_2, τ_3, τ_4). Operator chain:</span>
+    <span class="c1">#   left_op = A @ A_I[i_τ_2] @ A_I[i_τ_3] @ A_I[i_τ_4]; right_op = I</span>
+    <span class="c1"># Term 1.73 (+): D(t, τ_2, τ_3, τ_4) on 3-simplex {t&gt;τ_2&gt;τ_3&gt;τ_4}.</span>
+    <span class="c1">#   Operator order: ⟨B(t) B(τ_2) B(τ_3) B(τ_4)⟩</span>
+    <span class="c1"># Term 2.73 (-): -C(t, τ_2) × C(τ_3, τ_4) on 1-D × 2-simplex (τ_2; τ_3, τ_4).</span>
+    <span class="n">sign_outer_k4</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+    <span class="c1"># k=4, τ-branch, Term 1.73 (+): 3-simplex on (τ_2, τ_3, τ_4)</span>
+    <span class="k">for</span> <span class="n">i_t_2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i_t_3</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i_t_2</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i_t_4</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i_t_3</span><span class="p">):</span>
+                <span class="n">wt</span> <span class="o">=</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_t_2</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">*</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_t_3</span><span class="p">,</span> <span class="n">i_t_2</span><span class="p">]</span> <span class="o">*</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_t_4</span><span class="p">,</span> <span class="n">i_t_3</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">wt</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">integrand</span> <span class="o">=</span> <span class="n">W4</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">i_t_2</span><span class="p">,</span> <span class="n">i_t_3</span><span class="p">,</span> <span class="n">i_t_4</span><span class="p">)</span>
+                <span class="n">left_op</span> <span class="o">=</span> <span class="n">A_at_t</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_t_2</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_t_3</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_t_4</span><span class="p">]</span>
+                <span class="n">right_op</span> <span class="o">=</span> <span class="n">eye_d</span>
+                <span class="n">coef</span> <span class="o">=</span> <span class="n">sign_outer_k4</span> <span class="o">*</span> <span class="n">wt</span> <span class="o">*</span> <span class="n">integrand</span>
+                <span class="n">quadrature_terms</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">coef</span><span class="p">,</span> <span class="n">left_op</span><span class="p">,</span> <span class="n">right_op</span><span class="p">))</span>
+
+    <span class="c1"># k=4, τ-branch, Term 2.73 (-): 1-D × 2-simplex on (τ_2; τ_3, τ_4)</span>
+    <span class="k">for</span> <span class="n">i_t_2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+        <span class="n">w_t2</span> <span class="o">=</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_t_2</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">w_t2</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">for</span> <span class="n">i_t_3</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i_t_4</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i_t_3</span><span class="p">):</span>
+                <span class="n">wt</span> <span class="o">=</span> <span class="n">w_t2</span> <span class="o">*</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_t_3</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">*</span> <span class="n">c_wt</span><span class="p">[</span><span class="n">i_t_4</span><span class="p">,</span> <span class="n">i_t_3</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">wt</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">integrand</span> <span class="o">=</span> <span class="o">-</span><span class="n">C_tbl</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">i_t_2</span><span class="p">]</span> <span class="o">*</span> <span class="n">C_tbl</span><span class="p">[</span><span class="n">i_t_3</span><span class="p">,</span> <span class="n">i_t_4</span><span class="p">]</span>
+                <span class="n">left_op</span> <span class="o">=</span> <span class="n">A_at_t</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_t_2</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_t_3</span><span class="p">]</span> <span class="o">@</span> <span class="n">A_I</span><span class="p">[</span><span class="n">i_t_4</span><span class="p">]</span>
+                <span class="n">right_op</span> <span class="o">=</span> <span class="n">eye_d</span>
+                <span class="n">coef</span> <span class="o">=</span> <span class="n">sign_outer_k4</span> <span class="o">*</span> <span class="n">wt</span> <span class="o">*</span> <span class="n">integrand</span>
+                <span class="n">quadrature_terms</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">coef</span><span class="p">,</span> <span class="n">left_op</span><span class="p">,</span> <span class="n">right_op</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">L_4_apply</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="n">X_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">coef</span><span class="p">,</span> <span class="n">left_op</span><span class="p">,</span> <span class="n">right_op</span> <span class="ow">in</span> <span class="n">quadrature_terms</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">+</span> <span class="n">coef</span> <span class="o">*</span> <span class="p">(</span><span class="n">left_op</span> <span class="o">@</span> <span class="n">X_arr</span> <span class="o">@</span> <span class="n">right_op</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">return</span> <span class="n">L_4_apply</span>
+
+
 <span class="c1"># ─── L_n at order n (thermal-only path) ──────────────────────────────────────</span>
 
 
@@ -383,6 +1145,11 @@
     <span class="n">system_hamiltonian</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">coupling_operator</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">D_bar_2_array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">bath_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">spectral_density</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">upper_cutoff_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">,</span>
+    <span class="n">quad_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a callable that computes L_n[X] at time t_grid[t_idx] for</span>
 <span class="sd">    a thermal Gaussian bath.</span>
@@ -400,13 +1167,20 @@
 <span class="sd">      scalar integrations per matrix entry).</span>
 <span class="sd">    - n = 3: L_3[X] = 0 (thermal Gaussian D̄_1 = D̄_3 = 0; see DG-4</span>
 <span class="sd">      Phase B.2 derivation in the n = 3 branch below).</span>
-<span class="sd">    - n = 4: pending; raises NotImplementedError. Non-zero in</span>
-<span class="sd">      general for [A, A_I(τ)] ≠ 0; zero for σ_z by Feynman-Vernon.</span>
+<span class="sd">    - n = 4: routes to ``_L_4_thermal_at_time_apply`` (DG-4 Phase C</span>
+<span class="sd">      private helper). REQUIRES ``bath_state`` and ``spectral_density``</span>
+<span class="sd">      kwargs. The §3.2 commuting-case guard inside the helper</span>
+<span class="sd">      short-circuits to exact-zero when ``[H_S, A] = 0`` (Feynman-</span>
+<span class="sd">      Vernon Gaussian-bath truncation for pure dephasing); otherwise</span>
+<span class="sd">      the literal θ-aware integration of Eqs. (69)-(73) runs in</span>
+<span class="sd">      full. Phase D public-route exposure: see card</span>
+<span class="sd">      ``phase-d-public-route-card_v0.1.0.md``.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    n : int</span>
-<span class="sd">        Perturbative order; one of 0, 1, 2 in the implemented low-order path.</span>
+<span class="sd">        Perturbative order; one of {0, 1, 2, 3, 4} in the implemented</span>
+<span class="sd">        thermal Gaussian path. n ≥ 5 raises out-of-scope.</span>
 <span class="sd">    t_idx : int</span>
 <span class="sd">        Index into t_grid at which to evaluate L_n.</span>
 <span class="sd">    t_grid : ndarray, shape (n_t,)</span>
@@ -416,8 +1190,16 @@
 <span class="sd">        H_S and A.</span>
 <span class="sd">    D_bar_2_array : ndarray, shape (n_t, n_t), dtype complex</span>
 <span class="sd">        Precomputed connected two-point on the time grid; required for</span>
-<span class="sd">        n = 2; ignored for n in {0, 1}. Use cbg.cumulants.D_bar_2 to</span>
-<span class="sd">        construct.</span>
+<span class="sd">        n = 2; ignored for n in {0, 1, 3, 4}. Use cbg.cumulants.D_bar_2</span>
+<span class="sd">        to construct.</span>
+<span class="sd">    bath_state, spectral_density : dict, keyword-only</span>
+<span class="sd">        Required at n = 4 (Phase D contract). Forwarded to</span>
+<span class="sd">        ``_L_4_thermal_at_time_apply``. Ignored at n ∈ {0, 1, 2, 3}.</span>
+<span class="sd">        Non-thermal ``bath_state.family`` at n = 4 raises</span>
+<span class="sd">        ``NotImplementedError`` pointing at ``K_total_displaced_on_grid``.</span>
+<span class="sd">    upper_cutoff_factor, quad_limit : float / int, keyword-only</span>
+<span class="sd">        Forwarded to ``_L_4_thermal_at_time_apply`` at n = 4; ignored</span>
+<span class="sd">        at n ∈ {0, 1, 2, 3}.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -427,10 +1209,12 @@
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    NotImplementedError</span>
-<span class="sd">        For n = 4 (pending; see derivation note in the n = 4 branch).</span>
-<span class="sd">        For n &gt;= 5 (out of DG-4 Phase B scope).</span>
+<span class="sd">        For n ≥ 5 (out of DG-4 v0.1.5 scope).</span>
+<span class="sd">        For n = 4 with ``bath_state.family != &quot;thermal&quot;`` (use</span>
+<span class="sd">        ``K_total_displaced_on_grid`` for displaced cases).</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        For invalid arguments.</span>
+<span class="sd">        For invalid arguments, including n = 4 without the required</span>
+<span class="sd">        ``bath_state`` / ``spectral_density`` kwargs.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">H_S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">system_hamiltonian</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
@@ -462,52 +1246,36 @@
         <span class="k">return</span> <span class="k">lambda</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
-        <span class="c1"># Pending: the thermal Gaussian L_4 has a non-trivial structure</span>
-        <span class="c1"># from (2,2) Wick contractions of D̄_2 mediated by the Λ_t-</span>
-        <span class="c1"># inversion subtraction L_4 = ∂_t Λ_4 − L_2 ∘ Λ_2. Two physical</span>
-        <span class="c1"># regimes:</span>
-        <span class="c1">#   * For [A, A_I(τ)] = 0 (A = σ_z; commutator-structure</span>
-        <span class="c1">#     degenerates), L_4 = 0 by Feynman-Vernon Gaussian-bath</span>
-        <span class="c1">#     exactness — the entire TCL series truncates at order 2.</span>
-        <span class="c1">#     This is the strong falsification oracle: any candidate L_4</span>
-        <span class="c1">#     formula must give exactly 0 here.</span>
-        <span class="c1">#   * For [A, A_I(τ)] ≠ 0 (A = σ_x), L_4 ≠ 0 and is the leading-</span>
-        <span class="c1">#     order convergence-detection signal that D1 v0.1.2&#39;s</span>
-        <span class="c1">#     ‖L_n^dissipator‖ ratio is designed to measure.</span>
-        <span class="c1">#</span>
-        <span class="c1"># Falsification of the obvious-looking candidate: a single</span>
-        <span class="c1"># nested-commutator [A(t),[A_I(s_1−t),[A_I(s_2−t),[A_I(s_3−t),X]]]]</span>
-        <span class="c1"># weighted by Wick(C(t−s_1)C(s_2−s_3) + perms) gives a complex-</span>
-        <span class="c1"># valued residual on σ_z ⇒ σ_x evaluation, while the Feynman-</span>
-        <span class="c1"># Vernon answer is real. The candidate is missing the C* / right-</span>
-        <span class="c1"># acting conjugate-pair structure that L_2 has, so it is rejected.</span>
-        <span class="c1"># See logbook routing note 2026-05-06_dg-4-phase-b2-tcl-order-3.md.</span>
-        <span class="c1">#</span>
-        <span class="c1"># Three concrete routes to a correct L_4 (DG-4 work plan v0.1.2):</span>
-        <span class="c1">#   Path A. Companion Sec. IV closed-form (Letter Eqs. 14-18 + Companion</span>
-        <span class="c1">#     Eqs. 19-28 truncated at n=4). Lowest-risk but requires the</span>
-        <span class="c1">#     paper text or an equivalent transcription accessible in the</span>
-        <span class="c1">#     repo (transcriptions/ currently has only the Letter App. D).</span>
-        <span class="c1">#   Path B. Numerical Λ_t reconstruction via Richardson extraction</span>
-        <span class="c1">#     from benchmarks/exact_finite_env at multiple coupling</span>
-        <span class="c1">#     strengths α; fit Λ_t = 1 + α² Λ_2 + α⁴ Λ_4 + … and recover</span>
-        <span class="c1">#     L_4 = ∂_t Λ_4 − L_2 ∘ Λ_2 numerically. Sidesteps the</span>
-        <span class="c1">#     analytic derivation but must live behind a clearly named</span>
-        <span class="c1">#     extraction module (e.g. benchmarks/numerical_tcl_extraction</span>
-        <span class="c1">#     or similar) — NOT promoted to cbg.tcl_recursion core API,</span>
-        <span class="c1">#     since cbg should not depend on benchmarks/.</span>
-        <span class="c1">#   Path C. Independent third-method extraction (HEOM, TEMPO,</span>
-        <span class="c1">#     pseudomode at order 4). Largest scope; properly its own work</span>
-        <span class="c1">#     plan rather than a DG-4 substep.</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="s2">&quot;L_n_thermal_at_time: n=4 deferred. Three routes to a correct &quot;</span>
-            <span class="s2">&quot;L_4: (A) Companion Sec. IV closed form (paper-bearing); &quot;</span>
-            <span class="s2">&quot;(B) numerical Λ_t Richardson extraction via &quot;</span>
-            <span class="s2">&quot;benchmarks/exact_finite_env (kept behind a named extraction &quot;</span>
-            <span class="s2">&quot;module, not promoted to cbg.tcl_recursion core); (C) HEOM/&quot;</span>
-            <span class="s2">&quot;TEMPO/pseudomode third-method extraction (own work plan). &quot;</span>
-            <span class="s2">&quot;See the inline derivation/falsification notes above and &quot;</span>
-            <span class="s2">&quot;logbook/2026-05-06_dg-4-phase-b2-tcl-order-3.md for routing.&quot;</span>
+        <span class="c1"># DG-4 Phase D public route: thermal Gaussian n=4 routes through</span>
+        <span class="c1"># the Phase C `_L_4_thermal_at_time_apply` private helper</span>
+        <span class="c1"># (which itself applies the v0.1.3 §3.2 commuting-case guard</span>
+        <span class="c1"># before the literal θ-aware Eqs. (69)-(73) integration).</span>
+        <span class="c1"># Non-thermal scopes are not supported at n=4.</span>
+        <span class="k">if</span> <span class="n">bath_state</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">spectral_density</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;L_n_thermal_at_time: n=4 requires bath_state and &quot;</span>
+                <span class="s2">&quot;spectral_density kwargs (Phase D contract). Pass the &quot;</span>
+                <span class="s2">&quot;card per-case bath_state and bath_spectral_density &quot;</span>
+                <span class="s2">&quot;mappings; see phase-d-public-route-card_v0.1.0.md §2.1.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">family</span> <span class="o">=</span> <span class="n">bath_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;family&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">family</span> <span class="o">!=</span> <span class="s2">&quot;thermal&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;L_n_thermal_at_time: bath_state.family </span><span class="si">{</span><span class="n">family</span><span class="si">!r}</span><span class="s2"> at &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;n=4 is not supported by this thermal-only path. Use &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;K_total_displaced_on_grid for Council-cleared coherent-&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;displaced benchmark-card cases. Out-of-scope for &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;DG-4 work plan v0.1.5.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">_L_4_thermal_at_time_apply</span><span class="p">(</span>
+            <span class="n">t_idx</span><span class="o">=</span><span class="n">t_idx</span><span class="p">,</span>
+            <span class="n">t_grid</span><span class="o">=</span><span class="n">t_grid</span><span class="p">,</span>
+            <span class="n">system_hamiltonian</span><span class="o">=</span><span class="n">system_hamiltonian</span><span class="p">,</span>
+            <span class="n">coupling_operator</span><span class="o">=</span><span class="n">coupling_operator</span><span class="p">,</span>
+            <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span>
+            <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+            <span class="n">upper_cutoff_factor</span><span class="o">=</span><span class="n">upper_cutoff_factor</span><span class="p">,</span>
+            <span class="n">quad_limit</span><span class="o">=</span><span class="n">quad_limit</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
@@ -565,10 +1333,11 @@
         <span class="k">return</span> <span class="n">L_2_apply</span>
 
     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;L_n_thermal_at_time: n=</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> not implemented. DG-4 Phase B.2 &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;covers n in </span><span class="se">{{</span><span class="s2">0, 1, 2, 3</span><span class="se">}}</span><span class="s2"> on the thermal-Gaussian path &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;(n=4 deferred; see the dedicated branch). Orders n &gt;= 5 are &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;out of scope for this plan revision.&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;L_n_thermal_at_time: n=</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> not implemented. DG-4 v0.1.5 &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;covers n in </span><span class="se">{{</span><span class="s2">0, 1, 2, 3, 4</span><span class="se">}}</span><span class="s2"> on the thermal Gaussian path &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;(n=3 returns zero by Gaussianity; n=4 routes through &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;_L_4_thermal_at_time_apply per Phase D card v0.1.0). &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;Orders n &gt;= 5 are out of scope for this plan revision.&quot;</span>
     <span class="p">)</span></div>
 
 
@@ -599,26 +1368,29 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    n : int</span>
-<span class="sd">        Perturbative order; one of 0, 1, 2, 3 in the currently implemented</span>
-<span class="sd">        thermal path. n = 3 returns zeros for any system coupling under a</span>
-<span class="sd">        thermal Gaussian bath (Phase B.2; see L_n_thermal_at_time docstring).</span>
-<span class="sd">        n = 4 is the pending Phase B follow-up: the parity-class theorem</span>
-<span class="sd">        (Letter App. D) plus the Feynman-Vernon Gaussian-bath result</span>
-<span class="sd">        predicts K_4 = 0 for A = σ_z and K_4 ≠ 0 (∝ σ_z) for A = σ_x; the</span>
-<span class="sd">        latter is the leading-order convergence-detection signal D1 v0.1.2</span>
-<span class="sd">        targets.</span>
+<span class="sd">        Perturbative order; one of {0, 1, 2, 3, 4} in the currently</span>
+<span class="sd">        implemented thermal Gaussian path. n = 3 returns zeros (Phase</span>
+<span class="sd">        B.2; see L_n_thermal_at_time docstring). n = 4 (Phase D public</span>
+<span class="sd">        route) routes through `_L_4_thermal_at_time_apply`: the §3.2</span>
+<span class="sd">        commuting-case guard short-circuits to K_4 = 0 for [H_S, A] = 0</span>
+<span class="sd">        (e.g. A = σ_z with H_S = (ω/2)σ_z, by the parity-class theorem</span>
+<span class="sd">        + Feynman-Vernon); for non-commuting A (e.g. σ_x) the literal</span>
+<span class="sd">        θ-aware Eqs. (69)-(73) integration produces a non-zero K_4.</span>
+<span class="sd">        n ≥ 5 raises out-of-scope.</span>
 <span class="sd">    t_grid : ndarray, shape (n_t,)</span>
 <span class="sd">        Time points.</span>
 <span class="sd">    system_hamiltonian, coupling_operator : ndarray, shape (d, d)</span>
 <span class="sd">        H_S and A.</span>
 <span class="sd">    bath_state, spectral_density : dict</span>
 <span class="sd">        Card per-case bath_state and bath_spectral_density mappings.</span>
-<span class="sd">        Used only for n = 2 (where D̄_2 is built); ignored for n in {0, 1}.</span>
+<span class="sd">        Used for n = 2 (D̄_2 construction) and n = 4 (Phase D route to</span>
+<span class="sd">        `_L_4_thermal_at_time_apply`); ignored for n in {0, 1, 3}.</span>
 <span class="sd">    basis : list of (d, d) ndarrays, optional</span>
 <span class="sd">        HS-orthonormal basis for Letter Eq. (6). Defaults to the</span>
 <span class="sd">        matrix-unit basis at the system dimension d.</span>
 <span class="sd">    upper_cutoff_factor, quad_limit : optional</span>
-<span class="sd">        Quadrature controls forwarded through D̄_2 construction for n = 2.</span>
+<span class="sd">        Quadrature controls forwarded through D̄_2 construction for</span>
+<span class="sd">        n = 2 and forwarded to `_L_4_thermal_at_time_apply` for n = 4.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -661,9 +1433,23 @@
             <span class="n">quad_limit</span><span class="o">=</span><span class="n">quad_limit</span><span class="p">,</span>
         <span class="p">)</span>
 
+    <span class="c1"># Phase D: at n = 4, forward the bath kwargs so L_n_thermal_at_time</span>
+    <span class="c1"># can route to _L_4_thermal_at_time_apply. At n ∈ {0, 1, 2, 3} the</span>
+    <span class="c1"># bath kwargs are accepted but ignored by L_n_thermal_at_time.</span>
     <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">t_grid</span><span class="p">),</span> <span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">t_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t_grid</span><span class="p">)):</span>
-        <span class="n">L_n_apply</span> <span class="o">=</span> <span class="n">L_n_thermal_at_time</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">t_idx</span><span class="p">,</span> <span class="n">t_grid</span><span class="p">,</span> <span class="n">H_S</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">D_bar_2_array</span><span class="o">=</span><span class="n">D</span><span class="p">)</span>
+        <span class="n">L_n_apply</span> <span class="o">=</span> <span class="n">L_n_thermal_at_time</span><span class="p">(</span>
+            <span class="n">n</span><span class="p">,</span>
+            <span class="n">t_idx</span><span class="p">,</span>
+            <span class="n">t_grid</span><span class="p">,</span>
+            <span class="n">H_S</span><span class="p">,</span>
+            <span class="n">A</span><span class="p">,</span>
+            <span class="n">D_bar_2_array</span><span class="o">=</span><span class="n">D</span><span class="p">,</span>
+            <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span>
+            <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+            <span class="n">upper_cutoff_factor</span><span class="o">=</span><span class="n">upper_cutoff_factor</span><span class="p">,</span>
+            <span class="n">quad_limit</span><span class="o">=</span><span class="n">quad_limit</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="n">K</span><span class="p">[</span><span class="n">t_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">K_from_generator</span><span class="p">(</span><span class="n">L_n_apply</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">K</span></div>
 
@@ -681,8 +1467,12 @@
 <span class="c1"># part), so L^dissipator = L + i [K, ·] = -i [H, ·] + i [H, ·] = 0 exactly.</span>
 <span class="c1"># Tests guarantee this for n=0 (where L_0 = -i [H_S, ·] is purely unitary).</span>
 <span class="c1">#</span>
-<span class="c1"># Phase B.3 partial: n in {0, 1, 2, 3}. n=4 is gated by L_n_thermal_at_time</span>
-<span class="c1"># at the L-level; the deferral propagates here.</span>
+<span class="c1"># Phase D (commit `f599751`): n=4 thermal Gaussian routes through</span>
+<span class="c1"># L_n_thermal_at_time → _L_4_thermal_at_time_apply; the dissipator</span>
+<span class="c1"># residual is L_4 + i [K_4, ·] with K_4 from Letter Eq. (6) extraction</span>
+<span class="c1"># on L_4. n=4 σ_z hits the §3.2 commuting-case guard inside</span>
+<span class="c1"># _L_4_thermal_at_time_apply and yields L_4 = 0 (and K_4 = 0) exactly.</span>
+<span class="c1"># n=4 σ_x produces a finite L_4^dis. Orders n &gt;= 5 are out of scope.</span>
 
 
 <div class="viewcode-block" id="L_n_dissipator_thermal_at_time">
@@ -709,13 +1499,16 @@
 <span class="sd">    For purely unitary L_n with K_n = H, the dissipator vanishes</span>
 <span class="sd">    identically (the Risk R8 unitary-recovery oracle gating Phase B.3</span>
 <span class="sd">    acceptance). For thermal Gaussian baths n ∈ {0, 1, 3} all give the</span>
-<span class="sd">    zero superoperator; n = 2 carries the leading dissipator.</span>
+<span class="sd">    zero superoperator; n = 2 carries the leading dissipator; n = 4</span>
+<span class="sd">    routes through `_L_4_thermal_at_time_apply` (Phase D) and gives a</span>
+<span class="sd">    non-zero dissipator for non-commuting A (e.g. σ_x), exact zero</span>
+<span class="sd">    via the §3.2 commuting-case guard for σ_z.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    n : int</span>
-<span class="sd">        Perturbative order; one of {0, 1, 2, 3}. n=4 raises (gated by</span>
-<span class="sd">        L_n_thermal_at_time(n=4)); n&gt;=5 is out of scope.</span>
+<span class="sd">        Perturbative order; one of {0, 1, 2, 3, 4} on the thermal</span>
+<span class="sd">        Gaussian path. n &gt;= 5 raises (out of DG-4 v0.1.5 scope).</span>
 <span class="sd">    t_idx : int</span>
 <span class="sd">        Index into t_grid at which to evaluate.</span>
 <span class="sd">    t_grid, system_hamiltonian, coupling_operator : as in K_n_thermal_on_grid.</span>
@@ -764,7 +1557,18 @@
             <span class="n">quad_limit</span><span class="o">=</span><span class="n">quad_limit</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="n">L_n_apply</span> <span class="o">=</span> <span class="n">L_n_thermal_at_time</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">t_idx</span><span class="p">,</span> <span class="n">t_grid</span><span class="p">,</span> <span class="n">H_S</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">D_bar_2_array</span><span class="o">=</span><span class="n">D_bar_2_array</span><span class="p">)</span>
+    <span class="n">L_n_apply</span> <span class="o">=</span> <span class="n">L_n_thermal_at_time</span><span class="p">(</span>
+        <span class="n">n</span><span class="p">,</span>
+        <span class="n">t_idx</span><span class="p">,</span>
+        <span class="n">t_grid</span><span class="p">,</span>
+        <span class="n">H_S</span><span class="p">,</span>
+        <span class="n">A</span><span class="p">,</span>
+        <span class="n">D_bar_2_array</span><span class="o">=</span><span class="n">D_bar_2_array</span><span class="p">,</span>
+        <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span>
+        <span class="n">spectral_density</span><span class="o">=</span><span class="n">spectral_density</span><span class="p">,</span>
+        <span class="n">upper_cutoff_factor</span><span class="o">=</span><span class="n">upper_cutoff_factor</span><span class="p">,</span>
+        <span class="n">quad_limit</span><span class="o">=</span><span class="n">quad_limit</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="n">K_t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">K_n_array</span><span class="p">[</span><span class="n">t_idx</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">L_n_dis_apply</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
@@ -800,8 +1604,12 @@
 
 <span class="sd">    For thermal Gaussian baths under the runner-facing thermal path,</span>
 <span class="sd">    n ∈ {0, 1, 3} return all zeros and n = 2 returns the dephasing /</span>
-<span class="sd">    relaxation dissipator&#39;s norm at each grid time. n = 4 is deferred</span>
-<span class="sd">    along with L_n_thermal_at_time(n=4).</span>
+<span class="sd">    relaxation dissipator&#39;s norm at each grid time. n = 4 (Phase D</span>
+<span class="sd">    public route, commit `f599751`) propagates through</span>
+<span class="sd">    `L_n_thermal_at_time(n=4)` and returns a finite (n_t,) array; the</span>
+<span class="sd">    §3.2 commuting-case guard inside `_L_4_thermal_at_time_apply`</span>
+<span class="sd">    yields exact zero for [H_S, A] = 0 (e.g. σ_z dephasing) and a</span>
+<span class="sd">    finite non-zero norm for non-commuting A (e.g. σ_x).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1086,8 +1894,8 @@
 <span class="sd">    ----------</span>
 <span class="sd">    N_card : int</span>
 <span class="sd">        Perturbative cap from the card&#39;s frozen_parameters.truncation</span>
-<span class="sd">        .perturbative_order; must be in {0, 1, 2} for the implemented</span>
-<span class="sd">        low-order path.</span>
+<span class="sd">        .perturbative_order; must be in {0, 1, 2, 3, 4} on the thermal</span>
+<span class="sd">        Gaussian path. N_card ≥ 5 raises out-of-scope.</span>
 <span class="sd">    t_grid : ndarray</span>
 <span class="sd">        See ``K_n_thermal_on_grid``.</span>
 <span class="sd">    system_hamiltonian : ndarray</span>
@@ -1095,9 +1903,11 @@
 <span class="sd">    coupling_operator : ndarray</span>
 <span class="sd">        See ``K_n_thermal_on_grid``.</span>
 <span class="sd">    bath_state : dict</span>
-<span class="sd">        See ``K_n_thermal_on_grid``.</span>
+<span class="sd">        See ``K_n_thermal_on_grid``. Also forwarded to</span>
+<span class="sd">        ``L_n_thermal_at_time`` at n = 4 (Phase D public route).</span>
 <span class="sd">    spectral_density : dict</span>
-<span class="sd">        See ``K_n_thermal_on_grid``.</span>
+<span class="sd">        See ``K_n_thermal_on_grid``. Also forwarded to</span>
+<span class="sd">        ``L_n_thermal_at_time`` at n = 4 (Phase D public route).</span>
 <span class="sd">    basis : list, optional</span>
 <span class="sd">        See ``K_n_thermal_on_grid``.</span>
 <span class="sd">    upper_cutoff_factor : float</span>
@@ -1114,12 +1924,13 @@
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;K_total_thermal_on_grid: N_card must be a non-negative integer; &quot;</span> <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="n">N_card</span><span class="si">!r}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
-    <span class="k">if</span> <span class="n">N_card</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">N_card</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;K_total_thermal_on_grid: N_card=</span><span class="si">{</span><span class="n">N_card</span><span class="si">}</span><span class="s2"> not implemented. &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;DG-4 Phase B.2 covers n in </span><span class="se">{{</span><span class="s2">0, 1, 2, 3</span><span class="se">}}</span><span class="s2"> (n=3 returns zeros &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;by Gaussianity). n=4 is the pending follow-up; see &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;L_n_thermal_at_time(n=4).&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;DG-4 v0.1.5 covers n in </span><span class="se">{{</span><span class="s2">0, 1, 2, 3, 4</span><span class="se">}}</span><span class="s2"> on the thermal &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Gaussian path (n=3 returns zeros by Gaussianity; n=4 routes &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;through _L_4_thermal_at_time_apply per Phase D card v0.1.0). &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Orders n ≥ 5 are out of scope for this plan revision.&quot;</span>
         <span class="p">)</span>
 
     <span class="n">H_S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">system_hamiltonian</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
@@ -1150,20 +1961,23 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">L_n</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the n-th order TCL generator term per Companion Eq. (28).</span>
 
-<span class="sd">    Thin wrapper: routes to L_n_thermal_at_time when called with</span>
-<span class="sd">    the canonical (t_idx, t_grid, system_hamiltonian, coupling_operator,</span>
-<span class="sd">    D_bar_2_array) kwargs and a thermal bath state. Other configurations</span>
-<span class="sd">    raise NotImplementedError with explicit pending-recursion routing.</span>
+<span class="sd">    Thin wrapper: routes to L_n_thermal_at_time when called with the</span>
+<span class="sd">    canonical (t_idx, t_grid, system_hamiltonian, coupling_operator,</span>
+<span class="sd">    D_bar_2_array) kwargs and a thermal bath state. For n = 4 (Phase D</span>
+<span class="sd">    public route) the shim also forwards bath_state / spectral_density</span>
+<span class="sd">    / upper_cutoff_factor / quad_limit kwargs to L_n_thermal_at_time.</span>
+<span class="sd">    Other configurations raise NotImplementedError with explicit</span>
+<span class="sd">    routing pointers.</span>
 
 <span class="sd">    Callers should generally prefer L_n_thermal_at_time (explicit</span>
 <span class="sd">    parameters) or K_n_thermal_on_grid (higher-level batched form) over</span>
 <span class="sd">    this generic-stub shim.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;L_n: n=</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> not implemented; DG-4 Phase B.2 covers &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;n in </span><span class="se">{{</span><span class="s2">0, 1, 2, 3</span><span class="se">}}</span><span class="s2"> (n=3 returns zero by Gaussianity). &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;n=4 is the next deferred piece; see L_n_thermal_at_time(n=4).&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;L_n: n=</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> not implemented. DG-4 v0.1.5 covers &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;n in </span><span class="se">{{</span><span class="s2">0, 1, 2, 3, 4</span><span class="se">}}</span><span class="s2"> on the thermal Gaussian path. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Orders n ≥ 5 are out of scope for this plan revision.&quot;</span>
         <span class="p">)</span>
     <span class="n">bath_state</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bath_state&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">bath_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">bath_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;family&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;thermal&quot;</span><span class="p">:</span>
@@ -1178,7 +1992,8 @@
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;L_n: missing required kwargs </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">; pass &quot;</span>
             <span class="sa">f</span><span class="s2">&quot;(t_idx, t_grid, system_hamiltonian, coupling_operator) &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;and (D_bar_2_array for n=2).&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;and (D_bar_2_array for n=2; bath_state + spectral_density &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;for n=4).&quot;</span>
         <span class="p">)</span>
     <span class="k">return</span> <span class="n">L_n_thermal_at_time</span><span class="p">(</span>
         <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span>
@@ -1187,6 +2002,10 @@
         <span class="n">system_hamiltonian</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;system_hamiltonian&quot;</span><span class="p">],</span>
         <span class="n">coupling_operator</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;coupling_operator&quot;</span><span class="p">],</span>
         <span class="n">D_bar_2_array</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;D_bar_2_array&quot;</span><span class="p">),</span>
+        <span class="n">bath_state</span><span class="o">=</span><span class="n">bath_state</span><span class="p">,</span>
+        <span class="n">spectral_density</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;spectral_density&quot;</span><span class="p">),</span>
+        <span class="n">upper_cutoff_factor</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;upper_cutoff_factor&quot;</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">),</span>
+        <span class="n">quad_limit</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;quad_limit&quot;</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span>
     <span class="p">)</span></div>
 
 

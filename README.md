@@ -22,7 +22,9 @@ A Sail-internal repository implementing the construction of:
 > *Recursive perturbation approach to time-convolutionless master equations: Explicit construction of generalized Lindblad generators for arbitrary open systems*,
 > **Phys. Rev. A 112, 052222 (2025)**. DOI: [10.1103/9j8d-jxgd](https://doi.org/10.1103/9j8d-jxgd)
 
-The implemented surface computes the minimal-dissipation effective Hamiltonian K(t) from TCL generators, runs the frozen DG-1 and DG-2 structural benchmark cards, runs the picture-fixed Path B DG-4 failure-envelope sweep on D1 v0.1.2 (PASS, 2026-05-06; supersedes the v0.5.0-tagged v0.1.1 verdict that was downgraded on review the same day), and records exactly which sub-claims are supported inside the validity envelope. Full analytic fourth-order recursive K_n(t) computation (Path A), cross-method validation, and thermodynamic-discriminant work remain future milestones.
+The implemented surface computes the minimal-dissipation effective Hamiltonian K(t) from TCL generators, runs the frozen DG-1 and DG-2 structural benchmark cards, runs the picture-fixed Path B DG-4 failure-envelope sweep on D1 v0.1.2 (PASS, 2026-05-06; supersedes the v0.5.0-tagged v0.1.1 verdict that was downgraded on review the same day), and records exactly which sub-claims are supported inside the validity envelope.
+
+Current HEAD is a post-verdict development stage. The DG verdict table has not changed since the DG-4 D1 v0.1.2 PASS, but the analytic fourth-order thermal-Gaussian route has advanced: the Companion Sec. IV L_4 transcription is released at v0.1.1, the n=4 small-grid and physics-oracle cards are current, and the public thermal-Gaussian n=4 route is exposed through `cbg.tcl_recursion.L_n_thermal_at_time(n=4)`, `K_n_thermal_on_grid(n=4)`, `K_total_thermal_on_grid(N_card=4)`, the n=4 dissipator helpers, and the `L_n` shim. This does **not** retroactively change the D1 verdict source: D1 v0.1.2 remains a Path B numerical failure-envelope verdict until a separate Path A / Path B cross-validation card or verdict is run. DG-3 failure-asymmetry clearance and DG-5 thermodynamic-discriminant work remain future milestones.
 
 A static public landing page for the repository is tracked at [`index.html`](index.html).
 
@@ -30,11 +32,11 @@ A static public landing page for the repository is tracked at [`index.html`](ind
 
 - **Not** a claim that K(t) is the unique physical Hamiltonian of an open system. K(t) is a coordinate-dependent object under the Hayden–Sorce minimal-dissipation gauge. See [`docs/do_not_cite_as.md`](docs/do_not_cite_as.md).
 - **Not** an adjudication between competing strong-coupling thermodynamic frameworks. That question is the discriminant for CL-2026-005 Entry 7 and is reserved for fresh Council deliberation.
-- **Not** production-ready. DG-1 has passed, DG-2 structural sub-claims have passed under the Council-cleared displacement-profile registry, and DG-4 has passed at D1 v0.1.2 (2026-05-06) via picture-fixed Path B numerical L_4 extraction with all four reproducibility perturbations operational and the result JSON audit-complete. (The v0.1.1 PASS verdict tagged `v0.5.0` earlier on the same day was superseded on review; v0.1.2 is the live verdict.) The literal analytic fourth-order K_2-K_4 recursion (Path A), DG-3 cross-method failure-asymmetry-clearance, and DG-5 thermodynamic discriminant have not been completed. See [`docs/validity_envelope.md`](docs/validity_envelope.md) for the live status.
+- **Not** production-ready. DG-1 has passed, DG-2 structural sub-claims have passed under the Council-cleared displacement-profile registry, and DG-4 has passed at D1 v0.1.2 (2026-05-06) via picture-fixed Path B numerical L_4 extraction with all four reproducibility perturbations operational and the result JSON audit-complete. (The v0.1.1 PASS verdict tagged `v0.5.0` earlier on the same day was superseded on review; v0.1.2 is the live verdict.) The thermal-Gaussian n=4 public route now exists in `cbg.tcl_recursion`, but Entry-2-wide K_2-K_4 recursion closure, D1 Path A / Path B cross-validation, DG-3 failure-asymmetry clearance, and the DG-5 thermodynamic discriminant have not been completed. See [`docs/validity_envelope.md`](docs/validity_envelope.md) for the live status.
 
 ## Installation
 
-Requires Python ≥ 3.10. From a repository checkout:
+Requires Python ≥ 3.10. The project is tested across Python 3.10-3.13 in current metadata. From a repository checkout:
 
 ```bash
 git clone https://github.com/uwarring82/oqs-cbg-pipeline.git
@@ -89,6 +91,8 @@ Four runnable Jupyter notebooks demonstrate the passed (or partially passed) Dec
 
 See [`examples/README.md`](examples/README.md) for the index.
 
+For the post-verdict n=4 analytic implementation route, start with the released Companion Sec. IV transcription and its derived cards in [`transcriptions/README.md`](transcriptions/README.md). That surface is code-facing and oracle-tested for the thermal-Gaussian scope; it is not itself a new DG verdict.
+
 For a guided introduction aimed at PhD students, open [`cbg-tutorial-for-phd-students_v0.2.html`](cbg-tutorial-for-phd-students_v0.2.html). *Note: the tutorial dates from 2026-04-30, predates DG-2 / DG-4 PASS, and is for theoretical orientation only — refer to [`docs/validity_envelope.md`](docs/validity_envelope.md) for current verdict status.* For the full validated surface and the structural-identity benchmark cards that anchor each Decision Gate, see [`benchmarks/benchmark_cards/`](benchmarks/benchmark_cards/) and [`docs/validity_envelope.md`](docs/validity_envelope.md).
 
 ## Anchor chain
@@ -113,10 +117,10 @@ Every layer consumes the layer above unidirectionally. The repository never modi
 | DG | Description | Status |
 |---|---|---|
 | DG-1 | Formula implementation (CL-2026-005 Entries 1, 3, 4 reproduced) | **PASS** (2026-04-30) |
-| DG-2 | Structural identities and displaced-bath registry checks | **PARTIAL**: structural sub-claims PASS (2026-05-04); literal K_2-K_4 fourth-order recursion pending |
+| DG-2 | Structural identities and displaced-bath registry checks | **PARTIAL**: structural sub-claims PASS (2026-05-04); thermal-Gaussian n=4 code route now present, but Entry-2-wide K_2-K_4 recursion closure is not yet authorised |
 | DG-3 | Cross-method validation (≥2 methods, non-overlapping failures) | RUNNER REACHABLE; failure-asymmetry clearance pending |
-| DG-4 | Failure envelope (cause-labelled, reproducible) | **PASS** at D1 v0.1.2 (2026-05-06; picture-fixed Path B numerical L_4; supersedes the v0.5.0-tagged v0.1.1 verdict that was downgraded on review the same day) |
-| DG-5 | Thermodynamic discriminant (distinguishable observable) | NOT YET ATTEMPTED |
+| DG-4 | Failure envelope (cause-labelled, reproducible) | **PASS** at D1 v0.1.2 (2026-05-06; picture-fixed Path B numerical L_4; supersedes the v0.5.0-tagged v0.1.1 verdict that was downgraded on review the same day). Post-verdict analytic n=4 thermal-Gaussian public route landed 2026-05-13; D1 Path A / Path B cross-validation remains future work. |
+| DG-5 | Thermodynamic discriminant (distinguishable observable) | SCOPED: E1 refusal path and callable model stubs exist; Fano-Anderson dynamics, HMF reference, and fermionic-bath support remain unimplemented |
 
 Live status: [`docs/validity_envelope.md`](docs/validity_envelope.md).
 
@@ -146,6 +150,8 @@ oqs-cbg-pipeline/
 ├── benchmarks/       # cross-method references; benchmark_cards/ holds YAML cards
 ├── reporting/        # benchmark-card I/O and validity-envelope reporting
 ├── plans/            # steward-authored revisable work plans (DG-1 onwards)
+├── transcriptions/   # source-derived operational transcriptions and derived cards
+├── reviews/          # external/internal review packets and resolution work packages
 ├── tests/            # smoke tests (no scientific tests pre-DG-1)
 ├── logbook/          # immutable repository event log
 └── .github/          # CI workflows
@@ -187,4 +193,4 @@ The steward holds a structural conflict on CL-2026-005 Entry 6 (co-authorship of
 
 ---
 
-*Repository metadata version: 0.3.0.dev0. Initialised 2026-04-29. Sail v0.5. Ledger CL-2026-005 v0.4. DG-1 PASS (tag `v0.2.0`); DG-2 structural sub-claims PASS; DG-3 runner-complete (no PASS); DG-4 PASS at D1 v0.1.2 (2026-05-06; picture-fixed Path B; supersedes the v0.5.0-tagged v0.1.1 PASS verdict that was downgraded on review the same day); DG-5 scope-definition.*
+*Repository metadata version: 0.3.0.dev0. Initialised 2026-04-29. Sail v0.5. Ledger CL-2026-005 v0.4. DG-1 PASS (tag `v0.2.0`); DG-2 structural sub-claims PASS / Entry-2-wide recursion closure still unauthorised; DG-3 runner-complete (no PASS); DG-4 PASS at D1 v0.1.2 (2026-05-06; picture-fixed Path B; supersedes the v0.5.0-tagged v0.1.1 PASS verdict that was downgraded on review the same day); post-verdict thermal-Gaussian n=4 public route landed 2026-05-13; DG-5 scope-definition with callable refusal stubs.*

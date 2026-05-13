@@ -2,29 +2,34 @@
 """
 cbg.tcl_recursion — Recursive construction of the TCL generator L_t.
 
-Implements the runner-facing low-order TCL terms used by the frozen
-benchmark cards. The full Companion Eqs. (19)-(28) recursion yielding
-L_t = Σ_n λ^n L_n in canonical generalised-Lindblad form at arbitrary
-order remains pending.
+Implements the runner-facing TCL terms used by the frozen benchmark cards
+and the post-verdict DG-4 analytic n=4 thermal-Gaussian route. The full
+Companion Eqs. (19)-(28) recursion yielding L_t = Σ_n λ^n L_n in canonical
+generalised-Lindblad form at arbitrary order remains pending.
 
 The recursion uses the generalised cumulants D̄(τ_1^k, s_1^{n-k})
 which are evaluated in cbg.cumulants (NOT a Nakajima-Zwanzig
 memory kernel — TCL is time-local; see bath_correlations.py docstring).
 
-Implemented runner-facing scope covers L_n at orders n in {0, 1, 2}
+Implemented runner-facing scope covers L_n at orders n in {0, 1, 2, 3, 4}
 for thermal Gaussian baths, K_n_thermal_on_grid / K_total_thermal_on_grid,
-and K_total_displaced_on_grid for the Council-cleared coherent-displaced
-DG-2 structural cards B4/B5 at perturbative_order <= 2.
+the n=4 thermal-Gaussian dissipator helpers, and K_total_displaced_on_grid
+for the Council-cleared coherent-displaced DG-2 structural cards B4/B5 at
+perturbative_order <= 2. At n=4 the public route is thermal-Gaussian only
+and flows through the reviewed Phase B/C helpers; non-thermal and displaced
+n=4 scopes remain out of scope.
 
 DG-4 Phase B.4 threads the two operational quadrature controls
 (``quad_limit`` and ``upper_cutoff_factor``) through the runner-facing
 thermal/displaced K-grid entry points.
 
-Pending scope covers L_n at orders n >= 3 (full Companion Eq. (28)
-recursion) and canonical_lindblad_form, the full K + dissipator
-decomposition with traceless jump operators (Companion Eq. (43)).
+Pending scope covers L_n at orders n >= 5, non-thermal/displaced n=4,
+the generic K_perturbative surface, canonical_lindblad_form, and the full
+K + dissipator decomposition with traceless jump operators (Companion
+Eq. (43)).
 
-Anchor: SCHEMA.md v0.1.2; benchmark cards A3/A4/B4/B5.
+Anchor: SCHEMA.md v0.1.3; benchmark cards A3/A4/B4/B5/D1 and the
+Companion Sec. IV n=4 derived cards under transcriptions/.
 """
 
 from __future__ import annotations

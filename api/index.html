@@ -347,10 +347,12 @@
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decision-gate-status-snapshot">Decision-Gate status snapshot</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#where-to-start">Where to start</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#current-implementation-stage">Current implementation stage</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#packages">Packages</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#worked-examples">Worked examples</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-links">Quick links</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decision-gate-status-snapshot">Decision-Gate Status Snapshot</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-these-pages">Building these pages</a></li>
 </ul>
             </nav>
@@ -370,8 +372,8 @@
 framework for non-Markovian open quantum systems
 (<a class="reference external" href="https://doi.org/10.1103/n5nl-gn1y">Phys. Rev. A <strong>112</strong>, L050203 (2025)</a>;
 <a class="reference external" href="https://doi.org/10.1103/9j8d-jxgd">Phys. Rev. A <strong>112</strong>, 052222 (2025)</a>).</p>
-<p>For project background, citation policy, conflict-of-interest disclosures,
-and the authoritative status, see the <a href="../index.html">main landing page</a>.
+<p>For a warmer project overview, citation policy, conflict-of-interest disclosures,
+and the concise status table, see the <a href="../index.html">main landing page</a>.
 (The link uses raw HTML to bypass Sphinx’s download-internal handling for
 sibling-directory files; on GitHub Pages it resolves to the hand-curated
 landing page at the repo root.)</p>
@@ -385,39 +387,26 @@ and the <a class="reference external" href="https://github.com/uwarring82/oqs-cb
 A function being documented here does <strong>not</strong> imply its outputs have
 passed any Decision Gate.</p>
 </div>
-<section id="decision-gate-status-snapshot">
-<h2>Decision-Gate status snapshot<a class="headerlink" href="#decision-gate-status-snapshot" title="Link to this heading">#</a></h2>
-<div class="pst-scrollable-table-container"><table class="table">
-<thead>
-<tr class="row-odd"><th class="head"><p>Gate</p></th>
-<th class="head"><p>Status</p></th>
-<th class="head"><p>Anchor</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>DG-1</p></td>
-<td><p><strong>PASS</strong> (2026-04-30; tag <code class="docutils literal notranslate"><span class="pre">v0.2.0</span></code>)</p></td>
-<td><p>Cards <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/A1_closed-form-K_v0.1.1.yaml">A1</a>, <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/A3_pure-dephasing_v0.1.1.yaml">A3</a>, <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/A4_sigma-x-thermal_v0.1.1.yaml">A4</a></p></td>
-</tr>
-<tr class="row-odd"><td><p>DG-2</p></td>
-<td><p><strong>PARTIAL</strong> — structural sub-claims PASS under Council-cleared registry; K_2-K_4 recursion pending (2026-05-04)</p></td>
-<td><p><a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B1_pseudo-kraus-diagonal_v0.1.0.yaml">B1</a> (Entry 1.B.3 diagonal); <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B2_pseudo-kraus-offdiagonal_v0.1.0.yaml">B2</a> (Entry 1.B.3 off-diagonal + Entry 1.D); <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B3_cross-basis-structural-identity_v0.1.0.yaml">B3</a> (Entry 1.A basis-independence); <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B4-conv-registry_v0.1.0.yaml">B4-conv-registry</a> (Entry 3.B.3) + <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B5-conv-registry_v0.2.0.yaml">B5-conv-registry v0.2.0</a> (Entry 4.B.2), each under all four Council-cleared displacement profiles. Literal K_2-K_4 numerical recursion at order &gt;= 4 = future plan.</p></td>
-</tr>
-<tr class="row-even"><td><p>DG-3</p></td>
-<td><p>RUNNER-COMPLETE; failure-asymmetry clearance pending</p></td>
-<td><p>Cards <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/C1_cross-method-pure-dephasing_v0.1.0.yaml">C1</a> (pure-dephasing) + <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/C2_cross-method-spin-boson_v0.1.0.yaml">C2</a> (spin-boson σ_x) reachable on all four thermal + displaced fixtures via <code class="docutils literal notranslate"><span class="pre">_run_cross_method</span></code>; both currently FAIL convergence in finite-bath truncation. Failure-asymmetry-cleared PASS requires either bath-convergence under the cleared registry or a third reference method from a non-overlapping failure-mode class.</p></td>
-</tr>
-<tr class="row-odd"><td><p>DG-4</p></td>
-<td><p><strong>PASS</strong> at D1 v0.1.2 (2026-05-06)</p></td>
-<td><p>Card <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/D1_failure-envelope-convergence_v0.1.2.yaml">D1 v0.1.2</a> — spin-boson σ_x thermal, parity-aware ratio <code class="docutils literal notranslate"><span class="pre">r_4(α²)</span> <span class="pre">=</span> <span class="pre">α²</span> <span class="pre">·</span> <span class="pre">⟨‖L_4^dis‖⟩_t</span> <span class="pre">/</span> <span class="pre">⟨‖L_2^dis‖⟩_t</span></code>. All 20 swept <code class="docutils literal notranslate"><span class="pre">coupling_strength</span></code> points classify <code class="docutils literal notranslate"><span class="pre">convergence_failure</span></code> with stability across all four perturbations (<code class="docutils literal notranslate"><span class="pre">upper_cutoff_factor</span> <span class="pre">∈</span> <span class="pre">{20,</span> <span class="pre">40}</span></code>, <code class="docutils literal notranslate"><span class="pre">omega_c</span> <span class="pre">∈</span> <span class="pre">{9,</span> <span class="pre">11}</span></code>); max baseline <code class="docutils literal notranslate"><span class="pre">r_4</span> <span class="pre">≈</span> <span class="pre">47.42</span></code>. v0.1.2 supersedes the v0.5.0-tagged v0.1.1 verdict that was superseded on review the same day; consumes Path B picture fix + operational <code class="docutils literal notranslate"><span class="pre">omega_max_factor</span></code> + audit-complete result JSON. Path A analytic L_4 cross-validation remains pending. See <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/logbook/2026-05-06_dg-4-pass-path-b-v012.md">v0.1.2 verdict log</a>.</p></td>
-</tr>
-<tr class="row-even"><td><p>DG-5</p></td>
-<td><p>SCOPE-DEFINITION (preconditions unmet)</p></td>
-<td><p>Card <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/E1_thermodynamic-discriminant-fano-anderson_v0.1.0.yaml">E1</a> — Fano–Anderson + Hamiltonian of mean force discriminant. <code class="docutils literal notranslate"><span class="pre">run_card(E1)</span></code> raises <code class="docutils literal notranslate"><span class="pre">ScopeDefinitionNotRunnableError</span></code> listing missing preconditions (model factory, HMF reference, fermionic-bath support).</p></td>
-</tr>
-</tbody>
-</table>
-</div>
+<section id="where-to-start">
+<h2>Where to start<a class="headerlink" href="#where-to-start" title="Link to this heading">#</a></h2>
+<p>If you are new to the repository, start with the hand-curated
+<a href="../index.html">landing page</a>, then use these API pages to
+inspect the implementation details behind the benchmark cards. The
+worked examples are the best executable entry point; the module reference
+is for checking signatures, docstrings, and supported scopes.</p>
+</section>
+<section id="current-implementation-stage">
+<h2>Current implementation stage<a class="headerlink" href="#current-implementation-stage" title="Link to this heading">#</a></h2>
+<p>The live DG verdicts remain DG-1 PASS, DG-2 structural-sub-claims PASS
+with Entry-2-wide recursion closure still unauthorised, and DG-4 PASS at
+D1 v0.1.2 via picture-fixed Path B numerical L_4. Since that verdict,
+the post-verdict analytic thermal-Gaussian n=4 route has landed:
+<code class="docutils literal notranslate"><span class="pre">L_n_thermal_at_time(n=4)</span></code>, <code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid(n=4)</span></code>,
+<code class="docutils literal notranslate"><span class="pre">K_total_thermal_on_grid(N_card=4)</span></code>, the n=4 dissipator helpers, and
+the <code class="docutils literal notranslate"><span class="pre">L_n</span></code> shim route through the reviewed Phase B/C helpers.</p>
+<p>That implementation advance is code-facing, not a new verdict. D1 v0.1.2
+remains the live DG-4 failure-envelope artifact until a separate Path A /
+Path B cross-validation card or verdict is run.</p>
 </section>
 <section id="packages">
 <h2>Packages<a class="headerlink" href="#packages" title="Link to this heading">#</a></h2>
@@ -466,12 +455,47 @@ passed any Decision Gate.</p>
 <li><p><a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline">Source on GitHub</a></p></li>
 <li><p><a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/tree/main/benchmarks/benchmark_cards">Benchmark cards</a> — frozen verification artifacts</p></li>
 <li><p><a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/docs/validity_envelope.md">Validity envelope</a> — authoritative DG status</p></li>
+<li><p><a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/tree/main/transcriptions">Transcriptions</a> — source-derived operational transcriptions and n=4 derived cards</p></li>
 <li><p><a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/ledger/CL-2026-005_v0.4_council-briefing_displacement-convention.md">Subsidiary Council briefing v0.3.0</a> — Council-cleared displacement-profile registry (handling (c))</p></li>
 <li><p><a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/transcriptions/hayden-sorce-2022_pseudokraus_v0.1.1.md">Hayden–Sorce transcription v0.1.1</a></p></li>
 <li><p><a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/transcriptions/colla-breuer-gasbarri-2025_appendix-d_v0.0.1.md">Colla–Breuer–Gasbarri Appendix-D-routed transcription v0.0.1</a></p></li>
 <li><p><a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/tree/main/logbook">Logbook</a> — append-only repository event log</p></li>
 <li><p><a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/plans/dg-1-work-plan_v0.1.4.md">DG-1 work plan v0.1.4</a></p></li>
 </ul>
+</section>
+<section id="decision-gate-status-snapshot">
+<h2>Decision-Gate Status Snapshot<a class="headerlink" href="#decision-gate-status-snapshot" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Gate</p></th>
+<th class="head"><p>Status</p></th>
+<th class="head"><p>Anchor</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>DG-1</p></td>
+<td><p><strong>PASS</strong> (2026-04-30; tag <code class="docutils literal notranslate"><span class="pre">v0.2.0</span></code>)</p></td>
+<td><p>Cards <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/A1_closed-form-K_v0.1.1.yaml">A1</a>, <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/A3_pure-dephasing_v0.1.1.yaml">A3</a>, <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/A4_sigma-x-thermal_v0.1.1.yaml">A4</a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p>DG-2</p></td>
+<td><p><strong>PARTIAL</strong> — structural sub-claims PASS; Entry-2-wide recursion closure not yet authorised</p></td>
+<td><p>Cards <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B1_pseudo-kraus-diagonal_v0.1.0.yaml">B1</a>, <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B2_pseudo-kraus-offdiagonal_v0.1.0.yaml">B2</a>, <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B3_cross-basis-structural-identity_v0.1.0.yaml">B3</a>, <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B4-conv-registry_v0.1.0.yaml">B4-conv-registry</a>, and <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/B5-conv-registry_v0.2.0.yaml">B5-conv-registry v0.2.0</a>. The thermal-Gaussian n=4 public route exists, but no DG-2 K_2-K_4 recursion card has closed Entry 2.</p></td>
+</tr>
+<tr class="row-even"><td><p>DG-3</p></td>
+<td><p>RUNNER-COMPLETE; failure-asymmetry clearance pending</p></td>
+<td><p>Cards <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/C1_cross-method-pure-dephasing_v0.1.0.yaml">C1</a> + <a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/C2_cross-method-spin-boson_v0.1.0.yaml">C2</a> are reachable on all four thermal + displaced fixtures and currently clean-FAIL under finite-bath truncation. A PASS needs convergence or a third non-overlapping method.</p></td>
+</tr>
+<tr class="row-odd"><td><p>DG-4</p></td>
+<td><p><strong>PASS</strong> at D1 v0.1.2 (2026-05-06)</p></td>
+<td><p><a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/D1_failure-envelope-convergence_v0.1.2.yaml">D1 v0.1.2</a> identifies the σ_x thermal convergence-failure envelope with max baseline <code class="docutils literal notranslate"><span class="pre">r_4</span> <span class="pre">≈</span> <span class="pre">47.42</span></code>. The verdict source remains picture-fixed Path B numerical L_4; the post-verdict analytic thermal-Gaussian route is not yet a replacement or cross-validation verdict.</p></td>
+</tr>
+<tr class="row-even"><td><p>DG-5</p></td>
+<td><p>SCOPE-DEFINITION</p></td>
+<td><p><a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/benchmarks/benchmark_cards/E1_thermodynamic-discriminant-fano-anderson_v0.1.0.yaml">E1</a> records the Fano-Anderson / HMF discriminant scope. Callable refusal stubs exist; realised dynamics, HMF reference, and fermionic-bath support remain unimplemented.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </section>
 <section id="building-these-pages">
 <h2>Building these pages<a class="headerlink" href="#building-these-pages" title="Link to this heading">#</a></h2>
@@ -524,10 +548,12 @@ event for audit-trail purposes.</p>
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decision-gate-status-snapshot">Decision-Gate status snapshot</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#where-to-start">Where to start</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#current-implementation-stage">Current implementation stage</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#packages">Packages</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#worked-examples">Worked examples</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-links">Quick links</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decision-gate-status-snapshot">Decision-Gate Status Snapshot</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-these-pages">Building these pages</a></li>
 </ul>
   </nav></div>

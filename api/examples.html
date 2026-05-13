@@ -407,7 +407,10 @@ parity-aware ratio
 <code class="docutils literal notranslate"><span class="pre">r_4</span> <span class="pre">=</span> <span class="pre">α²</span> <span class="pre">⋅</span> <span class="pre">⟨‖L_4^dis‖⟩_t</span> <span class="pre">/</span> <span class="pre">⟨‖L_2^dis‖⟩_t</span></code> exceeds threshold 1.0 in
 the upper sweep range, and <code class="docutils literal notranslate"><span class="pre">run_card</span></code> returns <code class="docutils literal notranslate"><span class="pre">verdict</span> <span class="pre">=</span> <span class="pre">PASS</span></code> with
 all four reproducibility perturbations operational. Path B carries a
-documented finite-env extraction floor; analytic Path A pending.
+documented finite-env extraction floor. The post-verdict analytic
+thermal-Gaussian n=4 route now exists in <code class="docutils literal notranslate"><span class="pre">cbg.tcl_recursion</span></code>, but this
+notebook still demonstrates the live Path B D1 verdict rather than a
+Path A / Path B cross-validation verdict.
 v0.1.2 supersedes the v0.5.0-tagged v0.1.1 verdict that was downgraded
 on review the same day.
 (<a class="reference external" href="https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/examples/dg4_walkthrough.ipynb">source on GitHub</a>)</p>

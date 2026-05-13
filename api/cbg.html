@@ -404,8 +404,11 @@
   <section id="cbg-collabreuergasbarri-effective-hamiltonian-construction">
 <h1><code class="docutils literal notranslate"><span class="pre">cbg</span></code> — Colla–Breuer–Gasbarri effective-Hamiltonian construction<a class="headerlink" href="#cbg-collabreuergasbarri-effective-hamiltonian-construction" title="Link to this heading">#</a></h1>
 <p>Modules implementing the basis-independent operational expression for the
-effective Hamiltonian <em>K</em> (Letter Eqs. (6), (7)) and the recursive
-perturbative expansion (Letter Eq. (15), (16); Companion Eq. (45)).</p>
+effective Hamiltonian <em>K</em> (Letter Eqs. (6), (7)) and the runner-facing
+recursive perturbative expansion (Letter Eq. (15), (16); Companion
+Eq. (45)). The thermal-Gaussian path now supports n ≤ 4 through
+<code class="docutils literal notranslate"><span class="pre">cbg.tcl_recursion</span></code>; broader Entry-2-wide recursion closure is still
+governed by the validity envelope.</p>
 <p>All outputs of this package are coordinate-dependent under the
 <strong>Hayden–Sorce minimal-dissipation gauge</strong> per Sail v0.5 §4. They are
 <strong>not</strong> directly observable Hamiltonians; any plot or table presenting
@@ -420,13 +423,15 @@ Hayden–Sorce minimal-dissipation gauge.</p>
 K = (1 / 2id) Σ_{j,k} [|j⟩⟨k|, L[|k⟩⟨j|]]              (Letter Eq. (7))
 </pre></div>
 </div>
-<p>and records the pending recursive perturbative series surface:</p>
+<p>and records the pending generic recursive perturbative series surface:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">K</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">=</span> <span class="n">Σ_n</span> <span class="n">λ</span><span class="o">^</span><span class="n">n</span> <span class="n">K_n</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>                                    <span class="p">(</span><span class="n">Letter</span> <span class="n">Eq</span><span class="o">.</span> <span class="p">(</span><span class="mi">15</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>with K_n given by Letter Eq. (16) (companion paper Eq. (45)). The full
-K_2-K_4 recursive computation at perturbative_order &gt;= 4 is not yet
-implemented.</p>
+<p>with K_n given by Letter Eq. (16) (companion paper Eq. (45)). The generic
+<code class="docutils literal notranslate"><span class="pre">K_perturbative</span></code> API remains pending. The reviewed thermal-Gaussian
+n &lt;= 4 route lives in <code class="docutils literal notranslate"><span class="pre">cbg.tcl_recursion</span></code> (<cite>K_n_thermal_on_grid</cite>,
+<cite>K_total_thermal_on_grid</cite>) and does not by itself close the Entry-2-wide
+DG-2 recursion claim.</p>
 <dl class="simple">
 <dt>Output discipline (per Sail v0.5 §4):</dt><dd><p>All outputs of this module are COORDINATE-DEPENDENT under the chosen
 gauge. They are not directly observable Hamiltonians. Any plot or
@@ -435,7 +440,7 @@ template from docs/benchmark_protocol.md §1.</p>
 </dd>
 <dt>Validation status (per docs/validity_envelope.md):</dt><dd><p>DG-1 formula implementation                             PASS
 DG-2 structural sub-claims                              PASS
-DG-2 fourth-order K_2-K_4 recursion proper              PENDING</p>
+DG-2 Entry-2-wide K_2-K_4 recursion closure             PENDING</p>
 </dd>
 </dl>
 <dl class="py function">
@@ -628,24 +633,29 @@ Kronecker delta; False otherwise.</p>
 <section id="module-cbg.tcl_recursion">
 <span id="cbg-tcl-recursion"></span><h2><code class="docutils literal notranslate"><span class="pre">cbg.tcl_recursion</span></code><a class="headerlink" href="#module-cbg.tcl_recursion" title="Link to this heading">#</a></h2>
 <p>cbg.tcl_recursion — Recursive construction of the TCL generator L_t.</p>
-<p>Implements the runner-facing low-order TCL terms used by the frozen
-benchmark cards. The full Companion Eqs. (19)-(28) recursion yielding
-L_t = Σ_n λ^n L_n in canonical generalised-Lindblad form at arbitrary
-order remains pending.</p>
+<p>Implements the runner-facing TCL terms used by the frozen benchmark cards
+and the post-verdict DG-4 analytic n=4 thermal-Gaussian route. The full
+Companion Eqs. (19)-(28) recursion yielding L_t = Σ_n λ^n L_n in canonical
+generalised-Lindblad form at arbitrary order remains pending.</p>
 <p>The recursion uses the generalised cumulants D̄(τ_1^k, s_1^{n-k})
 which are evaluated in cbg.cumulants (NOT a Nakajima-Zwanzig
 memory kernel — TCL is time-local; see bath_correlations.py docstring).</p>
-<p>Implemented runner-facing scope covers L_n at orders n in {0, 1, 2}
+<p>Implemented runner-facing scope covers L_n at orders n in {0, 1, 2, 3, 4}
 for thermal Gaussian baths, K_n_thermal_on_grid / K_total_thermal_on_grid,
-and K_total_displaced_on_grid for the Council-cleared coherent-displaced
-DG-2 structural cards B4/B5 at perturbative_order &lt;= 2.</p>
+the n=4 thermal-Gaussian dissipator helpers, and K_total_displaced_on_grid
+for the Council-cleared coherent-displaced DG-2 structural cards B4/B5 at
+perturbative_order &lt;= 2. At n=4 the public route is thermal-Gaussian only
+and flows through the reviewed Phase B/C helpers; non-thermal and displaced
+n=4 scopes remain out of scope.</p>
 <p>DG-4 Phase B.4 threads the two operational quadrature controls
 (<code class="docutils literal notranslate"><span class="pre">quad_limit</span></code> and <code class="docutils literal notranslate"><span class="pre">upper_cutoff_factor</span></code>) through the runner-facing
 thermal/displaced K-grid entry points.</p>
-<p>Pending scope covers L_n at orders n &gt;= 3 (full Companion Eq. (28)
-recursion) and canonical_lindblad_form, the full K + dissipator
-decomposition with traceless jump operators (Companion Eq. (43)).</p>
-<p>Anchor: SCHEMA.md v0.1.2; benchmark cards A3/A4/B4/B5.</p>
+<p>Pending scope covers L_n at orders n &gt;= 5, non-thermal/displaced n=4,
+the generic K_perturbative surface, canonical_lindblad_form, and the full
+K + dissipator decomposition with traceless jump operators (Companion
+Eq. (43)).</p>
+<p>Anchor: SCHEMA.md v0.1.3; benchmark cards A3/A4/B4/B5/D1 and the
+Companion Sec. IV n=4 derived cards under transcriptions/.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="cbg.tcl_recursion.interaction_picture">
 <span class="sig-prename descclassname"><span class="pre">cbg.tcl_recursion.</span></span><span class="sig-name descname"><span class="pre">interaction_picture</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">H_S</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/tcl_recursion.html#interaction_picture"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.tcl_recursion.interaction_picture" title="Link to this definition">#</a></dt>
@@ -669,7 +679,7 @@ to the caller.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cbg.tcl_recursion.L_n_thermal_at_time">
-<span class="sig-prename descclassname"><span class="pre">cbg.tcl_recursion.</span></span><span class="sig-name descname"><span class="pre">L_n_thermal_at_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_hamiltonian</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coupling_operator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D_bar_2_array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/tcl_recursion.html#L_n_thermal_at_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.tcl_recursion.L_n_thermal_at_time" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cbg.tcl_recursion.</span></span><span class="sig-name descname"><span class="pre">L_n_thermal_at_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_hamiltonian</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coupling_operator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D_bar_2_array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_cutoff_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quad_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/tcl_recursion.html#L_n_thermal_at_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.tcl_recursion.L_n_thermal_at_time" title="Link to this definition">#</a></dt>
 <dd><p>Return a callable that computes L_n[X] at time t_grid[t_idx] for
 a thermal Gaussian bath.</p>
 <p>Implements:</p>
@@ -685,21 +695,40 @@ trapezoidal rule is inlined for efficiency (avoids 4 separate
 scalar integrations per matrix entry).</p></li>
 <li><p>n = 3: L_3[X] = 0 (thermal Gaussian D̄_1 = D̄_3 = 0; see DG-4
 Phase B.2 derivation in the n = 3 branch below).</p></li>
-<li><p>n = 4: pending; raises NotImplementedError. Non-zero in
-general for [A, A_I(τ)] ≠ 0; zero for σ_z by Feynman-Vernon.</p></li>
+<li><p>n = 4: routes to <code class="docutils literal notranslate"><span class="pre">_L_4_thermal_at_time_apply</span></code> (DG-4 Phase C
+private helper). REQUIRES <code class="docutils literal notranslate"><span class="pre">bath_state</span></code> and <code class="docutils literal notranslate"><span class="pre">spectral_density</span></code>
+kwargs. The §3.2 commuting-case guard inside the helper
+short-circuits to exact-zero when <code class="docutils literal notranslate"><span class="pre">[H_S,</span> <span class="pre">A]</span> <span class="pre">=</span> <span class="pre">0</span></code> (Feynman-
+Vernon Gaussian-bath truncation for pure dephasing); otherwise
+the literal θ-aware integration of Eqs. (69)-(73) runs in
+full. Phase D public-route exposure: see card
+<code class="docutils literal notranslate"><span class="pre">phase-d-public-route-card_v0.1.0.md</span></code>.</p></li>
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Perturbative order; one of 0, 1, 2 in the implemented low-order path.</p></li>
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Perturbative order; one of {0, 1, 2, 3, 4} in the implemented
+thermal Gaussian path. n ≥ 5 raises out-of-scope.</p></li>
 <li><p><strong>t_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Index into t_grid at which to evaluate L_n.</p></li>
 <li><p><strong>t_grid</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>n_t</em><em>,</em><em>)</em>) – Time points; must satisfy t_grid[0] = 0 for the integral lower
 bound to be the physical t_start = 0 (the cards’ convention).</p></li>
 <li><p><strong>system_hamiltonian</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>d</em><em>, </em><em>d</em><em>)</em>) – H_S and A.</p></li>
 <li><p><strong>coupling_operator</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>d</em><em>, </em><em>d</em><em>)</em>) – H_S and A.</p></li>
 <li><p><strong>D_bar_2_array</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>n_t</em><em>, </em><em>n_t</em><em>)</em><em>, </em><em>dtype complex</em>) – Precomputed connected two-point on the time grid; required for
-n = 2; ignored for n in {0, 1}. Use cbg.cumulants.D_bar_2 to
-construct.</p></li>
+n = 2; ignored for n in {0, 1, 3, 4}. Use cbg.cumulants.D_bar_2
+to construct.</p></li>
+<li><p><strong>bath_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, </em><em>keyword-only</em>) – Required at n = 4 (Phase D contract). Forwarded to
+<code class="docutils literal notranslate"><span class="pre">_L_4_thermal_at_time_apply</span></code>. Ignored at n ∈ {0, 1, 2, 3}.
+Non-thermal <code class="docutils literal notranslate"><span class="pre">bath_state.family</span></code> at n = 4 raises
+<code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code> pointing at <code class="docutils literal notranslate"><span class="pre">K_total_displaced_on_grid</span></code>.</p></li>
+<li><p><strong>spectral_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, </em><em>keyword-only</em>) – Required at n = 4 (Phase D contract). Forwarded to
+<code class="docutils literal notranslate"><span class="pre">_L_4_thermal_at_time_apply</span></code>. Ignored at n ∈ {0, 1, 2, 3}.
+Non-thermal <code class="docutils literal notranslate"><span class="pre">bath_state.family</span></code> at n = 4 raises
+<code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code> pointing at <code class="docutils literal notranslate"><span class="pre">K_total_displaced_on_grid</span></code>.</p></li>
+<li><p><strong>upper_cutoff_factor</strong> (<em>float / int</em><em>, </em><em>keyword-only</em>) – Forwarded to <code class="docutils literal notranslate"><span class="pre">_L_4_thermal_at_time_apply</span></code> at n = 4; ignored
+at n ∈ {0, 1, 2, 3}.</p></li>
+<li><p><strong>quad_limit</strong> (<em>float / int</em><em>, </em><em>keyword-only</em>) – Forwarded to <code class="docutils literal notranslate"><span class="pre">_L_4_thermal_at_time_apply</span></code> at n = 4; ignored
+at n ∈ {0, 1, 2, 3}.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -710,9 +739,11 @@ construct.</p></li>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><strong>NotImplementedError</strong></a> – For n = 4 (pending; see derivation note in the n = 4 branch).
-    For n &gt;= 5 (out of DG-4 Phase B scope).</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – For invalid arguments.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><strong>NotImplementedError</strong></a> – For n ≥ 5 (out of DG-4 v0.1.5 scope).
+    For n = 4 with <code class="docutils literal notranslate"><span class="pre">bath_state.family</span> <span class="pre">!=</span> <span class="pre">&quot;thermal&quot;</span></code> (use
+    <code class="docutils literal notranslate"><span class="pre">K_total_displaced_on_grid</span></code> for displaced cases).</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – For invalid arguments, including n = 4 without the required
+    <code class="docutils literal notranslate"><span class="pre">bath_state</span></code> / <code class="docutils literal notranslate"><span class="pre">spectral_density</span></code> kwargs.</p></li>
 </ul>
 </dd>
 </dl>
@@ -728,25 +759,30 @@ a caller-supplied HS-orthonormal basis).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Perturbative order; one of 0, 1, 2, 3 in the currently implemented
-thermal path. n = 3 returns zeros for any system coupling under a
-thermal Gaussian bath (Phase B.2; see L_n_thermal_at_time docstring).
-n = 4 is the pending Phase B follow-up: the parity-class theorem
-(Letter App. D) plus the Feynman-Vernon Gaussian-bath result
-predicts K_4 = 0 for A = σ_z and K_4 ≠ 0 (∝ σ_z) for A = σ_x; the
-latter is the leading-order convergence-detection signal D1 v0.1.2
-targets.</p></li>
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Perturbative order; one of {0, 1, 2, 3, 4} in the currently
+implemented thermal Gaussian path. n = 3 returns zeros (Phase
+B.2; see L_n_thermal_at_time docstring). n = 4 (Phase D public
+route) routes through <cite>_L_4_thermal_at_time_apply</cite>: the §3.2
+commuting-case guard short-circuits to K_4 = 0 for [H_S, A] = 0
+(e.g. A = σ_z with H_S = (ω/2)σ_z, by the parity-class theorem
++ Feynman-Vernon); for non-commuting A (e.g. σ_x) the literal
+θ-aware Eqs. (69)-(73) integration produces a non-zero K_4.
+n ≥ 5 raises out-of-scope.</p></li>
 <li><p><strong>t_grid</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>n_t</em><em>,</em><em>)</em>) – Time points.</p></li>
 <li><p><strong>system_hamiltonian</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>d</em><em>, </em><em>d</em><em>)</em>) – H_S and A.</p></li>
 <li><p><strong>coupling_operator</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>d</em><em>, </em><em>d</em><em>)</em>) – H_S and A.</p></li>
 <li><p><strong>bath_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Card per-case bath_state and bath_spectral_density mappings.
-Used only for n = 2 (where D̄_2 is built); ignored for n in {0, 1}.</p></li>
+Used for n = 2 (D̄_2 construction) and n = 4 (Phase D route to
+<cite>_L_4_thermal_at_time_apply</cite>); ignored for n in {0, 1, 3}.</p></li>
 <li><p><strong>spectral_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Card per-case bath_state and bath_spectral_density mappings.
-Used only for n = 2 (where D̄_2 is built); ignored for n in {0, 1}.</p></li>
+Used for n = 2 (D̄_2 construction) and n = 4 (Phase D route to
+<cite>_L_4_thermal_at_time_apply</cite>); ignored for n in {0, 1, 3}.</p></li>
 <li><p><strong>basis</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>(</em><em>d</em><em>, </em><em>d</em><em>) </em><em>ndarrays</em><em>, </em><em>optional</em>) – HS-orthonormal basis for Letter Eq. (6). Defaults to the
 matrix-unit basis at the system dimension d.</p></li>
-<li><p><strong>upper_cutoff_factor</strong> (<em>optional</em>) – Quadrature controls forwarded through D̄_2 construction for n = 2.</p></li>
-<li><p><strong>quad_limit</strong> (<em>optional</em>) – Quadrature controls forwarded through D̄_2 construction for n = 2.</p></li>
+<li><p><strong>upper_cutoff_factor</strong> (<em>optional</em>) – Quadrature controls forwarded through D̄_2 construction for
+n = 2 and forwarded to <cite>_L_4_thermal_at_time_apply</cite> for n = 4.</p></li>
+<li><p><strong>quad_limit</strong> (<em>optional</em>) – Quadrature controls forwarded through D̄_2 construction for
+n = 2 and forwarded to <cite>_L_4_thermal_at_time_apply</cite> for n = 4.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -771,12 +807,15 @@ matrix-unit basis at the system dimension d.</p></li>
 <p>For purely unitary L_n with K_n = H, the dissipator vanishes
 identically (the Risk R8 unitary-recovery oracle gating Phase B.3
 acceptance). For thermal Gaussian baths n ∈ {0, 1, 3} all give the
-zero superoperator; n = 2 carries the leading dissipator.</p>
+zero superoperator; n = 2 carries the leading dissipator; n = 4
+routes through <cite>_L_4_thermal_at_time_apply</cite> (Phase D) and gives a
+non-zero dissipator for non-commuting A (e.g. σ_x), exact zero
+via the §3.2 commuting-case guard for σ_z.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Perturbative order; one of {0, 1, 2, 3}. n=4 raises (gated by
-L_n_thermal_at_time(n=4)); n&gt;=5 is out of scope.</p></li>
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Perturbative order; one of {0, 1, 2, 3, 4} on the thermal
+Gaussian path. n &gt;= 5 raises (out of DG-4 v0.1.5 scope).</p></li>
 <li><p><strong>t_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Index into t_grid at which to evaluate.</p></li>
 <li><p><strong>t_grid</strong> (<em>as in K_n_thermal_on_grid.</em>)</p></li>
 <li><p><strong>system_hamiltonian</strong> (<em>as in K_n_thermal_on_grid.</em>)</p></li>
@@ -815,8 +854,12 @@ plan v0.1.3 §1.1 designates as the convergence-ratio numerator
 (D1 v0.1.2’s metric).</p>
 <p>For thermal Gaussian baths under the runner-facing thermal path,
 n ∈ {0, 1, 3} return all zeros and n = 2 returns the dephasing /
-relaxation dissipator’s norm at each grid time. n = 4 is deferred
-along with L_n_thermal_at_time(n=4).</p>
+relaxation dissipator’s norm at each grid time. n = 4 (Phase D
+public route, commit <cite>f599751</cite>) propagates through
+<cite>L_n_thermal_at_time(n=4)</cite> and returns a finite (n_t,) array; the
+§3.2 commuting-case guard inside <cite>_L_4_thermal_at_time_apply</cite>
+yields exact zero for [H_S, A] = 0 (e.g. σ_z dephasing) and a
+finite non-zero norm for non-commuting A (e.g. σ_x).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -919,13 +962,15 @@ on the time grid, ready for comparison against a card’s expected_outcome.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>N_card</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Perturbative cap from the card’s frozen_parameters.truncation
-.perturbative_order; must be in {0, 1, 2} for the implemented
-low-order path.</p></li>
+.perturbative_order; must be in {0, 1, 2, 3, 4} on the thermal
+Gaussian path. N_card ≥ 5 raises out-of-scope.</p></li>
 <li><p><strong>t_grid</strong> (<em>ndarray</em>) – See <code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid</span></code>.</p></li>
 <li><p><strong>system_hamiltonian</strong> (<em>ndarray</em>) – See <code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid</span></code>.</p></li>
 <li><p><strong>coupling_operator</strong> (<em>ndarray</em>) – See <code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid</span></code>.</p></li>
-<li><p><strong>bath_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – See <code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid</span></code>.</p></li>
-<li><p><strong>spectral_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – See <code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid</span></code>.</p></li>
+<li><p><strong>bath_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – See <code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid</span></code>. Also forwarded to
+<code class="docutils literal notranslate"><span class="pre">L_n_thermal_at_time</span></code> at n = 4 (Phase D public route).</p></li>
+<li><p><strong>spectral_density</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – See <code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid</span></code>. Also forwarded to
+<code class="docutils literal notranslate"><span class="pre">L_n_thermal_at_time</span></code> at n = 4 (Phase D public route).</p></li>
 <li><p><strong>basis</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>, </em><em>optional</em>) – See <code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid</span></code>.</p></li>
 <li><p><strong>upper_cutoff_factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – See <code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid</span></code>.</p></li>
 <li><p><strong>quad_limit</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – See <code class="docutils literal notranslate"><span class="pre">K_n_thermal_on_grid</span></code>.</p></li>
@@ -944,10 +989,13 @@ low-order path.</p></li>
 <dt class="sig sig-object py" id="cbg.tcl_recursion.L_n">
 <span class="sig-prename descclassname"><span class="pre">cbg.tcl_recursion.</span></span><span class="sig-name descname"><span class="pre">L_n</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cbg/tcl_recursion.html#L_n"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cbg.tcl_recursion.L_n" title="Link to this definition">#</a></dt>
 <dd><p>Compute the n-th order TCL generator term per Companion Eq. (28).</p>
-<p>Thin wrapper: routes to L_n_thermal_at_time when called with
-the canonical (t_idx, t_grid, system_hamiltonian, coupling_operator,
-D_bar_2_array) kwargs and a thermal bath state. Other configurations
-raise NotImplementedError with explicit pending-recursion routing.</p>
+<p>Thin wrapper: routes to L_n_thermal_at_time when called with the
+canonical (t_idx, t_grid, system_hamiltonian, coupling_operator,
+D_bar_2_array) kwargs and a thermal bath state. For n = 4 (Phase D
+public route) the shim also forwards bath_state / spectral_density
+/ upper_cutoff_factor / quad_limit kwargs to L_n_thermal_at_time.
+Other configurations raise NotImplementedError with explicit
+routing pointers.</p>
 <p>Callers should generally prefer L_n_thermal_at_time (explicit
 parameters) or K_n_thermal_on_grid (higher-level batched form) over
 this generic-stub shim.</p>

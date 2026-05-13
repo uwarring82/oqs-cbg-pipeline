@@ -12,10 +12,10 @@ DG-1 Card A4, DG-2 Card B5-conv-registry, DG-3 Card C2, and DG-4 Card
 D1 v0.1.2 (PASS via picture-fixed Path B numerical L_4, 2026-05-06,
 superseding the v0.5.0-tagged v0.1.1 verdict that was downgraded on
 review the same day). `fano_anderson` is referenced by DG-5 Card E1 as a
-scope-definition entry; `run_card(E1)` raises
-`ScopeDefinitionNotRunnableError` because the model factory, the HMF
-reference, and fermionic-bath support in `cbg.bath_correlations` are not
-yet implemented. `jaynes_cummings` remains a scaffold for future plans.
+scope-definition entry; its public functions are callable refusal stubs
+that raise `ScopeDefinitionNotRunnableError` until the model dynamics,
+HMF reference, and fermionic-bath support are implemented. `jaynes_cummings`
+has the same import-clean refusal-stub shape for future plans.
 
 ## `models.pure_dephasing`
 
