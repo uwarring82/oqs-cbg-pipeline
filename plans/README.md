@@ -76,4 +76,4 @@ This index is the canonical source of truth for *current* plan status. Updating 
 
 ---
 
-*Last updated: 2026-05-11 (DG-4 verdict remains D1 v0.1.2 PASS via picture-fixed Path B numerical L_4; active DG-4 follow-up plan is v0.1.5, **frozen** via Council-3 review the same day; Phase A transcription artifact scaffolded). CC-BY-4.0 (see ../LICENSE-docs).*
+*Last updated: 2026-05-13 (DG-4 verdict remains D1 v0.1.2 PASS via picture-fixed Path B numerical L_4; active DG-4 follow-up plan is v0.1.5, **frozen** via Council-3 review on 2026-05-11; Phase A transcription artifact released as v0.1.1 on 2026-05-12, with post-release docs-integrity cleanups on 2026-05-12 and 2026-05-13; Phase B code remains gated on the row-2.3 chain-reversal-and-swap, direct Eqs. (69)–(73), and the §2.8 small-grid verification). CC-BY-4.0 (see ../LICENSE-docs).*
