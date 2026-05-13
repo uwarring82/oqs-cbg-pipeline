@@ -38,9 +38,14 @@ Path B numerical L_4 (2026-05-06), superseding the v0.1.1 verdict at tag
 `v0.5.0` that was downgraded on review the same day. The literal fourth-order
 CBG recursion (analytic K_2-K_4) remains a separate work track within DG-2
 that does not block other Decision Gates; analytic Path A for L_4 is the
-natural deliverable that would unblock both DG-2's literal fourth-order
-recursion milestone and DG-4 cross-validation against the Path B v0.1.2
-verdict.
+natural deliverable for DG-2's literal fourth-order recursion milestone.
+For DG-4 the Phase E Track 5.C Path B floor audit (2026-05-13) found Path B
+at the D1 production fixture is `floor-dominated` (24% drift under
+truncation tightening), so analytic Path A landing alone no longer closes
+the DG-4 cross-validation against Path B as the reference; DG-4's Phase E
+now routes through Path A as single-sided ground truth, DG-3 Tier-2.A
+(third method) as Path B's replacement, or a permanent `unclassified-pilot`
+state. The DG-4 D1 v0.1.2 PASS verdict is unchanged by the 5.C audit.
 
 **How to apply:** When asked to "advance DG-2," the only remaining work is
 the literal K_2-K_4 fourth-order recursion (Path A analytic preferred). Cite

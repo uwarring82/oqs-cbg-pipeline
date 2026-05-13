@@ -52,10 +52,14 @@ and their
   `r_4 = α² ⋅ ⟨‖L_4^dis‖⟩_t / ⟨‖L_2^dis‖⟩_t` exceeds threshold 1.0 in
   the upper sweep range, and `run_card` returns `verdict = PASS` with
   all four reproducibility perturbations operational. Path B carries a
-  documented finite-env extraction floor. The post-verdict analytic
-  thermal-Gaussian n=4 route now exists in `cbg.tcl_recursion`, but this
-  notebook still demonstrates the live Path B D1 verdict rather than a
-  Path A / Path B cross-validation verdict.
+  documented finite-env extraction floor; the Phase E 5.C floor audit
+  (2026-05-13) quantified this at the D1 production fixture and landed
+  cause label `floor-dominated` (24% drift under truncation tightening
+  with axes pulling in inconsistent directions), so the notebook's
+  Path B values are the live verdict but are **not** a tight analytic
+  estimate. The post-verdict analytic thermal-Gaussian n=4 route now
+  exists in `cbg.tcl_recursion`; Phase E routing has pivoted away from
+  a direct Path A / Path B agreement claim.
   v0.1.2 supersedes the v0.5.0-tagged v0.1.1 verdict that was downgraded
   on review the same day.
   ([source on GitHub](https://github.com/uwarring82/oqs-cbg-pipeline/blob/main/examples/dg4_walkthrough.ipynb))

@@ -139,6 +139,45 @@ package release is made. The DG-anchoring tags are `v0.2.0` (DG-1 PASS) and
   K_2-K_4 recursion verdict.
 - Landing page and status surfaces refreshed (`2bf830d`) to reflect the
   post-verdict DG-4 Path A artefact chain.
+- DG-4 Phase E Track 5.C **frozen card v0.1.0** (`bbdc237`): scopes the
+  Path B finite-env floor audit at the D1 σ_x fixture; one-axis-at-a-time
+  topology anchored at `(n_bath_modes = 4, n_levels_per_mode = 3,
+  omega_max_factor = 30)`; cause-label ladder `truncation-converged` /
+  `borderline` / `floor-dominated`; routing matrix; §5.3 Hilbert-witness
+  acceptance criterion; §6 R1 preflight estimator + hard process
+  timeout. Replaces the v0.1.0-draft after three steward freeze blockers
+  resolved (production cutoff anchor `30` added to omega sweep,
+  single-Richardson-fit-per-truncation language, one-axis-at-a-time
+  topology + Hilbert-witness requirement made explicit).
+- DG-4 Phase E Track 5.C **audit driver + smoke gate** (`ced5276`):
+  `benchmarks/path_b_floor_audit.py` and
+  `tests/test_path_b_floor_audit.py` (7 tests; ~1 s) — `TruncationConfig`
+  / `FloorAuditPoint` dataclasses, `predict_wall_time_seconds()`
+  preflight estimator, `iter_audit_grid()`, `evaluate_point()`,
+  `run_audit()` driver, JSON writer, `_compute_summary()` cause-label
+  eligibility helper, CLI entry point. Card §5.1 smoke test runs the
+  `(4, 3, omega_max_factor=10)` corner end-to-end on a reduced grid.
+- DG-4 Phase E Track 5.C **production run + cause label** (`b4bda20`):
+  hard process timeout wrapper (`evaluate_point_with_timeout`) via
+  `multiprocessing.Process` (`spawn` + grace-then-kill); preflight
+  exponent recalibrated to `PREFLIGHT_D_JOINT_EXPONENT = 2.2` (the
+  initial cubic guess was 2.5–3× pessimistic because
+  `exact_finite_env.propagate` is matrix-vector per RK step, not
+  matrix-matrix); 9 of 10 grid configs evaluated (one preflight-skipped
+  at `d_joint = 13122`); three Hilbert witnesses `(4, 4)`, `(4, 5)`,
+  `(6, 3)`; **max drift 24.16%** at `(6, 3)` Hilbert witness. Cause
+  label: **`floor-dominated`**. Path B at the D1 production fixture is
+  not a stable cross-validation reference: the three truncation knobs
+  (`omega_max_factor`, `n_levels_per_mode`, `n_bath_modes`) drive
+  `coefficient_ratio` in mutually inconsistent directions (omega and
+  Fock both down; mode count up by 24%). Per 5.C card §4.4 routing,
+  Phase E now requires Path A as single-sided ground truth, DG-3
+  Tier-2.A (HEOM / TEMPO third method) as Path B's replacement, or a
+  permanent `unclassified-pilot` state. **D1 v0.1.2 PASS verdict is
+  unchanged.** Result JSON
+  [`benchmarks/results/D1_path-b-floor-audit_v0.1.0_result.json`](benchmarks/results/D1_path-b-floor-audit_v0.1.0_result.json);
+  logbook entry
+  [`2026-05-13_dg-4-phase-e-5c-path-b-floor-audit-floor-dominated.md`](logbook/2026-05-13_dg-4-phase-e-5c-path-b-floor-audit-floor-dominated.md).
 
 ## [v0.5.0 git tag] — 2026-05-06
 

@@ -2,7 +2,7 @@
 
 **Layer:** Repository protective scaffolding
 **Anchor:** Sail v0.5 §11 (four explicit content requirements)
-**Last updated:** 2026-05-06 (DG-4 PASS at D1 v0.1.2 via picture-fixed Path B numerical L_4; supersedes the v0.1.1 verdict that was downgraded on review the same day)
+**Last updated:** 2026-05-13 (Phase E Track 5.C Path B floor audit landed `floor-dominated`; D1 v0.1.2 PASS unchanged. Prior verdict update: 2026-05-06 DG-4 PASS at D1 v0.1.2 via picture-fixed Path B numerical L_4; supersedes the v0.1.1 verdict downgraded on review the same day.)
 
 ---
 
@@ -114,7 +114,7 @@ A MEDIUM audit-completeness gap was also recorded — per-α + per-α-per-pertur
 
 The supersedure is recorded in [`logbook/2026-05-06_dg-4-pass-path-b-superseded.md`](../logbook/2026-05-06_dg-4-pass-path-b-superseded.md); the v0.1.2 verdict log is at [`logbook/2026-05-06_dg-4-pass-path-b-v012.md`](../logbook/2026-05-06_dg-4-pass-path-b-v012.md). The `v0.5.0` git tag is left as immutable history of the v0.1.1 commit; v0.1.2 is the live verdict.
 
-Path A (Companion Sec. IV analytic) remains the preferred deliverable for machine-precision L_4 evaluation and follows the v0.1.2 verdict.
+Path A (Companion Sec. IV analytic) remains the preferred deliverable for machine-precision L_4 evaluation and follows the v0.1.2 verdict. The Phase E Track 5.C Path B floor audit (2026-05-13; frozen card v0.1.0 at `bbdc237`, executed at commit `b4bda20`; result JSON at [`benchmarks/results/D1_path-b-floor-audit_v0.1.0_result.json`](../benchmarks/results/D1_path-b-floor-audit_v0.1.0_result.json)) characterised Path B's reference at the D1 production fixture and landed cause label **`floor-dominated`**: the production `coefficient_ratio = 47.4` shifts by **24%** under truncation tightening across `omega_max_factor`, `n_levels_per_mode`, and `n_bath_modes`, with the three axes pulling in **mutually inconsistent directions**. Per 5.C card §4.4, this rules out using Path B as the analytic-comparison reference for a Phase E classification verdict; Phase E routing now requires Path A as single-sided ground truth, DG-3 Tier-2.A (third method) as Path B's replacement, or a permanent `unclassified-pilot` state. The D1 v0.1.2 PASS verdict is unchanged.
 
 ## 5. DG-5 status tracking
 
