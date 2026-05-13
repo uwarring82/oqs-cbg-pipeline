@@ -18,7 +18,8 @@ These artifacts are not source transcriptions in their own right; they are repos
 
 | Card | Version | Status | Purpose |
 |---|---|---|---|
-| [DG-4 Phase B n=4 small-grid verification card](colla-breuer-gasbarri-2025_companion-sec-iv_l4_n4-small-grid-verification-card_v0.1.0.md) | v0.1.0 | frozen-pre-implementation (2026-05-13) | Operationalises the §2.8 small-grid verification gate carried by the released Companion Sec. IV L_4 transcription v0.1.1. Pins a thermal Gaussian ohmic bath fixture, two boundary-delta-mirror time grids, the row-2.3 swap + Eq. (22) + Wick substitution rules, and by-hand closed-form D̄ reference values for all 5 × 2 = 10 (case, grid) pairs at `n = 4`. The Phase B direct evaluator must reproduce these values at `atol = rtol = 1e-10` before Phase C oracles run. |
+| [DG-4 Phase B n=4 small-grid verification card](colla-breuer-gasbarri-2025_companion-sec-iv_l4_n4-small-grid-verification-card_v0.1.0.md) | v0.1.0 | frozen-pre-implementation (2026-05-13); helper landed at commit `becccf9` and 22-test acceptance gate passes | Operationalises the §2.8 small-grid verification gate carried by the released Companion Sec. IV L_4 transcription v0.1.1. Pins a thermal Gaussian ohmic bath fixture, two boundary-delta-mirror time grids, the row-2.3 swap + Eq. (22) + Wick substitution rules, and by-hand closed-form D̄ reference values for all 5 × 2 = 10 (case, grid) pairs at `n = 4`. The Phase B direct evaluator reproduces these values at `atol = rtol = 1e-10`. |
+| [DG-4 Phase C physics-oracles card](colla-breuer-gasbarri-2025_companion-sec-iv_l4_phase-c-physics-oracles-card_v0.1.0.md) | v0.1.0 | frozen-pre-implementation (2026-05-13) | Operationalises work plan v0.1.5 §4 Phase C as four executable oracle gates against the assembled-L_4 private helper that consumes the Phase B `_D_bar_4_companion`. Pins the API contract for `_L_4_thermal_at_time_apply`, the D1 v0.1.2 baseline-style fixture (σ_x coupling, ω=1.0, ω_c=10.0, T=0.5, α=0.02), a small time grid (N=11 over t ∈ [0, 2]), and four oracle gates: σ_z zero at `atol=1e-10` (steward-tightenable), σ_x signal as a structural `1e-6 ≤ ‖L_4^dis‖_F ≤ 1e6` bounding box with first-run measurement logged for regression, L_0^dis=0 and n=2-regression at `atol=1e-12`, and L_1=L_3=0 at `atol=1e-12`. Public `L_n_thermal_at_time(n=4)` remains a `NotImplementedError` until Phase D. |
 
 ### Superseded transcriptions (retained for audit)
 
@@ -41,4 +42,4 @@ A transcription carries no independent scientific authority. Its authority is li
 
 ---
 
-*Last updated: 2026-05-13 (Companion Sec. IV L4 transcription released at v0.1.1; v0.1.0 retained as superseded pre-release predecessor; DG-4 Phase B n=4 small-grid verification card v0.1.0 frozen pre-implementation as the §2.8 gate). CC-BY-4.0 (see ../LICENSE-docs).*
+*Last updated: 2026-05-13 (Companion Sec. IV L4 transcription released at v0.1.1; v0.1.0 retained as superseded pre-release predecessor; DG-4 Phase B n=4 small-grid verification card v0.1.0 frozen and helper landed at commit `becccf9`; DG-4 Phase C physics-oracles card v0.1.0 frozen pre-implementation as the work plan §4 Phase C gate). CC-BY-4.0 (see ../LICENSE-docs).*
