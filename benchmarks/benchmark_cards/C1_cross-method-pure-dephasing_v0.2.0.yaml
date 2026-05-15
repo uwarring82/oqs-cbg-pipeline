@@ -1,0 +1,232 @@
+# DG-3 Benchmark Card C1 v0.2.0 — Cross-method validation, pure-dephasing model,
+#                                  thermal-only, triple-method (HEOM as third method)
+#
+# Anchor: Sail v0.5 §9 (DG-3 failure-asymmetry clearance, §5 Tier 3);
+#         docs/benchmark_protocol.md §2, §3;
+#         SCHEMA.md v0.1.4 (third-method fields);
+#         DG-3 work plan v0.1.1 §§2, 3, 4 Phase C
+# Phase: B (frozen-awaiting-run; supersedes C1 v0.1.0)
+#
+# This card supersedes C1 v0.1.0 (frozen-awaiting-run; baseline-pair runner
+# reachability landed but no admissible PASS verdict). v0.2.0 extends the
+# baseline pair (exact_finite_env + qutip_reference) with HEOM via QuTiP 5's
+# in-tree qutip.solver.heom.HEOMSolver as a third reference method drawn
+# from the bath-hierarchy-truncation failure-mode class (non-overlapping
+# with finite-system and solver-default per docs/benchmark_protocol.md §2).
+#
+# Scope cut from v0.1.0:
+#   - displaced_bath_delta_omega_c_cross_method test_case is NOT carried.
+#     The HEOM Phase B module (benchmarks/heom_reference.py v0.1.0) supports
+#     only thermal handlers; extending HEOM to the coherent-displaced
+#     fixture is a separate handler-expansion task that would blur whether
+#     a failure originates in HEOM itself, the cf-fit residual on the bath
+#     correlator, or the coherent-displacement implementation. The displaced
+#     fixture remains tractable for a future C1 v0.3.0 once the HEOM module
+#     ships displaced handlers; see failure_mode_log entry 0.
+#
+# Gating-pair rationale (comparison.gating_pair):
+#   exact_finite_env vs heom_reference is the gating pair because both
+#   methods capture the full non-Markovian dephasing dynamics through
+#   different mechanisms (finite-mode unitary evolution vs hierarchy-of-
+#   auxiliaries with multi-exponential bath fit). Agreement between them
+#   would constitute the failure-asymmetry clearance required by Sail v0.5
+#   §5 Tier 3. qutip_reference (Markov Lindblad) is recorded as auxiliary
+#   evidence in result.notes but does not gate the verdict, since Markovian
+#   defaults are not expected to match the non-Markovian methods at short
+#   times.
+
+# ─── Top-level metadata ───────────────────────────────────────────────────────
+
+schema_version: "v0.1.4"
+card_id: "C1"
+version: "v0.2.0"
+date: "2026-05-15"
+dg_target: "DG-3"
+ledger_entry: "CL-2026-005 v0.4 Entry 3 (cross-method corroboration, failure-asymmetry clearance)"
+model: "pure_dephasing"
+status: "frozen-awaiting-run"
+supersedes: "C1_cross-method-pure-dephasing_v0.1.0.yaml"
+license: "CC-BY-4.0 (LICENSE-docs)"
+
+# ─── Gauge block ──────────────────────────────────────────────────────────────
+
+gauge:
+  gauge: "hayden-sorce-minimal-dissipation"
+  coordinate_dependent: true
+  direct_observable: false
+  gauge_alignment_required_for_comparison:
+    - "hmf"
+    - "polaron"
+    - "mori"
+
+# ─── Frozen parameters ────────────────────────────────────────────────────────
+
+frozen_parameters:
+
+  model:
+    model_kind: "dynamical"
+    system_dimension: 2
+    system_hamiltonian: "(omega / 2) * sigma_z"
+    coupling_operator: "sigma_z"
+    bath_type: "bosonic_linear"
+    bath_spectral_density:
+      family: "ohmic"
+      cutoff_frequency: 10.0       # omega-units; inherited from A3 v0.1.1 via C1 v0.1.0
+      coupling_strength: 0.05      # ohmic alpha; inherited from A3 v0.1.1 via C1 v0.1.0
+    parameters:
+      omega: 1.0                   # system Bohr frequency; matches B4 v0.1.0 via C1 v0.1.0
+    test_cases:
+
+      - name: "thermal_bath_cross_method"
+        description: |
+          Thermal bosonic bath at T = 0.5 (omega-units). Three reference
+          methods are run on the SAME frozen model specification:
+            - exact_finite_env (finite-system class);
+            - qutip_reference (solver-default class, Markov Lindblad);
+            - heom_reference (bath-hierarchy-truncation class, QuTiP 5
+              in-tree HEOMSolver with cbg correlator + CF NLSQ fit).
+          The gating pair is (exact_finite_env, heom_reference): both capture
+          the full non-Markovian dephasing dynamics, so genuine agreement
+          would clear the Sail v0.5 §5 Tier 3 failure-asymmetry requirement.
+        bath_state:
+          family: "thermal"
+          temperature: 0.5
+        expected_outcome: |
+          The gating pair (exact_finite_env, heom_reference) agrees on the
+          reduced density matrix rho(t) to within
+          inter_method_relative_frobenius <= 1.0e-6. The auxiliary
+          qutip_reference vs exact_finite_env discrepancy (Markov vs full
+          non-Markovian) is expected to be O(1e-1) and is recorded in
+          result.notes but does not gate the verdict.
+        verifies:
+          - "DG-3 failure-asymmetry clearance: exact_finite_env (finite-system) vs heom_reference (bath-hierarchy-truncation)"
+          - "Tier 3 non-overlapping failure-mode triple: finite-system / solver-default / bath-hierarchy-truncation"
+        reference: "Sail v0.5 §9 DG-3, §5 Tier 3; DG-3 work plan v0.1.1 §2.2"
+
+  truncation:
+    perturbative_order: 2
+    basis: "matrix_unit"
+    bath_mode_cutoff: 1024         # inherited from A3 v0.1.1 via C1 v0.1.0
+
+  numerical:
+    time_grid:
+      t_start: 0.0
+      t_end: 20.0
+      n_points: 200
+      scheme: "uniform"
+    integration_tolerance:
+      relative: 1.0e-10
+      absolute: 1.0e-12
+    solver: "scipy_dop853"
+
+  comparison:
+    reference: "triple-method: exact_finite_env vs qutip_reference vs heom_reference"
+    target_observable: "reduced_density_matrix"
+    error_metric: "inter_method_relative_frobenius"
+    threshold: 1.0e-6
+    projection_scheme: null
+    third_method: "heom"
+    third_method_module: "benchmarks.heom_reference"
+    gating_pair:
+      - "exact_finite_env"
+      - "heom_reference"
+    heom_options:                  # frozen module knobs for reproducibility
+      t_max_factor: 30.0           # cbg correlator sampled on [0, 30/omega_c]
+      n_pts_correlator: 1024
+      cf_target_rmse: 5.0e-3       # CF NLSQ fit target RMSE
+      cf_Nr_max: 3                 # max real exponents in the fit
+      cf_Ni_max: 2                 # max imaginary exponents in the fit
+      max_depth: 3                 # HEOMSolver hierarchy depth
+
+# ─── Acceptance criterion ─────────────────────────────────────────────────────
+
+acceptance_criterion:
+  reference: "triple-method: exact_finite_env vs qutip_reference vs heom_reference"
+  observable: "reduced_density_matrix"
+  error_metric: "inter_method_relative_frobenius"
+  threshold: 1.0e-6
+  projection_scheme: null
+  rationale: |
+    PASS iff the gating pair (exact_finite_env, heom_reference) satisfies the
+    inter-method agreement condition at the frozen 1.0e-6 threshold.
+
+    The runner produces three reduced-density-matrix trajectories per test
+    case (rho_exact, rho_qutip, rho_heom) and computes all three pairwise
+    inter_method_relative_frobenius errors. Only the gating-pair error
+    gates the verdict; the remaining two pairs are recorded as auxiliary
+    evidence in result.notes.
+
+    Define, for each trajectory pair (a, b):
+
+      diff_norm(t) = ||rho_a(t) - rho_b(t)||_F
+      ref_norm(t)  = max(||rho_a(t)||_F, ||rho_b(t)||_F)
+      error(a, b)  = max_t diff_norm(t) / max(ref_norm(t), eps)
+
+    Per-case PASS condition: error(exact_finite_env, heom_reference) <= 1.0e-6.
+    PASS for the card requires every test case (one, here) to pass.
+
+    Failure-asymmetry interpretation:
+      A PASS of the gating pair under this card would constitute the Sail
+      v0.5 §5 Tier 3 failure-asymmetry clearance required by DG-3 (validity
+      envelope DG-3 row "NOT CLEARED at DG level" → CLEARED). A FAIL is also
+      informative: it would indicate that at least one of the two
+      non-Markovian methods has not converged in its respective truncation
+      knob (bath mode count / Fock-level cutoff for exact_finite_env; max
+      hierarchy depth / cf-fit residual for heom_reference) at this fixture's
+      parameters. Phase D would then route a convergence audit on whichever
+      method's truncation is more plausibly the bottleneck.
+
+    Out of scope for Card C1 v0.2.0:
+      - displaced_bath_delta_omega_c_cross_method: deferred to a future C1
+        v0.3.0 once the HEOM module ships a displaced handler.
+      - TEMPO / pseudomode / MCTDH comparisons: these are fallback third
+        methods recorded in DG-3 work plan v0.1.1 §§2.3, 2.4; not exercised
+        unless the HEOM path encounters a blocker.
+      - Failure-envelope characterisation (coupling_strength sweep): DG-4.
+      - Thermodynamic discriminant: DG-5.
+
+# ─── Result block ─────────────────────────────────────────────────────────────
+
+result:
+  verdict: null
+  evidence: []
+  commit_hash: ""
+  runner_version: ""
+  notes: ""
+
+# ─── Failure-mode log ─────────────────────────────────────────────────────────
+
+failure_mode_log:
+  - date: "2026-05-15"
+    change: |
+      v0.1.0 → v0.2.0 supersedure: extend the cross-method comparison from
+      a two-method pair (exact_finite_env, qutip_reference) to a three-
+      method triple by adding heom_reference (QuTiP 5 in-tree HEOMSolver)
+      as the third reference method. Drop the displaced_bath_delta_omega_c
+      test_case from the card scope (HEOM module v0.1.0 supports thermal
+      handlers only; displaced HEOM is a separate handler-expansion task).
+      Schema bumped from v0.1.2 to v0.1.4 to accommodate the new
+      comparison.third_method / gating_pair / heom_options fields.
+      Card-level threshold (1.0e-6), bath spectral density, time grid,
+      integration tolerances, and gauge block are preserved from v0.1.0.
+    reason: |
+      DG-3 work plan v0.1.1 §1.1: the baseline-pair implementation-ready
+      pass landed under C1 v0.1.0 (validity envelope DG-3 row "FULL RUNNER
+      REACHABILITY" 2026-05-05), and the remaining DG-3 blocker is the
+      Sail v0.5 §5 Tier 3 failure-asymmetry-cleared pass which requires a
+      third reference method from a non-overlapping failure-mode class.
+      HEOM via QuTiP 5 (BSD-3, no new top-level dependency; reached via
+      the qutip>=5.2 floor bump landed 2026-05-15 in pyproject.toml) is
+      the selected third method (DG-3 work plan v0.1.1 §2.2). Thermal-
+      only v0.2.0 scope minimises HEOM-modeling risk before drafting a
+      v0.3.0 with displaced handlers.
+    predecessor_card_id: "C1"
+    predecessor_version: "v0.1.0"
+
+# ─── Stewardship flag ─────────────────────────────────────────────────────────
+
+stewardship_flag:
+  status: "unflagged"
+  rationale: ""
+  data_source: ""
+  search_performed: ""

@@ -45,9 +45,13 @@ B4_PATH = CARDS_DIR / "B4-conv-registry_v0.1.0.yaml"
 B5_V010_PATH = CARDS_DIR / "B5-conv-registry_v0.1.0.yaml"
 B5_PATH = CARDS_DIR / "B5-conv-registry_v0.2.0.yaml"
 
-# DG-3 cards.
+# DG-3 cards. C1_PATH / C2_PATH stay at v0.1.0 (now superseded) so the
+# baseline-pair runner tests keep exercising the unchanged pair branch;
+# C1_V020_PATH / C2_V020_PATH are the active triple-method cards.
 C1_PATH = CARDS_DIR / "C1_cross-method-pure-dephasing_v0.1.0.yaml"
 C2_PATH = CARDS_DIR / "C2_cross-method-spin-boson_v0.1.0.yaml"
+C1_V020_PATH = CARDS_DIR / "C1_cross-method-pure-dephasing_v0.2.0.yaml"
+C2_V020_PATH = CARDS_DIR / "C2_cross-method-spin-boson_v0.2.0.yaml"
 
 # Superseded cards retained for audit-trail tests.
 A1_V010_PATH = CARDS_DIR / "A1_closed-form-K_v0.1.0.yaml"
@@ -816,6 +820,181 @@ def test_cross_method_relative_frobenius_shape_mismatch_raises():
     b = np.zeros((3, 2, 2), dtype=complex)
     with pytest.raises(ValueError, match="shape mismatch"):
         bc._inter_method_relative_frobenius(a, b)
+
+
+# ─── Runner: DG-3 triple-method cards (C1/C2 v0.2.0; schema v0.1.4+) ────────
+
+
+def test_load_card_c1_v020_succeeds():
+    card = bc.load_card(C1_V020_PATH)
+    assert card.card_id == "C1"
+    assert card.version == "v0.2.0"
+    assert card.schema_version == "v0.1.4"
+    assert card.status == "frozen-awaiting-run"
+    comparison = card.frozen_parameters["comparison"]
+    assert comparison["third_method"] == "heom"
+    assert comparison["third_method_module"] == "benchmarks.heom_reference"
+    assert comparison["gating_pair"] == ["exact_finite_env", "heom_reference"]
+    assert comparison["heom_options"]["max_depth"] == 3
+
+
+def test_load_card_c2_v020_succeeds():
+    card = bc.load_card(C2_V020_PATH)
+    assert card.card_id == "C2"
+    assert card.version == "v0.2.0"
+    assert card.schema_version == "v0.1.4"
+    assert card.frozen_parameters["comparison"]["third_method"] == "heom"
+
+
+def test_c1_v010_superseded_by_v020():
+    card = bc.load_card(C1_PATH)
+    assert card.status == "superseded"
+    assert card.superseded_by == "C1_cross-method-pure-dephasing_v0.2.0.yaml"
+
+
+def test_c2_v010_superseded_by_v020():
+    card = bc.load_card(C2_PATH)
+    assert card.status == "superseded"
+    assert card.superseded_by == "C2_cross-method-spin-boson_v0.2.0.yaml"
+
+
+def test_c1_c2_v020_triple_handlers_registered():
+    """Every v0.2.0 test_case has an entry in the triple-handler registry."""
+    for path in (C1_V020_PATH, C2_V020_PATH):
+        card = bc.load_card(path)
+        for case in card.frozen_parameters["model"]["test_cases"]:
+            assert (card.model, case["name"]) in bc._CROSS_METHOD_TRIPLE_HANDLERS
+
+
+def test_run_card_c1_v020_thermal_triple_method_runs():
+    """C1 v0.2.0 thermal runs all three methods through the triple-method
+    branch and produces a clean FAIL at the frozen 1e-6 threshold (the
+    gating pair exact_finite_env vs heom_reference is not converged at
+    the reduced smoke grid; Phase D verdict will use the frozen 200-point
+    grid and may tune the truncation knobs)."""
+    card = _single_case_card(C1_V020_PATH, "thermal_bath_cross_method", t_end=3.0, n_points=11)
+    result = bc.run_card(card)
+    assert result.verdict == "FAIL"
+    assert result.runner_version == bc.__version__
+    assert "triple-method branch" in result.notes
+    assert len(result.test_case_results) == 1
+    tcr = result.test_case_results[0]
+    assert tcr.error > card.threshold
+    assert "heom_reference" in tcr.notes
+    assert "gating_pair=(exact_finite_env, heom_reference)" in tcr.notes
+    assert "auxiliary pairs" in tcr.notes
+
+
+def test_run_card_c2_v020_thermal_triple_method_runs():
+    """C2 v0.2.0 thermal sibling: σ_x coupling through the triple-method
+    branch produces a clean FAIL at the same reduced smoke grid."""
+    card = _single_case_card(C2_V020_PATH, "thermal_bath_cross_method", t_end=3.0, n_points=11)
+    result = bc.run_card(card)
+    assert result.verdict == "FAIL"
+    assert "triple-method branch" in result.notes
+    tcr = result.test_case_results[0]
+    assert tcr.error > card.threshold
+    assert "σ_x" in tcr.notes or "sigma_x" in tcr.notes
+    assert "heom_reference" in tcr.notes
+
+
+def test_validate_gating_pair_rejects_unknown_method():
+    with pytest.raises(ValueError, match="not produced by the triple handler"):
+        bc._validate_gating_pair(
+            ["exact_finite_env", "tempo_reference"],
+            ["exact_finite_env", "heom_reference", "qutip_reference"],
+        )
+
+
+def test_validate_gating_pair_rejects_wrong_length():
+    with pytest.raises(ValueError, match="list of 2 method identifiers"):
+        bc._validate_gating_pair(
+            ["exact_finite_env"],
+            ["exact_finite_env", "heom_reference", "qutip_reference"],
+        )
+
+
+# ─── Schema Rule 19: third-method validation enforcement ────────────────────
+
+
+def _c1_v020_raw_data() -> dict:
+    return copy.deepcopy(_load_raw(C1_V020_PATH))
+
+
+def test_rule19_third_method_module_required_when_third_method_present():
+    data = _c1_v020_raw_data()
+    del data["frozen_parameters"]["comparison"]["third_method_module"]
+    with pytest.raises(bc.SchemaValidationError, match="rule 19.*third_method_module"):
+        bc.validate_card_data(data)
+
+
+def test_rule19_third_method_module_must_be_importable():
+    data = _c1_v020_raw_data()
+    data["frozen_parameters"]["comparison"][
+        "third_method_module"
+    ] = "benchmarks.nonexistent_reference_module"
+    with pytest.raises(bc.SchemaValidationError, match="rule 19.*not importable"):
+        bc.validate_card_data(data)
+
+
+def test_rule19_third_method_module_rejects_empty_string():
+    data = _c1_v020_raw_data()
+    data["frozen_parameters"]["comparison"]["third_method_module"] = ""
+    with pytest.raises(bc.SchemaValidationError, match="rule 19.*third_method_module"):
+        bc.validate_card_data(data)
+
+
+def test_rule19_gating_pair_required_when_third_method_present():
+    data = _c1_v020_raw_data()
+    del data["frozen_parameters"]["comparison"]["gating_pair"]
+    with pytest.raises(bc.SchemaValidationError, match="rule 19.*gating_pair"):
+        bc.validate_card_data(data)
+
+
+def test_rule19_gating_pair_rejects_wrong_length():
+    data = _c1_v020_raw_data()
+    data["frozen_parameters"]["comparison"]["gating_pair"] = ["exact_finite_env"]
+    with pytest.raises(bc.SchemaValidationError, match="rule 19.*exactly 2"):
+        bc.validate_card_data(data)
+
+
+def test_rule19_gating_pair_rejects_duplicates():
+    data = _c1_v020_raw_data()
+    data["frozen_parameters"]["comparison"]["gating_pair"] = [
+        "exact_finite_env",
+        "exact_finite_env",
+    ]
+    with pytest.raises(bc.SchemaValidationError, match="rule 19.*distinct"):
+        bc.validate_card_data(data)
+
+
+def test_rule19_gating_pair_rejects_non_string_entries():
+    data = _c1_v020_raw_data()
+    data["frozen_parameters"]["comparison"]["gating_pair"] = ["exact_finite_env", 42]
+    with pytest.raises(bc.SchemaValidationError, match="rule 19.*non-empty strings"):
+        bc.validate_card_data(data)
+
+
+def test_rule19_gating_pair_rejects_unknown_method_identifier():
+    data = _c1_v020_raw_data()
+    data["frozen_parameters"]["comparison"]["gating_pair"] = [
+        "exact_finite_env",
+        "tempo_reference",
+    ]
+    with pytest.raises(bc.SchemaValidationError, match="rule 19.*drawn from"):
+        bc.validate_card_data(data)
+
+
+def test_rule19_third_method_options_rejects_non_mapping():
+    data = _c1_v020_raw_data()
+    data["frozen_parameters"]["comparison"]["heom_options"] = "not_a_dict"
+    with pytest.raises(bc.SchemaValidationError, match="rule 19.*heom_options.*mapping"):
+        bc.validate_card_data(data)
+
+
+def test_rule19_optional_when_third_method_absent():
+    """v0.1.0 cards (no third_method) continue to validate; Rule 19 is opt-in."""
+    bc.validate_card_data(_load_raw(C1_PATH))  # C1 v0.1.0 (superseded but valid)
 
 
 # ─── Runner: refusal paths for D1 (DG-4) and E1 (scope-definition) ──────────

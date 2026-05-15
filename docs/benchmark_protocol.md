@@ -64,22 +64,29 @@ Per Sail v0.5 §9, two distinct properties must be tracked separately for any DG
 
 Current status (mirrors `validity_envelope.md`):
 
-| Pair | Implementation readiness | Failure-asymmetry clearance |
+| Triple | Implementation readiness | Failure-asymmetry clearance |
 |---|---|---|
-| `exact_finite_env.py` + `qutip_reference.py` | COMPLETE for all four C1+C2 fixtures | NOT CLEARED at DG level; method classes are distinct (`finite-system` vs `solver-default`), but third-method clearance from a non-overlapping class (HEOM, TEMPO, MCTDH, pseudomode/chain-mapping) remains deferred |
+| `exact_finite_env.py` + `qutip_reference.py` + `heom_reference.py` | COMPLETE for the C1/C2 v0.2.0 thermal fixtures (triple-method dispatch); baseline pair runner-reachable for the C1/C2 v0.1.0 displaced fixtures retained for reproduction | NOT CLEARED at DG level (Phase D verdict on C1/C2 v0.2.0 pending). The three method classes (`finite-system`, `solver-default`, `bath-hierarchy-truncation`) are non-overlapping per §2; a PASS gating-pair verdict would constitute the Tier 3 clearance. |
 
 DG-3 *implementation-ready pass* requires only the first column. DG-3 *failure-asymmetry-cleared pass* requires both. Reports must explicitly state which level of pass is being claimed.
 
 ### 3.1. Benchmark cards
 
-Two DG-3 cross-method cards are frozen:
+Active DG-3 cards (frozen):
 
 | Card | Model | Methods compared | Status |
 |---|---|---|---|
-| C1 | pure_dephasing | exact_finite_env vs qutip_reference | frozen-awaiting-run; both fixtures run to clean FAIL (thermal: `error ≈ 0.293`; displaced delta-omega_c: `error ≈ 0.309`; threshold 1.0e-6) |
-| C2 | spin_boson_sigma_x | exact_finite_env vs qutip_reference | frozen-awaiting-run; both fixtures run to clean FAIL (thermal: `error ≈ 0.538`; displaced delta-omega_c: `error ≈ 0.526`; threshold 1.0e-6) |
+| C1 v0.2.0 | pure_dephasing | exact_finite_env + qutip_reference + heom_reference (gating pair: `[exact_finite_env, heom_reference]`) | frozen-awaiting-run; thermal-only triple-method (displaced fixture deferred to a future C1 v0.3.0) |
+| C2 v0.2.0 | spin_boson_sigma_x | exact_finite_env + qutip_reference + heom_reference (same gating pair) | frozen-awaiting-run; thermal-only triple-method |
 
-Cards inherit frozen parameters from their DG-1/DG-2 siblings (A3/B4 and A4/B5) to preserve cross-card comparability. The runner now has a DG-3 cross-method comparison branch (`reporting.benchmark_card._run_cross_method`) with handlers registered for **all four** C1+C2 fixtures. Phase D verdict commits for both C1 and C2 are structurally reachable; their admissibility requires either convergence in the finite-bath truncation or a third reference method from a non-overlapping failure-mode class (Sail v0.5 §5 Tier 3). **No `NotImplementedError` paths are reachable on the frozen C1/C2 test fixtures.** (The underlying benchmark modules retain `NotImplementedError` paths for non-frozen parameter combinations; those paths are out of scope for the C1/C2 frozen surface.)
+Superseded predecessors (retained for audit and reproduction of the baseline-pair runner reachability):
+
+| Card | Model | Methods compared | Status |
+|---|---|---|---|
+| C1 v0.1.0 | pure_dephasing | exact_finite_env + qutip_reference | superseded by C1 v0.2.0; both fixtures run to clean FAIL on the pair branch (thermal: `error ≈ 0.293`; displaced delta-omega_c: `error ≈ 0.309`; threshold 1.0e-6) |
+| C2 v0.1.0 | spin_boson_sigma_x | exact_finite_env + qutip_reference | superseded by C2 v0.2.0; both fixtures run to clean FAIL (thermal: `error ≈ 0.538`; displaced delta-omega_c: `error ≈ 0.526`; threshold 1.0e-6) |
+
+Cards inherit frozen parameters from their DG-1/DG-2 siblings (A3/B4 and A4/B5) to preserve cross-card comparability. The runner has a DG-3 cross-method comparison branch (`reporting.benchmark_card._run_cross_method`) that detects `comparison.third_method` and dispatches to the triple-handler registry `_CROSS_METHOD_TRIPLE_HANDLERS` for C1/C2 v0.2.0; the pair-handler path remains active for the v0.1.0 superseded surface. **No `NotImplementedError` paths are reachable on the frozen C1/C2 test fixtures.** (The underlying benchmark modules retain `NotImplementedError` paths for non-frozen parameter combinations; those paths are out of scope for the C1/C2 frozen surface.) HEOM is added via QuTiP 5's in-tree `qutip.solver.heom.HEOMSolver` (BSD-3, reached via the `qutip>=5.2` dependency floor); bath correlations are sourced from `cbg.bath_correlations.bath_two_point_thermal` and fitted to a multi-exponential expansion via QuTiP's CF NLSQ fitter so the bath spectrum is *cbg-owned*, not QuTiP-default. Phase D verdict on C1/C2 v0.2.0 is pending and would constitute the Tier 3 failure-asymmetry clearance once recorded.
 
 ## 4. DG-4 status tracking
 

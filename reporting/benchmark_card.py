@@ -7,9 +7,9 @@ dynamical-card runner. Provides the infrastructure that Cards A1, A3,
 A4 depend on:
 
     load_card(path)           — Read a YAML card and validate it against
-                                SCHEMA.md v0.1.3.
+                                SCHEMA.md v0.1.4.
     validate_card_data(data)  — Validate an already-parsed card dict
-                                against the 18 schema rules.
+                                against the 19 schema rules.
     verify_gauge_annotation   — Enforce the canonical Hayden–Sorce
                                 minimal-dissipation gauge block.
     run_card(card)            — Dispatch by DG target / model_kind.
@@ -28,17 +28,19 @@ A4 depend on:
 Test-case handlers live in explicit registries — _TEST_CASE_HANDLERS for
 algebraic_map cards (keyed by test_cases[i].name),
 _DYNAMICAL_TEST_CASE_HANDLERS for TCL structural dynamical cards, and
-_CROSS_METHOD_TEST_CASE_HANDLERS for DG-3 reference-method comparisons
-(the last two keyed by (card.model, test_cases[i].name)). New test cases
-require new entries; the registries make the runner-side support surface
-explicit and auditable.
+_CROSS_METHOD_TEST_CASE_HANDLERS / _CROSS_METHOD_TRIPLE_HANDLERS for DG-3
+reference-method comparisons (the last three keyed by
+(card.model, test_cases[i].name)). New test cases require new entries; the
+registries make the runner-side support surface explicit and auditable.
 
-Anchor: SCHEMA.md v0.1.3; DG-1 work plan v0.1.4 §4 Phase C rows C.4 and C.10.
+Anchor: SCHEMA.md v0.1.4; DG-1 work plan v0.1.4 §4 Phase C rows C.4 and C.10;
+DG-3 work plan v0.1.1 Phase C.
 """
 
 from __future__ import annotations
 
 import ast
+import importlib.util
 from collections.abc import Callable, Mapping
 from copy import deepcopy
 from dataclasses import dataclass
@@ -48,7 +50,7 @@ from typing import Any, NoReturn
 import numpy as np
 import yaml
 
-from benchmarks import exact_finite_env, qutip_reference
+from benchmarks import exact_finite_env, heom_reference, qutip_reference
 from cbg.basis import matrix_unit_basis, su_d_generator_basis, verify_orthonormality
 from cbg.cumulants import D_bar_1 as _cumulants_D_bar_1
 from cbg.displacement_profiles import REGISTERED_PROFILES as _CBG_REGISTERED_PROFILES
@@ -58,10 +60,10 @@ from models import pure_dephasing, spin_boson_sigma_x
 from numerical.tensor_ops import anticommutator, commutator
 from numerical.time_grid import build_time_grid
 
-__version__ = "0.1.0"  # Recorded in card.result.runner_version
+__version__ = "0.2.0"  # Recorded in card.result.runner_version
 
 
-# ─── Schema constants (SCHEMA.md v0.1.3) ─────────────────────────────────────
+# ─── Schema constants (SCHEMA.md v0.1.4) ─────────────────────────────────────
 
 CANONICAL_GAUGE_BLOCK: dict[str, Any] = {
     "gauge": "hayden-sorce-minimal-dissipation",
@@ -76,12 +78,15 @@ CANONICAL_GAUGE_BLOCK: dict[str, Any] = {
 # v0.1.3 added the optional `frozen_parameters.sweep:` block (Rule 17)
 # for DG-4 failure-envelope cards (D1) and the `scope-definition` status
 # (Rule 18) for design-target cards whose preconditions are not yet met
-# (E1: Fano-Anderson scope definition). Per SCHEMA.md §Schema versioning,
+# (E1: Fano-Anderson scope definition); v0.1.4 added the optional
+# triple-method cross-method fields under `frozen_parameters.comparison`
+# (`third_method`, `third_method_module`, `gating_pair`, `<method>_options`;
+# Rule 19) for Cards C1 / C2 v0.2.0. Per SCHEMA.md §Schema versioning,
 # "cards retain the schema they were authored against"; the runner
-# accepts any known version. The v0.1.3 rule set is a non-breaking
-# superset of v0.1.2 (additions are additive; v0.1.2 cards continue
-# to validate unchanged).
-KNOWN_SCHEMA_VERSIONS: tuple[str, ...] = ("v0.1.1", "v0.1.2", "v0.1.3")
+# accepts any known version. Each new rule set is a non-breaking superset
+# of the previous one (additions are additive; older cards continue to
+# validate unchanged).
+KNOWN_SCHEMA_VERSIONS: tuple[str, ...] = ("v0.1.1", "v0.1.2", "v0.1.3", "v0.1.4")
 
 VALID_STATUS = {
     "frozen-awaiting-run",
@@ -127,7 +132,7 @@ REQUIRED_FROZEN_PARAMETERS_SUBBLOCKS: tuple[str, ...] = (
 
 
 class SchemaValidationError(ValueError):
-    """A card YAML violates one of the SCHEMA.md v0.1.3 validation rules."""
+    """A card YAML violates one of the SCHEMA.md v0.1.4 validation rules."""
 
 
 class GaugeAnnotationError(ValueError):
@@ -258,7 +263,7 @@ class CardResult:
 def load_card(path: Path | str) -> BenchmarkCard:
     """Load and validate a benchmark card YAML file.
 
-    Validates against SCHEMA.md v0.1.3 (18 rules); raises SchemaValidationError
+    Validates against SCHEMA.md v0.1.4 (19 rules); raises SchemaValidationError
     on any rule violation. The returned BenchmarkCard tracks its source_path
     so the runner can resolve relative evidence paths later.
     """
@@ -297,13 +302,13 @@ def _data_to_card(data: dict[str, Any]) -> BenchmarkCard:
     )
 
 
-# ─── Validator (SCHEMA.md v0.1.3 rules 1–18) ─────────────────────────────────
+# ─── Validator (SCHEMA.md v0.1.4 rules 1–19) ─────────────────────────────────
 
 
 def validate_card_data(data: dict[str, Any]) -> None:
-    """Validate a parsed card dict against SCHEMA.md v0.1.3.
+    """Validate a parsed card dict against SCHEMA.md v0.1.4.
 
-    Implements all 18 validation rules. Raises SchemaValidationError with
+    Implements all 19 validation rules. Raises SchemaValidationError with
     a "rule N: ..." prefix identifying the failing rule. Iteration order
     mirrors the schema's rule numbering for auditability.
     """
@@ -540,6 +545,66 @@ def validate_card_data(data: dict[str, Any]) -> None:
                 "rule 18: status 'scope-definition' requires unmet preconditions "
                 "recorded in failure_mode_log (non-empty) or result.notes (non-empty)"
             )
+
+    # Rule 19 (SCHEMA.md v0.1.4+): frozen_parameters.comparison.third_method
+    # is optional. When present, third_method_module and gating_pair are
+    # required; gating_pair is a list of exactly 2 distinct non-empty
+    # strings; <third_method>_options (if present) is a mapping.
+    comparison = fp.get("comparison")
+    if isinstance(comparison, dict):
+        third_method = comparison.get("third_method")
+        if third_method is not None:
+            if not isinstance(third_method, str) or not third_method:
+                raise SchemaValidationError(
+                    "rule 19: frozen_parameters.comparison.third_method must be "
+                    f"a non-empty string; got {third_method!r}"
+                )
+            mod = comparison.get("third_method_module")
+            if not isinstance(mod, str) or not mod:
+                raise SchemaValidationError(
+                    "rule 19: frozen_parameters.comparison.third_method_module "
+                    f"required and must be a non-empty string when third_method "
+                    f"is present; got {mod!r}"
+                )
+            try:
+                spec = importlib.util.find_spec(mod)
+            except (ImportError, ValueError):
+                spec = None
+            if spec is None:
+                raise SchemaValidationError(
+                    "rule 19: frozen_parameters.comparison.third_method_module "
+                    f"{mod!r} is not importable on the current sys.path"
+                )
+            gp = comparison.get("gating_pair")
+            if not isinstance(gp, list) or len(gp) != 2:
+                raise SchemaValidationError(
+                    "rule 19: frozen_parameters.comparison.gating_pair must be a "
+                    f"list of exactly 2 method identifiers; got {gp!r}"
+                )
+            if not all(isinstance(x, str) and x for x in gp):
+                raise SchemaValidationError(
+                    "rule 19: frozen_parameters.comparison.gating_pair entries "
+                    f"must be non-empty strings; got {gp!r}"
+                )
+            if gp[0] == gp[1]:
+                raise SchemaValidationError(
+                    "rule 19: frozen_parameters.comparison.gating_pair must "
+                    f"contain two distinct method identifiers; got duplicate {gp[0]!r}"
+                )
+            allowed = {"exact_finite_env", "qutip_reference", f"{third_method}_reference"}
+            unknown = [name for name in gp if name not in allowed]
+            if unknown:
+                raise SchemaValidationError(
+                    "rule 19: frozen_parameters.comparison.gating_pair entries "
+                    f"must be drawn from {sorted(allowed)}; got unknown {unknown}"
+                )
+            opts_key = f"{third_method}_options"
+            if opts_key in comparison and not isinstance(comparison[opts_key], dict):
+                raise SchemaValidationError(
+                    f"rule 19: frozen_parameters.comparison.{opts_key} must be a "
+                    "mapping when present; got "
+                    f"{type(comparison[opts_key]).__name__}"
+                )
 
 
 # ─── Gauge-annotation enforcement ────────────────────────────────────────────
@@ -2497,8 +2562,162 @@ _CROSS_METHOD_TEST_CASE_HANDLERS: dict[tuple[str, str], CrossMethodHandler] = {
 }
 
 
+# ─── DG-3 triple-method cross-method (Cards C1, C2 v0.2.0; schema v0.1.4+) ───
+#
+# Triple handlers return a dict {method_name: rho_trajectory} so the runner
+# can compute pairwise errors against an explicit ``gating_pair`` declared in
+# the card. The two non-gating pairs are recorded in ``result.notes`` as
+# auxiliary cross-method evidence but do not gate the verdict.
+
+CrossMethodTripleHandler = Callable[
+    [dict[str, Any], np.ndarray, dict[str, Any], dict[str, Any], dict[str, Any]],
+    tuple[dict[str, np.ndarray], str],
+]
+
+
+def _cross_triple_handler_pure_dephasing_thermal(
+    model_spec: dict[str, Any],
+    t_grid: np.ndarray,
+    _numerical: dict[str, Any],
+    _truncation: dict[str, Any],
+    method_options: dict[str, Any],
+) -> tuple[dict[str, np.ndarray], str]:
+    """C1 v0.2.0 thermal-bath triple-method handler (σ_z pure dephasing).
+
+    Composes the v0.1.0 pair handler's outputs with a HEOM trajectory.
+    HEOM options are forwarded under ``solver_options["heom"]`` from the
+    card's ``frozen_parameters.comparison.heom_options`` block, so the run
+    is fully reproducible from the card alone (no module-default leakage).
+    """
+    H_total, rho_initial, system_dim, bath_dim = (
+        exact_finite_env.build_pure_dephasing_thermal_total(model_spec)
+    )
+    rho_exact = exact_finite_env.propagate(
+        H_total,
+        rho_initial,
+        t_grid,
+        system_dim=system_dim,
+        bath_dim=bath_dim,
+    )
+    rho_qutip = qutip_reference.reference_propagate(model_spec, t_grid)
+    rho_heom = heom_reference.heom_propagate(
+        model_spec,
+        t_grid,
+        solver_options={"heom": method_options.get("heom", {})},
+    )
+    notes = (
+        f"exact_finite_env finite-system (system_dim={system_dim}, "
+        f"bath_dim={bath_dim}); qutip_reference Markov Lindblad; "
+        "heom_reference bath-hierarchy-truncation via QuTiP "
+        "qutip.solver.heom.HEOMSolver (cbg correlator + CF NLSQ fit)."
+    )
+    return (
+        {
+            "exact_finite_env": rho_exact,
+            "qutip_reference": rho_qutip,
+            "heom_reference": rho_heom,
+        },
+        notes,
+    )
+
+
+def _cross_triple_handler_spin_boson_sigma_x_thermal(
+    model_spec: dict[str, Any],
+    t_grid: np.ndarray,
+    _numerical: dict[str, Any],
+    _truncation: dict[str, Any],
+    method_options: dict[str, Any],
+) -> tuple[dict[str, np.ndarray], str]:
+    """C2 v0.2.0 thermal-bath triple-method handler (σ_x coupling).
+
+    Same composition as the C1 σ_z handler; only the coupling operator and
+    the finite-system builder differ. HEOM uses σ_x coupling internally
+    (matched to the card's ``coupling_operator`` field).
+    """
+    H_total, rho_initial, system_dim, bath_dim = (
+        exact_finite_env.build_spin_boson_sigma_x_thermal_total(model_spec)
+    )
+    rho_exact = exact_finite_env.propagate(
+        H_total,
+        rho_initial,
+        t_grid,
+        system_dim=system_dim,
+        bath_dim=bath_dim,
+    )
+    rho_qutip = qutip_reference.reference_propagate(model_spec, t_grid)
+    rho_heom = heom_reference.heom_propagate(
+        model_spec,
+        t_grid,
+        solver_options={"heom": method_options.get("heom", {})},
+    )
+    notes = (
+        f"exact_finite_env σ_x finite-system (system_dim={system_dim}, "
+        f"bath_dim={bath_dim}); qutip_reference σ_-/σ_+ secular Lindblad "
+        "at S(±ω_S); heom_reference bath-hierarchy-truncation with "
+        "σ_x coupling via QuTiP qutip.solver.heom.HEOMSolver."
+    )
+    return (
+        {
+            "exact_finite_env": rho_exact,
+            "qutip_reference": rho_qutip,
+            "heom_reference": rho_heom,
+        },
+        notes,
+    )
+
+
+_CROSS_METHOD_TRIPLE_HANDLERS: dict[tuple[str, str], CrossMethodTripleHandler] = {
+    (
+        "pure_dephasing",
+        "thermal_bath_cross_method",
+    ): _cross_triple_handler_pure_dephasing_thermal,
+    (
+        "spin_boson_sigma_x",
+        "thermal_bath_cross_method",
+    ): _cross_triple_handler_spin_boson_sigma_x_thermal,
+}
+
+
+def _compute_pairwise_errors(
+    rho_dict: dict[str, np.ndarray],
+) -> dict[tuple[str, str], float]:
+    """All-pairs inter_method_relative_frobenius from a method→trajectory dict."""
+    methods = sorted(rho_dict.keys())
+    out: dict[tuple[str, str], float] = {}
+    for i, a in enumerate(methods):
+        for b in methods[i + 1 :]:
+            out[(a, b)] = _inter_method_relative_frobenius(rho_dict[a], rho_dict[b])
+    return out
+
+
+def _validate_gating_pair(
+    gating_pair: list[str],
+    available: list[str],
+) -> tuple[str, str]:
+    """Validate the card's gating_pair against the methods present in the run."""
+    if not isinstance(gating_pair, list) or len(gating_pair) != 2:
+        raise ValueError(
+            f"_run_cross_method: comparison.gating_pair must be a list of 2 "
+            f"method identifiers; got {gating_pair!r}."
+        )
+    for name in gating_pair:
+        if name not in available:
+            raise ValueError(
+                f"_run_cross_method: comparison.gating_pair references "
+                f"{name!r}, which is not produced by the triple handler. "
+                f"Available: {available}"
+            )
+    a, b = gating_pair
+    return (a, b) if a < b else (b, a)
+
+
 def _run_cross_method(card: BenchmarkCard) -> CardResult:
-    """Run a DG-3 cross-method card by comparing two reference trajectories."""
+    """Run a DG-3 cross-method card.
+
+    Two variants per ``comparison.third_method`` (schema v0.1.4+):
+        - absent → baseline pair (``exact_finite_env`` vs ``qutip_reference``);
+        - present → triple-method run with an explicit ``gating_pair``.
+    """
     if card.model_kind != "dynamical":
         raise NotImplementedError(
             f"_run_cross_method: DG-3 runner currently supports only "
@@ -2513,6 +2732,8 @@ def _run_cross_method(card: BenchmarkCard) -> CardResult:
             "Known: 'inter_method_relative_frobenius'."
         )
 
+    third_method = comparison.get("third_method")
+
     fp = card.frozen_parameters
     grid = build_time_grid(fp["numerical"]["time_grid"])
     threshold = card.threshold
@@ -2521,58 +2742,115 @@ def _run_cross_method(card: BenchmarkCard) -> CardResult:
 
     for case in fp["model"]["test_cases"]:
         name = case["name"]
-        handler_key = (card.model, name)
-        handler = _CROSS_METHOD_TEST_CASE_HANDLERS.get(handler_key)
-        if handler is None:
-            raise TestCaseHandlerNotFoundError(
-                f"_run_cross_method: no handler registered for "
-                f"(model={card.model!r}, test_case={name!r}). "
-                f"Known: {sorted(_CROSS_METHOD_TEST_CASE_HANDLERS.keys())}"
-            )
-
         model_spec = _cross_method_model_spec(fp["model"], case)
-        rho_exact, rho_qutip, notes = handler(
-            model_spec,
-            grid.times,
-            fp["numerical"],
-            fp["truncation"],
-        )
-        _validate_density_trajectory(
-            method_name="exact_finite_env",
-            case_name=name,
-            rho_t=rho_exact,
-            n_times=grid.times.size,
-            system_dimension=system_dimension,
-        )
-        _validate_density_trajectory(
-            method_name="qutip_reference",
-            case_name=name,
-            rho_t=rho_qutip,
-            n_times=grid.times.size,
-            system_dimension=system_dimension,
-        )
-        error = _inter_method_relative_frobenius(rho_exact, rho_qutip)
-        test_case_results.append(
-            TestCaseResult(
-                name=name,
-                passed=error <= threshold,
-                error=error,
-                threshold=threshold,
-                notes=notes,
+
+        if third_method is None:
+            handler_key = (card.model, name)
+            handler = _CROSS_METHOD_TEST_CASE_HANDLERS.get(handler_key)
+            if handler is None:
+                raise TestCaseHandlerNotFoundError(
+                    f"_run_cross_method: no handler registered for "
+                    f"(model={card.model!r}, test_case={name!r}). "
+                    f"Known: {sorted(_CROSS_METHOD_TEST_CASE_HANDLERS.keys())}"
+                )
+            rho_exact, rho_qutip, notes = handler(
+                model_spec,
+                grid.times,
+                fp["numerical"],
+                fp["truncation"],
             )
-        )
+            _validate_density_trajectory(
+                method_name="exact_finite_env",
+                case_name=name,
+                rho_t=rho_exact,
+                n_times=grid.times.size,
+                system_dimension=system_dimension,
+            )
+            _validate_density_trajectory(
+                method_name="qutip_reference",
+                case_name=name,
+                rho_t=rho_qutip,
+                n_times=grid.times.size,
+                system_dimension=system_dimension,
+            )
+            error = _inter_method_relative_frobenius(rho_exact, rho_qutip)
+            test_case_results.append(
+                TestCaseResult(
+                    name=name,
+                    passed=error <= threshold,
+                    error=error,
+                    threshold=threshold,
+                    notes=notes,
+                )
+            )
+        else:
+            triple_key = (card.model, name)
+            triple_handler = _CROSS_METHOD_TRIPLE_HANDLERS.get(triple_key)
+            if triple_handler is None:
+                raise TestCaseHandlerNotFoundError(
+                    f"_run_cross_method: no triple-method handler registered "
+                    f"for (model={card.model!r}, test_case={name!r}). "
+                    f"Known: {sorted(_CROSS_METHOD_TRIPLE_HANDLERS.keys())}"
+                )
+            method_options = {third_method: comparison.get(f"{third_method}_options", {})}
+            rho_dict, base_notes = triple_handler(
+                model_spec,
+                grid.times,
+                fp["numerical"],
+                fp["truncation"],
+                method_options,
+            )
+            for method_name, rho_t in rho_dict.items():
+                _validate_density_trajectory(
+                    method_name=method_name,
+                    case_name=name,
+                    rho_t=rho_t,
+                    n_times=grid.times.size,
+                    system_dimension=system_dimension,
+                )
+            pairwise = _compute_pairwise_errors(rho_dict)
+            gate_a, gate_b = _validate_gating_pair(
+                comparison["gating_pair"], sorted(rho_dict.keys())
+            )
+            error = pairwise[(gate_a, gate_b)]
+            aux_lines = [
+                f"{a} vs {b}: err={pairwise[(a, b)]:.3e}"
+                for (a, b) in pairwise
+                if (a, b) != (gate_a, gate_b)
+            ]
+            notes = (
+                f"{base_notes} | gating_pair=({gate_a}, {gate_b}); "
+                f"auxiliary pairs: {'; '.join(aux_lines) or '(none)'}"
+            )
+            test_case_results.append(
+                TestCaseResult(
+                    name=name,
+                    passed=error <= threshold,
+                    error=error,
+                    threshold=threshold,
+                    notes=notes,
+                )
+            )
 
     all_passed = all(r.passed for r in test_case_results)
     verdict = "PASS" if all_passed else "FAIL"
+    if third_method is None:
+        branch_notes = (
+            "DG-3 cross-method branch: exact_finite_env (finite-system) "
+            "vs qutip_reference (solver-default)."
+        )
+    else:
+        branch_notes = (
+            "DG-3 triple-method branch: exact_finite_env (finite-system), "
+            f"qutip_reference (solver-default), and {third_method}_reference "
+            "(bath-hierarchy-truncation); gating pair declared in card."
+        )
     return CardResult(
         card_id=card.card_id,
         verdict=verdict,
         test_case_results=test_case_results,
         runner_version=__version__,
-        notes=(
-            "DG-3 cross-method branch: exact_finite_env (finite-system) "
-            "vs qutip_reference (solver-default)."
-        ),
+        notes=branch_notes,
     )
 
 

@@ -27,7 +27,8 @@ date: "2026-05-05"
 dg_target: "DG-3"
 ledger_entry: "CL-2026-005 v0.4 Entry 4 (cross-method corroboration)"
 model: "spin_boson_sigma_x"
-status: "frozen-awaiting-run"
+status: "superseded"
+superseded_by: "C2_cross-method-spin-boson_v0.2.0.yaml"
 license: "CC-BY-4.0 (LICENSE-docs)"
 
 # ─── Gauge block ──────────────────────────────────────────────────────────────

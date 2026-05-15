@@ -42,7 +42,8 @@ date: "2026-05-05"
 dg_target: "DG-3"
 ledger_entry: "CL-2026-005 v0.4 Entry 3 (cross-method corroboration)"
 model: "pure_dephasing"
-status: "frozen-awaiting-run"
+status: "superseded"
+superseded_by: "C1_cross-method-pure-dephasing_v0.2.0.yaml"
 license: "CC-BY-4.0 (LICENSE-docs)"
 
 # ─── Gauge block ──────────────────────────────────────────────────────────────
