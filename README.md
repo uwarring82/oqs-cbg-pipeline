@@ -44,7 +44,7 @@ cd oqs-cbg-pipeline
 pip install -e ".[dev]"
 ```
 
-The `[dev]` extra installs `pytest`, `pytest-cov`, `black`, `ruff`, and `mypy`. The `[docs]` extra installs the Sphinx toolchain. The package depends on `numpy`, `scipy`, `qutip ≥ 4.7`, and `pyyaml`; QuTiP requires a C/C++ toolchain on systems where wheels are not available.
+The `[dev]` extra installs `pytest`, `pytest-cov`, `black`, `ruff`, and `mypy`. The `[docs]` extra installs the Sphinx toolchain. The package depends on `numpy`, `scipy`, `qutip ≥ 5.2`, and `pyyaml`; QuTiP requires a C/C++ toolchain on systems where wheels are not available. The `qutip ≥ 5.2` floor is required by the DG-3 work plan v0.1.1 Tier-2.A third-method selection (HEOM via the in-tree `qutip.solver.heom.HEOMSolver`); see [plans/dg-3-work-plan_v0.1.1.md](plans/dg-3-work-plan_v0.1.1.md) §2.2.
 
 ## Quickstart
 

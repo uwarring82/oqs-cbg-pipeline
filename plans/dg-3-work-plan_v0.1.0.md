@@ -7,6 +7,7 @@ anchor_sail: sail/sail-cbg-pipeline_v0.5.md §§5 (Tier 3), 9 (DG-3), 10 (Risks 
 anchor_ledger: ledger/CL-2026-005_v0.4.md Entries 1–7 (COMPATIBLE); Entry 7 (UNDERDETERMINED)
 anchor_envelope: docs/validity_envelope.md DG-3 row (NOT YET ATTEMPTED → target implementation-ready PASS; failure-asymmetry clearance aspirational)
 status: draft
+superseded_by: dg-3-work-plan_v0.1.1.md
 license: CC-BY-4.0 (LICENSE-docs)
 ---
 
