@@ -31,7 +31,6 @@ dependencies = [
     "numpy>=1.24",
     "scipy>=1.10",
     "qutip>=5.2",
-    "oqupy>=0.5,<0.6",
     "pyyaml>=6.0",
 ]
 

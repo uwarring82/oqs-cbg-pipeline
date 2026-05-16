@@ -8,6 +8,7 @@ anchor_ledger: ledger/CL-2026-005_v0.4.md Entries 1–7 (COMPATIBLE); Entry 7 (U
 anchor_envelope: docs/validity_envelope.md DG-3 row (TRIPLE-METHOD CARDS FROZEN; Phase D verdict BLOCKED — cause `finite-env-correlator-floor`, Phase D.0/D.1 recon 2026-05-16; route = HEOM-vs-TEMPO gating via C1/C2 v0.3.0)
 status: draft
 supersedes: dg-3-work-plan_v0.1.1.md
+superseded_by: dg-3-work-plan_v0.1.3.md
 license: CC-BY-4.0 (LICENSE-docs)
 ---
 

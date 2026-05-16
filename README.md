@@ -44,7 +44,7 @@ cd oqs-cbg-pipeline
 pip install -e ".[dev]"
 ```
 
-The `[dev]` extra installs `pytest`, `pytest-cov`, `black`, `ruff`, and `mypy`. The `[docs]` extra installs the Sphinx toolchain. The package depends on `numpy`, `scipy`, `qutip ≥ 5.2`, `oqupy ≥ 0.5, < 0.6`, and `pyyaml`; QuTiP requires a C/C++ toolchain on systems where wheels are not available. The `qutip ≥ 5.2` floor provides the in-tree `qutip.solver.heom.HEOMSolver` (HEOM); the `oqupy` dependency provides TEMPO/process-tensor. Both are required by the DG-3 work plan v0.1.2 HEOM-vs-TEMPO gating-pair route (see [plans/dg-3-work-plan_v0.1.2.md](plans/dg-3-work-plan_v0.1.2.md) §§2.3, 2.6); the v0.3.0 cards that consume `oqupy` are scope-definition until DG-3 work plan v0.1.2 Phase F/G land `benchmarks/oqupy_reference.py` and the N-method runner.
+The `[dev]` extra installs `pytest`, `pytest-cov`, `black`, `ruff`, and `mypy`. The `[docs]` extra installs the Sphinx toolchain. The package depends on `numpy`, `scipy`, `qutip ≥ 5.2`, and `pyyaml`; QuTiP requires a C/C++ toolchain on systems where wheels are not available. The `qutip ≥ 5.2` floor provides the in-tree `qutip.solver.heom.HEOMSolver` (HEOM). OQuPy/TEMPO is not a declared dependency: DG-3 Phase F step 1 found OQuPy 0.5.0 pins `numpy<2.0`, incompatible with the repository's numpy-2 / QuTiP-5.2 stack. The active DG-3 route is now HEOM vs pseudomode per [plans/dg-3-work-plan_v0.1.3.md](plans/dg-3-work-plan_v0.1.3.md); OQuPy is dormant unless upstream numpy-2 support lands.
 
 ## Quickstart
 
