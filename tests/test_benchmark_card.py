@@ -830,7 +830,11 @@ def test_load_card_c1_v020_succeeds():
     assert card.card_id == "C1"
     assert card.version == "v0.2.0"
     assert card.schema_version == "v0.1.4"
-    assert card.status == "frozen-awaiting-run"
+    # v0.2.0 was atomically superseded by v0.3.0 (DG-3 work plan v0.1.2
+    # Phase E) after Phase D.0/D.1 found its gating pair unsatisfiable; the
+    # card is retained at HEAD for audit and remains runner-reproducible.
+    assert card.status == "superseded"
+    assert card.superseded_by == "C1_cross-method-pure-dephasing_v0.3.0.yaml"
     comparison = card.frozen_parameters["comparison"]
     assert comparison["third_method"] == "heom"
     assert comparison["third_method_module"] == "benchmarks.heom_reference"

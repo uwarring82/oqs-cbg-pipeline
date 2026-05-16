@@ -44,7 +44,7 @@ cd oqs-cbg-pipeline
 pip install -e ".[dev]"
 ```
 
-The `[dev]` extra installs `pytest`, `pytest-cov`, `black`, `ruff`, and `mypy`. The `[docs]` extra installs the Sphinx toolchain. The package depends on `numpy`, `scipy`, `qutip ≥ 5.2`, and `pyyaml`; QuTiP requires a C/C++ toolchain on systems where wheels are not available. The `qutip ≥ 5.2` floor is required by the DG-3 work plan v0.1.1 Tier-2.A third-method selection (HEOM via the in-tree `qutip.solver.heom.HEOMSolver`); see [plans/dg-3-work-plan_v0.1.1.md](plans/dg-3-work-plan_v0.1.1.md) §2.2.
+The `[dev]` extra installs `pytest`, `pytest-cov`, `black`, `ruff`, and `mypy`. The `[docs]` extra installs the Sphinx toolchain. The package depends on `numpy`, `scipy`, `qutip ≥ 5.2`, `oqupy ≥ 0.5, < 0.6`, and `pyyaml`; QuTiP requires a C/C++ toolchain on systems where wheels are not available. The `qutip ≥ 5.2` floor provides the in-tree `qutip.solver.heom.HEOMSolver` (HEOM); the `oqupy` dependency provides TEMPO/process-tensor. Both are required by the DG-3 work plan v0.1.2 HEOM-vs-TEMPO gating-pair route (see [plans/dg-3-work-plan_v0.1.2.md](plans/dg-3-work-plan_v0.1.2.md) §§2.3, 2.6); the v0.3.0 cards that consume `oqupy` are scope-definition until DG-3 work plan v0.1.2 Phase F/G land `benchmarks/oqupy_reference.py` and the N-method runner.
 
 ## Quickstart
 

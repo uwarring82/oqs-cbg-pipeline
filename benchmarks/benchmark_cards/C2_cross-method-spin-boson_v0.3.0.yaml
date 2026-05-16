@@ -1,0 +1,236 @@
+# DG-3 Benchmark Card C2 v0.3.0 — Cross-method validation, spin-boson σ_x model,
+#                                  thermal-only, FOUR-method (gating HEOM vs TEMPO)
+#
+# Anchor: Sail v0.5 §9 (DG-3 failure-asymmetry clearance, §5 Tier 3);
+#         docs/benchmark_protocol.md §2, §3;
+#         SCHEMA.md v0.1.5 (methods-list N-method form);
+#         DG-3 work plan v0.1.2 §§1.2, 2.3, 2.6, 4 Phase E/G
+# Phase: B (scope-definition; supersedes C2 v0.2.0) — design-target card;
+#         same precondition set as C1 v0.3.0 (oqupy_reference, N-method
+#         dispatch, KNOWN_SCHEMA_VERSIONS v0.1.5, Rule 19 enforcement);
+#         transitions to frozen-awaiting-run via v0.3.1 supersedure.
+#
+# DRAFT FOR REVIEW (DG-3 work plan v0.1.2 Phase E, cards/spec-first). σ_x
+# sibling of Card C1 v0.3.0; see C1 v0.3.0 header for the full rationale
+# (why v0.3.0 supersedes v0.2.0; the finite-env-correlator-floor; the
+# Option-A four-method shape; the oqupy_options first-freeze caveat; the
+# intentional cards-first runner gap until Phase G). Differences from
+# C1 v0.3.0:
+#   - model: spin_boson_sigma_x; coupling_operator: σ_x;
+#   - bath spectrum sampled at ±ω_S rather than at 0 (handled inside the
+#     cbg correlator and the qutip_reference σ_-/σ_+ secular Lindblad);
+#   - HEOM and TEMPO resolve spin-flip / relaxation dynamics rather than
+#     the pure-dephasing channel.
+
+# ─── Top-level metadata ───────────────────────────────────────────────────────
+
+schema_version: "v0.1.5"
+card_id: "C2"
+version: "v0.3.0"
+date: "2026-05-16"
+dg_target: "DG-3"
+ledger_entry: "CL-2026-005 v0.4 Entry 4 (cross-method corroboration, failure-asymmetry clearance)"
+model: "spin_boson_sigma_x"
+status: "scope-definition"
+supersedes: "C2_cross-method-spin-boson_v0.2.0.yaml"
+license: "CC-BY-4.0 (LICENSE-docs)"
+
+# ─── Gauge block ──────────────────────────────────────────────────────────────
+
+gauge:
+  gauge: "hayden-sorce-minimal-dissipation"
+  coordinate_dependent: true
+  direct_observable: false
+  gauge_alignment_required_for_comparison:
+    - "hmf"
+    - "polaron"
+    - "mori"
+
+# ─── Frozen parameters ────────────────────────────────────────────────────────
+
+frozen_parameters:
+
+  model:
+    model_kind: "dynamical"
+    system_dimension: 2
+    system_hamiltonian: "(omega / 2) * sigma_z"
+    coupling_operator: "sigma_x"
+    bath_type: "bosonic_linear"
+    bath_spectral_density:
+      family: "ohmic"
+      cutoff_frequency: 10.0
+      coupling_strength: 0.05
+    parameters:
+      omega: 1.0
+    test_cases:
+
+      - name: "thermal_bath_cross_method"
+        description: |
+          Thermal bosonic bath at T = 0.5 (omega-units), σ_x coupling. FOUR
+          reference methods on the SAME frozen model spec:
+            - exact_finite_env  (finite-system class; NON-GATING auxiliary —
+              known finite-env-correlator-floor, retained for visibility);
+            - qutip_reference   (σ_-/σ_+ secular Lindblad at S(±ω_S);
+              NON-GATING auxiliary);
+            - heom_reference    (bath-hierarchy-truncation, σ_x; GATING);
+            - oqupy_reference   (process-tensor / MPS-bond-dimension
+              truncation, σ_x; GATING).
+          The gating pair is (heom_reference, oqupy_reference): two faithful
+          continuous-bath solvers from non-overlapping failure-mode classes.
+          σ_x coupling drives population relaxation toward Boltzmann
+          equilibrium plus |↑⟩/|↓⟩ coherence dynamics; both gating methods
+          should agree on the full non-Markovian trajectory.
+        bath_state:
+          family: "thermal"
+          temperature: 0.5
+        expected_outcome: |
+          The gating pair (heom_reference, oqupy_reference) agrees on the
+          reduced density matrix rho(t) to within
+          inter_method_relative_frobenius <= 1.0e-6. The auxiliary pairs
+          involving exact_finite_env are expected to show the documented
+          finite-env-correlator-floor (the C2 v0.1.0 baseline-pair run
+          measured exact-vs-qutip ~0.538 at this fixture) and the
+          qutip_reference secular-Markov gap; both are recorded in
+          result.notes and do NOT gate the verdict.
+        verifies:
+          - "DG-3 failure-asymmetry clearance: heom_reference (bath-hierarchy-truncation) vs oqupy_reference (process-tensor / MPS-bond-dimension) under σ_x coupling"
+          - "Tier 3 non-overlapping continuous-bath gate for σ_x relaxation dynamics; finite-system + solver-default retained as non-gating context"
+        reference: "Sail v0.5 §9 DG-3, §5 Tier 3; DG-3 work plan v0.1.2 §§2.3, 2.6"
+
+  truncation:
+    perturbative_order: 2
+    basis: "matrix_unit"
+    bath_mode_cutoff: 1024
+
+  numerical:
+    time_grid:
+      t_start: 0.0
+      t_end: 20.0
+      n_points: 200
+      scheme: "uniform"
+    integration_tolerance:
+      relative: 1.0e-10
+      absolute: 1.0e-12
+    solver: "scipy_dop853"
+
+  comparison:
+    reference: "four-method: exact_finite_env, qutip_reference, heom_reference, oqupy_reference; gating HEOM vs TEMPO (σ_x)"
+    target_observable: "reduced_density_matrix"
+    error_metric: "inter_method_relative_frobenius"
+    threshold: 1.0e-6
+    projection_scheme: null
+    methods:
+      - "exact_finite_env"
+      - "qutip_reference"
+      - "heom_reference"
+      - "oqupy_reference"
+    method_modules:
+      heom_reference: "benchmarks.heom_reference"
+      oqupy_reference: "benchmarks.oqupy_reference"
+    gating_pair:
+      - "heom_reference"
+      - "oqupy_reference"
+    heom_options:                  # frozen; identical to C2 v0.2.0
+      t_max_factor: 30.0
+      n_pts_correlator: 1024
+      cf_target_rmse: 5.0e-3
+      cf_Nr_max: 3
+      cf_Ni_max: 2
+      max_depth: 3
+    oqupy_options:                 # FIRST-FREEZE estimates; see C1 v0.3.0 header note
+      dt: 0.05
+      dkmax: 20
+      epsrel: 1.0e-7
+      end_time: 20.0
+      correlation_source: "cbg.bath_correlations.bath_two_point_thermal"
+
+# ─── Acceptance criterion ─────────────────────────────────────────────────────
+
+acceptance_criterion:
+  reference: "four-method: gating (heom_reference, oqupy_reference), σ_x coupling"
+  observable: "reduced_density_matrix"
+  error_metric: "inter_method_relative_frobenius"
+  threshold: 1.0e-6
+  projection_scheme: null
+  rationale: |
+    Same four-method gating structure as Card C1 v0.3.0, applied to the
+    σ_x-coupled spin-boson model.
+
+    PASS iff error(heom_reference, oqupy_reference) <= 1.0e-6 for the
+    thermal_bath_cross_method test case. The runner produces four
+    trajectories (rho_exact, rho_qutip, rho_heom, rho_oqupy), computes all
+    pairwise inter_method_relative_frobenius errors, and gates ONLY on
+    (heom_reference, oqupy_reference); all other pairs are recorded as
+    auxiliary evidence in result.notes.
+
+    Failure-asymmetry interpretation: identical to C1 v0.3.0. A gating-pair
+    PASS constitutes the Sail v0.5 §5 Tier 3 failure-asymmetry clearance
+    for DG-3 under σ_x coupling. The same OPEN QUESTION flagged in C1
+    v0.3.0 applies: if Phase H finds HEOM and TEMPO converge to a STABLE
+    mutual floor above 1e-6, that routes to a steward decision via a
+    v0.3.1 supersedure (new frozen threshold + failure_mode_log
+    justification), NOT post-hoc threshold loosening (barred by Sail §4).
+
+    Out of scope for Card C2 v0.3.0:
+      - displaced_bath_delta_omega_c_cross_method: deferred to a future C2
+        v0.4.0 once heom_reference and oqupy_reference ship displaced σ_x
+        handlers (thermal-only scope continues from v0.2.0).
+      - pseudomode / MCTDH comparisons: further fallbacks per DG-3 work
+        plan v0.1.2 §§2.4, 2.5.
+      - Failure-envelope characterisation: DG-4.
+      - Thermodynamic discriminant: DG-5.
+
+# ─── Result block ─────────────────────────────────────────────────────────────
+
+result:
+  verdict: null
+  evidence: []
+  commit_hash: ""
+  runner_version: ""
+  notes: |
+    Scope-definition card (SCHEMA.md §Status values; Rule 18). Same
+    precondition set as C1 v0.3.0: (1) benchmarks/oqupy_reference.py
+    absent (Phase F); (2) N-method runner dispatch on comparison.methods
+    absent (Phase G); (3) KNOWN_SCHEMA_VERSIONS lacks "v0.1.5" (Phase G);
+    (4) generalised Rule 19 methods-form not yet enforced in
+    validate_card_data (Phase G); (5) oqupy>=0.5,<0.6 declared but not
+    installed; oqupy_options are first-freeze estimates pending Phase-F
+    validation against the installed OQuPy 0.5.0 API. Transition to
+    frozen-awaiting-run requires a v0.3.1 supersedure once Phases F/G
+    satisfy these preconditions.
+
+# ─── Failure-mode log ─────────────────────────────────────────────────────────
+
+failure_mode_log:
+  - date: "2026-05-16"
+    change: |
+      v0.2.0 → v0.3.0 supersedure: replace the triple-method
+      comparison.third_method form with the schema v0.1.5 generalised
+      `methods` list (four methods). Move the gating pair from
+      (exact_finite_env, heom_reference) to (heom_reference,
+      oqupy_reference); retain exact_finite_env and qutip_reference as
+      non-gating auxiliary trajectories. Add benchmarks.oqupy_reference
+      to method_modules and a frozen oqupy_options block. Schema bumped
+      v0.1.4 → v0.1.5. Card-level threshold (1.0e-6), bath spectral
+      density, time grid, integration tolerances, gauge block, and
+      heom_options preserved from v0.2.0; thermal-only σ_x scope preserved.
+    reason: |
+      Same rationale as C1 v0.3.0 (Phase D.0/D.1 reconnaissance, logbook
+      2026-05-16_dg-3-phase-d-recon-gating-pair-blocked, commit d41ff66;
+      cause `finite-env-correlator-floor`; DG-3 work plan v0.1.2 §2.3
+      which supersedes the obsolete v0.1.1 §2.3 framing). C2 v0.1.0
+      baseline-pair run measured exact-vs-qutip ≈ 0.538 at this σ_x
+      fixture — that finite-env / Markov gap is now recorded as
+      non-gating auxiliary context rather than a (structurally
+      unsatisfiable) gate. Option A four-method shape is the steward
+      decision of 2026-05-16. v0.2.0 remains frozen and unmutated.
+    predecessor_card_id: "C2"
+    predecessor_version: "v0.2.0"
+
+# ─── Stewardship flag ─────────────────────────────────────────────────────────
+
+stewardship_flag:
+  status: "unflagged"
+  rationale: ""
+  data_source: ""
+  search_performed: ""
